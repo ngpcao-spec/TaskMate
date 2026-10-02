@@ -5,6 +5,17 @@ const INVITE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const randomCode = () => Array.from({ length: 6 }, () => INVITE_ALPHABET[Math.floor(Math.random() * INVITE_ALPHABET.length)]).join('');
 const title = (label: string) => `${label} ${Math.random().toString(36).slice(2, 7)}`;
 
+/** Diagnostic : journalise les réponses Supabase en erreur et les erreurs console (visible dans la sortie CI). */
+function trace(page: Page, who: string) {
+  page.on('response', async (res) => {
+    if (res.status() >= 400 && res.url().includes('/rest/v1/')) console.log(`[${who}] ${res.status()} ${res.request().method()} ${res.url().replace(/^.*\/rest\/v1\//, '')} ${(await res.text().catch(() => '')).slice(0, 300)}`);
+  });
+  page.on('console', (m) => {
+    if (m.type() === 'error') console.log(`[${who}] console.error ${m.text().slice(0, 300)}`);
+  });
+  page.on('pageerror', (e) => console.log(`[${who}] pageerror ${e.message.slice(0, 300)}`));
+}
+
 async function open(page: Page, path = '/') {
   await page.goto(path);
 }
@@ -29,6 +40,7 @@ test.describe('validation parentale (spec v4)', () => {
     const childCtx = await browser.newContext();
     await signInContext(childCtx, family.minh);
     const child = await childCtx.newPage();
+    trace(child, 'enfant');
     await open(child);
     const box = child.getByRole('checkbox', { name: taskTitle });
     await expect(box).toBeVisible();
@@ -60,6 +72,7 @@ test.describe('validation parentale (spec v4)', () => {
     const ctx = await browser.newContext();
     await signInContext(ctx, family.minh);
     const page = await ctx.newPage();
+    trace(page, 'enfant-hors-ligne');
     await open(page);
     const box = page.getByRole('checkbox', { name: taskTitle });
     await expect(box).toBeVisible();
@@ -89,7 +102,7 @@ test.describe('droits de l\'enfant', () => {
     await expect(page.getByText('Chào Minh!')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Thêm việc' })).toHaveCount(0);
 
-    await page.getByRole('button', { name: /Khang/ }).first().click();
+    await page.getByRole('tab', { name: /Khang/ }).click();
     await expect(page.getByText('Đang xem lịch của Khang')).toBeVisible();
     const box = page.getByRole('checkbox', { name: khangTask });
     await expect(box).toBeVisible();
