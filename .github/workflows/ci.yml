@@ -71,8 +71,9 @@ jobs:
         run: |
           supabase functions serve > /tmp/functions.log 2>&1 &
           for i in $(seq 1 60); do
-            code=$(curl -s -o /dev/null -w '%{http_code}' -X OPTIONS "$E2E_SUPABASE_URL/functions/v1/redeem-invite" -H 'Origin: http://localhost:4173' -H 'Access-Control-Request-Method: POST' || true)
-            [ "$code" = "204" ] && echo "functions prêtes" && exit 0
+            # sans jeton, la fonction (ou la passerelle) répond 401 : le runtime est joignable
+            code=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$E2E_SUPABASE_URL/functions/v1/redeem-invite" -H 'Content-Type: application/json' -d '{}' || true)
+            case "$code" in 401|403|200|204) echo "functions prêtes ($code)"; exit 0;; esac
             sleep 2
           done
           echo "functions non prêtes (dernier code: $code)"; cat /tmp/functions.log; exit 1
