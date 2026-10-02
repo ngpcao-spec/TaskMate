@@ -56,3 +56,16 @@ export async function deleteTask(id: string): Promise<void> {
 export function serverErrorCode(error: unknown): string {
   return typeof error === 'object' && error !== null && 'message' in error ? String((error as { message: unknown }).message) : '';
 }
+
+/** Toutes les tâches d'un profil (liste « Danh sách việc »), plus récentes d'abord, plafonnées. */
+export async function fetchAllTasks(childId: string, limit = 500): Promise<TaskRow[]> {
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('*')
+    .eq('child_id', childId)
+    .is('deleted_at', null)
+    .order('date', { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return data;
+}

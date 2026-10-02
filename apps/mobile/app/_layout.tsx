@@ -22,6 +22,9 @@ function Root() {
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="task/new" options={{ presentation: 'modal' }} />
           <Stack.Screen name="task/[id]" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="reward/new" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="reward/[id]" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="points-adjust" options={{ presentation: 'modal' }} />
         </Stack>
         <ToastHost />
       </SafeAreaProvider>

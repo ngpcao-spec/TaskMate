@@ -160,5 +160,74 @@
     "empty": "Aucune tâche",
     "viewWeek": "Voir la semaine",
     "viewDay": "Voir le jour"
+  },
+  "profile": {
+    "title": "Profil",
+    "tasks": "Liste des tâches",
+    "points": "Points et récompenses"
+  },
+  "taskList": {
+    "upcoming": "À venir",
+    "done": "Faites",
+    "overdue": "En retard",
+    "search": "Rechercher par titre",
+    "empty": "Aucune tâche"
+  },
+  "points": {
+    "title": "Points et récompenses",
+    "unit": "points",
+    "totalLabel": "Total actuel",
+    "reserved": "dont {{reserved}} points en attente d'approbation",
+    "history": "Historique des points",
+    "historyEmpty": "Aucun mouvement de points",
+    "reason": {
+      "task_completed": "Tâche terminée",
+      "task_uncompleted": "Tâche décochée",
+      "reward_redeemed": "Récompense échangée",
+      "manual_adjust": "Ajustement d'un parent"
+    },
+    "rewardsTitle": "Échanger des points contre une récompense",
+    "notEnough": "points insuffisants",
+    "needsNetwork": "Une connexion est nécessaire pour échanger des points",
+    "banner": "Plus tu termines de tâches, plus tu gagnes de points !",
+    "confirmTitle": "Échanger une récompense",
+    "confirmBody": "Envoyer à un parent la demande « {{title}} » ({{cost}} points) ?",
+    "confirmYes": "Envoyer la demande",
+    "requestSent": "Demande envoyée, en attente d'un parent",
+    "requestsTitle": "Demandes d'échange",
+    "cancelRequest": "Annuler la demande",
+    "status": {
+      "pending": "En attente",
+      "approved": "Approuvée",
+      "rejected": "Refusée",
+      "cancelled": "Annulée",
+      "expired": "Expirée"
+    },
+    "toApprove": "À approuver ({{count}})",
+    "requestLine": "{{name}} voudrait échanger : {{title}} ({{cost}} points)",
+    "expiresIn": "Expire dans {{days}} jour(s)",
+    "approve": "Approuver",
+    "reject": "Refuser",
+    "rejectNote": "Motif (facultatif)",
+    "adjust": "Ajuster les points",
+    "adjustTitle": "Ajuster les points de {{name}}",
+    "adjustAmount": "Nombre de points",
+    "adjustNote": "Motif",
+    "addReward": "Ajouter une récompense",
+    "errors": {
+      "insufficient": "Points disponibles insuffisants",
+      "notPending": "Cette demande a déjà été traitée"
+    }
+  },
+  "reward": {
+    "newTitle": "Nouvelle récompense",
+    "editTitle": "Modifier la récompense",
+    "name": "Nom de la récompense",
+    "cost": "Coût en points",
+    "everyone": "Pour les deux",
+    "delete": "Supprimer la récompense"
+  },
+  "home": {
+    "toApprove": "{{count}} demande(s) à approuver"
   }
 }

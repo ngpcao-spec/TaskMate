@@ -160,5 +160,74 @@
     "empty": "No tasks",
     "viewWeek": "View week",
     "viewDay": "View day"
+  },
+  "profile": {
+    "title": "Profile",
+    "tasks": "All tasks",
+    "points": "Points & rewards"
+  },
+  "taskList": {
+    "upcoming": "Upcoming",
+    "done": "Done",
+    "overdue": "Overdue",
+    "search": "Search by title",
+    "empty": "No tasks"
+  },
+  "points": {
+    "title": "Points & rewards",
+    "unit": "points",
+    "totalLabel": "Current total",
+    "reserved": "including {{reserved}} points awaiting approval",
+    "history": "Points history",
+    "historyEmpty": "No point movements yet",
+    "reason": {
+      "task_completed": "Task completed",
+      "task_uncompleted": "Task unchecked",
+      "reward_redeemed": "Reward redeemed",
+      "manual_adjust": "Parent adjustment"
+    },
+    "rewardsTitle": "Redeem points for a reward",
+    "notEnough": "not enough points",
+    "needsNetwork": "A connection is required to redeem points",
+    "banner": "The more tasks you finish, the more points you earn!",
+    "confirmTitle": "Redeem a reward",
+    "confirmBody": "Send a parent the request for “{{title}}” ({{cost}} points)?",
+    "confirmYes": "Send request",
+    "requestSent": "Request sent, waiting for a parent",
+    "requestsTitle": "Redemption requests",
+    "cancelRequest": "Cancel request",
+    "status": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "cancelled": "Cancelled",
+      "expired": "Expired"
+    },
+    "toApprove": "To approve ({{count}})",
+    "requestLine": "{{name}} wants to redeem: {{title}} ({{cost}} points)",
+    "expiresIn": "Expires in {{days}} day(s)",
+    "approve": "Approve",
+    "reject": "Reject",
+    "rejectNote": "Reason (optional)",
+    "adjust": "Adjust points",
+    "adjustTitle": "Adjust {{name}}'s points",
+    "adjustAmount": "Points",
+    "adjustNote": "Reason",
+    "addReward": "Add a reward",
+    "errors": {
+      "insufficient": "Not enough available points",
+      "notPending": "This request was already handled"
+    }
+  },
+  "reward": {
+    "newTitle": "New reward",
+    "editTitle": "Edit reward",
+    "name": "Reward name",
+    "cost": "Cost in points",
+    "everyone": "Both",
+    "delete": "Delete reward"
+  },
+  "home": {
+    "toApprove": "{{count}} request(s) to approve"
   }
 }

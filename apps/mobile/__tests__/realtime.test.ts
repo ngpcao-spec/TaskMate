@@ -49,7 +49,7 @@ describe('subscribeFamilyRealtime', () => {
   it('un événement DELETE (new vide) utilise l’ancienne ligne', () => {
     subscribeFamilyRealtime(client, 'fam-1');
     mockHandlers.point_transactions?.({ new: {}, old: { child_id: 'c-minh' } });
-    expect(client.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['balance', 'c-minh'] });
+    expect(client.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['balance'] });
   });
 
   it('à la (re)connexion : relance la file d’écritures, et rattrape après une coupure', () => {

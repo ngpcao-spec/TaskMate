@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { taskKeys } from '@/api/keys';
-import { fetchTasks, type TaskPatch } from '@/api/tasks';
+import { fetchAllTasks, fetchTasks, type TaskPatch } from '@/api/tasks';
 import {
   mutationKeys,
   type CreateVars,
@@ -15,6 +15,14 @@ export function useTasks(childId: string | null, from: string, to: string = from
   return useQuery({
     queryKey: taskKeys.range(childId ?? 'none', from, to),
     queryFn: () => fetchTasks(childId as string, from, to),
+    enabled: childId !== null,
+  });
+}
+
+export function useAllTasks(childId: string | null) {
+  return useQuery({
+    queryKey: [...taskKeys.all(childId ?? 'none'), 'all'],
+    queryFn: () => fetchAllTasks(childId as string),
     enabled: childId !== null,
   });
 }

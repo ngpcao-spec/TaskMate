@@ -21,10 +21,11 @@ export function invalidationsFor(table: RealtimeTable, row: Row): readonly (read
       return [['goals', ...(childId ? [childId] : [])]];
     case 'rewards':
       return [['rewards']];
+    // soldes et demandes : petites requêtes, partagées parent/enfants → invalidation par préfixe
     case 'reward_requests':
-      return [['requests', ...(childId ? [childId] : [])], ['balance', ...(childId ? [childId] : [])]];
+      return [['requests'], ['balance']];
     case 'point_transactions':
-      return [['balance', ...(childId ? [childId] : [])], ['transactions', ...(childId ? [childId] : [])]];
+      return [['balance'], ['transactions']];
     case 'children':
       return [['me']];
   }

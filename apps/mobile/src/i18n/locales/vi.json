@@ -160,5 +160,74 @@
     "empty": "Không có việc nào",
     "viewWeek": "Xem lịch tuần",
     "viewDay": "Xem lịch ngày"
+  },
+  "profile": {
+    "title": "Hồ sơ",
+    "tasks": "Danh sách việc",
+    "points": "Điểm thưởng"
+  },
+  "taskList": {
+    "upcoming": "Sắp tới",
+    "done": "Đã xong",
+    "overdue": "Quá hạn",
+    "search": "Tìm theo tên việc",
+    "empty": "Không có việc nào"
+  },
+  "points": {
+    "title": "Điểm thưởng",
+    "unit": "điểm",
+    "totalLabel": "Tổng điểm hiện tại",
+    "reserved": "trong đó {{reserved}} điểm đang chờ duyệt",
+    "history": "Lịch sử điểm",
+    "historyEmpty": "Chưa có biến động điểm nào",
+    "reason": {
+      "task_completed": "Hoàn thành việc",
+      "task_uncompleted": "Bỏ chọn việc",
+      "reward_redeemed": "Đổi phần thưởng",
+      "manual_adjust": "Điều chỉnh của phụ huynh"
+    },
+    "rewardsTitle": "Đổi điểm lấy phần thưởng",
+    "notEnough": "chưa đủ điểm",
+    "needsNetwork": "Cần kết nối mạng để đổi điểm",
+    "banner": "Càng hoàn thành nhiều việc càng có nhiều điểm hơn!",
+    "confirmTitle": "Đổi phần thưởng",
+    "confirmBody": "Gửi yêu cầu đổi “{{title}}” ({{cost}} điểm) cho phụ huynh?",
+    "confirmYes": "Gửi yêu cầu",
+    "requestSent": "Đã gửi yêu cầu, chờ phụ huynh duyệt",
+    "requestsTitle": "Yêu cầu đổi thưởng",
+    "cancelRequest": "Hủy yêu cầu",
+    "status": {
+      "pending": "Đang chờ duyệt",
+      "approved": "Đã duyệt",
+      "rejected": "Bị từ chối",
+      "cancelled": "Đã hủy",
+      "expired": "Đã hết hạn"
+    },
+    "toApprove": "Cần duyệt ({{count}})",
+    "requestLine": "{{name}} muốn đổi: {{title}} ({{cost}} điểm)",
+    "expiresIn": "Còn {{days}} ngày để duyệt",
+    "approve": "Duyệt",
+    "reject": "Từ chối",
+    "rejectNote": "Lý do (tùy chọn)",
+    "adjust": "Điều chỉnh điểm",
+    "adjustTitle": "Điều chỉnh điểm của {{name}}",
+    "adjustAmount": "Số điểm",
+    "adjustNote": "Lý do",
+    "addReward": "Thêm phần thưởng",
+    "errors": {
+      "insufficient": "Không đủ điểm khả dụng",
+      "notPending": "Yêu cầu này đã được xử lý"
+    }
+  },
+  "reward": {
+    "newTitle": "Thêm phần thưởng",
+    "editTitle": "Sửa phần thưởng",
+    "name": "Tên phần thưởng",
+    "cost": "Số điểm cần đổi",
+    "everyone": "Cả hai bạn",
+    "delete": "Xóa phần thưởng"
+  },
+  "home": {
+    "toApprove": "{{count}} yêu cầu cần duyệt"
   }
 }

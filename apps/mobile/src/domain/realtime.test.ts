@@ -8,8 +8,8 @@ describe('invalidationsFor', () => {
     expect(invalidationsFor('tasks', null)).toEqual([['tasks']]);
   });
   it('points et demandes invalident le solde de l’enfant', () => {
-    expect(invalidationsFor('point_transactions', { child_id: 'c1' })).toContainEqual(['balance', 'c1']);
-    expect(invalidationsFor('reward_requests', { child_id: 'c1' })).toContainEqual(['balance', 'c1']);
+    expect(invalidationsFor('point_transactions', { child_id: 'c1' })).toContainEqual(['balance']);
+    expect(invalidationsFor('reward_requests', { child_id: 'c1' })).toEqual([['requests'], ['balance']]);
   });
   it('couvre toutes les tables publiées', () => {
     for (const table of REALTIME_TABLES) expect(invalidationsFor(table, { child_id: 'c1' }).length).toBeGreaterThan(0);

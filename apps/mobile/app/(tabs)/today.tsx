@@ -14,6 +14,7 @@ import { dayProgress } from '@/domain/progress';
 import { isOverdue, sortTasks } from '@/domain/task-time';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { useNow } from '@/hooks/useNow';
+import { useRequests } from '@/hooks/usePoints';
 import { usePendingTaskIds } from '@/hooks/useSyncStatus';
 import { toggleVars, useDeleteTask, useTasks, useToggleTask } from '@/hooks/useTasks';
 import { colors, radius, spacing, typography } from '@/theme/tokens';
@@ -30,6 +31,9 @@ export default function TodayScreen() {
   const toggle = useToggleTask();
   const remove = useDeleteTask();
   const pendingIds = usePendingTaskIds();
+  const isParent = d?.viewer.role === 'parent';
+  const requests = useRequests(null, isParent);
+  const toApprove = isParent ? (requests.data ?? []).filter((r) => r.status === 'pending' && new Date(r.expires_at) > now).length : 0;
 
   if (!d || !d.child) {
     return (
@@ -59,6 +63,12 @@ export default function TodayScreen() {
         </View>
 
         {d.children.length > 1 ? <ProfilePills profiles={d.children} selectedId={child.id} onSelect={d.select} today={today} /> : null}
+
+        {toApprove > 0 ? (
+          <Pressable accessibilityRole="button" accessibilityLabel={t('home.toApprove', { count: toApprove })} onPress={() => router.push('/more/points')} style={styles.banner}>
+            <Text style={styles.bannerText}>{t('home.toApprove', { count: toApprove })}</Text>
+          </Pressable>
+        ) : null}
 
         {d.readOnly ? (
           <View accessible accessibilityRole="text" style={styles.banner}>

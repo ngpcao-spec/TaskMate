@@ -1,6 +1,6 @@
 # Progression
-Jalon courant : M6 — à démarrer
-Dernière vérification complète : OK (tag m5)
+Jalon courant : M7 — à démarrer
+Dernière vérification complète : OK (tag m6)
 
 ## M0 — Squelette
 - [x] Monorepo pnpm, Expo SDK 57 + Router, TS strict
@@ -31,6 +31,12 @@ Différé : validation sur appareil réel (NetInfo/MMKV natifs) — couvert par 
 ## M5 — Calendrier ✅ (tag m5)
 Bandeau semaine T2→CN, swipe/boutons semaine, sélecteur de date, titre du jour via date-fns (`domain/calendar`), cartes teintées 12 % (faites atténuées), vue semaine groupée, pills de profil (frère en lecture seule).
 Test clé : jeudi 2/7/2026 → « Thứ Năm » sous T5.
+
+## M6 — Points & récompenses ✅ (tag m6)
+Écran Điểm (solde projeté, réservé, historique), liste récompenses grisées selon le DISPONIBLE, flux enfant (confirmation → demande), file « Cần duyệt » parent (approuver/refuser + motif), annulation, section Demandes (30 j),
+CRUD récompenses, ajustement manuel (motif obligatoire), bannière « demandes à approuver » sur l'accueil parent, profil (cartes + menu) et « Danh sách việc » (filtres + recherche).
+Échanges nécessitent le réseau (boutons désactivés + message). Côté serveur : RPC/RLS/expiration déjà couverts par pgTAP (M1).
+Différé : actions Approuver/Refuser dans la notification push (M9).
 
 ## Critères d'acceptation → tests
 | Critère §8 | Test | Statut |
