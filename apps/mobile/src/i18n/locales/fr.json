@@ -250,5 +250,20 @@
       "targetInvalid": "Entier de 1 à 100000",
       "unitTooLong": "20 caractères maximum"
     }
+  },
+  "stats": {
+    "title": "Statistiques",
+    "week": "Semaine",
+    "month": "Mois",
+    "completionRate": "Taux de réalisation",
+    "done": "Terminées",
+    "notDone": "Non terminées",
+    "total": "Total des tâches",
+    "byCategory": "Répartition par catégorie",
+    "message": {
+      "excellent": "Excellent !",
+      "good": "Bien joué ! Encore un petit effort !",
+      "keepGoing": "Courage, un peu chaque jour !"
+    }
   }
 }

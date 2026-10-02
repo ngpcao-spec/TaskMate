@@ -1,6 +1,6 @@
 # Progression
-Jalon courant : M8 — à démarrer
-Dernière vérification complète : OK (tag m7)
+Jalon courant : M9 — à démarrer
+Dernière vérification complète : OK (tag m8)
 
 ## M0 — Squelette
 - [x] Monorepo pnpm, Expo SDK 57 + Router, TS strict
@@ -42,6 +42,9 @@ Différé : actions Approuver/Refuser dans la notification push (M9).
 Écran Mục tiêu (cartes, barre, « 3/5 », −/+ manuel optimiste, badge + toast à l'atteinte), formulaire (titre, icône, cible ≥ 1, unité), frère en lecture seule.
 Serveur : `achieved_at` + `activity_log goal_achieved` posés par trigger (pgTAP 06) ; notification push au parent en M9. Progression manuelle (hypothèse §9 Q3).
 
+## M8 — Statistiques ✅ (tag m8)
+`domain/stats.ts` (période semaine/mois dans le fuseau famille, total/faites/non faites, taux arrondi, répartition, encouragement), écran Thống kê (anneau, légende, barres par catégorie, carte d'encouragement), frère en lecture seule, calcul 100 % local (hors ligne).
+
 ## Critères d'acceptation → tests
 | Critère §8 | Test | Statut |
 |---|---|---|
@@ -55,5 +58,7 @@ Serveur : `achieved_at` + `activity_log goal_achieved` posés par trigger (pgTAP
 | Appareil révoqué perd l'accès | `02` (membre révoqué), `04` (revoke_device) | ✅ |
 | Chaque politique RLS : test positif et négatif | `01_rls` | ✅ |
 | Tâche supprimée par le parent pendant que l'enfant coche : échec propre + toast | `useToggleTask.test` (task_not_found) + `02_rpc_points` | ✅ |
-| Aucun écran n'affiche les deux enfants côte à côte | à vérifier en M8 (stats) ; accueil/objectifs/points = un profil à la fois | ⏳ |
+| Aucun écran n'affiche les deux enfants côte à côte ni de classement | `stats.test` (une seule légende), tests écrans today/goals/points : un seul profil affiché à la fois ; pastilles = âge uniquement | ✅ |
 | Le jour affiché dans le calendrier correspond au jour réel (« Thứ Tư » sous T5 dans les maquettes) | `domain/calendar.test` + `calendar.test.tsx` | ✅ |
+| Stats d'une période vide : « — » et pas « NaN % » | `domain/stats.test`, `stats.test.tsx` | ✅ |
+| Couverture ≥ 90 % sur `src/domain/` | `jest --coverage` (seuil 90 % imposé dans jest.config) | ✅ |

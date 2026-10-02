@@ -250,5 +250,20 @@
       "targetInvalid": "Whole number from 1 to 100000",
       "unitTooLong": "20 characters max"
     }
+  },
+  "stats": {
+    "title": "Stats",
+    "week": "Week",
+    "month": "Month",
+    "completionRate": "Completion rate",
+    "done": "Completed",
+    "notDone": "Not completed",
+    "total": "Total tasks",
+    "byCategory": "By category",
+    "message": {
+      "excellent": "Excellent!",
+      "good": "Well done! Keep going a little more!",
+      "keepGoing": "Keep it up, a little every day!"
+    }
   }
 }

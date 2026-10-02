@@ -250,5 +250,20 @@
       "targetInvalid": "Nhập số nguyên từ 1 đến 100000",
       "unitTooLong": "Tối đa 20 ký tự"
     }
+  },
+  "stats": {
+    "title": "Thống kê",
+    "week": "Tuần",
+    "month": "Tháng",
+    "completionRate": "Tỷ lệ hoàn thành",
+    "done": "Hoàn thành",
+    "notDone": "Chưa hoàn thành",
+    "total": "Tổng số việc",
+    "byCategory": "Biểu đồ theo danh mục",
+    "message": {
+      "excellent": "Xuất sắc!",
+      "good": "Làm tốt lắm! Còn cố gắng hơn nữa nhé!",
+      "keepGoing": "Cố lên, mỗi ngày một chút!"
+    }
   }
 }

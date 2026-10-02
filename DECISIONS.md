@@ -70,3 +70,8 @@ Contexte : §6 impose TanStack + MMKV + mutations en pause ; l'ordre des écritu
 Décision : toutes les mutations d'écriture partagent `scope: {id:'writes'}` → file FIFO globale ; elles sont définies par `setMutationDefaults` (sync/mutations.ts) pour être reprises après redémarrage (seules les mutations en pause sont persistées). Le `tx_id`/`id` est tiré à la création des variables → chaque rejeu (retry, reprise) est idempotent côté RPC. Retry uniquement sur erreurs réseau/5xx (`domain/errors`). Le formulaire revient immédiatement après « Lưu » (écriture optimiste) au lieu d'attendre le serveur. Le cache est purgé si le compte change/déconnexion (`domain/cache-owner`). Realtime : un canal par famille, invalidation de requêtes (pas de patch du cache), re-sync + reprise de la file à chaque (re)connexion.
 Alternatives écartées : AsyncStorage (spec = MMKV), un scope par tâche (ne garantit pas création → coche).
 Réversible : oui.
+
+## D-015 — Seuils d'encouragement appliqués au taux arrondi
+Contexte : §5.4 arrondit le taux puis donne des seuils (≥ 80, 50–79, < 50).
+Décision : le message dépend du taux ARRONDI affiché (79,5 % s'affiche 80 % → « Xuất sắc! ») pour rester cohérent avec l'écran.
+Réversible : oui (`encouragementFor`).
