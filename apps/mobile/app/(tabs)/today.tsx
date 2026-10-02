@@ -14,6 +14,7 @@ import { taskPermissions } from '@/domain/permissions';
 import { dayProgress } from '@/domain/progress';
 import { isOverdue, sortTasks } from '@/domain/task-time';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
+import { useUnreadNotifications } from '@/hooks/useNotifications';
 import { useNow } from '@/hooks/useNow';
 import { useApprovalCounts } from '@/hooks/useApprovals';
 import { usePendingTaskIds } from '@/hooks/useSyncStatus';
@@ -24,6 +25,7 @@ export default function TodayScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const d = useDisplayedChild();
+  const unread = useUnreadNotifications();
   const now = useNow();
   const tz = d?.me.family.timezone ?? 'Asia/Ho_Chi_Minh';
   const today = todayInTz(now, tz);
@@ -62,8 +64,18 @@ export default function TodayScreen() {
             </Text>
             <Text style={typography.secondary}>{t('today.encouragement')}</Text>
           </View>
-          <Pressable accessibilityRole="button" accessibilityLabel={t('notifications.bell')} onPress={() => router.push('/notifications')} style={styles.bell}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={unread > 0 ? `${t('notifications.bell')}, ${t('notifications.unread', { count: unread })}` : t('notifications.bell')}
+            onPress={() => router.push('/notifications')}
+            style={styles.bell}
+          >
             <Bell color={colors.text} />
+            {unread > 0 ? (
+              <View style={styles.bellBadge}>
+                <Text style={styles.bellBadgeText}>{unread > 99 ? '99+' : unread}</Text>
+              </View>
+            ) : null}
           </Pressable>
         </View>
 
@@ -163,6 +175,8 @@ const styles = StyleSheet.create({
   avatar: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
   avatarText: { color: '#fff', fontSize: 22, fontWeight: '700' },
   greeting: { fontSize: 22, fontWeight: '700', color: colors.text },
+  bellBadge: { position: 'absolute', top: 2, right: 0, minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 4, backgroundColor: colors.danger, alignItems: 'center', justifyContent: 'center' },
+  bellBadgeText: { color: '#fff', fontSize: 11, fontWeight: '700' },
   bell: { width: MIN_TARGET, height: MIN_TARGET, alignItems: 'center', justifyContent: 'center' },
   banner: { backgroundColor: colors.primaryTint, borderRadius: radius.card, paddingVertical: 10, paddingHorizontal: 14 },
   bannerText: { color: colors.primary, fontSize: 14, fontWeight: '600' },

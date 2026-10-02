@@ -17,14 +17,15 @@ export function invalidationsFor(table: RealtimeTable, row: Row): readonly (read
   switch (table) {
     case 'tasks':
       // la file « Cần duyệt » et les points en attente suivent les tâches
-      return childId ? [['tasks', childId], ['task', row?.id ?? ''], ['tasks', 'pending'], ['balance']] : [['tasks'], ['balance']];
+      // + le centre de notifications (journal d'activité des parents)
+      return childId ? [['tasks', childId], ['task', row?.id ?? ''], ['tasks', 'pending'], ['balance'], ['activity']] : [['tasks'], ['balance'], ['activity']];
     case 'goals':
       return [['goals', ...(childId ? [childId] : [])]];
     case 'rewards':
       return [['rewards']];
     // soldes et demandes : petites requêtes, partagées parent/enfants → invalidation par préfixe
     case 'reward_requests':
-      return [['requests'], ['balance']];
+      return [['requests'], ['balance'], ['activity']];
     case 'point_transactions':
       return [['balance'], ['transactions']];
     case 'children':

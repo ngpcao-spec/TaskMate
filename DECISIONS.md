@@ -134,3 +134,15 @@ Le rendu statique d'Expo Router pré-rend chaque route sans session : mismatch d
 
 ## D-032 — Liens d'invitation web
 Lien partageable `https://<origine>/join?code=XXXXXX` (origine = `EXPO_PUBLIC_WEB_URL`, sinon `window.location.origin`, sinon lien natif `taskmate://`). Le QR encode ce lien ; `parseInviteLink` lit liens natifs, liens web et codes bruts. Partage : `navigator.share` sinon presse-papiers (web), `Share.share` (natif).
+
+## D-033 — Centre de notifications intégré = canal principal sur le web
+Cloche avec compteur de non lues (journal d'activité pour le parent, décisions sur les demandes pour l'enfant), carte « N mục chờ duyệt » en tête du centre, badge « Cần duyệt » sur l'onglet/menu latéral, badge d'icône de la PWA (`navigator.setAppBadge`) et titre d'onglet `(n) TaskMate`. « Non lu » = plus récent que le dernier passage dans le centre, stocké localement par membre (`store/notificationSeen.ts`) ; à la première ouverture sur un appareil l'historique est considéré comme lu. Le centre se rafraîchit via Realtime (tâches, demandes, points → invalidation de `['activity']`).
+
+## D-034 — Web Push optionnel (VAPID)
+Migration 9 : `devices.platform` accepte `web`, colonne `web_push_subscription` (jsonb validé : endpoint HTTPS + clés), RPC `register_web_push` / `unregister_web_push` (pas d'écriture directe ; un navigateur = un appareil actif, réattribué si le compte change). pgTAP `10_web_push` (positifs et négatifs). Le client s'abonne via `PushManager.subscribe` avec `EXPO_PUBLIC_VAPID_PUBLIC_KEY` depuis un geste utilisateur (réglages → « Notifications du navigateur »). `send-push` envoie en plus via `npm:web-push` si `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` sont définis (sinon ignoré) ; mêmes destinataires, préférences et textes que le mobile ; abonnements 404/410 révoqués. Le service worker (`public/sw-push.js`) affiche la notification et ouvre la page utile au clic : **pas de boutons Duyệt/Từ chối dans la notification web** (le service worker n'a pas de session) — la décision se prend dans l'app.
+
+## D-035 — Pas de rappels locaux planifiés sur le web
+Les rappels « 10 min avant » de l'enfant reposent sur des notifications locales planifiées, impossibles dans un navigateur sans push serveur. Sur le web : centre de notifications + Web Push d'activité ; les rappels planifiés restent natifs. Limite documentée dans HUMAN_TODO.
+
+## D-036 — Clés VAPID
+`scripts/generate-vapid.mjs` génère la paire. Publique : variable `EXPO_PUBLIC_VAPID_PUBLIC_KEY` (front). Privée : uniquement secrets Supabase. Jamais committées.

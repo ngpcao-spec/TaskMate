@@ -4,6 +4,8 @@ import { useEffect } from 'react';
 import { Platform } from 'react-native';
 import { newId } from '@/api/ids';
 import { fetchActivity, fetchDecidedRequests, fetchPrefs, savePrefs } from '@/api/notifications';
+import { latestAt, unreadCount } from '@/domain/notification-center';
+import { useNotificationSeen } from '@/store/notificationSeen';
 import { DEFAULT_PREFS, type NotificationPrefs } from '@/domain/notification-prefs';
 import { planReminders } from '@/domain/reminders';
 import { shiftDay } from '@/domain/calendar';
@@ -101,4 +103,25 @@ export function useReminderSync(): void {
       cancelled = true;
     };
   }, [isChild, tasks, prefs, tz, today]);
+}
+
+/**
+ * Compteur de notifications non lues (centre de notifications intégré, canal principal sur le web).
+ * Première ouverture sur un appareil : l'historique existant est considéré comme lu (aucun faux compteur).
+ */
+export function useUnreadNotifications(): number {
+  const me = useMe().data ?? null;
+  const memberId = me?.member.id ?? null;
+  const isParent = me?.member.role === 'parent';
+  const activity = useActivity(isParent);
+  const decided = useDecidedRequests(!isParent && me !== null);
+  const seen = useNotificationSeen((s) => (memberId ? (s.seen[memberId] ?? null) : null));
+  const markSeen = useNotificationSeen((s) => s.markSeen);
+  const rows = isParent ? activity.data?.map((a) => ({ at: a.created_at })) : decided.data?.map((r) => ({ at: r.updated_at }));
+  const loaded = rows !== undefined;
+  useEffect(() => {
+    if (memberId && seen === null && loaded) markSeen(memberId, latestAt(rows ?? []) ?? new Date().toISOString());
+  }, [memberId, seen, loaded, rows, markSeen]);
+  if (!memberId || !rows || seen === null) return 0;
+  return unreadCount(rows, seen);
 }

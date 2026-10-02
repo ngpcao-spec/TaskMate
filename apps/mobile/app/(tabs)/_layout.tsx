@@ -1,4 +1,5 @@
 import { Redirect, Tabs } from 'expo-router';
+import { useEffect } from 'react';
 import { ChartColumn, EllipsisVertical, House, Calendar } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -7,7 +8,9 @@ import { SyncBanner } from '@/components/SyncBanner';
 import { useEntryRoute, useMe } from '@/hooks/useMe';
 import { useApprovalCounts } from '@/hooks/useApprovals';
 import { useIsWide } from '@/hooks/useLayout';
-import { useNotificationSetup, useReminderSync } from '@/hooks/useNotifications';
+import { useNotificationSetup, useReminderSync, useUnreadNotifications } from '@/hooks/useNotifications';
+import { badgeTotal } from '@/domain/notification-center';
+import { setAppBadge } from '@/pwa/appBadge';
 import { useRealtimeFamily } from '@/hooks/useRealtimeFamily';
 import { colors } from '@/theme/tokens';
 
@@ -18,6 +21,9 @@ export default function TabsLayout() {
   const familyId = useMe().data?.family.id ?? null;
   const isParent = useMe().data?.member.role === 'parent';
   const approvals = useApprovalCounts(isParent);
+  const unread = useUnreadNotifications();
+  const badge = badgeTotal(unread, approvals.total);
+  useEffect(() => setAppBadge(badge), [badge]);
   useRealtimeFamily(familyId);
   useNotificationSetup();
   useReminderSync();

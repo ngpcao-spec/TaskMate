@@ -44,3 +44,10 @@ Builds : `eas build --profile production --platform all` puis `eas submit` (comp
 Voir `apps/mobile/e2e/README.md` (nécessite Docker + build de développement) — non exécutés dans l'environnement de développement automatique.
 
 ## 11. Sign-in Apple / Google — voir #4. Valider sur appareils réels : NetInfo/MMKV natifs, caméra QR, notifications locales/push, latence Realtime (< 5 s).
+
+## 12. Web Push (optionnel, lot W3)
+1. `node scripts/generate-vapid.mjs` → deux clés. Publique : variable `EXPO_PUBLIC_VAPID_PUBLIC_KEY` (Vercel + `.env`). Privée : `supabase secrets set VAPID_PUBLIC_KEY=… VAPID_PRIVATE_KEY=… VAPID_SUBJECT=mailto:vous@exemple.com`.
+2. Appliquer la migration 9 (`supabase db push`) puis `supabase functions deploy send-push` (webhook et récap du soir : voir #6, étapes 3 à 5 ; les étapes EAS/APNs/FCM ne concernent pas la web app).
+3. **Limites iOS** : Web Push exige iOS/iPadOS ≥ 16.4 **et** la PWA installée sur l'écran d'accueil (Partager → « Sur l'écran d'accueil ») puis ouverte depuis l'icône ; la demande d'autorisation doit venir d'un tap (bouton des réglages). Dans un onglet Safari, aucune push n'est possible : l'app l'explique à l'utilisateur. Le badge d'icône n'existe aussi qu'en PWA installée.
+4. Sans clés VAPID, rien ne casse : le centre de notifications intégré (cloche, compteur, « Cần duyệt ») reste actif ; seul le Web Push est indisponible (« non configuré »).
+5. Pas de rappels planifiés « avant l'heure » sur le web (D-035) ; pas de boutons Duyệt/Từ chối dans la notification web (D-034).

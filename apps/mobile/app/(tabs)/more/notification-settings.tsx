@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Switch, Text, View } from 'react-native';
 import { Button, Card, Field, Screen, Title } from '@/components/ui';
+import { WebPushCard } from '@/components/WebPushCard';
 import { DEFAULT_PREFS, isValidTime, MAX_REMINDER_MIN, type NotificationPrefs } from '@/domain/notification-prefs';
 import { useMe } from '@/hooks/useMe';
 import { useNotificationPrefs, useSavePrefs } from '@/hooks/useNotifications';
@@ -47,6 +48,7 @@ function PrefsForm({ initial }: { initial: NotificationPrefs }) {
   return (
     <Screen>
       <Title>{t('notifSettings.title')}</Title>
+      <WebPushCard />
       {isParent ? null : (
         <Card>
           <Field label={t('notifSettings.beforeStart')} placeholder={t('notifSettings.off')} value={startText} onChangeText={(v) => setStartText(v.replace(/\D/g, ''))} keyboardType="number-pad" maxLength={3} />

@@ -1,9 +1,14 @@
 import { format, parseISO } from 'date-fns';
+import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
-import { Card, Screen, Title } from '@/components/ui';
+import { Button, Card, Screen, Title } from '@/components/ui';
+import { latestAt } from '@/domain/notification-center';
+import { useApprovalCounts } from '@/hooks/useApprovals';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { useActivity, useDecidedRequests } from '@/hooks/useNotifications';
+import { useNotificationSeen } from '@/store/notificationSeen';
 import { colors, typography } from '@/theme/tokens';
 
 type Payload = { title?: string; cost?: number; delta?: number };
@@ -11,10 +16,19 @@ type Payload = { title?: string; cost?: number; delta?: number };
 /** Centre de notifications [H] : parent = activité récente ; enfant = décisions sur ses demandes d'échange. */
 export default function NotificationsScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
   const d = useDisplayedChild();
   const isParent = d?.viewer.role === 'parent';
   const activity = useActivity(isParent);
   const decided = useDecidedRequests(!isParent && d !== null);
+  const approvals = useApprovalCounts(isParent);
+  const markSeen = useNotificationSeen((s) => s.markSeen);
+  const memberId = d?.me.member.id ?? null;
+  const newest = latestAt(isParent ? (activity.data ?? []).map((a) => ({ at: a.created_at })) : (decided.data ?? []).map((r) => ({ at: r.updated_at })));
+  // ouvrir le centre = tout marquer comme lu
+  useEffect(() => {
+    if (memberId) markSeen(memberId, newest ?? new Date().toISOString());
+  }, [memberId, newest, markSeen]);
   if (!d) return null;
   const nameOf = (id: string | null) => d.children.find((c) => c.id === id)?.name ?? '';
 
@@ -32,6 +46,7 @@ export default function NotificationsScreen() {
   return (
     <Screen>
       <Title>{t('notifications.title')}</Title>
+      {isParent && approvals.total > 0 ? <Button label={t('approvals.openQueue', { count: approvals.total })} onPress={() => router.push('/approvals')} /> : null}
       {rows.length === 0 ? <Text style={[typography.secondary, styles.empty]}>{t('notifications.empty')}</Text> : null}
       {rows.map((r) => (
         <Card key={r.id}>

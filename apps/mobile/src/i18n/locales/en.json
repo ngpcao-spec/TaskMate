@@ -309,7 +309,8 @@
       "goal_achieved": "{{name}} reached a goal: {{title}}",
       "points_adjusted": "{{delta}} points adjustment for {{name}}",
       "task_assigned": "New task for {{name}}: {{title}}"
-    }
+    },
+    "unread": "{{count}} unread"
   },
   "notifSettings": {
     "title": "Notification settings",
@@ -324,7 +325,20 @@
     "goalAchieved": "When a child reaches a goal",
     "saved": "Settings saved",
     "invalidTime": "Invalid time (HH:MM)",
-    "reset": "Reset to defaults"
+    "reset": "Reset to defaults",
+    "webPush": {
+      "title": "Browser notifications",
+      "body": "Get notifications even when the app is closed.",
+      "enable": "Turn on notifications",
+      "disable": "Turn off notifications",
+      "on": "On for this device",
+      "off": "Off",
+      "denied": "The browser blocked notifications. Allow them in the site settings.",
+      "unsupported": "This browser does not support push notifications. They remain available in the app (bell icon).",
+      "needsInstall": "On iPhone/iPad, add TaskMate to the Home Screen (Share → Add to Home Screen), then open it from that icon to turn notifications on.",
+      "notConfigured": "Push notifications are not configured on the server.",
+      "failed": "Could not turn notifications on. Please try again."
+    }
   },
   "settings": {
     "title": "General settings",
