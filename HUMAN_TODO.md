@@ -21,3 +21,10 @@ installer `expo-apple-authentication` / `@react-native-google-signin/google-sign
 ## 5. Déployer l'Edge Function d'invitation
 `supabase functions deploy redeem-invite` (après `supabase link`). Activer « Anonymous sign-ins » (Auth → Providers) — requis pour la session enfant.
 Personnaliser le template d'e-mail OTP (Auth → Email Templates) pour afficher `{{ .Token }}`.
+
+## 6. Notifications push (Expo + Supabase)
+1. `eas init` (crée le projet EAS) puis reporter le `projectId` dans `apps/mobile/app.json` → `expo.extra.eas.projectId` (sans lui, le jeton push n'est pas enregistré).
+2. iOS : clé APNs ; Android : FCM (`eas credentials`) — requis pour les push réels.
+3. `supabase secrets set WEBHOOK_SECRET=<valeur aléatoire>` puis `supabase functions deploy send-push`.
+4. Dashboard Supabase → Database → Webhooks → créer « activity-log-push » : table `public.activity_log`, événement INSERT, type « Supabase Edge Function » → `send-push`, en-tête `x-webhook-secret: <même valeur>`.
+5. Récap du soir des parents : planifier (pg_cron + pg_net, ou Scheduled Function) un `POST /functions/v1/send-push` avec `{"type":"evening_recap"}` et le même en-tête, à l'heure voulue (ex. 20:30 Asia/Ho_Chi_Minh = 13:30 UTC).

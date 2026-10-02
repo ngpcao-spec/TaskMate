@@ -1,4 +1,5 @@
 import { useRouter } from 'expo-router';
+import { Bell } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
@@ -17,7 +18,7 @@ import { useNow } from '@/hooks/useNow';
 import { useRequests } from '@/hooks/usePoints';
 import { usePendingTaskIds } from '@/hooks/useSyncStatus';
 import { toggleVars, useDeleteTask, useTasks, useToggleTask } from '@/hooks/useTasks';
-import { colors, radius, spacing, typography } from '@/theme/tokens';
+import { colors, MIN_TARGET, radius, spacing, typography } from '@/theme/tokens';
 
 export default function TodayScreen() {
   const { t } = useTranslation();
@@ -60,6 +61,9 @@ export default function TodayScreen() {
             </Text>
             <Text style={typography.secondary}>{t('today.encouragement')}</Text>
           </View>
+          <Pressable accessibilityRole="button" accessibilityLabel={t('notifications.bell')} onPress={() => router.push('/notifications')} style={styles.bell}>
+            <Bell color={colors.text} />
+          </Pressable>
         </View>
 
         {d.children.length > 1 ? <ProfilePills profiles={d.children} selectedId={child.id} onSelect={d.select} today={today} /> : null}
@@ -149,6 +153,7 @@ const styles = StyleSheet.create({
   content: { padding: spacing.md, gap: spacing.md },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   avatar: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
+  bell: { width: MIN_TARGET, height: MIN_TARGET, alignItems: 'center', justifyContent: 'center' },
   avatarText: { color: '#fff', fontSize: 22, fontWeight: '700' },
   banner: { backgroundColor: '#E8F1FE', borderRadius: radius.card, paddingVertical: 10, paddingHorizontal: 14 },
   bannerText: { color: colors.primary, fontSize: 14, fontWeight: '600' },

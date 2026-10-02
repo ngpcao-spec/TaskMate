@@ -165,7 +165,8 @@
     "title": "Profil",
     "tasks": "Liste des tâches",
     "points": "Points et récompenses",
-    "goals": "Objectifs"
+    "goals": "Objectifs",
+    "notifications": "Réglages des notifications"
   },
   "taskList": {
     "upcoming": "À venir",
@@ -265,5 +266,40 @@
       "good": "Bien joué ! Encore un petit effort !",
       "keepGoing": "Courage, un peu chaque jour !"
     }
+  },
+  "notifications": {
+    "reminderStart": "Début à {{time}} (dans {{minutes}} min)",
+    "reminderDeadline": "À finir avant {{time}} (dans {{minutes}} min)",
+    "recapTitle": "Récap du soir",
+    "recapBody": "Il te reste {{count}} tâche(s) aujourd'hui",
+    "title": "Notifications",
+    "empty": "Aucune notification",
+    "bell": "Notifications",
+    "permissionDenied": "Activez les notifications dans les réglages pour recevoir les rappels",
+    "activity": {
+      "task_completed": "{{name}} a terminé : {{title}}",
+      "reward_requested": "{{name}} voudrait échanger : {{title}} ({{cost}} points)",
+      "reward_approved": "Approuvée : {{title}}",
+      "reward_rejected": "Refusée : {{title}}",
+      "reward_expired": "Expirée : {{title}}",
+      "goal_achieved": "{{name}} a atteint son objectif : {{title}}",
+      "points_adjusted": "Ajustement de {{delta}} points pour {{name}}",
+      "task_assigned": "Nouvelle tâche pour {{name}} : {{title}}"
+    }
+  },
+  "notifSettings": {
+    "title": "Réglages des notifications",
+    "beforeStart": "Rappel avant le début (min)",
+    "beforeDeadline": "Rappel avant l'échéance (min)",
+    "off": "Désactivé",
+    "recap": "Récap du soir",
+    "recapTime": "Heure du récap",
+    "activityTitle": "Activité des enfants",
+    "taskDone": "Quand un enfant termine une tâche",
+    "rewardRequested": "Quand un enfant demande une récompense",
+    "goalAchieved": "Quand un enfant atteint un objectif",
+    "saved": "Réglages enregistrés",
+    "invalidTime": "Heure invalide (HH:MM)",
+    "reset": "Valeurs par défaut"
   }
 }

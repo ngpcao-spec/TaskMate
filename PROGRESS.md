@@ -1,6 +1,6 @@
 # Progression
-Jalon courant : M9 — à démarrer
-Dernière vérification complète : OK (tag m8)
+Jalon courant : M10 — à démarrer
+Dernière vérification complète : OK (tag m9)
 
 ## M0 — Squelette
 - [x] Monorepo pnpm, Expo SDK 57 + Router, TS strict
@@ -45,6 +45,11 @@ Serveur : `achieved_at` + `activity_log goal_achieved` posés par trigger (pgTAP
 ## M8 — Statistiques ✅ (tag m8)
 `domain/stats.ts` (période semaine/mois dans le fuseau famille, total/faites/non faites, taux arrondi, répartition, encouragement), écran Thống kê (anneau, légende, barres par catégorie, carte d'encouragement), frère en lecture seule, calcul 100 % local (hors ligne).
 
+## M9 — Notifications ✅ (tag m9)
+Rappels locaux (`domain/reminders` → `services/notifications.syncLocalReminders`, identifiants stables, replanifiés à chaque synchro, ≤ 60), préférences (`notification_prefs` + RLS + écran), actions Approuver/Refuser dans la notification,
+Edge Function `send-push` (destinataires/préférences/jetons invalides, logique pure testée), journal `task_assigned` (trigger), centre de notifications + cloche, enregistrement du jeton push.
+Non vérifiable ici : push réels (EAS/APNs/FCM) → HUMAN_TODO #6 ; livraison réelle des notifications locales sur appareil.
+
 ## Critères d'acceptation → tests
 | Critère §8 | Test | Statut |
 |---|---|---|
@@ -62,3 +67,5 @@ Serveur : `achieved_at` + `activity_log goal_achieved` posés par trigger (pgTAP
 | Le jour affiché dans le calendrier correspond au jour réel (« Thứ Tư » sous T5 dans les maquettes) | `domain/calendar.test` + `calendar.test.tsx` | ✅ |
 | Stats d'une période vide : « — » et pas « NaN % » | `domain/stats.test`, `stats.test.tsx` | ✅ |
 | Couverture ≥ 90 % sur `src/domain/` | `jest --coverage` (seuil 90 % imposé dans jest.config) | ✅ |
+| Une tâche créée par le parent pour 20:00 déclenche un rappel local sur le téléphone de l'enfant | `notifications-service.test` (19:50 heure famille, replanif. sans doublon) + `domain/reminders.test` + pgTAP 07 (`task_assigned`) | ✅ |
+| Aucune notification à un enfant sur l'activité de son frère | `send-push-logic.test` (recipientsFor) | ✅ |

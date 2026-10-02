@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SyncBanner } from '@/components/SyncBanner';
 import { useEntryRoute, useMe } from '@/hooks/useMe';
+import { useNotificationSetup, useReminderSync } from '@/hooks/useNotifications';
 import { useRealtimeFamily } from '@/hooks/useRealtimeFamily';
 import { colors } from '@/theme/tokens';
 
@@ -12,6 +13,8 @@ export default function TabsLayout() {
   const route = useEntryRoute();
   const familyId = useMe().data?.family.id ?? null;
   useRealtimeFamily(familyId);
+  useNotificationSetup();
+  useReminderSync();
   // Garde de routage : session perdue ou appareil révoqué → retour à l'onboarding.
   if (route !== 'loading' && route !== '/(tabs)/today') return <Redirect href="/" />;
   return (

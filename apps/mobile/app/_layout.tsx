@@ -25,6 +25,7 @@ function Root() {
           <Stack.Screen name="reward/new" options={{ presentation: 'modal' }} />
           <Stack.Screen name="reward/[id]" options={{ presentation: 'modal' }} />
           <Stack.Screen name="points-adjust" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="notifications" options={{ presentation: 'modal' }} />
           <Stack.Screen name="goal/new" options={{ presentation: 'modal' }} />
           <Stack.Screen name="goal/[id]" options={{ presentation: 'modal' }} />
         </Stack>

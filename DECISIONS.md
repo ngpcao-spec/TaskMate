@@ -75,3 +75,13 @@ Réversible : oui.
 Contexte : §5.4 arrondit le taux puis donne des seuils (≥ 80, 50–79, < 50).
 Décision : le message dépend du taux ARRONDI affiché (79,5 % s'affiche 80 % → « Xuất sắc! ») pour rester cohérent avec l'écran.
 Réversible : oui (`encouragementFor`).
+
+## D-016 — Push : webhook DB configuré côté Supabase, Edge Function sans état, jetons nettoyés au ticket
+Contexte : l'URL de l'Edge Function dépend de l'environnement ; on ne peut pas la figer dans une migration.
+Décision : les push partent d'un Database Webhook (INSERT sur `activity_log`) à créer dans le dashboard (HUMAN_TODO) ; l'Edge Function `send-push` est protégée par `x-webhook-secret`. Toute la logique de destinataires/textes est dans `functions/send-push/logic.ts` (pure, testée avec Jest). Les jetons `DeviceNotRegistered` sont effacés dès la réponse des tickets Expo (pas de seconde passe sur les reçus différés). Textes push en vietnamien (langue par défaut ; la langue du destinataire n'est pas stockée). `notification_prefs` : une ligne par membre, RLS « les siennes » ; les préférences activité parent sont lues par l'Edge Function avec la clé service.
+Alternatives écartées : trigger SQL + pg_net avec URL en dur ; envoi depuis le client.
+Réversible : oui.
+
+## D-017 — Centre de notifications [H]
+Décision : la cloche de l'accueil ouvre `/notifications` : parent = `activity_log` récent ; enfant = décisions sur ses demandes d'échange (aucune donnée du frère).
+Réversible : oui.

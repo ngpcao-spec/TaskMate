@@ -16,6 +16,12 @@
         {
           "cameraPermission": "TaskMate uses the camera to scan the invite QR code."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#1E88F5"
+        }
       ]
     ],
     "experiments": {
@@ -36,6 +42,9 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {}
     }
   }
 }

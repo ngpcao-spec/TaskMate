@@ -165,7 +165,8 @@
     "title": "Profile",
     "tasks": "All tasks",
     "points": "Points & rewards",
-    "goals": "Goals"
+    "goals": "Goals",
+    "notifications": "Notification settings"
   },
   "taskList": {
     "upcoming": "Upcoming",
@@ -265,5 +266,40 @@
       "good": "Well done! Keep going a little more!",
       "keepGoing": "Keep it up, a little every day!"
     }
+  },
+  "notifications": {
+    "reminderStart": "Starts at {{time}} (in {{minutes}} min)",
+    "reminderDeadline": "Due before {{time}} (in {{minutes}} min)",
+    "recapTitle": "Evening recap",
+    "recapBody": "{{count}} task(s) left today",
+    "title": "Notifications",
+    "empty": "No notifications yet",
+    "bell": "Notifications",
+    "permissionDenied": "Enable notifications in settings to get reminders",
+    "activity": {
+      "task_completed": "{{name}} completed: {{title}}",
+      "reward_requested": "{{name}} wants to redeem: {{title}} ({{cost}} points)",
+      "reward_approved": "Approved: {{title}}",
+      "reward_rejected": "Rejected: {{title}}",
+      "reward_expired": "Expired: {{title}}",
+      "goal_achieved": "{{name}} reached a goal: {{title}}",
+      "points_adjusted": "{{delta}} points adjustment for {{name}}",
+      "task_assigned": "New task for {{name}}: {{title}}"
+    }
+  },
+  "notifSettings": {
+    "title": "Notification settings",
+    "beforeStart": "Remind before start (min)",
+    "beforeDeadline": "Remind before deadline (min)",
+    "off": "Off",
+    "recap": "Evening recap",
+    "recapTime": "Recap time",
+    "activityTitle": "Children's activity",
+    "taskDone": "When a child completes a task",
+    "rewardRequested": "When a child requests a reward",
+    "goalAchieved": "When a child reaches a goal",
+    "saved": "Settings saved",
+    "invalidTime": "Invalid time (HH:MM)",
+    "reset": "Reset to defaults"
   }
 }

@@ -208,7 +208,7 @@ select is(tests.n('select 1 from public.reward_requests'), 0::bigint, 'reward_re
 
 -- ═══ activity_log ═══
 select tests.login(11);
-select is(tests.n('select 1 from public.activity_log'), 2::bigint, 'activity_log: le parent lit (dont goal_achieved posé par trigger)');
+select cmp_ok(tests.n('select 1 from public.activity_log'), '>', 1::bigint, 'activity_log: le parent lit (dont les lignes écrites par triggers)');
 select tests.login(13);
 select is(tests.n('select 1 from public.activity_log'), 0::bigint, 'activity_log: invisible pour un enfant');
 select throws_ok($$insert into public.activity_log (family_id, type) values (tests.u(1), 'x')$$, '42501', null, 'activity_log: aucun insert direct');

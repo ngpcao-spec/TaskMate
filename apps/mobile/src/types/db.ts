@@ -148,6 +148,7 @@ export type ActivityLogRow = {
   payload: Json;
   created_at: string;
 };
+export type NotificationPrefsRow = { member_id: string; prefs: Json; updated_at: string };
 export type ChildBalanceRow = {
   child_id: string;
   family_id: string;
@@ -173,6 +174,7 @@ export type Database = {
       point_transactions: Table<PointTransactionRow>;
       reward_requests: Table<RewardRequestRow>;
       activity_log: Table<ActivityLogRow>;
+      notification_prefs: Table<NotificationPrefsRow>;
     };
     Views: {
       child_balances: { Row: ChildBalanceRow; Relationships: [] };
