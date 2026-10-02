@@ -22,6 +22,7 @@ async function open(page: Page, path = '/') {
 
 test.describe('validation parentale (spec v4)', () => {
   test('le parent crée une tâche, l\'enfant coche, le parent valide, les points sont crédités une fois', async ({ browser }) => {
+    test.setTimeout(120_000);
     const family = await createFamily();
     const taskTitle = title('Đọc sách');
 
@@ -53,8 +54,9 @@ test.describe('validation parentale (spec v4)', () => {
     await expect(child.getByLabel('0 điểm', { exact: true })).toBeVisible();
     await expect(child.getByText('+10 điểm chờ duyệt')).toBeVisible();
 
-    // 3. parent : valide depuis la file « Cần duyệt »
-    await open(parent, '/approvals');
+    // 3. parent : la bannière « 1 việc chờ duyệt » apparaît (Realtime, sans recharger) puis valide depuis la file « Cần duyệt »
+    await parent.getByRole('button', { name: '1 việc chờ duyệt' }).click({ timeout: 15_000 });
+    await expect(parent).toHaveURL(/\/approvals/);
     await parent.getByRole('button', { name: `Duyệt ${taskTitle}` }).click();
     await expect.poll(async () => (await serverState(family, 'minh', taskTitle)).validated).toBe(true);
     expect(await serverState(family, 'minh', taskTitle)).toMatchObject({ balance: 10, transactions: 1 }); // crédité une seule fois
