@@ -91,3 +91,21 @@ Contexte : §5.3 demande un cron quotidien « à minuit, fuseau de la famille »
 Décision : `generate_all_recurrences()` est planifiée **toutes les heures** (idempotente grâce à `unique(recurrence_id, date)` + `on conflict do nothing`) → chaque famille obtient ses nouvelles occurrences dès son minuit local, sans calcul de fuseau côté cron. Le « aujourd'hui » vient de `family_today()` (fuseau famille). Un trigger AFTER INSERT/UPDATE sur `recurrences` appelle `sync_recurrence` : met à jour/retire/crée les occurrences **futures non faites** (le passé et le fait sont intacts). Les occurrences générées ne déclenchent pas de push `task_assigned`. Créer/modifier/supprimer une série est réservé au parent (RLS) et nécessite le réseau (le serveur génère) ; modifier UNE occurrence reste possible hors ligne. Modifier `child_id` d'une série n'est pas supporté (supprimer + recréer).
 Alternatives écartées : cron quotidien à heure fixe UTC (décalé pour certaines familles) ; génération côté client (doublons entre téléphones).
 Réversible : oui.
+
+## D-019 — Maquettes disponibles : D-001 caduque
+Les maquettes sont dans `docs/mockups/taskmate.png`. L'UI a été alignée (lot C3) ; la spec prime en cas de conflit (pas de comparaison entre enfants, états de validation de la spec v4).
+
+## D-020 — CLI Supabase épinglée en CI
+`supabase/setup-cli` utilisait par défaut la 2.20.3, incompatible avec `config.toml`. Version fixée via `SUPABASE_CLI_VERSION` (2.119.0) ; à relever volontairement.
+
+## D-021 — Jest : `gcTime: Infinity` dans le client de test
+Les minuteurs de GC de TanStack Query gardaient Jest ouvert. `createTestQueryClient()` (`test-utils/queryClient.ts`) les désactive ; pas de `--forceExit`.
+
+## D-022 — Types DB générés + `models.ts`
+`src/types/db.ts` est généré (`supabase gen types`) et contrôlé en CI ; `src/types/models.ts` en dérive des alias (`Tables<>`/`Enums<>`). Remplace D-009.
+
+## D-023 — Validation parentale (spec v4)
+États `todo | pending | validated` dérivés de `completed_at`/`validated_at` ; l'enfant n'a plus d'écriture directe sur `tasks` ; RPC `complete_task`/`uncomplete_task`/`validate_task`/`reject_task` verrouillées `FOR UPDATE`, raisons `task_validated`/`task_unvalidated` ; données existantes cochées avec points ⇒ validées. Aucun crédit optimiste côté enfant.
+
+## D-024 — Comparaison visuelle par rendu web
+Faute de simulateur, l'app est exportée en web et photographiée (Playwright + Chromium préinstallé) contre un faux serveur PostgREST (`tools/visual`). Limite : rendu non natif. Les pastilles enfants ont été retirées du calendrier et des statistiques (spec : pas de comparaison entre enfants).

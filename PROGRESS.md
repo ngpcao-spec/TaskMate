@@ -1,25 +1,37 @@
 # Progression
-Jalon courant : TERMINÉ (M0 → M11)
-Dernière vérification complète : OK (tag m11) — typecheck, lint, 244 tests Jest (domain ≥ 90 %), 313 assertions pgTAP (9 fichiers) + 3 tests de concurrence à 2 sessions, `expo export` iOS + Android
+Jalon courant : TERMINÉ (M0 → M11) + corrections C1 → C4
+Dernière vérification complète (locale, après C3) : typecheck, lint, 299 tests Jest (46 suites, domain ≥ 90 %), 356 assertions pgTAP (9 fichiers) + 5 scénarios de concurrence à 2 sessions (`./scripts/db-test.sh`), `expo export` iOS. Jest se termine seul (sans `--forceExit`).
 
-## RAPPORT FINAL
+## RAPPORT FINAL (mis à jour après les corrections C1 → C4)
 
-**Jalons livrés** (tags locaux `m0` … `m11`, branche `claude/lucid-hamilton-01g75d` poussée ; les tags n'ont pas pu être poussés — D-010) :
-M0 squelette · M1 schéma/RLS/RPC · M2 onboarding & auth · M3 accueil & tâches · M4 hors ligne & temps réel · M5 calendrier · M6 points & récompenses · M7 objectifs · M8 statistiques · M9 notifications · M10 récurrence · M11 finition (réglages, appareils, co-parent, suppression de compte, a11y, Maestro, EAS, confidentialité).
+### État de la CI — constaté
+- Avant corrections : **rouge** sur les 11 runs (job `db` : `supabase start` ; job `app` : timeout du test settings au M11). L'ancien rapport « OK » était faux : il ne reflétait que les tests locaux.
+- C1 : cause du job `db` = CLI Supabase par défaut (2.20.3) qui rejetait les clés de `config.toml` → CLI épinglée à 2.119.0. Cause du job `app` = timeout (5 s) sur runner froid → `testTimeout: 30000`. Jest ne se terminait pas à cause des minuteurs de garbage-collection de TanStack Query → `gcTime: Infinity` dans le client de test (`test-utils/queryClient.ts`), sans `--forceExit`. Actions passées en versions Node 24 (checkout v6, setup-node v6, pnpm/action-setup v6, supabase/setup-cli v3). Types DB désormais **générés** (`supabase gen types`) et vérifiés par la CI (`git diff --exit-code`).
+- **Run vert constaté : [#14, id 36972137433](https://github.com/ngpcao-spec/TaskMate/actions/runs/36972137433)** (commit `9448190`, fin du lot C2) : jobs `app` et `db` verts, y compris `supabase start`, `db reset`, `supabase test db`, `db lint` et le contrôle des types générés.
+- Lot C3 (`4b31ceb`) : run [#15, id 36973311752](https://github.com/ngpcao-spec/TaskMate/actions/runs/36973311752) en cours au moment de la rédaction — résultat non constaté (voir le commit suivant).
 
-**Critères d'acceptation (§8)** : 12/13 couverts par un test automatisé (table ci-dessous). Partiel : « visible chez le parent en < 5 s » — la chaîne (publication Realtime → invalidation → refetch) est testée, le délai réel doit être mesuré sur appareils. Les flows Maestro sont écrits (`apps/mobile/e2e`) mais non exécutés ici (pas de Docker/simulateur).
+### Jalons et corrections
+M0 → M11 (voir ci-dessous) · C1 CI/Jest/types générés · C2 validation parentale des tâches (spec v4) · C3 alignement visuel sur les maquettes · C4 ce rapport.
 
-**Décisions importantes** (voir `DECISIONS.md`, D-001 → D-018) : pas de Docker → Postgres 16 + pgTAP + shim Supabase (D-002) ; file hors ligne FIFO persistée avec ids idempotents (D-014) ; limite d'invitations en SQL (D-011) ; récurrence générée toutes les heures de façon idempotente (D-018) ; push via Database Webhook + Edge Function à logique pure (D-016) ; maquettes absentes → spec seule (D-001).
+### Critères d'acceptation
+Table « Critères d'acceptation → tests » en fin de fichier : tous couverts par un test automatisé sauf un partiel (latence Realtime < 5 s, à mesurer sur appareil). Les flows Maestro sont écrits (`apps/mobile/e2e`, dont `validate-task.yaml` et `child-validated.yaml`) mais **non exécutés**.
 
-**À faire par vous, dans l'ordre** (`HUMAN_TODO.md`) : #1 fournir les maquettes → #2 valider avec la vraie stack Docker (`supabase start/reset/test db/lint`, régénérer les types) → #3 projet Supabase cloud (Singapour) → #7 déployer fonctions + auth anonyme → #6 push (EAS projectId, APNs/FCM, webhook, cron récap) → #4 Apple/Google → #8 assets → #9 confidentialité & stores → #10 E2E Maestro → #11 validation sur appareils.
+### Ce qui reste NON vérifié
+- Aucun test sur **appareil réel** (iOS/Android) : NetInfo/MMKV natifs, caméra QR, rendu natif, polices, safe areas.
+- **Push réelles** (APNs/FCM, webhook, Edge Function déployée, actions Duyệt / Từ chối depuis la notification) : seule la logique pure et le mapping d'actions sont testés en Jest.
+- **Latence Realtime < 5 s** : la chaîne est testée, pas la durée réelle.
+- **Maestro** : flows jamais exécutés (nécessite un build de développement + simulateur).
+- **Comparaison aux maquettes** : faite sur un rendu web (react-native-web + faux serveur), pas sur appareil ; voir la table C3.
+- Apple/Google Sign-In, projet Supabase cloud, EAS, stores : non réalisés (HUMAN_TODO).
 
-**Dette technique connue**
-- Types DB écrits à la main (`src/types/db.ts`) — à régénérer avec la CLI ; `supabase db lint` non exécuté localement.
+### À faire par vous, dans l'ordre (`HUMAN_TODO.md`)
+#1 projet Supabase cloud → #2 fonctions + auth anonyme → #3 push (EAS projectId, APNs/FCM, webhook, cron récap) → #4 Apple/Google → #5 assets → #6 confidentialité & stores → #7 Maestro → #8 validation sur appareils.
+
+### Dette technique connue
 - Apple/Google : boutons derrière un flag, handlers à brancher (D-013).
-- Jetons push invalides nettoyés au ticket Expo uniquement (pas de passe sur les reçus différés) ; textes push en vietnamien uniquement.
+- Jetons push invalides nettoyés au ticket Expo uniquement ; textes push en vietnamien uniquement.
 - Création/édition de **séries** récurrentes en ligne uniquement ; changement d'enfant d'une série non supporté.
-- Écrans parent/enfant non vérifiés visuellement contre les maquettes (absentes) ni sur appareil ; avatars = initiales, icône/splash = placeholders Expo.
-- Pas d'actions notification « Approuver/Refuser » testées sur appareil (mapping et RPC testés en Jest).
+- Avatars = initiales ; icône/splash = placeholders ; illustration du splash = SVG simplifié.
 
 ## M0 — Squelette
 - [x] Monorepo pnpm, Expo SDK 57 + Router, TS strict
@@ -118,3 +130,13 @@ accessibilité (libellés + cibles ≥ 44 pt testés), états vides, flows Maest
 | Réglages (hors maquettes) | Cartes/rangées au même style | Aucune maquette de référence |
 
 Vérifications locales : typecheck, lint, 299 tests Jest, `expo export --platform ios` OK. CI du lot : voir rapport final (C4).
+| **v4** Un enfant ne peut ni créer, ni modifier, ni supprimer une tâche (scénario « 30 tâches bidon ») | `01_rls` (INSERT/UPDATE/DELETE refusés), `07` (insert préférences refusé), `task-routes.test` (routes protégées) | ✅ |
+| **v4** Coche enfant ⇒ `pending`, solde inchangé, aucun crédit optimiste | `02_rpc_points`, `domain/task-state.test`, `today.test`, `useToggleTask.test` | ✅ |
+| **v4** Décoche enfant : OK si `pending`, refusée si validée (`already_validated`) | `02_rpc_points`, `permissions.test` | ✅ |
+| **v4** Validation parent ⇒ points une seule fois (rejeu `tx_id`) | `02_rpc_points` + `db-concurrency.sh` (2 parents valident en même temps : un seul crédit) | ✅ |
+| **v4** Refus ⇒ `todo` + motif, aucun point ; validation après décoche ⇒ `not_pending` ; validation vs refus simultanés : un seul résultat | `02_rpc_points`, `db-concurrency.sh`, `approvals.test` | ✅ |
+| **v4** Coche parent ⇒ validée d'office ; décoche parent d'une validée ⇒ débit exact, refusé si disponible < 0 | `02_rpc_points` | ✅ |
+| **v4** Coche enfant hors ligne = `pending` seulement ; validation parent hors ligne créditée une seule fois | `validation-queue.test`, `projected-balance.test`, `offline-queue.test` | ✅ |
+| **v4** File « Cần duyệt », « Duyệt tất cả » par enfant, badge, ligne « +X điểm chờ duyệt » | `approvals.test`, `domain/approvals.test`, `points.test` | ✅ |
+| **v4** Push : `task_completed` regroupée < 10 min, actions Duyệt/Từ chối, `task_validated`/`task_rejected` à l'enfant, récap avec nombre en attente | `send-push-logic.test`, `notification-actions.test`, `notifications-service.test` (appareil réel non testé) | ⚠️ logique seule |
+| CI verte | Run #14 (`36972137433`) vert, voir « État de la CI » | ✅ constaté |

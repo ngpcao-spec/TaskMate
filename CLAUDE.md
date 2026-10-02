@@ -26,5 +26,6 @@ App mobile familiale (Expo + Supabase). Spéc: `SPEC.md` (fait autorité). Trava
 - Ne pas modifier SPEC.md. Pas de push --force ni d'action sur services distants.
 
 ## État
-Jalons M0 → M11 livrés (voir PROGRESS.md → rapport final). Pièges : jest-expo + RNTL 14 (`await render/fireEvent/act`), `jest.mock` factories : variables préfixées `mock`,
-mutations d'écriture = `sync/mutations.ts` (scope `writes`, ids fixés à la création), nouvelle table = RLS + pgTAP dans la même migration, tests SQL : un fichier = une transaction avec `tests.login(n)`.
+Jalons M0 → M11 + corrections C1 → C4 livrés (voir PROGRESS.md → rapport final). Spec v4 : l'enfant ne crée/modifie rien ; il coche → `pending`, le parent valide (`validate_task`) → points. Types DB générés (`src/types/db.ts`, contrôlés en CI) ; ne pas les éditer à la main. Captures de comparaison : `tools/visual`.
+Pièges : jest-expo + RNTL 14 (`await render/fireEvent/act`), tests : utiliser `createTestQueryClient()` (`gcTime: Infinity`) sinon Jest ne se termine pas ; `jest.mock` factories : variables préfixées `mock`,
+mutations d'écriture = `sync/mutations.ts` (scope `writes`, ids fixés à la création), nouvelle table = RLS + pgTAP dans la même migration, tests SQL : un fichier = une transaction avec `tests.login(n)`. CLI Supabase épinglée en CI (D-020).
