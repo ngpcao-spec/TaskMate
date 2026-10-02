@@ -142,9 +142,20 @@
       "timeInvalid": "Heure invalide",
       "endBeforeStart": "La fin doit suivre le début",
       "pointsInvalid": "Les points vont de 0 à 1000",
-      "childRequired": "Choisissez au moins un enfant"
+      "childRequired": "Choisissez au moins un enfant",
+      "weekdaysRequired": "Choisissez au moins un jour"
     },
-    "savedOffline": "Enregistré — synchronisation au retour du réseau"
+    "savedOffline": "Enregistré — synchronisation au retour du réseau",
+    "repeat": "Répétition",
+    "repeatKind": {
+      "none": "Aucune",
+      "daily": "Quotidienne",
+      "weekdays": "Jours choisis"
+    },
+    "applyToSeries": "Appliquer aux prochaines occurrences de la série",
+    "deleteSeries": "Supprimer toute la série",
+    "seriesDeleted": "Série supprimée",
+    "seriesNeedsNetwork": "Une connexion est nécessaire pour créer ou modifier une série"
   },
   "sync": {
     "offline": "Hors ligne — les changements seront synchronisés au retour du réseau",

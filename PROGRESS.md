@@ -1,6 +1,6 @@
 # Progression
-Jalon courant : M10 — à démarrer
-Dernière vérification complète : OK (tag m9)
+Jalon courant : M11 — à démarrer
+Dernière vérification complète : OK (tag m10)
 
 ## M0 — Squelette
 - [x] Monorepo pnpm, Expo SDK 57 + Router, TS strict
@@ -50,6 +50,10 @@ Rappels locaux (`domain/reminders` → `services/notifications.syncLocalReminder
 Edge Function `send-push` (destinataires/préférences/jetons invalides, logique pure testée), journal `task_assigned` (trigger), centre de notifications + cloche, enregistrement du jeton push.
 Non vérifiable ici : push réels (EAS/APNs/FCM) → HUMAN_TODO #6 ; livraison réelle des notifications locales sur appareil.
 
+## M10 — Récurrence ✅ (tag m10)
+Migration 6 : `generate_recurrence/generate_all_recurrences` (14 jours glissants, fuseau famille), trigger de synchronisation (futur non fait), cron horaire (D-018). pgTAP 08 (30 assertions : quotidien, jours choisis, bornes, modification, suppression, fuseaux, droits) + test de concurrence à 2 sessions.
+Client : option « Lặp lại » (parent), « appliquer à la série », « supprimer la série ».
+
 ## Critères d'acceptation → tests
 | Critère §8 | Test | Statut |
 |---|---|---|
@@ -69,3 +73,4 @@ Non vérifiable ici : push réels (EAS/APNs/FCM) → HUMAN_TODO #6 ; livraison r
 | Couverture ≥ 90 % sur `src/domain/` | `jest --coverage` (seuil 90 % imposé dans jest.config) | ✅ |
 | Une tâche créée par le parent pour 20:00 déclenche un rappel local sur le téléphone de l'enfant | `notifications-service.test` (19:50 heure famille, replanif. sans doublon) + `domain/reminders.test` + pgTAP 07 (`task_assigned`) | ✅ |
 | Aucune notification à un enfant sur l'activité de son frère | `send-push-logic.test` (recipientsFor) | ✅ |
+| Récurrence : pas de doublon même si deux générations se chevauchent | pgTAP 08 (idempotence, `unique(recurrence_id,date)`) + `db-concurrency.sh` (2 sessions) | ✅ |

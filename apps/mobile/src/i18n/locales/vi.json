@@ -142,9 +142,20 @@
       "timeInvalid": "Giờ không hợp lệ",
       "endBeforeStart": "Giờ kết thúc phải sau giờ bắt đầu",
       "pointsInvalid": "Điểm phải từ 0 đến 1000",
-      "childRequired": "Chọn ít nhất một bạn"
+      "childRequired": "Chọn ít nhất một bạn",
+      "weekdaysRequired": "Chọn ít nhất một ngày"
     },
-    "savedOffline": "Đã lưu — sẽ đồng bộ khi có mạng"
+    "savedOffline": "Đã lưu — sẽ đồng bộ khi có mạng",
+    "repeat": "Lặp lại",
+    "repeatKind": {
+      "none": "Không lặp",
+      "daily": "Hằng ngày",
+      "weekdays": "Các ngày chọn"
+    },
+    "applyToSeries": "Áp dụng cho các việc sắp tới trong chuỗi",
+    "deleteSeries": "Xóa cả chuỗi lặp",
+    "seriesDeleted": "Đã xóa chuỗi lặp",
+    "seriesNeedsNetwork": "Cần kết nối mạng để tạo hoặc sửa việc lặp lại"
   },
   "sync": {
     "offline": "Đang offline — thay đổi sẽ được đồng bộ khi có mạng",

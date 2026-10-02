@@ -57,3 +57,24 @@ grep -q not_pending /tmp/conc_a.out /tmp/conc_b.out || fail "le second parent au
 b=$(q "select balance from child_balances_raw" 2>/dev/null || q "select sum(delta) from point_transactions")
 [ "$b" = 50 ] || fail "solde attendu 50, obtenu $b"
 echo "ok : un seul débit, solde 50"
+
+echo "== 2 générations de récurrence simultanées (pg_cron + création) =="
+as_pg "psql -qX -v ON_ERROR_STOP=1 -d $DB" >/dev/null <<SQL
+insert into recurrences(id,family_id,child_id,title,time_kind,rule,starts_on,created_by)
+ values ('$(u 901)','$(u 1)','$(u 201)','Quotidienne','anytime','daily','2026-01-01','$(u 111)');
+delete from tasks where recurrence_id = '$(u 901)';
+SQL
+gen() { as_pg "psql -qXtA -d $DB" <<SQL 2>&1 || true
+begin;
+select public.generate_all_recurrences();
+select pg_sleep($1);
+commit;
+SQL
+}
+gen 1.5 > /tmp/conc_a.out &
+sleep 0.5
+gen 0 > /tmp/conc_b.out
+wait
+n=$(q "select count(*) from tasks where recurrence_id='$(u 901)'")
+[ "$n" = 14 ] || fail "attendu 14 occurrences sans doublon, obtenu $n"
+echo "ok : 14 occurrences, aucun doublon ni erreur"

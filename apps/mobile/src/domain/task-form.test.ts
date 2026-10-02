@@ -1,4 +1,4 @@
-import { DEFAULT_POINTS, taskFormSchema, toTaskFields, type TaskFormValues } from './task-form';
+import { DEFAULT_POINTS, taskFormSchema, toRecurrenceFields, toTaskFields, type TaskFormValues } from './task-form';
 
 const valid: TaskFormValues = {
   title: ' Bài tập Toán ',
@@ -64,5 +64,28 @@ describe('toTaskFields', () => {
   });
   it('conserve la note rognée', () => {
     expect(toTaskFields(taskFormSchema.parse({ ...valid, note: '  hello ' }), true)[0]?.note).toBe('hello');
+  });
+});
+
+describe('récurrence', () => {
+  it('« jours choisis » exige au moins un jour', () => {
+    expect(errors({ repeat: 'weekdays', weekdays: [] })).toContain('weekdaysRequired');
+    expect(errors({ repeat: 'weekdays', weekdays: [1, 3] })).toEqual([]);
+    expect(errors({ repeat: 'weekdays', weekdays: [8] })).not.toEqual([]);
+    expect(errors({ repeat: 'daily' })).toEqual([]);
+  });
+  it('pas de récurrence sans répétition', () => {
+    expect(toRecurrenceFields(taskFormSchema.parse(valid), true)).toEqual([]);
+    expect(toRecurrenceFields(taskFormSchema.parse({ ...valid, repeat: 'none' }), true)).toEqual([]);
+  });
+  it('quotidienne : date du formulaire = starts_on, une récurrence par enfant', () => {
+    const rows = toRecurrenceFields(taskFormSchema.parse({ ...valid, repeat: 'daily', childIds: ['c1', 'c2'] }), true);
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toMatchObject({ child_id: 'c1', rule: 'daily', weekdays: null, starts_on: '2026-07-02', points: 25 });
+    expect(rows[0]).not.toHaveProperty('date');
+  });
+  it('jours choisis : dédoublonnés et triés', () => {
+    const rows = toRecurrenceFields(taskFormSchema.parse({ ...valid, repeat: 'weekdays', weekdays: [5, 1, 3, 1] }), true);
+    expect(rows[0]).toMatchObject({ rule: 'weekdays', weekdays: [1, 3, 5] });
   });
 });

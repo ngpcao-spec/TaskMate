@@ -142,9 +142,20 @@
       "timeInvalid": "Invalid time",
       "endBeforeStart": "End must be after start",
       "pointsInvalid": "Points must be 0–1000",
-      "childRequired": "Pick at least one child"
+      "childRequired": "Pick at least one child",
+      "weekdaysRequired": "Pick at least one day"
     },
-    "savedOffline": "Saved — will sync when back online"
+    "savedOffline": "Saved — will sync when back online",
+    "repeat": "Repeat",
+    "repeatKind": {
+      "none": "Never",
+      "daily": "Daily",
+      "weekdays": "Chosen days"
+    },
+    "applyToSeries": "Apply to upcoming tasks in the series",
+    "deleteSeries": "Delete the whole series",
+    "seriesDeleted": "Series deleted",
+    "seriesNeedsNetwork": "A connection is needed to create or edit a series"
   },
   "sync": {
     "offline": "Offline — changes will sync when you are back online",

@@ -25,9 +25,13 @@ export const taskFormSchema = z
     note: z.string().max(500, 'noteTooLong').optional(),
     points: z.number().int('pointsInvalid').min(0, 'pointsInvalid').max(1000, 'pointsInvalid'),
     childIds: z.array(z.string()).min(1, 'childRequired'),
+    /** Répétition (parent) : none | daily | weekdays + jours ISO 1 (lundi) … 7 (dimanche). */
+    repeat: z.enum(['none', 'daily', 'weekdays']).optional(),
+    weekdays: z.array(z.number().int().min(1).max(7)).optional(),
   })
   .superRefine((v, ctx) => {
     const bad = (path: string, message: string) => ctx.addIssue({ code: 'custom', path: [path], message });
+    if (v.repeat === 'weekdays' && (v.weekdays?.length ?? 0) === 0) bad('weekdays', 'weekdaysRequired');
     if (v.timeKind === 'range') {
       if (!v.startTime || !TIME_RE.test(v.startTime)) bad('startTime', 'timeInvalid');
       if (!v.endTime || !TIME_RE.test(v.endTime)) bad('endTime', 'timeInvalid');
@@ -65,5 +69,22 @@ export function toTaskFields(v: z.infer<typeof taskFormSchema>, canSetPoints: bo
     end_time: v.timeKind === 'anytime' ? null : (v.endTime ?? null),
     // un enfant ne fixe jamais les points : 10 imposé (RLS/trigger côté serveur)
     points: canSetPoints ? v.points : DEFAULT_POINTS,
+  }));
+}
+
+export type RecurrenceFields = Omit<TaskInsertFields, 'date'> & {
+  rule: 'daily' | 'weekdays';
+  weekdays: number[] | null;
+  starts_on: string;
+};
+
+/** Récurrence(s) à créer (une par enfant) quand `repeat` ≠ `none` ; `date` du formulaire = `starts_on`. */
+export function toRecurrenceFields(v: z.infer<typeof taskFormSchema>, canSetPoints: boolean): RecurrenceFields[] {
+  if (!v.repeat || v.repeat === 'none') return [];
+  return toTaskFields(v, canSetPoints).map(({ date, ...rest }) => ({
+    ...rest,
+    rule: v.repeat as 'daily' | 'weekdays',
+    weekdays: v.repeat === 'weekdays' ? [...new Set(v.weekdays ?? [])].sort((a, b) => a - b) : null,
+    starts_on: date,
   }));
 }

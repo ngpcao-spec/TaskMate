@@ -85,3 +85,9 @@ Réversible : oui.
 ## D-017 — Centre de notifications [H]
 Décision : la cloche de l'accueil ouvre `/notifications` : parent = `activity_log` récent ; enfant = décisions sur ses demandes d'échange (aucune donnée du frère).
 Réversible : oui.
+
+## D-018 — Récurrence : génération horaire idempotente, séries créées/éditées par le parent en ligne
+Contexte : §5.3 demande un cron quotidien « à minuit, fuseau de la famille » ; pg_cron s'exécute en UTC et les familles ont des fuseaux différents.
+Décision : `generate_all_recurrences()` est planifiée **toutes les heures** (idempotente grâce à `unique(recurrence_id, date)` + `on conflict do nothing`) → chaque famille obtient ses nouvelles occurrences dès son minuit local, sans calcul de fuseau côté cron. Le « aujourd'hui » vient de `family_today()` (fuseau famille). Un trigger AFTER INSERT/UPDATE sur `recurrences` appelle `sync_recurrence` : met à jour/retire/crée les occurrences **futures non faites** (le passé et le fait sont intacts). Les occurrences générées ne déclenchent pas de push `task_assigned`. Créer/modifier/supprimer une série est réservé au parent (RLS) et nécessite le réseau (le serveur génère) ; modifier UNE occurrence reste possible hors ligne. Modifier `child_id` d'une série n'est pas supporté (supprimer + recréer).
+Alternatives écartées : cron quotidien à heure fixe UTC (décalé pour certaines familles) ; génération côté client (doublons entre téléphones).
+Réversible : oui.
