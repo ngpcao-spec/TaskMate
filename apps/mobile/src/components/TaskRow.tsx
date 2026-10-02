@@ -1,4 +1,4 @@
-import { Check } from 'lucide-react-native';
+import { Check, RefreshCw } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { CategoryIcon } from '@/components/CategoryIcon';
@@ -55,9 +55,9 @@ export function TaskRow({ task, overdue, canToggle, canEdit, pending = false, on
         </Text>
         <Text style={[styles.time, overdue && styles.overdue]}>
           {overdue ? `${t('today.overdue')} · ${time}` : time}
-          {pending ? ' ⟳' : ''}
         </Text>
       </Pressable>
+      {pending ? <RefreshCw size={14} color={colors.textSecondary} accessibilityLabel={t('sync.pendingItem')} /> : null}
       <CategoryIcon category={task.category} />
     </View>
   );

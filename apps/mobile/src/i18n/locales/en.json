@@ -143,6 +143,12 @@
       "endBeforeStart": "End must be after start",
       "pointsInvalid": "Points must be 0–1000",
       "childRequired": "Pick at least one child"
-    }
+    },
+    "savedOffline": "Saved — will sync when back online"
+  },
+  "sync": {
+    "offline": "Offline — changes will sync when you are back online",
+    "pending": "Syncing {{count}} change(s)…",
+    "pendingItem": "Waiting to sync"
   }
 }

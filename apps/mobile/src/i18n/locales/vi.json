@@ -143,6 +143,12 @@
       "endBeforeStart": "Giờ kết thúc phải sau giờ bắt đầu",
       "pointsInvalid": "Điểm phải từ 0 đến 1000",
       "childRequired": "Chọn ít nhất một bạn"
-    }
+    },
+    "savedOffline": "Đã lưu — sẽ đồng bộ khi có mạng"
+  },
+  "sync": {
+    "offline": "Đang offline — thay đổi sẽ được đồng bộ khi có mạng",
+    "pending": "Đang đồng bộ {{count}} thay đổi…",
+    "pendingItem": "Đang chờ đồng bộ"
   }
 }

@@ -1,13 +1,17 @@
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import '@/i18n';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ToastHost } from '@/components/ToastHost';
 import { useAuthListener } from '@/hooks/useMe';
+import { createQueryClient, CACHE_MAX_AGE } from '@/sync/client';
+import { setupNetworkListeners } from '@/sync/network';
+import { persister } from '@/sync/persister';
 
-const queryClient = new QueryClient();
+setupNetworkListeners();
+const queryClient = createQueryClient();
 
 function Root() {
   useAuthListener();
@@ -27,8 +31,13 @@ function Root() {
 
 export default function RootLayout() {
   return (
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{ persister, maxAge: CACHE_MAX_AGE, buster: 'v1' }}
+      // après relecture du cache : relance les écritures qui attendaient le réseau
+      onSuccess={() => void queryClient.resumePausedMutations()}
+    >
       <Root />
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   );
 }

@@ -25,6 +25,7 @@ let mockDisplayed: unknown;
 let mockTasks: TaskRow[] = [];
 const mockToggle = jest.fn();
 jest.mock('@/hooks/useDisplayedChild', () => ({ useDisplayedChild: () => mockDisplayed }));
+jest.mock('@/hooks/useSyncStatus', () => ({ usePendingTaskIds: () => new Set<string>() }));
 jest.mock('@/hooks/useTasks', () => ({
   useTasks: () => ({ data: mockTasks, isPending: false }),
   useToggleTask: () => ({ mutate: mockToggle }),

@@ -1,6 +1,6 @@
 # Progression
-Jalon courant : M4 — à démarrer
-Dernière vérification complète : OK (tag m3)
+Jalon courant : M5 — à démarrer
+Dernière vérification complète : OK (tag m4)
 
 ## M0 — Squelette
 - [x] Monorepo pnpm, Expo SDK 57 + Router, TS strict
@@ -23,10 +23,16 @@ Accueil (pills, bandeau lecture seule, anneau, liste triée, swipe-suppression, 
 coche/décoche optimistes via RPC (tx_id fixé à la création), droits enfant/parent (`domain/permissions`), toasts. Domain : task-time, progress, permissions, task-form, family-time (100 % lignes).
 Différé : bannière « demandes à approuver » (M6), cloche notifications (M9), répétition dans « Plus d'options » (M10), création/édition hors ligne (M4).
 
+## M4 — Hors ligne & temps réel ✅ (tag m4)
+Cache TanStack persisté (MMKV), file d'écritures FIFO persistée et reprise (retries idempotents, ordre garanti), création/édition/suppression/coche optimistes hors ligne,
+bandeau hors-ligne/synchro + indicateur par ligne, Realtime par famille (migration 4 + pgTAP 05), purge du cache au changement de compte, appareil révoqué → re-jointure.
+Différé : validation sur appareil réel (NetInfo/MMKV natifs) — couvert par Jest (file, persistance, realtime avec canal simulé).
+
 ## Critères d'acceptation → tests
 | Critère §8 | Test | Statut |
 |---|---|---|
-| Cocher hors ligne puis revenir en ligne crédite une seule fois | `02_rpc_points` « idempotent — crédité une seule fois » (rejeu même/autre tx_id) | ✅ (côté serveur ; file client en M4) |
+| Cocher hors ligne puis revenir en ligne crédite une seule fois | `02_rpc_points` (serveur) + `offline-queue.test` (même tx_id sur chaque retry/reprise/redémarrage) | ✅ |
+| Minh coche → visible chez le parent en < 5 s | `realtime.test` (événement → invalidation de la liste de l'enfant) + pgTAP 05 (publication) ; délai réel à mesurer sur appareil | ⚠️ partiel |
 | Enfant lit son frère, n'écrit rien, pas de points | `01_rls` (tasks/goals/rewards/point_transactions/children) + `02` forbidden | ✅ |
 | Demande d'échange réserve sans débiter ; seule l'approbation débite | `03_rpc_rewards` (request / approve) | ✅ |
 | 2 demandes simultanées > solde : la seconde refusée | `03` (séquentiel) + `db-concurrency.sh` (2 sessions) | ✅ |

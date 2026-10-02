@@ -64,3 +64,9 @@ Réversible : oui — ajouter une RPC `preview_invite` limitée par le même com
 ## D-013 — Apple / Google : boutons derrière `EXPO_PUBLIC_SOCIAL_AUTH`
 Décision : les boutons existent mais sont masqués par défaut ; l'action est un stub tant que les comptes développeur ne sont pas configurés (HUMAN_TODO #4). Le flux réel (OTP e-mail) est opérationnel.
 Réversible : oui.
+
+## D-014 — File hors ligne : scope unique `writes`, persistance MMKV, navigation optimiste
+Contexte : §6 impose TanStack + MMKV + mutations en pause ; l'ordre des écritures compte (créer avant cocher).
+Décision : toutes les mutations d'écriture partagent `scope: {id:'writes'}` → file FIFO globale ; elles sont définies par `setMutationDefaults` (sync/mutations.ts) pour être reprises après redémarrage (seules les mutations en pause sont persistées). Le `tx_id`/`id` est tiré à la création des variables → chaque rejeu (retry, reprise) est idempotent côté RPC. Retry uniquement sur erreurs réseau/5xx (`domain/errors`). Le formulaire revient immédiatement après « Lưu » (écriture optimiste) au lieu d'attendre le serveur. Le cache est purgé si le compte change/déconnexion (`domain/cache-owner`). Realtime : un canal par famille, invalidation de requêtes (pas de patch du cache), re-sync + reprise de la file à chaque (re)connexion.
+Alternatives écartées : AsyncStorage (spec = MMKV), un scope par tâche (ne garantit pas création → coche).
+Réversible : oui.

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import '@/i18n';
 import { taskKeys } from '@/api/keys';
 import { toggleVars, useToggleTask } from '@/hooks/useTasks';
+import { registerMutationDefaults } from '@/sync/mutations';
 import { useToastStore } from '@/store/toast';
 import type { TaskRow } from '@/types/db';
 
@@ -18,14 +19,18 @@ jest.mock('@/api/supabase', () => ({ supabase: {} }));
 const task = { id: 't1', child_id: 'c1', completed_at: null } as TaskRow;
 const key = taskKeys.range('c1', '2026-07-02', '2026-07-02');
 
+const clients: QueryClient[] = [];
 async function setup() {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+  clients.push(client);
+  registerMutationDefaults(client);
   client.setQueryData<TaskRow[]>(key, [task]);
   const wrapper = ({ children }: { children: ReactNode }) => <QueryClientProvider client={client}>{children}</QueryClientProvider>;
   return { client, ...(await renderHook(() => useToggleTask(), { wrapper })) };
 }
 
 describe('useToggleTask', () => {
+  afterEach(() => clients.splice(0).forEach((c) => c.clear()));
   beforeEach(() => {
     mockSet.mockReset();
     useToastStore.setState({ toast: null });

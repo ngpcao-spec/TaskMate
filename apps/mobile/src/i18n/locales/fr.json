@@ -143,6 +143,12 @@
       "endBeforeStart": "La fin doit suivre le début",
       "pointsInvalid": "Les points vont de 0 à 1000",
       "childRequired": "Choisissez au moins un enfant"
-    }
+    },
+    "savedOffline": "Enregistré — synchronisation au retour du réseau"
+  },
+  "sync": {
+    "offline": "Hors ligne — les changements seront synchronisés au retour du réseau",
+    "pending": "Synchronisation de {{count}} changement(s)…",
+    "pendingItem": "En attente de synchronisation"
   }
 }

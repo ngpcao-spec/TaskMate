@@ -14,6 +14,7 @@ import { dayProgress } from '@/domain/progress';
 import { isOverdue, sortTasks } from '@/domain/task-time';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { useNow } from '@/hooks/useNow';
+import { usePendingTaskIds } from '@/hooks/useSyncStatus';
 import { toggleVars, useDeleteTask, useTasks, useToggleTask } from '@/hooks/useTasks';
 import { colors, radius, spacing, typography } from '@/theme/tokens';
 
@@ -28,6 +29,7 @@ export default function TodayScreen() {
   const tasksQuery = useTasks(d?.child?.id ?? null, today);
   const toggle = useToggleTask();
   const remove = useDeleteTask();
+  const pendingIds = usePendingTaskIds();
 
   if (!d || !d.child) {
     return (
@@ -97,6 +99,7 @@ export default function TodayScreen() {
                   overdue={isOverdue(task, today, nowTime)}
                   canToggle={perms.canToggle && !d.readOnly}
                   canEdit={perms.canEdit && !d.readOnly}
+                  pending={pendingIds.has(task.id)}
                   onToggle={() => toggle.mutate(toggleVars(task, task.completed_at === null))}
                   onOpen={() => router.push({ pathname: '/task/[id]', params: { id: task.id } })}
                 />

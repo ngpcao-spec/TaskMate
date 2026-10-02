@@ -1,0 +1,31 @@
+/** Table publiée en Realtime → clés de requêtes TanStack à invalider (SPEC §6 : « invalidation des queries »). */
+export type RealtimeTable = 'tasks' | 'goals' | 'rewards' | 'reward_requests' | 'point_transactions' | 'children';
+
+export const REALTIME_TABLES: readonly RealtimeTable[] = [
+  'tasks',
+  'goals',
+  'rewards',
+  'reward_requests',
+  'point_transactions',
+  'children',
+];
+
+type Row = { child_id?: string | null; id?: string } | null | undefined;
+
+export function invalidationsFor(table: RealtimeTable, row: Row): readonly (readonly string[])[] {
+  const childId = row?.child_id ?? null;
+  switch (table) {
+    case 'tasks':
+      return childId ? [['tasks', childId], ['task', row?.id ?? '']] : [['tasks']];
+    case 'goals':
+      return [['goals', ...(childId ? [childId] : [])]];
+    case 'rewards':
+      return [['rewards']];
+    case 'reward_requests':
+      return [['requests', ...(childId ? [childId] : [])], ['balance', ...(childId ? [childId] : [])]];
+    case 'point_transactions':
+      return [['balance', ...(childId ? [childId] : [])], ['transactions', ...(childId ? [childId] : [])]];
+    case 'children':
+      return [['me']];
+  }
+}

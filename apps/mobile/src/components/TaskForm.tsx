@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { onlineManager } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
@@ -14,6 +15,7 @@ import { taskPermissions } from '@/domain/permissions';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { useCreateTasks, useDeleteTask, useUpdateTask } from '@/hooks/useTasks';
 import { CATEGORY_COLORS, TASK_CATEGORIES } from '@/theme/categories';
+import { useToastStore } from '@/store/toast';
 import { typography } from '@/theme/tokens';
 import type { TaskRow } from '@/types/db';
 
@@ -27,6 +29,7 @@ export function TaskForm({ task }: Props) {
   const create = useCreateTasks();
   const update = useUpdateTask();
   const remove = useDeleteTask();
+  const show = useToastStore((st) => st.show);
   const [showMore, setShowMore] = useState(false);
 
   const isParent = d?.viewer.role === 'parent';
@@ -72,18 +75,21 @@ export function TaskForm({ task }: Props) {
   const onSubmit = handleSubmit((raw) => {
     const parsed = taskFormSchema.parse(raw);
     const fields = toTaskFields(parsed, isParent);
+    // Écriture optimiste : la mutation part dans la file (en pause hors ligne) et on revient aussitôt.
     if (task) {
       const { child_id: _child, ...patch } = fields[0]!;
-      update.mutate({ id: task.id, patch, childIds: [task.child_id] }, { onSuccess: () => router.back() });
+      update.mutate({ task, patch });
     } else {
-      create.mutate(
-        { familyId: d.me.family.id, memberId: d.me.member.id, tasks: fields.map((f) => ({ ...f, id: newId() })) },
-        { onSuccess: () => router.back() },
-      );
+      create.mutate({
+        familyId: d.me.family.id,
+        memberId: d.me.member.id,
+        tasks: fields.map((f) => ({ ...f, id: newId() })),
+      });
     }
+    show(onlineManager.isOnline() ? t('taskForm.saved') : t('taskForm.savedOffline'));
+    router.back();
   });
 
-  const busy = create.isPending || update.isPending;
   const timeKinds = ['range', 'deadline', 'anytime'] as const;
 
   return (
@@ -245,13 +251,16 @@ export function TaskForm({ task }: Props) {
         </>
       ) : null}
 
-      <Button label={t('common.save')} onPress={onSubmit} loading={busy} disabled={!formState.isValid || !perms.canEdit} />
+      <Button label={t('common.save')} onPress={onSubmit} disabled={!formState.isValid || !perms.canEdit} />
       {task && perms.canDelete ? (
         <Button
           variant="secondary"
           label={t('taskForm.delete')}
-          onPress={() => remove.mutate(task, { onSuccess: () => router.back() })}
-          loading={remove.isPending}
+          onPress={() => {
+            remove.mutate(task);
+            show(t('taskForm.deleted'));
+            router.back();
+          }}
         />
       ) : null}
     </Screen>
