@@ -1,12 +1,99 @@
 {
-  "app": { "name": "TaskMate", "slogan": "Petites tâches aujourd'hui, grand avenir demain" },
-  "common": { "start": "Commencer", "save": "Enregistrer", "cancel": "Annuler" },
-  "tabs": { "today": "Aujourd'hui", "calendar": "Calendrier", "stats": "Statistiques", "more": "Plus" },
+  "app": {
+    "name": "TaskMate",
+    "slogan": "Petites tâches aujourd'hui, grand avenir demain"
+  },
+  "common": {
+    "start": "Commencer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "continue": "Continuer",
+    "back": "Retour",
+    "done": "Terminer",
+    "loading": "Chargement…",
+    "error": "Une erreur est survenue. Réessayez.",
+    "or": "ou",
+    "yearsOld": "{{age}} ans"
+  },
+  "tabs": {
+    "today": "Aujourd'hui",
+    "calendar": "Calendrier",
+    "stats": "Statistiques",
+    "more": "Plus"
+  },
   "category": {
     "study": "Études",
     "sport": "Sport",
     "chores": "Tâches ménagères",
     "personal": "Personnel",
     "other": "Autre"
+  },
+  "onboarding": {
+    "role": {
+      "title": "Qui êtes-vous ?",
+      "parent": "Je suis parent",
+      "child": "Je suis un enfant"
+    },
+    "auth": {
+      "title": "Connexion parent",
+      "email": "Email",
+      "emailPlaceholder": "vous@example.com",
+      "sendCode": "Envoyer le code",
+      "code": "Code de vérification",
+      "codePlaceholder": "Code à 6 chiffres",
+      "codeSent": "Code envoyé à {{email}}",
+      "verify": "Valider",
+      "changeEmail": "Changer d'email",
+      "apple": "Continuer avec Apple",
+      "google": "Continuer avec Google",
+      "invalidEmail": "Email invalide",
+      "invalidCode": "Code incorrect ou expiré"
+    },
+    "family": {
+      "title": "Votre famille",
+      "create": "Créer une nouvelle famille",
+      "join": "Rejoindre avec un code co-parent",
+      "familyName": "Nom de la famille",
+      "familyNamePlaceholder": "Famille Nguyễn",
+      "yourName": "Votre prénom",
+      "yourNamePlaceholder": "Papa / Maman",
+      "coParentCode": "Code d'invitation co-parent",
+      "required": "Champ obligatoire"
+    },
+    "children": {
+      "title": "Profils des enfants",
+      "subtitle": "Chaque enfant a son propre téléphone, lié par un code d'invitation.",
+      "name": "Prénom de l'enfant",
+      "birthDate": "Date de naissance (AAAA-MM-JJ)",
+      "add": "Ajouter l'enfant",
+      "color": "Couleur",
+      "inviteCode": "Code d'invitation",
+      "inviteHint": "Saisissez ce code ou scannez le QR sur le téléphone de {{name}}. Valable 24 h, usage unique.",
+      "regenerate": "Nouveau code",
+      "finish": "Terminer",
+      "labelFirst": "Fils aîné",
+      "labelNext": "Fils cadet",
+      "errors": {
+        "format": "Format AAAA-MM-JJ",
+        "invalid": "Date inexistante",
+        "future": "Date dans le futur",
+        "tooOld": "Trop âgé"
+      }
+    },
+    "join": {
+      "title": "Rejoindre avec un code",
+      "codeLabel": "Code à 6 caractères",
+      "codePlaceholder": "ABC234",
+      "submit": "Rejoindre",
+      "scan": "Scanner le QR",
+      "scanning": "Placez le QR code dans le cadre",
+      "cameraDenied": "L'accès à la caméra est nécessaire pour scanner",
+      "invalid": "Code invalide ou expiré",
+      "tooMany": "Trop de tentatives. Réessayez dans 15 minutes.",
+      "alreadyMember": "Ce compte est déjà lié.",
+      "confirmTitle": "Tu es {{name}} ?",
+      "confirmBody": "L'app est maintenant liée au profil de {{name}} sur ce téléphone.",
+      "confirmYes": "Oui, entrer dans l'app"
+    }
   }
 }

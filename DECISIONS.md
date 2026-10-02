@@ -45,3 +45,22 @@ Réversible : oui.
 Contexte : pas de Docker fonctionnel (D-002).
 Décision : `src/types/db.ts` est écrit à la main d'après les migrations (à régénérer avec `supabase gen types typescript --local` quand possible) ; `supabase db lint` tourne en CI. Les migrations sont appliquées proprement sur Postgres 16 nu.
 Réversible : oui.
+
+## D-010 — Les tags git ne partent pas sur le remote
+Contexte : `git push --tags` renvoie 403 (le proxy n'accepte que la branche de travail). Les tags `m0`, `m1`… sont créés localement ; la branche est poussée.
+Réversible : oui — `git push origin --tags` quand c'est autorisé.
+
+## D-011 — Limite de tentatives d'invitation : SQL par utilisateur + Edge Function par IP
+Contexte : §5.8 demande 5 tentatives / 15 min via Edge Function. Un `raise exception` annule l'écriture du compteur.
+Décision : `redeem_invite` renvoie `null` (au lieu de lever) pour un code invalide, après avoir journalisé l'échec dans `redeem_attempts` ; au-delà de 5 échecs / 15 min (clé = utilisateur, et clé IP optionnelle passée par l'Edge Function) → `too_many_attempts`. L'Edge Function `redeem-invite` reste fine (extrait l'IP, appelle la RPC avec le JWT de l'utilisateur) : la logique est testée en pgTAP.
+Alternatives écartées : compteur uniquement dans l'Edge Function (non testable ici, contournable en appelant la RPC).
+Réversible : oui.
+
+## D-012 — Confirmation « Bạn là Minh? » après la jointure
+Contexte : §2.1 prévoit la confirmation après scan ; consommer le code est irréversible et un aperçu sans consommation créerait un oracle de codes.
+Décision : l'écran de confirmation s'affiche juste après `redeem_invite` (le prénom vient du profil enfant) ; pas d'aperçu avant consommation. En cas d'erreur de profil le parent régénère un code (révoque l'ancien appareil).
+Réversible : oui — ajouter une RPC `preview_invite` limitée par le même compteur.
+
+## D-013 — Apple / Google : boutons derrière `EXPO_PUBLIC_SOCIAL_AUTH`
+Décision : les boutons existent mais sont masqués par défaut ; l'action est un stub tant que les comptes développeur ne sont pas configurés (HUMAN_TODO #4). Le flux réel (OTP e-mail) est opérationnel.
+Réversible : oui.

@@ -52,7 +52,7 @@ insert into public.tasks (id, family_id, child_id, title, note, date, created_by
   (tests.u(303), tests.u(1), tests.u(201), 'Tâche Minh (perso)', null, '2026-07-02', tests.u(113)),
   (tests.u(321), tests.u(2), tests.u(221), 'Tâche B', null, '2026-07-02', tests.u(121));
 insert into auth.users (id, email, is_anonymous) values
-  (tests.u(31), 'pc@test', false), (tests.u(32), null, true), (tests.u(33), null, true), (tests.u(34), 'p2c@test', false);
+  (tests.u(31), 'pc@test', false), (tests.u(32), null, true), (tests.u(33), null, true), (tests.u(34), 'p2c@test', false), (tests.u(35), null, true), (tests.u(36), null, true);
 
 select * from no_plan();
 
@@ -96,8 +96,9 @@ select is((select role::text from public.members where user_id = tests.u(32)), '
 select tests.logout();
 select isnt((select used_at from public.invite_codes where code = (select c from codes where k = 'child')), null, 'redeem_invite: code consommé');
 select tests.login(33);
-select throws_ok($$select public.redeem_invite((select c from codes where k = 'child'), 'Pirate')$$, 'P0001', 'invalid_code', 'redeem_invite: usage unique');
-select throws_ok($$select public.redeem_invite('ZZZZZZ', 'Pirate')$$, 'P0001', 'invalid_code', 'redeem_invite: code inconnu');
+select is(public.redeem_invite((select c from codes where k = 'child'), 'Pirate'), null, 'redeem_invite: usage unique');
+select is(public.redeem_invite('ZZZZZZ', 'Pirate'), null, 'redeem_invite: code inconnu → null');
+select throws_ok($$select 1 from public.redeem_attempts$$, '42501', null, 'redeem_attempts: table interne inaccessible aux clients');
 select tests.login(32);
 select throws_ok($$select public.redeem_invite((select c from codes where k = 'parent'), 'Bé')$$, 'P0001', 'already_member', 'redeem_invite: déjà membre');
 select tests.login(34);
@@ -110,12 +111,29 @@ insert into codes values ('old', public.create_invite(tests.u(231), 'child'));
 select tests.logout();
 update public.invite_codes set expires_at = now() - interval '1 minute' where code = (select c from codes where k = 'old');
 select tests.login(33);
-select throws_ok($$select public.redeem_invite((select c from codes where k = 'old'), 'Bé')$$, 'P0001', 'invalid_code', 'redeem_invite: code expiré refusé');
+select is(public.redeem_invite((select c from codes where k = 'old'), 'Bé'), null, 'redeem_invite: code expiré refusé');
 select tests.login(31);
 insert into codes values ('rev', public.create_invite(tests.u(231), 'child'));
 select public.create_invite(tests.u(231), 'child');
 select tests.login(33);
-select throws_ok($$select public.redeem_invite((select c from codes where k = 'rev'), 'Bé')$$, 'P0001', 'invalid_code', 'redeem_invite: code révoqué refusé');
+select is(public.redeem_invite((select c from codes where k = 'rev'), 'Bé'), null, 'redeem_invite: code révoqué refusé');
+-- limite de tentatives : 5 échecs / 15 min par utilisateur (ici déjà 4 : 2 + expiré + révoqué)
+select is(public.redeem_invite('AAAAAA', 'Bé'), null, 'rate limit: 5e échec toléré');
+select tests.login(31);
+insert into codes values ('good', public.create_invite(tests.u(231), 'child'));
+select tests.login(33);
+select throws_ok($$select public.redeem_invite((select c from codes where k = 'good'), 'Bé')$$, 'P0001', 'too_many_attempts', 'rate limit: 6e tentative bloquée, même avec un bon code');
+-- clé IP partagée entre deux comptes anonymes
+select tests.login(35);
+select public.redeem_invite('AAAAAA', 'x', '1.2.3.4');
+select public.redeem_invite('AAAAAB', 'x', '1.2.3.4');
+select public.redeem_invite('AAAAAC', 'x', '1.2.3.4');
+select public.redeem_invite('AAAAAD', 'x', '1.2.3.4');
+select public.redeem_invite('AAAAAE', 'x', '1.2.3.4');
+select tests.login(36);
+select throws_ok($$select public.redeem_invite((select c from codes where k = 'good'), 'Bé', '1.2.3.4')$$, 'P0001', 'too_many_attempts', 'rate limit: la clé IP bloque un autre compte');
+select lives_ok($$select public.redeem_invite((select c from codes where k = 'good'), 'Bé', '9.9.9.9')$$, 'rate limit: une autre IP n''est pas bloquée');
+select tests.login(32);
 select tests.logout();
 set local role anon;
 select throws_ok($$select public.redeem_invite('ABCDEF', 'X')$$, '42501', null, 'redeem_invite: refusé à anon');

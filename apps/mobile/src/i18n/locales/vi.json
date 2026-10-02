@@ -1,12 +1,99 @@
 {
-  "app": { "name": "TaskMate", "slogan": "Việc nhỏ hôm nay — Tương lai lớn ngày mai" },
-  "common": { "start": "Bắt đầu", "save": "Lưu", "cancel": "Hủy" },
-  "tabs": { "today": "Hôm nay", "calendar": "Lịch", "stats": "Thống kê", "more": "Thêm" },
+  "app": {
+    "name": "TaskMate",
+    "slogan": "Việc nhỏ hôm nay — Tương lai lớn ngày mai"
+  },
+  "common": {
+    "start": "Bắt đầu",
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "continue": "Tiếp tục",
+    "back": "Quay lại",
+    "done": "Hoàn tất",
+    "loading": "Đang tải…",
+    "error": "Đã có lỗi xảy ra. Vui lòng thử lại.",
+    "or": "hoặc",
+    "yearsOld": "{{age}} tuổi"
+  },
+  "tabs": {
+    "today": "Hôm nay",
+    "calendar": "Lịch",
+    "stats": "Thống kê",
+    "more": "Thêm"
+  },
   "category": {
     "study": "Học tập",
     "sport": "Thể thao",
     "chores": "Việc nhà",
     "personal": "Cá nhân",
     "other": "Khác"
+  },
+  "onboarding": {
+    "role": {
+      "title": "Bạn là ai?",
+      "parent": "Tôi là phụ huynh",
+      "child": "Tôi là con"
+    },
+    "auth": {
+      "title": "Đăng nhập phụ huynh",
+      "email": "Email",
+      "emailPlaceholder": "ban@example.com",
+      "sendCode": "Gửi mã",
+      "code": "Mã xác nhận",
+      "codePlaceholder": "Nhập mã 6 số",
+      "codeSent": "Đã gửi mã đến {{email}}",
+      "verify": "Xác nhận",
+      "changeEmail": "Đổi email",
+      "apple": "Tiếp tục với Apple",
+      "google": "Tiếp tục với Google",
+      "invalidEmail": "Email không hợp lệ",
+      "invalidCode": "Mã không đúng hoặc đã hết hạn"
+    },
+    "family": {
+      "title": "Gia đình của bạn",
+      "create": "Tạo gia đình mới",
+      "join": "Tham gia với mã đồng phụ huynh",
+      "familyName": "Tên gia đình",
+      "familyNamePlaceholder": "Gia đình Nguyễn",
+      "yourName": "Tên của bạn",
+      "yourNamePlaceholder": "Ba / Mẹ",
+      "coParentCode": "Mã mời đồng phụ huynh",
+      "required": "Vui lòng nhập thông tin này"
+    },
+    "children": {
+      "title": "Thêm hồ sơ cho con",
+      "subtitle": "Mỗi con có điện thoại riêng, liên kết bằng mã mời.",
+      "name": "Tên của con",
+      "birthDate": "Ngày sinh (YYYY-MM-DD)",
+      "add": "Thêm con",
+      "color": "Màu đại diện",
+      "inviteCode": "Mã mời",
+      "inviteHint": "Nhập mã hoặc quét QR trên điện thoại của {{name}}. Hiệu lực 24 giờ, dùng một lần.",
+      "regenerate": "Tạo mã mới",
+      "finish": "Hoàn tất",
+      "labelFirst": "Con trai lớn",
+      "labelNext": "Con trai út",
+      "errors": {
+        "format": "Định dạng YYYY-MM-DD",
+        "invalid": "Ngày không tồn tại",
+        "future": "Ngày sinh ở tương lai",
+        "tooOld": "Quá lớn tuổi"
+      }
+    },
+    "join": {
+      "title": "Tham gia với mã mời",
+      "codeLabel": "Mã 6 ký tự",
+      "codePlaceholder": "ABC234",
+      "submit": "Tham gia",
+      "scan": "Quét mã QR",
+      "scanning": "Đưa mã QR vào khung hình",
+      "cameraDenied": "Cần quyền camera để quét mã QR",
+      "invalid": "Mã không hợp lệ hoặc đã hết hạn",
+      "tooMany": "Thử quá nhiều lần. Vui lòng thử lại sau 15 phút.",
+      "alreadyMember": "Tài khoản này đã được liên kết.",
+      "confirmTitle": "Bạn là {{name}}?",
+      "confirmBody": "Ứng dụng đã được liên kết với hồ sơ của {{name}} trên điện thoại này.",
+      "confirmYes": "Đúng, vào ứng dụng"
+    }
   }
 }

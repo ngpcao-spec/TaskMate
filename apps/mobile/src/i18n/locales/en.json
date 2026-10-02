@@ -1,12 +1,99 @@
 {
-  "app": { "name": "TaskMate", "slogan": "Small tasks today, a big future tomorrow" },
-  "common": { "start": "Get started", "save": "Save", "cancel": "Cancel" },
-  "tabs": { "today": "Today", "calendar": "Calendar", "stats": "Stats", "more": "More" },
+  "app": {
+    "name": "TaskMate",
+    "slogan": "Small tasks today, a big future tomorrow"
+  },
+  "common": {
+    "start": "Get started",
+    "save": "Save",
+    "cancel": "Cancel",
+    "continue": "Continue",
+    "back": "Back",
+    "done": "Done",
+    "loading": "Loading…",
+    "error": "Something went wrong. Please try again.",
+    "or": "or",
+    "yearsOld": "{{age}} years old"
+  },
+  "tabs": {
+    "today": "Today",
+    "calendar": "Calendar",
+    "stats": "Stats",
+    "more": "More"
+  },
   "category": {
     "study": "Study",
     "sport": "Sport",
     "chores": "Chores",
     "personal": "Personal",
     "other": "Other"
+  },
+  "onboarding": {
+    "role": {
+      "title": "Who are you?",
+      "parent": "I'm a parent",
+      "child": "I'm a child"
+    },
+    "auth": {
+      "title": "Parent sign-in",
+      "email": "Email",
+      "emailPlaceholder": "you@example.com",
+      "sendCode": "Send code",
+      "code": "Verification code",
+      "codePlaceholder": "6-digit code",
+      "codeSent": "Code sent to {{email}}",
+      "verify": "Verify",
+      "changeEmail": "Change email",
+      "apple": "Continue with Apple",
+      "google": "Continue with Google",
+      "invalidEmail": "Invalid email",
+      "invalidCode": "Wrong or expired code"
+    },
+    "family": {
+      "title": "Your family",
+      "create": "Create a new family",
+      "join": "Join with a co-parent code",
+      "familyName": "Family name",
+      "familyNamePlaceholder": "The Nguyen family",
+      "yourName": "Your name",
+      "yourNamePlaceholder": "Dad / Mom",
+      "coParentCode": "Co-parent invite code",
+      "required": "Required"
+    },
+    "children": {
+      "title": "Children profiles",
+      "subtitle": "Each child has their own phone, linked with an invite code.",
+      "name": "Child's name",
+      "birthDate": "Birth date (YYYY-MM-DD)",
+      "add": "Add child",
+      "color": "Colour",
+      "inviteCode": "Invite code",
+      "inviteHint": "Enter this code or scan the QR on {{name}}'s phone. Valid 24 h, single use.",
+      "regenerate": "New code",
+      "finish": "Finish",
+      "labelFirst": "Older son",
+      "labelNext": "Younger son",
+      "errors": {
+        "format": "Use YYYY-MM-DD",
+        "invalid": "Date does not exist",
+        "future": "Date is in the future",
+        "tooOld": "Too old"
+      }
+    },
+    "join": {
+      "title": "Join with an invite code",
+      "codeLabel": "6-character code",
+      "codePlaceholder": "ABC234",
+      "submit": "Join",
+      "scan": "Scan QR code",
+      "scanning": "Point the camera at the QR code",
+      "cameraDenied": "Camera access is needed to scan the QR code",
+      "invalid": "Invalid or expired code",
+      "tooMany": "Too many attempts. Try again in 15 minutes.",
+      "alreadyMember": "This account is already linked.",
+      "confirmTitle": "Are you {{name}}?",
+      "confirmBody": "The app is now linked to {{name}}'s profile on this phone.",
+      "confirmYes": "Yes, open the app"
+    }
   }
 }

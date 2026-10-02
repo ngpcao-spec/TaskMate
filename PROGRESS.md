@@ -1,6 +1,6 @@
 # Progression
-Jalon courant : M2 — à démarrer
-Dernière vérification complète : OK (tag m1)
+Jalon courant : M3 — à démarrer
+Dernière vérification complète : OK (tag m2)
 
 ## M0 — Squelette
 - [x] Monorepo pnpm, Expo SDK 57 + Router, TS strict
@@ -12,6 +12,11 @@ Dernière vérification complète : OK (tag m1)
 ## M1 — Schéma & sécurité ✅ (tag m1)
 Migrations `20260702000001` (tables + RLS + gardes) et `...02` (RPC points/récompenses/invitations/appareils, vue `child_balances`, expiration + pg_cron).
 223 assertions pgTAP (`supabase/tests/database/01..04`) + `scripts/db-concurrency.sh` (2 sessions réelles). Différé : types générés, `supabase db lint` (D-009).
+
+## M2 — Onboarding & auth ✅ (tag m2)
+Client Supabase (session chunkée SecureStore), types DB, `redeem_invite` + limite de tentatives (migration 3, D-011), Edge Function `redeem-invite`,
+écrans role/parent-auth/family/children (codes + QR)/join (saisie, QR, lien profond), routage par rôle (`domain/entry-route`).
+Différé : Apple/Google réels (D-013), non testé sur simulateur (pas de device ici) — couvert par tests Jest + `expo export`.
 
 ## Critères d'acceptation → tests
 | Critère §8 | Test | Statut |
