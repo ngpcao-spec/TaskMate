@@ -150,5 +150,15 @@
     "offline": "Offline — changes will sync when you are back online",
     "pending": "Syncing {{count}} change(s)…",
     "pendingItem": "Waiting to sync"
+  },
+  "calendar": {
+    "today": "today",
+    "done": "done",
+    "prevWeek": "Previous week",
+    "nextWeek": "Next week",
+    "pickDate": "Pick a date",
+    "empty": "No tasks",
+    "viewWeek": "View week",
+    "viewDay": "View day"
   }
 }

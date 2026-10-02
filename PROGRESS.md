@@ -1,6 +1,6 @@
 # Progression
-Jalon courant : M5 — à démarrer
-Dernière vérification complète : OK (tag m4)
+Jalon courant : M6 — à démarrer
+Dernière vérification complète : OK (tag m5)
 
 ## M0 — Squelette
 - [x] Monorepo pnpm, Expo SDK 57 + Router, TS strict
@@ -28,6 +28,10 @@ Cache TanStack persisté (MMKV), file d'écritures FIFO persistée et reprise (r
 bandeau hors-ligne/synchro + indicateur par ligne, Realtime par famille (migration 4 + pgTAP 05), purge du cache au changement de compte, appareil révoqué → re-jointure.
 Différé : validation sur appareil réel (NetInfo/MMKV natifs) — couvert par Jest (file, persistance, realtime avec canal simulé).
 
+## M5 — Calendrier ✅ (tag m5)
+Bandeau semaine T2→CN, swipe/boutons semaine, sélecteur de date, titre du jour via date-fns (`domain/calendar`), cartes teintées 12 % (faites atténuées), vue semaine groupée, pills de profil (frère en lecture seule).
+Test clé : jeudi 2/7/2026 → « Thứ Năm » sous T5.
+
 ## Critères d'acceptation → tests
 | Critère §8 | Test | Statut |
 |---|---|---|
@@ -42,3 +46,4 @@ Différé : validation sur appareil réel (NetInfo/MMKV natifs) — couvert par 
 | Chaque politique RLS : test positif et négatif | `01_rls` | ✅ |
 | Tâche supprimée par le parent pendant que l'enfant coche : échec propre + toast | `useToggleTask.test` (task_not_found) + `02_rpc_points` | ✅ |
 | Aucun écran n'affiche les deux enfants côte à côte | à vérifier en M8 (stats) ; accueil/objectifs/points = un profil à la fois | ⏳ |
+| Le jour affiché dans le calendrier correspond au jour réel (« Thứ Tư » sous T5 dans les maquettes) | `domain/calendar.test` + `calendar.test.tsx` | ✅ |

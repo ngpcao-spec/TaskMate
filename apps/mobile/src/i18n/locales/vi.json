@@ -150,5 +150,15 @@
     "offline": "Đang offline — thay đổi sẽ được đồng bộ khi có mạng",
     "pending": "Đang đồng bộ {{count}} thay đổi…",
     "pendingItem": "Đang chờ đồng bộ"
+  },
+  "calendar": {
+    "today": "hôm nay",
+    "done": "đã xong",
+    "prevWeek": "Tuần trước",
+    "nextWeek": "Tuần sau",
+    "pickDate": "Chọn ngày",
+    "empty": "Không có việc nào",
+    "viewWeek": "Xem lịch tuần",
+    "viewDay": "Xem lịch ngày"
   }
 }

@@ -150,5 +150,15 @@
     "offline": "Hors ligne — les changements seront synchronisés au retour du réseau",
     "pending": "Synchronisation de {{count}} changement(s)…",
     "pendingItem": "En attente de synchronisation"
+  },
+  "calendar": {
+    "today": "aujourd'hui",
+    "done": "terminée",
+    "prevWeek": "Semaine précédente",
+    "nextWeek": "Semaine suivante",
+    "pickDate": "Choisir une date",
+    "empty": "Aucune tâche",
+    "viewWeek": "Voir la semaine",
+    "viewDay": "Voir le jour"
   }
 }
