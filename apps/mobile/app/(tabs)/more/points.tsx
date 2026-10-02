@@ -1,7 +1,8 @@
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { confirmDialog } from '@/components/confirm';
 import { Star } from 'lucide-react-native';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ProfilePills } from '@/components/ProfilePills';
 import { REWARD_TINTS, RewardIcon } from '@/components/RewardIcon';
 import { RewardRequestCard } from '@/components/RewardRequestCard';
@@ -50,10 +51,13 @@ export default function PointsScreen() {
   const visibleRewards = (rewards.data ?? []).filter((r) => r.child_id === null || r.child_id === d.child?.id);
 
   const confirmRequest = (rewardId: string, title: string, cost: number) =>
-    Alert.alert(t('points.confirmTitle'), t('points.confirmBody', { title, cost }), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('points.confirmYes'), onPress: () => request.mutate(rewardId) },
-    ]);
+    confirmDialog({
+      title: t('points.confirmTitle'),
+      message: t('points.confirmBody', { title, cost }),
+      confirmLabel: t('points.confirmYes'),
+      cancelLabel: t('common.cancel'),
+      onConfirm: () => request.mutate(rewardId),
+    });
 
   const renderRequestStatus = (r: RewardRequestRow) => t(`points.status.${r.status}`);
 

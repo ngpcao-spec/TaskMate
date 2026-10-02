@@ -17,13 +17,21 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import i18n from '@/i18n';
 import { colors, MIN_TARGET, radius, shadow, spacing, typography } from '@/theme/tokens';
 
-export function Screen({ children, scroll = true }: { children: ReactNode; scroll?: boolean }) {
+/** Largeur max. du contenu (conteneur centré sur grand écran). `wide` : écrans à colonnes (file « Cần duyệt »). */
+const CONTENT_MAX_WIDTH = 760;
+const CONTENT_MAX_WIDTH_WIDE = 1100;
+
+/** Style de conteneur centré à largeur limitée (écrans qui gèrent eux-mêmes leur ScrollView). */
+export const centeredContent = { width: '100%', maxWidth: CONTENT_MAX_WIDTH, alignSelf: 'center' } as const;
+
+export function Screen({ children, scroll = true, wide = false }: { children: ReactNode; scroll?: boolean; wide?: boolean }) {
+  const centered = { width: '100%', maxWidth: wide ? CONTENT_MAX_WIDTH_WIDE : CONTENT_MAX_WIDTH, alignSelf: 'center' } as const;
   const body = scroll ? (
-    <ScrollView contentContainerStyle={styles.screenContent} keyboardShouldPersistTaps="handled">
+    <ScrollView role="main" contentContainerStyle={[styles.screenContent, centered]} keyboardShouldPersistTaps="handled">
       {children}
     </ScrollView>
   ) : (
-    <View style={styles.screenContent}>{children}</View>
+    <View style={[styles.screenContent, centered]}>{children}</View>
   );
   return (
     <SafeAreaView style={styles.screen}>

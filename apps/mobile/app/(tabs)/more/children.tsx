@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { confirmDialog } from '@/components/confirm';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { InviteCard } from '@/components/InviteCard';
 import { Button, Card, Field, Screen, Title } from '@/components/ui';
 import { ageFromBirthDate } from '@/domain/age';
@@ -65,10 +66,14 @@ function ChildCard({ child, today }: { child: ChildRow; today: string }) {
         variant="secondary"
         label={`${t('settings.deleteChild')} ${child.name}`}
         onPress={() =>
-          Alert.alert(t('settings.deleteChild'), t('settings.deleteChildBody', { name: child.name }), [
-            { text: t('common.cancel'), style: 'cancel' },
-            { text: t('settings.deleteChild'), style: 'destructive', onPress: () => remove.mutate(child.id) },
-          ])
+          confirmDialog({
+            title: t('settings.deleteChild'),
+            message: t('settings.deleteChildBody', { name: child.name }),
+            confirmLabel: t('settings.deleteChild'),
+            cancelLabel: t('common.cancel'),
+            destructive: true,
+            onConfirm: () => remove.mutate(child.id),
+          })
         }
       />
     </Card>
