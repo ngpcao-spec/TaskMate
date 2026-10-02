@@ -78,7 +78,10 @@
         "invalid": "Ngày không tồn tại",
         "future": "Ngày sinh ở tương lai",
         "tooOld": "Quá lớn tuổi"
-      }
+      },
+      "shareLink": "Chia sẻ liên kết",
+      "linkCopied": "Đã sao chép liên kết",
+      "linkLabel": "Liên kết mời"
     },
     "join": {
       "title": "Tham gia với mã mời",

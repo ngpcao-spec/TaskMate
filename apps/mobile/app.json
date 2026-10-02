@@ -51,7 +51,7 @@
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro",
-      "output": "static",
+      "output": "single",
       "name": "TaskMate",
       "shortName": "TaskMate",
       "description": "Việc nhà của gia đình — TaskMate",

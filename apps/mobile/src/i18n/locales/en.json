@@ -78,7 +78,10 @@
         "invalid": "Date does not exist",
         "future": "Date is in the future",
         "tooOld": "Too old"
-      }
+      },
+      "shareLink": "Share link",
+      "linkCopied": "Link copied",
+      "linkLabel": "Invite link"
     },
     "join": {
       "title": "Join with an invite code",

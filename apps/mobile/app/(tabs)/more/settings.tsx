@@ -2,7 +2,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Linking, StyleSheet, Text, View } from 'react-native';
+import { confirmDialog } from '@/components/confirm';
+import { Linking, StyleSheet, Text, View } from 'react-native';
 import { signOut } from '@/api/auth';
 import { Chip } from '@/components/Chip';
 import { InviteCard } from '@/components/InviteCard';
@@ -37,21 +38,21 @@ export default function SettingsScreen() {
   };
 
   const confirmDelete = () =>
-    Alert.alert(t('settings.deleteTitle'), t('settings.deleteBody'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('settings.deleteConfirm'),
-        style: 'destructive',
-        onPress: () =>
-          deleteAccount.mutate(undefined, {
-            onSuccess: async () => {
-              await signOut().catch(() => undefined);
-              queryClient.clear();
-              router.replace('/');
-            },
-          }),
-      },
-    ]);
+    confirmDialog({
+      title: t('settings.deleteTitle'),
+      message: t('settings.deleteBody'),
+      confirmLabel: t('settings.deleteConfirm'),
+      cancelLabel: t('common.cancel'),
+      destructive: true,
+      onConfirm: () =>
+        deleteAccount.mutate(undefined, {
+          onSuccess: async () => {
+            await signOut().catch(() => undefined);
+            queryClient.clear();
+            router.replace('/');
+          },
+        }),
+    });
 
   return (
     <Screen>

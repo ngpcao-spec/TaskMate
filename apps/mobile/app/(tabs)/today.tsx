@@ -8,7 +8,7 @@ import { Fab } from '@/components/Fab';
 import { ProfilePills } from '@/components/ProfilePills';
 import { ProgressRing } from '@/components/ProgressRing';
 import { TaskRow } from '@/components/TaskRow';
-import { Card } from '@/components/ui';
+import { Card, centeredContent } from '@/components/ui';
 import { timeInTz, todayInTz } from '@/domain/family-time';
 import { taskPermissions } from '@/domain/permissions';
 import { dayProgress } from '@/domain/progress';
@@ -51,7 +51,7 @@ export default function TodayScreen() {
 
   return (
     <SafeAreaView style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView role="main" contentContainerStyle={[styles.content, centeredContent]}>
         <View style={styles.header}>
           <View style={[styles.avatar, { backgroundColor: child.color ?? colors.primary }]} accessible accessibilityLabel={child.name}>
             <Text style={styles.avatarText}>{child.name.slice(0, 1).toUpperCase()}</Text>

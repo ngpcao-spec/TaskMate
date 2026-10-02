@@ -119,6 +119,18 @@ Metro choisit `X.web.ts` sur le web : `sync/storage.web.ts` (localStorage + repl
 ## D-027 — Scan QR web : getUserMedia + jsQR
 `BarcodeDetector` est absent de Firefox et Safari ; `jsqr` (JS pur) décode les images du flux vidéo sur tous les navigateurs. Caméra refusée/absente → message, la saisie manuelle du code reste sur l'écran de jointure.
 
-## D-028 — Export web statique (`web.output = static`) et PWA
-`expo export --platform web` → `apps/mobile/dist` (une page HTML par route). PWA : `public/manifest.webmanifest`, icônes placeholders générées depuis `assets/icon.png` (192/512/maskable/apple-touch), `app/+html.tsx` (meta iOS/Android, focus visible), service worker `public/sw.js` : cache d'abord pour les fichiers hachés (`/_expo/static`, `/assets`, `/icons`), réseau d'abord avec repli sur la coquille pour les navigations, **jamais** l'API Supabase (autre origine). La file d'écritures hors ligne et son idempotence (tx_id fixé à la création) sont inchangées ; elles utilisent le stockage web.
+## D-028 — Export web et PWA (sortie amendée par D-029)
+`expo export --platform web` → `apps/mobile/dist` (SPA : un seul index.html). PWA : `public/manifest.webmanifest`, icônes placeholders générées depuis `assets/icon.png` (192/512/maskable/apple-touch), `app/+html.tsx` (meta iOS/Android, focus visible), service worker `public/sw.js` : cache d'abord pour les fichiers hachés (`/_expo/static`, `/assets`, `/icons`), réseau d'abord avec repli sur la coquille pour les navigations, **jamais** l'API Supabase (autre origine). La file d'écritures hors ligne et son idempotence (tx_id fixé à la création) sont inchangées ; elles utilisent le stockage web.
 Limite connue : `expo export` affiche « Something prevented Expo from exiting » (handle ouvert pendant le rendu statique, code retour 0) — sans conséquence pour le build.
+
+## D-029 — Export web `single` (remplace `static` de D-028) + gabarit `public/index.html`
+Le rendu statique d'Expo Router pré-rend chaque route sans session : mismatch d'hydratation React (#418) sur l'écran d'accueil, et le CLI ne se terminait pas seul. L'app étant entièrement pilotée par la session (aucun contenu public à référencer), on passe à `web.output = "single"` : un seul `index.html`, aucune erreur d'hydratation, plus de message « prevented Expo from exiting ». Les balises PWA (manifest, apple-touch-icon, meta iOS, focus visible) sont dans `apps/mobile/public/index.html` (gabarit Expo), `+html.tsx` supprimé. Les liens profonds (`/join?code=…`) passent par la réécriture SPA vers `index.html` (Vercel, lot W4).
+
+## D-030 — Mise en page responsive (seuil 900 px)
+`useIsWide()` (`hooks/useLayout.ts`). ≥ 900 px : navigation latérale (`tabBarPosition: 'left'`, variante `material`), file « Cần duyệt » en deux colonnes Tâches | Récompenses ; en dessous : onglets du bas et onglets Tâches/Récompenses. Contenu centré (`Screen`, max 760 px ; 1100 px pour les écrans à colonnes). Mobile-first conservé.
+
+## D-031 — Confirmations multiplateformes
+`Alert.alert` est un no-op sur react-native-web : toutes les confirmations (suppression d'enfant/de compte, révocation d'appareil, « Duyệt tất cả », demande d'échange) passent par `components/confirm.ts` (Alert natif) / `confirm.web.ts` (`window.confirm`).
+
+## D-032 — Liens d'invitation web
+Lien partageable `https://<origine>/join?code=XXXXXX` (origine = `EXPO_PUBLIC_WEB_URL`, sinon `window.location.origin`, sinon lien natif `taskmate://`). Le QR encode ce lien ; `parseInviteLink` lit liens natifs, liens web et codes bruts. Partage : `navigator.share` sinon presse-papiers (web), `Share.share` (natif).

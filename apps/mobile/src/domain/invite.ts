@@ -9,14 +9,20 @@ export function isValidInviteCode(raw: string): boolean {
   return INVITE_CODE_REGEX.test(normalizeInviteCode(raw));
 }
 
-/** Extrait le code d'un lien `taskmate://join?code=ABC234` ou d'un QR contenant le code seul. */
+/** Extrait le code d'un lien `taskmate://join?code=ABC234`, d'un lien web `https://…/join?code=ABC234` ou d'un code seul. */
 export function parseInviteLink(data: string): string | null {
   const trimmed = data.trim();
-  const match = /^taskmate:\/\/join\?(?:.*&)?code=([^&#]+)/i.exec(trimmed);
+  const match = /^(?:taskmate:\/\/|https?:\/\/[^/?#]+\/)join\/?\?(?:[^#]*&)?code=([^&#]+)/i.exec(trimmed);
   const candidate = normalizeInviteCode(match?.[1] ? decodeURIComponent(match[1]) : trimmed);
   return INVITE_CODE_REGEX.test(candidate) ? candidate : null;
 }
 
 export function buildInviteLink(code: string): string {
   return `taskmate://join?code=${normalizeInviteCode(code)}`;
+}
+
+/** Lien partageable : web (`https://origin/join?code=…`) si une origine est connue, sinon lien profond natif. */
+export function buildShareableInviteLink(code: string, webOrigin?: string | null): string {
+  const origin = webOrigin?.replace(/\/+$/, '');
+  return origin ? `${origin}/join?code=${normalizeInviteCode(code)}` : buildInviteLink(code);
 }

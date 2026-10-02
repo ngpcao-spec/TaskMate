@@ -1,6 +1,7 @@
 import { format, parseISO } from 'date-fns';
 import { useTranslation } from 'react-i18next';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { confirmDialog } from '@/components/confirm';
+import { StyleSheet, Text, View } from 'react-native';
 import { Button, Card, Screen, Title } from '@/components/ui';
 import { useDevices, useRevokeDevice } from '@/hooks/useFamilyAdmin';
 import { useMe } from '@/hooks/useMe';
@@ -17,10 +18,14 @@ export default function DevicesScreen() {
   const list = devices.data ?? [];
 
   const confirm = (id: string, name: string) =>
-    Alert.alert(t('settings.revokeTitle'), t('settings.revokeBody', { name }), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('settings.revoke'), style: 'destructive', onPress: () => revoke.mutate(id) },
-    ]);
+    confirmDialog({
+      title: t('settings.revokeTitle'),
+      message: t('settings.revokeBody', { name }),
+      confirmLabel: t('settings.revoke'),
+      cancelLabel: t('common.cancel'),
+      destructive: true,
+      onConfirm: () => revoke.mutate(id),
+    });
 
   return (
     <Screen>

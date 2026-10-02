@@ -78,7 +78,10 @@
         "invalid": "Date inexistante",
         "future": "Date dans le futur",
         "tooOld": "Trop âgé"
-      }
+      },
+      "shareLink": "Partager le lien",
+      "linkCopied": "Lien copié",
+      "linkLabel": "Lien d'invitation"
     },
     "join": {
       "title": "Rejoindre avec un code",
