@@ -19,7 +19,7 @@ import { useCreateTasks, useDeleteTask, useUpdateTask } from '@/hooks/useTasks';
 import { CATEGORY_COLORS, TASK_CATEGORIES } from '@/theme/categories';
 import { useToastStore } from '@/store/toast';
 import { typography } from '@/theme/tokens';
-import type { TaskRow } from '@/types/db';
+import type { TaskRow } from '@/types/models';
 
 type Props = { task?: TaskRow };
 

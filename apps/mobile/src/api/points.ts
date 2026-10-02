@@ -1,16 +1,18 @@
 import type { BalanceSnapshot } from '@/domain/rewards';
-import type { PointTransactionRow, RewardRequestRow, RewardRow } from '@/types/db';
+import type { PointTransactionRow, RewardRequestRow, RewardRow } from '@/types/models';
 import { newId } from './ids';
 import { supabase } from './supabase';
 
 export async function fetchBalance(childId: string): Promise<BalanceSnapshot> {
   const { data, error } = await supabase
     .from('child_balances')
-    .select('balance, reserved, available')
+    .select('balance, reserved, available, pending_task_points')
     .eq('child_id', childId)
     .maybeSingle();
   if (error) throw error;
-  return data ?? { balance: 0, reserved: 0, available: 0 };
+  return data
+    ? { balance: data.balance ?? 0, reserved: data.reserved ?? 0, available: data.available ?? 0, pendingTaskPoints: data.pending_task_points ?? 0 }
+    : { balance: 0, reserved: 0, available: 0, pendingTaskPoints: 0 };
 }
 
 export async function fetchRewards(): Promise<RewardRow[]> {

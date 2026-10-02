@@ -58,14 +58,16 @@ type ButtonProps = {
   variant?: 'primary' | 'secondary' | 'ghost';
   disabled?: boolean;
   loading?: boolean;
+  /** Libellé lu par les lecteurs d'écran si différent du texte affiché (ex. « Duyệt » + titre de la tâche). */
+  accessibilityLabel?: string;
 };
 
-export function Button({ label, onPress, variant = 'primary', disabled = false, loading = false }: ButtonProps) {
+export function Button({ label, onPress, variant = 'primary', disabled = false, loading = false, accessibilityLabel }: ButtonProps) {
   const inactive = disabled || loading;
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{ disabled: inactive, busy: loading }}
       disabled={inactive}
       onPress={onPress}

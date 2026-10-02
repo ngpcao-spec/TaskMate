@@ -15,9 +15,9 @@ import { dayProgress } from '@/domain/progress';
 import { isOverdue, sortTasks } from '@/domain/task-time';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { useNow } from '@/hooks/useNow';
-import { useRequests } from '@/hooks/usePoints';
+import { useApprovalCounts } from '@/hooks/useApprovals';
 import { usePendingTaskIds } from '@/hooks/useSyncStatus';
-import { toggleVars, useDeleteTask, useTasks, useToggleTask } from '@/hooks/useTasks';
+import { toggleVars, useDeleteTask, useRejectTask, useTasks, useToggleTask, useValidateTask, validateVars } from '@/hooks/useTasks';
 import { colors, MIN_TARGET, radius, spacing, typography } from '@/theme/tokens';
 
 export default function TodayScreen() {
@@ -31,10 +31,11 @@ export default function TodayScreen() {
   const tasksQuery = useTasks(d?.child?.id ?? null, today);
   const toggle = useToggleTask();
   const remove = useDeleteTask();
+  const validate = useValidateTask();
+  const reject = useRejectTask();
   const pendingIds = usePendingTaskIds();
   const isParent = d?.viewer.role === 'parent';
-  const requests = useRequests(null, isParent);
-  const toApprove = isParent ? (requests.data ?? []).filter((r) => r.status === 'pending' && new Date(r.expires_at) > now).length : 0;
+  const counts = useApprovalCounts(isParent);
 
   if (!d || !d.child) {
     return (
@@ -68,9 +69,14 @@ export default function TodayScreen() {
 
         {d.children.length > 1 ? <ProfilePills profiles={d.children} selectedId={child.id} onSelect={d.select} today={today} /> : null}
 
-        {toApprove > 0 ? (
-          <Pressable accessibilityRole="button" accessibilityLabel={t('home.toApprove', { count: toApprove })} onPress={() => router.push('/more/points')} style={styles.banner}>
-            <Text style={styles.bannerText}>{t('home.toApprove', { count: toApprove })}</Text>
+        {isParent && counts.tasks > 0 ? (
+          <Pressable accessibilityRole="button" accessibilityLabel={t('home.tasksToValidate', { count: counts.tasks })} onPress={() => router.push('/approvals')} style={styles.bannerPending}>
+            <Text style={styles.bannerPendingText}>{t('home.tasksToValidate', { count: counts.tasks })}</Text>
+          </Pressable>
+        ) : null}
+        {isParent && counts.requests > 0 ? (
+          <Pressable accessibilityRole="button" accessibilityLabel={t('home.toApprove', { count: counts.requests })} onPress={() => router.push('/approvals')} style={styles.banner}>
+            <Text style={styles.bannerText}>{t('home.toApprove', { count: counts.requests })}</Text>
           </Pressable>
         ) : null}
 
@@ -112,10 +118,13 @@ export default function TodayScreen() {
                   task={task}
                   overdue={isOverdue(task, today, nowTime)}
                   canToggle={perms.canToggle && !d.readOnly}
-                  canEdit={perms.canEdit && !d.readOnly}
+                  canOpen
+                  canValidate={perms.canValidate && !d.readOnly}
                   pending={pendingIds.has(task.id)}
-                  onToggle={() => toggle.mutate(toggleVars(task, task.completed_at === null))}
+                  onToggle={() => toggle.mutate(toggleVars(task, task.completed_at === null, isParent))}
                   onOpen={() => router.push({ pathname: '/task/[id]', params: { id: task.id } })}
+                  onValidate={() => validate.mutate(validateVars(task))}
+                  onReject={() => reject.mutate({ task })}
                 />
               );
               return perms.canDelete && !d.readOnly ? (
@@ -142,7 +151,7 @@ export default function TodayScreen() {
           </View>
         )}
       </View>
-      {d.readOnly ? null : <Fab label={t('today.addTask')} onPress={() => router.push('/task/new')} />}
+      {d.readOnly || !isParent ? null : <Fab label={t('today.addTask')} onPress={() => router.push('/task/new')} />}
     </SafeAreaView>
   );
 }
@@ -156,6 +165,8 @@ const styles = StyleSheet.create({
   bell: { width: MIN_TARGET, height: MIN_TARGET, alignItems: 'center', justifyContent: 'center' },
   avatarText: { color: '#fff', fontSize: 22, fontWeight: '700' },
   banner: { backgroundColor: '#E8F1FE', borderRadius: radius.card, paddingVertical: 10, paddingHorizontal: 14 },
+  bannerPending: { backgroundColor: '#FFF1DB', borderRadius: radius.card, paddingVertical: 10, paddingHorizontal: 14 },
+  bannerPendingText: { color: '#B86E00', fontSize: 14, fontWeight: '700' },
   bannerText: { color: colors.primary, fontSize: 14, fontWeight: '600' },
   progressRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   listTitle: { color: colors.text },

@@ -6,6 +6,7 @@ import {
   buildMessages,
   buildRecapMessages,
   chunk,
+  countGroupedCompletions,
   tokensToRemove,
   type ActivityRecord,
   type DeviceInfo,
@@ -46,17 +47,26 @@ Deno.serve(async (req) => {
       const { members, devices } = await loadFamily(f.id);
       const { data: children } = await db.from('children').select('id, name').eq('family_id', f.id).is('deleted_at', null);
       const { data: tasks } = await db.from('tasks').select('child_id, completed_at').eq('family_id', f.id).eq('date', today).is('deleted_at', null);
+      const { count: pendingTasks } = await db.from('tasks').select('id', { count: 'exact', head: true }).eq('family_id', f.id).not('completed_at', 'is', null).is('validated_at', null).is('deleted_at', null);
+      const { count: pendingRequests } = await db.from('reward_requests').select('id', { count: 'exact', head: true }).eq('family_id', f.id).eq('status', 'pending');
       const summary = (children ?? []).map((c) => {
         const mine = (tasks ?? []).filter((t) => t.child_id === c.id);
         return { name: c.name, done: mine.filter((t) => t.completed_at).length, total: mine.length };
       });
-      messages.push(...buildRecapMessages(members.filter((m) => m.role === 'parent'), devices, summary));
+      messages.push(...buildRecapMessages(members.filter((m) => m.role === 'parent'), devices, summary, { tasks: pendingTasks ?? 0, requests: pendingRequests ?? 0 }));
     }
   } else if (body.record) {
     const activity = body.record;
     const { members, devices } = await loadFamily(activity.family_id);
     const { data: child } = activity.child_id ? await db.from('children').select('name').eq('id', activity.child_id).maybeSingle() : { data: null };
-    messages = buildMessages(activity, members, devices, child?.name ?? '');
+    // coches rapprochées d'un même enfant : une notification groupée (« Minh đã hoàn thành 3 việc »)
+    let grouped = 1;
+    if (activity.type === 'task_completed' && activity.child_id) {
+      const since = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+      const { data: recent } = await db.from('activity_log').select('created_at').eq('child_id', activity.child_id).eq('type', 'task_completed').gte('created_at', since);
+      grouped = countGroupedCompletions(activity, recent ?? []);
+    }
+    messages = buildMessages(activity, members, devices, child?.name ?? '', grouped);
   }
 
   const sentTokens: string[] = [];

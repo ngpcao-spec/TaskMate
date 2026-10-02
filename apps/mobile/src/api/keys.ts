@@ -7,6 +7,8 @@ export const taskKeys = {
   all: (childId: string) => ['tasks', childId] as const,
   range: (childId: string, from: string, to: string) => ['tasks', childId, from, to] as const,
   one: (taskId: string) => ['task', taskId] as const,
+  /** File « Cần duyệt » : tâches cochées non validées de toute la famille. */
+  pending: ['tasks', 'pending'] as const,
 };
 
 // Clés réservées aux jalons suivants (invalidées dès maintenant par le Realtime).

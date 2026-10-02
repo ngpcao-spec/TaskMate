@@ -10,7 +10,7 @@ import { WeekStrip } from '@/components/WeekStrip';
 import { Button, Field } from '@/components/ui';
 import { weekDays } from '@/domain/calendar';
 import { MIN_TARGET } from '@/theme/tokens';
-import type { ChildRow, TaskRow as Task } from '@/types/db';
+import type { ChildRow, TaskRow as Task } from '@/types/models';
 
 jest.mock('react-native-safe-area-context', () => ({ SafeAreaView: ({ children }: { children: React.ReactNode }) => children }));
 
@@ -27,7 +27,7 @@ describe('accessibilité', () => {
     ['Button', () => <Button label="Lưu" onPress={() => undefined} />],
     ['Chip', () => <Chip label="Học tập" selected={false} onPress={() => undefined} />],
     ['Fab', () => <Fab label="Thêm việc" onPress={() => undefined} />],
-    ['TaskRow', () => <TaskRow task={task} overdue={false} canToggle canEdit onToggle={() => undefined} onOpen={() => undefined} />],
+    ['TaskRow', () => <TaskRow task={task} overdue={false} canToggle canOpen onToggle={() => undefined} onOpen={() => undefined} />],
     ['CalendarCard', () => <CalendarCard task={task} overdue={false} onPress={() => undefined} />],
     ['ProfilePills', () => <ProfilePills profiles={[child]} selectedId="c1" onSelect={() => undefined} today="2026-07-02" />],
     ['WeekStrip', () => <WeekStrip days={weekDays('2026-07-02')} selected="2026-07-02" today="2026-07-02" lang="vi" onSelect={() => undefined} />],
@@ -58,7 +58,7 @@ describe('accessibilité', () => {
   });
 
   it('la case à cocher expose son état (coché / désactivé) aux lecteurs d’écran', async () => {
-    await render(<TaskRow task={{ ...task, completed_at: 'x' }} overdue={false} canToggle={false} canEdit={false} onToggle={() => undefined} onOpen={() => undefined} />);
+    await render(<TaskRow task={{ ...task, completed_at: 'x' }} overdue={false} canToggle={false} canOpen={false} onToggle={() => undefined} onOpen={() => undefined} />);
     expect(screen.getByRole('checkbox', { name: 'Làm bài tập' }).props.accessibilityState).toMatchObject({ checked: true, disabled: true });
   });
 });

@@ -3,7 +3,7 @@ import { createGoal, deleteGoal, fetchGoals, updateGoal, type GoalInput } from '
 import { clampProgress, justAchieved } from '@/domain/goals';
 import i18n from '@/i18n';
 import { useToastStore } from '@/store/toast';
-import type { GoalRow } from '@/types/db';
+import type { GoalRow } from '@/types/models';
 
 export const goalKeys = { child: (childId: string) => ['goals', childId] as const };
 

@@ -14,6 +14,16 @@ describe('intentFor', () => {
     expect(intentFor('default', { type: 'task_assigned' })).toEqual({ kind: 'navigate', href: '/(tabs)/today' });
     expect(intentFor('default', { type: 'reminder_start' })).toEqual({ kind: 'navigate', href: '/(tabs)/today' });
   });
+  it('tâche cochée : Duyệt / Từ chối agissent sur la tâche, un tap ouvre la file', () => {
+    expect(intentFor('approve', { type: 'task_completed', taskId: 't1' })).toEqual({ kind: 'validate_task', taskId: 't1' });
+    expect(intentFor('reject', { type: 'task_completed', taskId: 't1' })).toEqual({ kind: 'reject_task', taskId: 't1' });
+    expect(intentFor('default', { type: 'task_completed', taskId: 't1' })).toEqual({ kind: 'navigate', href: '/approvals' });
+    expect(intentFor('approve', { type: 'task_completed' })).toEqual({ kind: 'navigate', href: '/approvals' });
+  });
+  it('tâche validée / refusée (enfant) : ouvre l’accueil', () => {
+    expect(intentFor('default', { type: 'task_validated' })).toEqual({ kind: 'navigate', href: '/(tabs)/today' });
+    expect(intentFor('default', { type: 'task_rejected' })).toEqual({ kind: 'navigate', href: '/(tabs)/today' });
+  });
   it('type inconnu : rien', () => {
     expect(intentFor('default', {})).toEqual({ kind: 'none' });
     expect(intentFor('default', { type: 'x' })).toEqual({ kind: 'none' });

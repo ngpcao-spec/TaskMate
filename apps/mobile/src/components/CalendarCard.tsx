@@ -5,7 +5,7 @@ import { categoryTint } from '@/domain/calendar';
 import { timeLabel } from '@/domain/task-time';
 import { CATEGORY_COLORS } from '@/theme/categories';
 import { colors, MIN_TARGET, radius } from '@/theme/tokens';
-import type { TaskRow } from '@/types/db';
+import type { TaskRow } from '@/types/models';
 
 type Props = { task: TaskRow; overdue: boolean; onPress?: () => void };
 

@@ -9,7 +9,7 @@ import { Button, Card, Field, Screen, Title } from '@/components/ui';
 import { GOAL_ICONS, goalFormSchema, type GoalFormValues } from '@/domain/goals';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { useDeleteGoal, useSaveGoal } from '@/hooks/useGoals';
-import type { GoalRow } from '@/types/db';
+import type { GoalRow } from '@/types/models';
 
 /** « + Thêm mục tiêu » / édition : titre, icône, cible (entier ≥ 1), unité optionnelle (SPEC §3.6). */
 export function GoalForm({ goal }: { goal?: GoalRow }) {

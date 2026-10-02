@@ -1,12 +1,13 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider, type QueryClient } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
+import { createTestQueryClient } from '../test-utils/queryClient';
 import '@/i18n';
 import { taskKeys } from '@/api/keys';
 import { toggleVars, useToggleTask } from '@/hooks/useTasks';
 import { registerMutationDefaults } from '@/sync/mutations';
 import { useToastStore } from '@/store/toast';
-import type { TaskRow } from '@/types/db';
+import type { TaskRow } from '@/types/models';
 
 const mockSet = jest.fn();
 jest.mock('@/api/tasks', () => ({
@@ -21,7 +22,7 @@ const key = taskKeys.range('c1', '2026-07-02', '2026-07-02');
 
 const clients: QueryClient[] = [];
 async function setup() {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+  const client = createTestQueryClient({ defaultOptions: { mutations: { retry: false } } });
   clients.push(client);
   registerMutationDefaults(client);
   client.setQueryData<TaskRow[]>(key, [task]);
@@ -40,7 +41,7 @@ describe('useToggleTask', () => {
     let release: () => void = () => {};
     mockSet.mockReturnValue(new Promise<void>((r) => (release = r)));
     const { client, result } = await setup();
-    await act(async () => result.current.mutate(toggleVars(task, true)));
+    await act(async () => result.current.mutate(toggleVars(task, true, false)));
     await waitFor(() => expect(client.getQueryData<TaskRow[]>(key)?.[0]?.completed_at).not.toBeNull());
     expect(mockSet).toHaveBeenCalledWith('t1', true, 'tx-fixed');
     await act(async () => release());
@@ -50,7 +51,7 @@ describe('useToggleTask', () => {
     mockSet.mockRejectedValue({ message: 'insufficient_balance' });
     const { client, result } = await setup();
     client.setQueryData<TaskRow[]>(key, [{ ...task, completed_at: 'x' }]);
-    await act(async () => result.current.mutate(toggleVars({ ...task, completed_at: 'x' }, false)));
+    await act(async () => result.current.mutate(toggleVars({ ...task, completed_at: 'x' }, false, false)));
     await waitFor(() => expect(useToastStore.getState().toast?.message).toMatch(/Không thể bỏ chọn/));
     await waitFor(() => expect(client.getQueryData<TaskRow[]>(key)?.[0]?.completed_at).toBe('x'));
   });
@@ -58,7 +59,7 @@ describe('useToggleTask', () => {
   it('tâche supprimée côté parent : retirée de l’UI avec un toast', async () => {
     mockSet.mockRejectedValue({ message: 'task_not_found' });
     const { client, result } = await setup();
-    await act(async () => result.current.mutate(toggleVars(task, true)));
+    await act(async () => result.current.mutate(toggleVars(task, true, false)));
     await waitFor(() => expect(useToastStore.getState().toast?.message).toBe('Việc này đã bị xóa'));
     expect(client.getQueryData<TaskRow[]>(key)).toEqual([]);
   });

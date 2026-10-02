@@ -1,4 +1,4 @@
-import type { GoalRow } from '@/types/db';
+import type { GoalRow } from '@/types/models';
 import { newId } from './ids';
 import { supabase } from './supabase';
 

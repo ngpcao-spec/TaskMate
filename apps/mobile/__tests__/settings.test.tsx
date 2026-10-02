@@ -1,6 +1,7 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import type { ReactElement } from 'react';
+import { createTestQueryClient } from '../test-utils/queryClient';
 import { Alert } from 'react-native';
 import i18n from '@/i18n';
 import DevicesScreen from '../app/(tabs)/more/devices';
@@ -31,7 +32,7 @@ jest.mock('@/hooks/useFamilyAdmin', () => ({
   useUpdateTimezone: () => ({ mutate: jest.fn(), isPending: false }),
 }));
 
-const client = new QueryClient();
+const client = createTestQueryClient();
 const renderWithClient = (ui: ReactElement) => render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
 afterAll(() => client.clear());
 

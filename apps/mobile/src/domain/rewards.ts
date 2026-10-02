@@ -1,17 +1,12 @@
-import type { RequestStatus } from '@/types/db';
+import type { RequestStatus } from '@/types/models';
 
-export type BalanceSnapshot = { balance: number; reserved: number; available: number };
+export type BalanceSnapshot = { balance: number; reserved: number; available: number; pendingTaskPoints: number };
 
 /** Récompense accessible ? Le coût se compare au solde DISPONIBLE (solde − points réservés) — SPEC §3.7. */
 export const canAfford = (available: number, cost: number): boolean => cost <= available;
 
-/** Points « en vol » : coches/décoches en file d'attente (hors ligne) → solde projeté (SPEC §5.2). */
-export function pendingPointsDelta(pending: readonly { completed: boolean; points: number }[]): number {
-  return pending.reduce((sum, p) => sum + (p.completed ? p.points : -p.points), 0);
-}
-
 export function projectBalance(base: BalanceSnapshot, delta: number): BalanceSnapshot {
-  return { balance: base.balance + delta, reserved: base.reserved, available: base.available + delta };
+  return { ...base, balance: base.balance + delta, available: base.available + delta };
 }
 
 export type RequestLike = { status: RequestStatus; created_at: string; expires_at: string; cost: number };

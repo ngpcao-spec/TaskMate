@@ -1,4 +1,4 @@
-import type { TimeKind } from '@/types/db';
+import type { TimeKind } from '@/types/models';
 
 /** Sous-ensemble d'une tâche nécessaire aux calculs d'horaire (heures `HH:MM[:SS]`). */
 export type TimedTask = {

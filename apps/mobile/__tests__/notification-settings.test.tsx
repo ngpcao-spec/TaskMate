@@ -44,7 +44,7 @@ describe('NotificationSettingsScreen', () => {
     mockRole = 'parent';
     await render(<NotificationSettingsScreen />);
     expect(screen.getByText('Hoạt động của các con')).toBeTruthy();
-    await fireEvent(screen.getByLabelText('Khi con hoàn thành việc'), 'valueChange', false);
+    await fireEvent(screen.getByLabelText('Khi con đánh dấu xong việc (cần duyệt)'), 'valueChange', false);
     await fireEvent.press(screen.getByRole('button', { name: 'Lưu' }));
     expect(mockSave).toHaveBeenCalledWith(expect.objectContaining({ activity: { taskDone: false, rewardRequested: true, goalAchieved: true } }));
     expect(screen.queryByLabelText('Nhắc trước giờ bắt đầu (phút)')).toBeNull();

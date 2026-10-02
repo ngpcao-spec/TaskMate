@@ -13,7 +13,9 @@ puis le passer en variable : `maestro test -e OTP=123456 e2e/parent-onboarding.y
 |---|---|
 | `parent-onboarding.yaml` | splash → parent → OTP → famille → profils enfants → code d'invitation |
 | `child-join.yaml` | « Je suis un enfant » → code → confirmation « Bạn là … ? » → accueil |
-| `complete-task.yaml` | cocher une tâche, progression 1/N, décocher |
-| `offline-complete.yaml` | cocher hors ligne (mode avion), retour réseau, indicateur de synchro puis disparition |
+| `complete-task.yaml` | enfant : cocher → `Chờ duyệt`, aucun point, décocher possible |
+| `validate-task.yaml` | parent : bannière « việc chờ duyệt » → file → Duyệt |
+| `child-validated.yaml` | enfant : « +10 điểm », solde augmenté |
+| `offline-complete.yaml` | cocher hors ligne (mode avion) → `Chờ duyệt` ; retour réseau ; aucun point |
 | `reward-request.yaml` | enfant : demande d'échange (points réservés) ; parent : approbation |
 | `brother-readonly.yaml` | l'enfant consulte le frère : bandeau lecture seule, pas de FAB |

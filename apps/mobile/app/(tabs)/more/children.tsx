@@ -9,7 +9,7 @@ import { todayInTz } from '@/domain/family-time';
 import { useCreateInvite, useDeleteChild, useUpdateChild } from '@/hooks/useFamilyAdmin';
 import { useMe } from '@/hooks/useMe';
 import { colors, MIN_TARGET, typography } from '@/theme/tokens';
-import type { ChildRow } from '@/types/db';
+import type { ChildRow } from '@/types/models';
 
 const PALETTE = [colors.primary, colors.mint, '#8B5CF6', '#F5A623', '#E5484D'] as const;
 

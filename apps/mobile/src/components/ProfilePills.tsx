@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ageFromBirthDate } from '@/domain/age';
 import { colors, MIN_TARGET, radius } from '@/theme/tokens';
-import type { ChildRow } from '@/types/db';
+import type { ChildRow } from '@/types/models';
 
 type Props = { profiles: ChildRow[]; selectedId: string | null; onSelect: (id: string) => void; today: string };
 

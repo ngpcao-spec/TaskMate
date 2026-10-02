@@ -22,6 +22,8 @@ jest.mock('expo-notifications', () => ({
 }));
 jest.mock('@/api/notifications', () => ({ registerDevice: jest.fn() }));
 jest.mock('@/api/points', () => ({ approveRewardRequest: jest.fn(), rejectRewardRequest: jest.fn() }));
+jest.mock('@/api/tasks', () => ({ validateTaskRpc: jest.fn(), rejectTaskRpc: jest.fn() }));
+jest.mock('@/api/ids', () => ({ newId: () => 'tx-new' }));
 
 const HCM = 'Asia/Ho_Chi_Minh';
 const task = (over: Partial<ReminderTask>): ReminderTask => ({
@@ -62,7 +64,7 @@ describe('syncLocalReminders', () => {
 
 describe('handleNotificationResponse (boutons de la demande d’échange)', () => {
   const response = (actionIdentifier: string, data: object) => ({ actionIdentifier, notification: { request: { content: { data } } } });
-  const deps = () => ({ approve: jest.fn().mockResolvedValue(undefined), reject: jest.fn().mockResolvedValue(undefined), navigate: jest.fn() });
+  const deps = () => ({ approve: jest.fn().mockResolvedValue(undefined), reject: jest.fn().mockResolvedValue(undefined), validateTask: jest.fn().mockResolvedValue(undefined), rejectTask: jest.fn().mockResolvedValue(undefined), navigate: jest.fn() });
 
   it('Approuver appelle la RPC d’approbation, sans ouvrir l’app', async () => {
     const d = deps();
@@ -81,5 +83,21 @@ describe('handleNotificationResponse (boutons de la demande d’échange)', () =
     await handleNotificationResponse(response('default', { type: 'reward_requested', requestId: 'r1' }), d);
     expect(d.navigate).toHaveBeenCalledWith('/more/points');
     expect(d.approve).not.toHaveBeenCalled();
+  });
+
+  it('tâche cochée : le bouton Duyệt valide la tâche, Từ chối la refuse (sans ouvrir l’app)', async () => {
+    const d = deps();
+    await handleNotificationResponse(response('approve', { type: 'task_completed', taskId: 't1' }), d);
+    expect(d.validateTask).toHaveBeenCalledWith('t1');
+    expect(d.approve).not.toHaveBeenCalled();
+    await handleNotificationResponse(response('reject', { type: 'task_completed', taskId: 't1' }), d);
+    expect(d.rejectTask).toHaveBeenCalledWith('t1');
+  });
+
+  it('notification groupée (sans taskId) : un tap ouvre la file « Cần duyệt »', async () => {
+    const d = deps();
+    await handleNotificationResponse(response('approve', { type: 'task_completed' }), d);
+    expect(d.validateTask).not.toHaveBeenCalled();
+    expect(d.navigate).toHaveBeenCalledWith('/approvals');
   });
 });

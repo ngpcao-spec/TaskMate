@@ -1,0 +1,10 @@
+appId: app.taskmate.family
+---
+# PARENT : valider la tâche cochée par Minh (à lancer après complete-task.yaml, sur le téléphone parent).
+- launchApp
+- assertVisible: "1 việc chờ duyệt"
+- tapOn: "1 việc chờ duyệt"
+- assertVisible: "Cần duyệt"
+- tapOn: "Duyệt Làm bài tập Toán"
+- assertVisible: "Không có việc nào chờ duyệt"
+# Côté enfant : la ligne affiche « +10 điểm » et la case n'est plus décochable (voir child-validated.yaml).

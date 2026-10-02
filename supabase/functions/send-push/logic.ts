@@ -24,10 +24,11 @@ export type PushMessage = {
   sound: 'default';
   channelId: 'default';
   categoryId?: string;
+  collapseId?: string;
 };
 
 const PARENT_TYPES = new Set(['task_completed', 'reward_requested', 'goal_achieved']);
-const CHILD_TYPES = new Set(['reward_approved', 'reward_rejected', 'reward_expired', 'points_adjusted', 'task_assigned']);
+const CHILD_TYPES = new Set(['task_validated', 'task_rejected', 'reward_approved', 'reward_rejected', 'reward_expired', 'points_adjusted', 'task_assigned']);
 
 const activityPref = (prefs: unknown, key: 'taskDone' | 'rewardRequested' | 'goalAchieved'): boolean => {
   const activity = (prefs as { activity?: Record<string, unknown> } | null)?.activity;
@@ -61,12 +62,19 @@ export function recipientsFor(activity: ActivityRecord, members: readonly Member
 type Text = { title: string; body: string };
 
 /** Textes en vietnamien (langue par défaut de l'app). */
-export function textFor(activity: ActivityRecord, childName: string): Text | null {
-  const p = (activity.payload ?? {}) as { title?: string; cost?: number; delta?: number; note?: string };
+export function textFor(activity: ActivityRecord, childName: string, groupedCount = 1): Text | null {
+  const p = (activity.payload ?? {}) as { title?: string; cost?: number; delta?: number; note?: string; points?: number };
   const title = p.title ?? '';
   switch (activity.type) {
     case 'task_completed':
-      return { title: 'TaskMate', body: `${childName} đã hoàn thành: ${title}` };
+      // tâche cochée À VALIDER ; plusieurs coches en moins de 10 min → une seule notification groupée (§5.6)
+      return groupedCount > 1
+        ? { title: 'TaskMate', body: `${childName} đã hoàn thành ${groupedCount} việc — chờ duyệt` }
+        : { title: 'TaskMate', body: `${childName} đã hoàn thành: ${title} — chờ duyệt` };
+    case 'task_validated':
+      return { title: 'TaskMate', body: `Đã được duyệt 🎉 ${title} (+${p.points ?? 0} điểm)` };
+    case 'task_rejected':
+      return { title: 'TaskMate', body: `Việc bị từ chối: ${title}${p.note ? ` — ${p.note}` : ''}` };
     case 'reward_requested':
       return { title: 'TaskMate', body: `${childName} muốn đổi: ${title} (${p.cost ?? ''} điểm)` };
     case 'goal_achieved':
@@ -86,16 +94,33 @@ export function textFor(activity: ActivityRecord, childName: string): Text | nul
   }
 }
 
+/** Fenêtre de regroupement des coches (SPEC §5.6). */
+export const GROUP_WINDOW_MS = 10 * 60 * 1000;
+
+/** Nombre de coches d'un enfant dans la fenêtre de 10 min (l'activité courante comprise). */
+export function countGroupedCompletions(activity: ActivityRecord & { created_at?: string }, recent: readonly { created_at: string }[]): number {
+  const at = activity.created_at ? new Date(activity.created_at).getTime() : Date.now();
+  const inWindow = recent.filter((r) => at - new Date(r.created_at).getTime() <= GROUP_WINDOW_MS && new Date(r.created_at).getTime() <= at);
+  return Math.max(1, inWindow.length);
+}
+
 export function buildMessages(
   activity: ActivityRecord,
   members: readonly MemberInfo[],
   devices: readonly DeviceInfo[],
   childName: string,
+  groupedCount = 1,
 ): PushMessage[] {
-  const text = textFor(activity, childName);
+  const text = textFor(activity, childName, groupedCount);
   if (!text) return [];
-  const requestId = (activity.payload as { request_id?: string } | null)?.request_id;
-  const data: Record<string, unknown> = { type: activity.type, childId: activity.child_id, ...(requestId ? { requestId } : {}) };
+  const p = (activity.payload ?? {}) as { request_id?: string; task_id?: string };
+  const data: Record<string, unknown> = {
+    type: activity.type,
+    childId: activity.child_id,
+    ...(p.request_id ? { requestId: p.request_id } : {}),
+    // une seule tâche à valider → boutons Duyệt / Từ chối directement dans la notification
+    ...(activity.type === 'task_completed' && groupedCount <= 1 && p.task_id ? { taskId: p.task_id } : {}),
+  };
   const messages: PushMessage[] = [];
   for (const member of recipientsFor(activity, members)) {
     for (const d of devices) {
@@ -108,19 +133,25 @@ export function buildMessages(
         channelId: 'default',
         // la demande d'échange propose Approuver / Refuser directement dans la notification (§3.7)
         ...(activity.type === 'reward_requested' ? { categoryId: 'reward_request' } : {}),
+        ...(activity.type === 'task_completed' && groupedCount <= 1 ? { categoryId: 'task_validation' } : {}),
+        // regroupement : la notification suivante remplace la précédente (iOS : collapse-id ; Android : même tag)
+        ...(activity.type === 'task_completed' ? { collapseId: `tasks-${activity.child_id}` } : {}),
       });
     }
   }
   return messages;
 }
 
-/** Récap du soir pour les parents : une ligne par enfant « Minh: 3/5 việc ». */
+/** Récap du soir pour les parents : une ligne par enfant « Minh: 3/5 việc » + éléments en attente de décision (tâches, échanges). */
 export function buildRecapMessages(
   parents: readonly MemberInfo[],
   devices: readonly DeviceInfo[],
   summary: readonly { name: string; done: number; total: number }[],
+  pending: { tasks: number; requests: number } = { tasks: 0, requests: 0 },
 ): PushMessage[] {
   const lines = summary.filter((s) => s.total > 0).map((s) => `${s.name}: ${s.done}/${s.total} việc`);
+  const waiting = pending.tasks + pending.requests;
+  if (waiting > 0) lines.push(`${waiting} mục chờ duyệt`);
   if (lines.length === 0) return [];
   const out: PushMessage[] = [];
   for (const parent of parents) {

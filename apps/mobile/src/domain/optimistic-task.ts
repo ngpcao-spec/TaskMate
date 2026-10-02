@@ -1,5 +1,5 @@
 import type { TaskInsertFields } from './task-form';
-import type { TaskRow } from '@/types/db';
+import type { TaskRow } from '@/types/models';
 
 /** Ligne affichée tout de suite après « Lưu », avant l'écho du serveur (création hors ligne comprise). */
 export function optimisticTask(
@@ -11,6 +11,10 @@ export function optimisticTask(
     family_id: ctx.familyId,
     completed_at: null,
     completed_by: null,
+    validated_at: null,
+    validated_by: null,
+    rejection_note: null,
+    rejected_at: null,
     recurrence_id: null,
     created_by: ctx.memberId,
     created_at: ctx.nowIso,

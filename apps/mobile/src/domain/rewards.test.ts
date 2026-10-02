@@ -1,4 +1,4 @@
-import { canAfford, daysUntilExpiry, parseAdjustment, pendingPointsDelta, projectBalance, recentRequests, reservedByPending, type RequestLike } from './rewards';
+import { canAfford, daysUntilExpiry, parseAdjustment, projectBalance, recentRequests, reservedByPending, type RequestLike } from './rewards';
 
 const now = new Date('2026-07-02T00:00:00Z');
 const req = (over: Partial<RequestLike>): RequestLike => ({ status: 'pending', created_at: '2026-07-01T00:00:00Z', expires_at: '2026-07-08T00:00:00Z', cost: 100, ...over });
@@ -11,12 +11,8 @@ describe('canAfford', () => {
 });
 
 describe('solde projeté', () => {
-  it('ajoute les coches en attente et retire les décoches', () => {
-    expect(pendingPointsDelta([{ completed: true, points: 10 }, { completed: true, points: 5 }, { completed: false, points: 10 }])).toBe(5);
-    expect(pendingPointsDelta([])).toBe(0);
-  });
-  it('ne touche pas le réservé', () => {
-    expect(projectBalance({ balance: 300, reserved: 100, available: 200 }, 10)).toEqual({ balance: 310, reserved: 100, available: 210 });
+  it('applique le delta parent sans toucher le réservé ni les points en attente', () => {
+    expect(projectBalance({ balance: 300, reserved: 100, available: 200, pendingTaskPoints: 30 }, 10)).toEqual({ balance: 310, reserved: 100, available: 210, pendingTaskPoints: 30 });
   });
 });
 

@@ -1,0 +1,8 @@
+appId: app.taskmate.family
+---
+# ENFANT, après validation du parent : « +10 điểm », solde augmenté, case verrouillée.
+- launchApp
+- assertVisible: "+10 điểm"
+- tapOn: "Thêm"
+- tapOn: "Điểm thưởng"
+- assertNotVisible: "chờ duyệt"

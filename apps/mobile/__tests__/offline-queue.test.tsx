@@ -1,11 +1,12 @@
-import { dehydrate, hydrate, onlineManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { dehydrate, hydrate, onlineManager, QueryClientProvider, type QueryClient } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
+import { createTestQueryClient } from '../test-utils/queryClient';
 import '@/i18n';
 import { taskKeys } from '@/api/keys';
 import { toggleVars, useCreateTasks, useToggleTask } from '@/hooks/useTasks';
 import { mutationKeys, registerMutationDefaults } from '@/sync/mutations';
-import type { TaskRow } from '@/types/db';
+import type { TaskRow } from '@/types/models';
 
 const mockComplete = jest.fn();
 const mockCreate = jest.fn();
@@ -23,7 +24,7 @@ const key = taskKeys.range('c1', '2026-07-02', '2026-07-02');
 
 const clients: QueryClient[] = [];
 const makeClient = () => {
-  const client = new QueryClient();
+  const client = createTestQueryClient({ defaultOptions: { queries: { retry: undefined } } });
   clients.push(client);
   registerMutationDefaults(client, { retryDelay: () => 0 });
   client.setQueryData<TaskRow[]>(key, [task]);
@@ -52,7 +53,7 @@ describe('file d’écritures hors ligne', () => {
     const { result } = await renderHook(() => useToggleTask(), { wrapper: wrap(client) });
     onlineManager.setOnline(false);
 
-    await act(async () => result.current.mutate(toggleVars(task, true)));
+    await act(async () => result.current.mutate(toggleVars(task, true, false)));
     expect(client.getQueryData<TaskRow[]>(key)?.[0]?.completed_at).not.toBeNull(); // optimiste
     expect(mockComplete).not.toHaveBeenCalled(); // en pause
 
@@ -69,7 +70,7 @@ describe('file d’écritures hors ligne', () => {
       .mockResolvedValue(undefined);
     const client = makeClient();
     const { result } = await renderHook(() => useToggleTask(), { wrapper: wrap(client) });
-    await act(async () => result.current.mutate(toggleVars(task, true)));
+    await act(async () => result.current.mutate(toggleVars(task, true, false)));
     await waitFor(() => expect(mockComplete).toHaveBeenCalledTimes(3));
     const txIds = mockComplete.mock.calls.map((c) => c[2]);
     expect(new Set(txIds)).toEqual(new Set(['tx-1']));
@@ -79,7 +80,7 @@ describe('file d’écritures hors ligne', () => {
     mockComplete.mockRejectedValue({ message: 'forbidden' });
     const client = makeClient();
     const { result } = await renderHook(() => useToggleTask(), { wrapper: wrap(client) });
-    await act(async () => result.current.mutate(toggleVars(task, true)));
+    await act(async () => result.current.mutate(toggleVars(task, true, false)));
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(mockComplete).toHaveBeenCalledTimes(1);
   });
@@ -97,7 +98,7 @@ describe('file d’écritures hors ligne', () => {
     const fields = { id: 'n1', child_id: 'c1', title: 'x', category: 'study', note: null, date: '2026-07-02', time_kind: 'anytime', start_time: null, end_time: null, points: 10 } as const;
     await act(async () => {
       create.result.current.mutate({ familyId: 'f1', memberId: 'm1', tasks: [fields] });
-      toggle.result.current.mutate(toggleVars({ ...task, id: 'n1' }, true));
+      toggle.result.current.mutate(toggleVars({ ...task, id: 'n1' }, true, false));
     });
     await waitFor(() => expect(order).toEqual(['create', 'complete']));
     // la tâche créée hors ligne apparaît tout de suite dans la liste du jour
@@ -108,7 +109,7 @@ describe('file d’écritures hors ligne', () => {
     const first = makeClient();
     const { result } = await renderHook(() => useToggleTask(), { wrapper: wrap(first) });
     onlineManager.setOnline(false);
-    await act(async () => result.current.mutate(toggleVars(task, true)));
+    await act(async () => result.current.mutate(toggleVars(task, true, false)));
     const persisted = JSON.parse(JSON.stringify(dehydrate(first)));
     expect(persisted.mutations).toHaveLength(1);
     expect(persisted.mutations[0].mutationKey).toEqual(mutationKeys.toggleTask);

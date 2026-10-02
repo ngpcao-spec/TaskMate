@@ -1,13 +1,20 @@
 appId: app.taskmate.family
 ---
-# Pré-requis : session enfant liée à Minh avec la tâche « Làm bài tập Toán » aujourd'hui (seed).
+# ENFANT (session liée à Minh, tâche « Làm bài tập Toán » aujourd'hui — seed) : cocher → « Chờ duyệt », aucun point.
 - launchApp
 - assertVisible: "Làm bài tập Toán"
 - tapOn:
     id: "Làm bài tập Toán"
     index: 0
-- assertVisible: "Hôm nay 1/"
+- assertVisible: "Chờ duyệt"
+- assertNotVisible: "+10 điểm"
+- tapOn: "Thêm"
+- tapOn: "Điểm thưởng"
+- assertVisible: "+10 điểm chờ duyệt"
+# décocher tant que la tâche n'est pas validée est possible
+- back
+- tapOn: "Hôm nay"
 - tapOn:
     id: "Làm bài tập Toán"
     index: 0
-- assertNotVisible: "Hôm nay 1/"
+- assertNotVisible: "Chờ duyệt"

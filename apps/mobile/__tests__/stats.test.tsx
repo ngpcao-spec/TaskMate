@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import '@/i18n';
 import StatsScreen from '../app/(tabs)/stats';
-import type { ChildRow, TaskRow } from '@/types/db';
+import type { ChildRow, TaskRow } from '@/types/models';
 
 jest.mock('react-native-safe-area-context', () => ({ SafeAreaView: ({ children }: { children: React.ReactNode }) => children }));
 const minh = { id: 'c-minh', name: 'Minh', birth_date: '2009-03-01', color: '#1E88F5' } as ChildRow;

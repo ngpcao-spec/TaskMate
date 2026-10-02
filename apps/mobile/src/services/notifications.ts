@@ -3,10 +3,13 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import { registerDevice } from '@/api/notifications';
 import { approveRewardRequest, rejectRewardRequest } from '@/api/points';
+import { newId } from '@/api/ids';
+import { rejectTaskRpc, validateTaskRpc } from '@/api/tasks';
 import {
   ACTION_APPROVE,
   ACTION_REJECT,
   CATEGORY_REWARD_REQUEST,
+  CATEGORY_TASK_VALIDATION,
   intentFor,
   type NotificationData,
   type NotificationIntent,
@@ -57,6 +60,10 @@ export async function configureNotifications(): Promise<void> {
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('default', { name: 'TaskMate', importance: Notifications.AndroidImportance.DEFAULT });
   }
+  await Notifications.setNotificationCategoryAsync(CATEGORY_TASK_VALIDATION, [
+    { identifier: ACTION_APPROVE, buttonTitle: i18n.t('approvals.approve'), options: { opensAppToForeground: false } },
+    { identifier: ACTION_REJECT, buttonTitle: i18n.t('approvals.reject'), options: { opensAppToForeground: false, isDestructive: true } },
+  ]);
   await Notifications.setNotificationCategoryAsync(CATEGORY_REWARD_REQUEST, [
     { identifier: ACTION_APPROVE, buttonTitle: i18n.t('points.approve'), options: { opensAppToForeground: false } },
     { identifier: ACTION_REJECT, buttonTitle: i18n.t('points.reject'), options: { opensAppToForeground: false, isDestructive: true } },
@@ -82,18 +89,29 @@ export async function registerPushToken(): Promise<boolean> {
 export type ResponseDeps = {
   approve: (requestId: string) => Promise<void>;
   reject: (requestId: string) => Promise<void>;
+  validateTask: (taskId: string) => Promise<void>;
+  rejectTask: (taskId: string) => Promise<void>;
   navigate: (href: Extract<NotificationIntent, { kind: 'navigate' }>['href']) => void;
 };
 
 /** Traite le tap / le bouton d'une notification. Les actions Approuver/Refuser appellent directement les RPC. */
 export async function handleNotificationResponse(
   response: { actionIdentifier: string; notification: { request: { content: { data?: unknown } } } },
-  deps: ResponseDeps = { approve: (id) => approveRewardRequest(id), reject: (id) => rejectRewardRequest(id), navigate: () => undefined },
+  deps: ResponseDeps = {
+    approve: (id) => approveRewardRequest(id),
+    reject: (id) => rejectRewardRequest(id),
+    // le tx_id est tiré une fois par action : un rejeu (retry) ne crédite jamais deux fois
+    validateTask: (id) => validateTaskRpc(id, newId()),
+    rejectTask: (id) => rejectTaskRpc(id),
+    navigate: () => undefined,
+  },
 ): Promise<NotificationIntent> {
   const data = (response.notification.request.content.data ?? {}) as NotificationData;
   const intent = intentFor(response.actionIdentifier, data);
   if (intent.kind === 'approve') await deps.approve(intent.requestId);
   else if (intent.kind === 'reject') await deps.reject(intent.requestId);
+  else if (intent.kind === 'validate_task') await deps.validateTask(intent.taskId);
+  else if (intent.kind === 'reject_task') await deps.rejectTask(intent.taskId);
   else if (intent.kind === 'navigate') deps.navigate(intent.href);
   return intent;
 }

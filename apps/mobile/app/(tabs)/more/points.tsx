@@ -17,9 +17,10 @@ import {
   useRequests,
   useRewards,
 } from '@/hooks/usePoints';
+import { useApprovalCounts } from '@/hooks/useApprovals';
 import { useOnline } from '@/hooks/useSyncStatus';
 import { colors, MIN_TARGET, radius, typography } from '@/theme/tokens';
-import type { RewardRequestRow } from '@/types/db';
+import type { RewardRequestRow } from '@/types/models';
 
 export default function PointsScreen() {
   const { t } = useTranslation();
@@ -27,9 +28,10 @@ export default function PointsScreen() {
   const d = useDisplayedChild();
   const online = useOnline();
   const childId = d?.child?.id ?? null;
-  const balance = useProjectedBalance(childId);
+  const balance = useProjectedBalance(childId, d?.viewer.role ?? 'child');
   const rewards = useRewards();
   const allRequests = useRequests(d?.viewer.role === 'parent' ? null : childId);
+  const counts = useApprovalCounts(d?.viewer.role === 'parent');
   const request = useRequestReward();
   const cancel = useCancelRequest();
   const approve = useApproveRequest();
@@ -68,9 +70,13 @@ export default function PointsScreen() {
           </Text>
           <Text style={typography.secondary}>{t('points.totalLabel')}</Text>
           {reserved > 0 ? <Text style={styles.reserved}>{t('points.reserved', { reserved })}</Text> : null}
+          {(balance?.pendingTaskPoints ?? 0) > 0 ? <Text style={styles.pendingTasks}>{t('points.pendingTasks', { points: balance?.pendingTaskPoints })}</Text> : null}
         </Card>
       </Pressable>
 
+      {isParent && counts.total > 0 ? (
+        <Button variant="secondary" label={t('approvals.openQueue', { count: counts.total })} onPress={() => router.push('/approvals')} />
+      ) : null}
       {isParent && pendingQueue.length > 0 ? (
         <View style={styles.section}>
           <Text accessibilityRole="header" style={styles.sectionTitle}>
@@ -164,6 +170,7 @@ const styles = StyleSheet.create({
   balance: { fontSize: 40, fontWeight: '800', color: colors.primary },
   unit: { fontSize: 18, fontWeight: '600' },
   reserved: { fontSize: 13, color: colors.textSecondary, marginTop: 4 },
+  pendingTasks: { fontSize: 13, color: '#B86E00', fontWeight: '600', marginTop: 2 },
   section: { gap: 10 },
   sectionTitle: { ...typography.title, color: colors.text },
   rowTitle: { fontSize: 16, fontWeight: '600', color: colors.text },

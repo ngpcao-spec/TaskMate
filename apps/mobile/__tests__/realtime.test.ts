@@ -1,4 +1,5 @@
-import { QueryClient } from '@tanstack/react-query';
+import type { QueryClient } from '@tanstack/react-query';
+import { createTestQueryClient } from '../test-utils/queryClient';
 import { subscribeFamilyRealtime } from '@/sync/realtime';
 
 type Handler = (payload: { new: Record<string, unknown>; old: Record<string, unknown> }) => void;
@@ -24,7 +25,7 @@ describe('subscribeFamilyRealtime', () => {
   let client: QueryClient;
   beforeEach(() => {
     jest.clearAllMocks();
-    client = new QueryClient();
+    client = createTestQueryClient();
     jest.spyOn(client, 'invalidateQueries').mockResolvedValue(undefined);
     jest.spyOn(client, 'resumePausedMutations').mockResolvedValue(undefined);
   });

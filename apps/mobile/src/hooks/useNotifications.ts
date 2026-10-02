@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 import { useEffect } from 'react';
+import { newId } from '@/api/ids';
 import { fetchActivity, fetchDecidedRequests, fetchPrefs, savePrefs } from '@/api/notifications';
 import { DEFAULT_PREFS, type NotificationPrefs } from '@/domain/notification-prefs';
 import { planReminders } from '@/domain/reminders';
@@ -62,6 +63,8 @@ export function useNotificationSetup(): void {
     const deps = {
       approve: async (id: string) => (await import('@/api/points')).approveRewardRequest(id),
       reject: async (id: string) => (await import('@/api/points')).rejectRewardRequest(id),
+      validateTask: async (id: string) => (await import('@/api/tasks')).validateTaskRpc(id, newId()),
+      rejectTask: async (id: string) => (await import('@/api/tasks')).rejectTaskRpc(id),
       navigate: (href: string) => router.push(href as never),
     };
     const sub = Notifications.addNotificationResponseReceivedListener((r) => void handleNotificationResponse(r, deps));

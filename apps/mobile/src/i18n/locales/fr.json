@@ -106,7 +106,8 @@
     "addTask": "Ajouter une tâche",
     "overdue": "En retard",
     "taskGone": "Cette tâche a été supprimée",
-    "cannotUncheck": "Impossible de décocher : ces points sont réservés pour une récompense"
+    "cannotUncheck": "Impossible de décocher : ces points sont réservés pour une récompense",
+    "alreadyValidated": "Un parent a déjà validé cette tâche, impossible de la décocher"
   },
   "taskForm": {
     "title": "Nouvelle tâche",
@@ -231,7 +232,8 @@
     "errors": {
       "insufficient": "Points disponibles insuffisants",
       "notPending": "Cette demande a déjà été traitée"
-    }
+    },
+    "pendingTasks": "+{{points}} points à valider"
   },
   "reward": {
     "newTitle": "Nouvelle récompense",
@@ -242,7 +244,8 @@
     "delete": "Supprimer la récompense"
   },
   "home": {
-    "toApprove": "{{count}} demande(s) à approuver"
+    "toApprove": "{{count}} demande(s) à approuver",
+    "tasksToValidate": "{{count}} tâche(s) à valider"
   },
   "goals": {
     "title": "Objectifs",
@@ -307,7 +310,7 @@
     "recap": "Récap du soir",
     "recapTime": "Heure du récap",
     "activityTitle": "Activité des enfants",
-    "taskDone": "Quand un enfant termine une tâche",
+    "taskDone": "Quand un enfant coche une tâche (à valider)",
     "rewardRequested": "Quand un enfant demande une récompense",
     "goalAchieved": "Quand un enfant atteint un objectif",
     "saved": "Réglages enregistrés",
@@ -347,5 +350,31 @@
     "deleteChild": "Supprimer le profil",
     "deleteChildBody": "Supprimer le profil de {{name}} ?",
     "childDeleted": "Profil supprimé"
+  },
+  "task": {
+    "pending": "À valider",
+    "validated": "+{{points}} points",
+    "rejectedLabel": "Refusée par un parent",
+    "pointsLine": "{{points}} points une fois validée",
+    "state": {
+      "todo": "À faire",
+      "pending": "Cochée, en attente de validation d'un parent",
+      "validated": "Validée"
+    }
+  },
+  "approvals": {
+    "title": "À approuver",
+    "tabTasks": "Tâches ({{count}})",
+    "tabRewards": "Récompenses ({{count}})",
+    "emptyTasks": "Aucune tâche à valider",
+    "emptyRewards": "Aucune demande d'échange",
+    "approve": "Valider",
+    "reject": "Refuser",
+    "approveAll": "Tout valider",
+    "approveAllBody": "Valider {{count}} tâche(s) de {{name}} (+{{points}} points) ?",
+    "taskMeta": "Terminée à {{time}} · {{points}} points",
+    "alreadyHandled": "Cette tâche a déjà été traitée ou n'existe plus",
+    "openQueue": "À approuver ({{count}})",
+    "badge": "{{count}} élément(s) à traiter"
   }
 }

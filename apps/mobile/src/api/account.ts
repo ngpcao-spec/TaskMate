@@ -1,4 +1,4 @@
-import type { DeviceRow, MemberRow } from '@/types/db';
+import type { DeviceRow, MemberRow } from '@/types/models';
 import { supabase } from './supabase';
 
 /** Supprime la famille et toutes ses données puis les comptes auth (Edge Function `delete-account`, parent uniquement). */

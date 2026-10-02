@@ -106,7 +106,8 @@
     "addTask": "Thêm việc",
     "overdue": "Quá hạn",
     "taskGone": "Việc này đã bị xóa",
-    "cannotUncheck": "Không thể bỏ chọn: điểm đã được dành cho phần thưởng"
+    "cannotUncheck": "Không thể bỏ chọn: điểm đã được dành cho phần thưởng",
+    "alreadyValidated": "Phụ huynh đã duyệt việc này, không thể bỏ chọn"
   },
   "taskForm": {
     "title": "Thêm việc",
@@ -231,7 +232,8 @@
     "errors": {
       "insufficient": "Không đủ điểm khả dụng",
       "notPending": "Yêu cầu này đã được xử lý"
-    }
+    },
+    "pendingTasks": "+{{points}} điểm chờ duyệt"
   },
   "reward": {
     "newTitle": "Thêm phần thưởng",
@@ -242,7 +244,8 @@
     "delete": "Xóa phần thưởng"
   },
   "home": {
-    "toApprove": "{{count}} yêu cầu cần duyệt"
+    "toApprove": "{{count}} yêu cầu cần duyệt",
+    "tasksToValidate": "{{count}} việc chờ duyệt"
   },
   "goals": {
     "title": "Mục tiêu",
@@ -307,7 +310,7 @@
     "recap": "Tổng kết buổi tối",
     "recapTime": "Giờ tổng kết",
     "activityTitle": "Hoạt động của các con",
-    "taskDone": "Khi con hoàn thành việc",
+    "taskDone": "Khi con đánh dấu xong việc (cần duyệt)",
     "rewardRequested": "Khi con xin đổi thưởng",
     "goalAchieved": "Khi con đạt mục tiêu",
     "saved": "Đã lưu cài đặt",
@@ -347,5 +350,31 @@
     "deleteChild": "Xóa hồ sơ",
     "deleteChildBody": "Xóa hồ sơ của {{name}}?",
     "childDeleted": "Đã xóa hồ sơ"
+  },
+  "task": {
+    "pending": "Chờ duyệt",
+    "validated": "+{{points}} điểm",
+    "rejectedLabel": "Phụ huynh từ chối",
+    "pointsLine": "{{points}} điểm khi được duyệt",
+    "state": {
+      "todo": "Cần làm",
+      "pending": "Đã chọn, chờ phụ huynh duyệt",
+      "validated": "Đã được duyệt"
+    }
+  },
+  "approvals": {
+    "title": "Cần duyệt",
+    "tabTasks": "Việc ({{count}})",
+    "tabRewards": "Phần thưởng ({{count}})",
+    "emptyTasks": "Không có việc nào chờ duyệt",
+    "emptyRewards": "Không có yêu cầu đổi thưởng nào",
+    "approve": "Duyệt",
+    "reject": "Từ chối",
+    "approveAll": "Duyệt tất cả",
+    "approveAllBody": "Duyệt {{count}} việc của {{name}} (+{{points}} điểm)?",
+    "taskMeta": "Hoàn thành lúc {{time}} · {{points}} điểm",
+    "alreadyHandled": "Việc này đã được xử lý hoặc không còn nữa",
+    "openQueue": "Cần duyệt ({{count}})",
+    "badge": "{{count}} mục cần duyệt"
   }
 }

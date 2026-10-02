@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { TASK_CATEGORIES } from '@/theme/categories';
-import type { TimeKind } from '@/types/db';
+import type { TimeKind } from '@/types/models';
 
 export const DEFAULT_POINTS = 10;
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;

@@ -106,7 +106,8 @@
     "addTask": "Add task",
     "overdue": "Overdue",
     "taskGone": "This task was deleted",
-    "cannotUncheck": "Can't uncheck: those points are reserved for a reward"
+    "cannotUncheck": "Can't uncheck: those points are reserved for a reward",
+    "alreadyValidated": "A parent already approved this task, it cannot be unchecked"
   },
   "taskForm": {
     "title": "New task",
@@ -231,7 +232,8 @@
     "errors": {
       "insufficient": "Not enough available points",
       "notPending": "This request was already handled"
-    }
+    },
+    "pendingTasks": "+{{points}} points awaiting approval"
   },
   "reward": {
     "newTitle": "New reward",
@@ -242,7 +244,8 @@
     "delete": "Delete reward"
   },
   "home": {
-    "toApprove": "{{count}} request(s) to approve"
+    "toApprove": "{{count}} request(s) to approve",
+    "tasksToValidate": "{{count}} task(s) to approve"
   },
   "goals": {
     "title": "Goals",
@@ -307,7 +310,7 @@
     "recap": "Evening recap",
     "recapTime": "Recap time",
     "activityTitle": "Children's activity",
-    "taskDone": "When a child completes a task",
+    "taskDone": "When a child checks a task (to approve)",
     "rewardRequested": "When a child requests a reward",
     "goalAchieved": "When a child reaches a goal",
     "saved": "Settings saved",
@@ -347,5 +350,31 @@
     "deleteChild": "Delete profile",
     "deleteChildBody": "Delete {{name}}'s profile?",
     "childDeleted": "Profile deleted"
+  },
+  "task": {
+    "pending": "To approve",
+    "validated": "+{{points}} points",
+    "rejectedLabel": "Declined by a parent",
+    "pointsLine": "{{points}} points once approved",
+    "state": {
+      "todo": "To do",
+      "pending": "Checked, waiting for a parent to approve",
+      "validated": "Approved"
+    }
+  },
+  "approvals": {
+    "title": "To approve",
+    "tabTasks": "Tasks ({{count}})",
+    "tabRewards": "Rewards ({{count}})",
+    "emptyTasks": "No tasks to approve",
+    "emptyRewards": "No redemption requests",
+    "approve": "Approve",
+    "reject": "Decline",
+    "approveAll": "Approve all",
+    "approveAllBody": "Approve {{count}} task(s) of {{name}} (+{{points}} points)?",
+    "taskMeta": "Done at {{time}} · {{points}} points",
+    "alreadyHandled": "This task was already handled or no longer exists",
+    "openQueue": "To approve ({{count}})",
+    "badge": "{{count}} item(s) to review"
   }
 }

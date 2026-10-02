@@ -1,6 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query';
 import { taskKeys } from '@/api/keys';
-import type { TaskRow } from '@/types/db';
+import type { TaskRow } from '@/types/models';
 
 /** Applique `fn` à toutes les listes de tâches en cache d'un enfant (jour, semaine, mois…). */
 export function patchCachedTasks(queryClient: QueryClient, childId: string, fn: (tasks: TaskRow[]) => TaskRow[]): void {

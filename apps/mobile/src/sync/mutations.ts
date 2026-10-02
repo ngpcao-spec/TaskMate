@@ -5,16 +5,19 @@ import {
   createTasks,
   deleteTask,
   serverErrorCode,
+  rejectTaskRpc,
   setTaskCompleted,
   updateTask,
+  validateTaskRpc,
   type NewTask,
   type TaskPatch,
 } from '@/api/tasks';
 import { isTransientError } from '@/domain/errors';
 import { dateInRange, optimisticTask } from '@/domain/optimistic-task';
+import { optimisticToggle } from '@/domain/task-state';
 import i18n from '@/i18n';
 import { useToastStore } from '@/store/toast';
-import type { TaskRow } from '@/types/db';
+import type { TaskRow } from '@/types/models';
 import { patchCachedTaskRanges, patchCachedTasks, restoreSnapshot, snapshotTasks } from './cache';
 
 export const mutationKeys = {
@@ -22,15 +25,21 @@ export const mutationKeys = {
   createTasks: ['createTasks'] as const,
   updateTask: ['updateTask'] as const,
   deleteTask: ['deleteTask'] as const,
+  validateTask: ['validateTask'] as const,
+  rejectTask: ['rejectTask'] as const,
 };
 
-export type ToggleVars = { task: TaskRow; completed: boolean; txId: string };
+/** `asParent` : un parent qui coche valide d'office ; un enfant ne fait jamais que passer la tâche en attente. */
+export type ToggleVars = { task: TaskRow; completed: boolean; txId: string; asParent: boolean };
+export type ValidateVars = { task: TaskRow; txId: string };
+export type RejectVars = { task: TaskRow; note?: string };
 export type CreateVars = { familyId: string; memberId: string; tasks: NewTask[] };
 export type UpdateVars = { task: TaskRow; patch: TaskPatch };
 type SnapshotCtx = { snapshot?: ReturnType<typeof snapshotTasks> };
 
 /** Variables d'une coche : le `txId` est tiré ici, une seule fois — tout rejeu (retry, file hors ligne) reste idempotent. */
-export const toggleVars = (task: TaskRow, completed: boolean): ToggleVars => ({ task, completed, txId: newId() });
+export const toggleVars = (task: TaskRow, completed: boolean, asParent: boolean): ToggleVars => ({ task, completed, txId: newId(), asParent });
+export const validateVars = (task: TaskRow): ValidateVars => ({ task, txId: newId() });
 
 const toast = (message: string, tone: 'info' | 'error' = 'info') => useToastStore.getState().show(message, tone);
 
@@ -52,13 +61,11 @@ export function registerMutationDefaults(
   queryClient.setMutationDefaults(mutationKeys.toggleTask, {
     ...common,
     mutationFn: ({ task, completed, txId }: ToggleVars) => setTaskCompleted(task.id, completed, txId),
-    onMutate: async ({ task, completed }: ToggleVars): Promise<SnapshotCtx> => {
+    onMutate: async ({ task, completed, asParent }: ToggleVars): Promise<SnapshotCtx> => {
       await queryClient.cancelQueries({ queryKey: taskKeys.all(task.child_id) });
       const snapshot = snapshotTasks(queryClient, task.child_id);
-      const stamp = completed ? new Date().toISOString() : null;
-      patchCachedTasks(queryClient, task.child_id, (list) =>
-        list.map((t) => (t.id === task.id ? { ...t, completed_at: stamp } : t)),
-      );
+      const patch = optimisticToggle(task, completed, asParent, new Date().toISOString());
+      patchCachedTasks(queryClient, task.child_id, (list) => list.map((t) => (t.id === task.id ? { ...t, ...patch } : t)));
       return { snapshot };
     },
     onError: (error: unknown, { task }: ToggleVars, context: SnapshotCtx | undefined) => {
@@ -69,14 +76,64 @@ export function registerMutationDefaults(
         toast(i18n.t('today.taskGone'), 'error');
       } else if (code === 'insufficient_balance') {
         toast(i18n.t('today.cannotUncheck'), 'error');
+      } else if (code === 'already_validated') {
+        toast(i18n.t('today.alreadyValidated'), 'error'); // le parent a validé entre-temps : l'état validé est rétabli
       } else {
         toast(i18n.t('common.error'), 'error');
       }
     },
     onSettled: (_d: unknown, _e: unknown, { task }: ToggleVars) => {
       void queryClient.invalidateQueries({ queryKey: taskKeys.all(task.child_id) });
-      void queryClient.invalidateQueries({ queryKey: ['balance', task.child_id] });
+      void queryClient.invalidateQueries({ queryKey: ['balance'] });
+      void queryClient.invalidateQueries({ queryKey: taskKeys.pending });
     },
+  });
+
+  queryClient.setMutationDefaults(mutationKeys.validateTask, {
+    ...common,
+    mutationFn: ({ task, txId }: ValidateVars) => validateTaskRpc(task.id, txId),
+    onMutate: async ({ task }: ValidateVars): Promise<SnapshotCtx> => {
+      await queryClient.cancelQueries({ queryKey: ['tasks'] });
+      const snapshot = snapshotTasks(queryClient, task.child_id);
+      const nowIso = new Date().toISOString();
+      patchCachedTasks(queryClient, task.child_id, (list) => list.map((t) => (t.id === task.id ? { ...t, validated_at: nowIso } : t)));
+      queryClient.setQueryData<TaskRow[]>(taskKeys.pending, (old) => old?.filter((t) => t.id !== task.id));
+      return { snapshot };
+    },
+    onError: (error: unknown, { task }: ValidateVars, context: SnapshotCtx | undefined) => {
+      restoreSnapshot(queryClient, context?.snapshot);
+      const code = serverErrorCode(error);
+      // décochée / supprimée entre-temps : l'écran se remet à jour, message clair
+      toast(i18n.t(code === 'not_pending' || code === 'task_not_found' ? 'approvals.alreadyHandled' : 'common.error'), 'error');
+      void queryClient.invalidateQueries({ queryKey: taskKeys.all(task.child_id) });
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      void queryClient.invalidateQueries({ queryKey: ['balance'] });
+      void queryClient.invalidateQueries({ queryKey: ['transactions'] });
+    },
+  });
+
+  queryClient.setMutationDefaults(mutationKeys.rejectTask, {
+    ...common,
+    mutationFn: ({ task, note }: RejectVars) => rejectTaskRpc(task.id, note),
+    onMutate: async ({ task, note }: RejectVars): Promise<SnapshotCtx> => {
+      await queryClient.cancelQueries({ queryKey: ['tasks'] });
+      const snapshot = snapshotTasks(queryClient, task.child_id);
+      const nowIso = new Date().toISOString();
+      patchCachedTasks(queryClient, task.child_id, (list) =>
+        list.map((t) => (t.id === task.id ? { ...t, completed_at: null, completed_by: null, rejection_note: note ?? null, rejected_at: nowIso } : t)),
+      );
+      queryClient.setQueryData<TaskRow[]>(taskKeys.pending, (old) => old?.filter((t) => t.id !== task.id));
+      return { snapshot };
+    },
+    onError: (error: unknown, { task }: RejectVars, context: SnapshotCtx | undefined) => {
+      restoreSnapshot(queryClient, context?.snapshot);
+      const code = serverErrorCode(error);
+      toast(i18n.t(code === 'not_pending' || code === 'task_not_found' ? 'approvals.alreadyHandled' : 'common.error'), 'error');
+      void queryClient.invalidateQueries({ queryKey: taskKeys.all(task.child_id) });
+    },
+    onSettled: () => void queryClient.invalidateQueries({ queryKey: ['tasks'] }),
   });
 
   queryClient.setMutationDefaults(mutationKeys.createTasks, {

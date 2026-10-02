@@ -1,5 +1,5 @@
 import type { TaskInsertFields } from '@/domain/task-form';
-import type { TaskRow } from '@/types/db';
+import type { TaskRow } from '@/types/models';
 import { supabase } from './supabase';
 
 export async function fetchTasks(childId: string, from: string, to: string): Promise<TaskRow[]> {
@@ -28,6 +28,32 @@ export async function setTaskCompleted(taskId: string, completed: boolean, txId:
     ? await supabase.rpc('complete_task', { p_task_id: taskId, p_tx_id: txId })
     : await supabase.rpc('uncomplete_task', { p_task_id: taskId, p_tx_id: txId });
   if (error) throw error;
+}
+
+/** Parent : valide une tâche cochée → crédite les points (RPC `validate_task`, idempotente sur `txId`). */
+export async function validateTaskRpc(taskId: string, txId: string): Promise<void> {
+  const { error } = await supabase.rpc('validate_task', { p_task_id: taskId, p_tx_id: txId });
+  if (error) throw error;
+}
+
+/** Parent : refuse une tâche cochée (motif optionnel) → retour à faire, aucun point. */
+export async function rejectTaskRpc(taskId: string, note?: string): Promise<void> {
+  const { error } = await supabase.rpc('reject_task', { p_task_id: taskId, ...(note ? { p_note: note } : {}) });
+  if (error) throw error;
+}
+
+/** Tâches cochées en attente de validation, toutes les plus anciennes d'abord (file « Cần duyệt », §3.10). */
+export async function fetchPendingTasks(): Promise<TaskRow[]> {
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('*')
+    .not('completed_at', 'is', null)
+    .is('validated_at', null)
+    .is('deleted_at', null)
+    .order('date')
+    .order('completed_at');
+  if (error) throw error;
+  return data;
 }
 
 export type NewTask = TaskInsertFields & { id: string };

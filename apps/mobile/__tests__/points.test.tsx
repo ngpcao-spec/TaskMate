@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 import { Alert } from 'react-native';
 import '@/i18n';
 import PointsScreen from '../app/(tabs)/more/points';
-import type { ChildRow, RewardRequestRow, RewardRow } from '@/types/db';
+import type { ChildRow, RewardRequestRow, RewardRow } from '@/types/models';
 
 const mockPush = jest.fn();
 jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockPush }) }));
@@ -15,13 +15,15 @@ const farFuture = new Date(Date.now() + 5 * 24 * 3600 * 1000).toISOString();
 const pendingReq = { id: 'r1', child_id: 'c-minh', reward_title: 'Chơi game 1 tiếng', cost: 100, status: 'pending', created_at: new Date().toISOString(), expires_at: farFuture } as RewardRequestRow;
 
 let mockDisplayed: unknown;
-let mockBalance: unknown = { balance: 320, reserved: 100, available: 220 };
+let mockBalance: unknown = { balance: 320, reserved: 100, available: 220, pendingTaskPoints: 30 };
+let mockCounts = { tasks: 0, requests: 0, total: 0 };
 let mockRequests: RewardRequestRow[] = [];
 let mockOnline = true;
 const mockRequest = jest.fn();
 const mockApprove = jest.fn();
 const mockReject = jest.fn();
 jest.mock('@/hooks/useDisplayedChild', () => ({ useDisplayedChild: () => mockDisplayed }));
+jest.mock('@/hooks/useApprovals', () => ({ useApprovalCounts: () => mockCounts }));
 jest.mock('@/hooks/useSyncStatus', () => ({ useOnline: () => mockOnline }));
 jest.mock('@/hooks/usePoints', () => ({
   useProjectedBalance: () => mockBalance,
@@ -42,7 +44,8 @@ const displayed = (role: 'child' | 'parent', readOnly = false, child = minh) => 
 describe('PointsScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockBalance = { balance: 320, reserved: 100, available: 220 };
+    mockBalance = { balance: 320, reserved: 100, available: 220, pendingTaskPoints: 30 };
+    mockCounts = { tasks: 0, requests: 0, total: 0 };
     mockRequests = [];
     mockOnline = true;
   });
@@ -56,6 +59,28 @@ describe('PointsScreen', () => {
     const ko = screen.getByRole('button', { name: /Dùng điện thoại thêm 30 phút, 300 điểm, chưa đủ điểm/ });
     expect(ok.props.accessibilityState).toMatchObject({ disabled: false });
     expect(ko.props.accessibilityState).toMatchObject({ disabled: true });
+  });
+
+  it('affiche « +30 điểm chờ duyệt » (tâches cochées non validées) en plus du réservé, hors du solde', async () => {
+    mockDisplayed = displayed('child');
+    await render(<PointsScreen />);
+    expect(screen.getByText('+30 điểm chờ duyệt')).toBeTruthy();
+    expect(screen.getByText('trong đó 100 điểm đang chờ duyệt')).toBeTruthy();
+  });
+
+  it('aucune ligne « chờ duyệt » quand rien n’est en attente', async () => {
+    mockDisplayed = displayed('child');
+    mockBalance = { balance: 320, reserved: 0, available: 320, pendingTaskPoints: 0 };
+    await render(<PointsScreen />);
+    expect(screen.queryByText(/chờ duyệt/)).toBeNull();
+  });
+
+  it('parent : accès à la file « Cần duyệt » avec le total', async () => {
+    mockDisplayed = displayed('parent');
+    mockCounts = { tasks: 2, requests: 1, total: 3 };
+    await render(<PointsScreen />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Cần duyệt (3)' }));
+    expect(mockPush).toHaveBeenCalledWith('/approvals');
   });
 
   it('l’enfant confirme puis envoie une demande (pas de débit côté client)', async () => {

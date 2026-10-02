@@ -2,10 +2,10 @@ import { invalidationsFor, REALTIME_TABLES } from './realtime';
 
 describe('invalidationsFor', () => {
   it('une tâche modifiée invalide les listes de l’enfant concerné et la tâche', () => {
-    expect(invalidationsFor('tasks', { id: 't1', child_id: 'c1' })).toEqual([['tasks', 'c1'], ['task', 't1']]);
+    expect(invalidationsFor('tasks', { id: 't1', child_id: 'c1' })).toEqual([['tasks', 'c1'], ['task', 't1'], ['tasks', 'pending'], ['balance']]);
   });
   it('sans child_id connu, invalide toutes les listes de tâches', () => {
-    expect(invalidationsFor('tasks', null)).toEqual([['tasks']]);
+    expect(invalidationsFor('tasks', null)).toEqual([['tasks'], ['balance']]);
   });
   it('points et demandes invalident le solde de l’enfant', () => {
     expect(invalidationsFor('point_transactions', { child_id: 'c1' })).toContainEqual(['balance']);

@@ -8,7 +8,7 @@ import { REWARD_ICON_NAMES, RewardIcon } from '@/components/RewardIcon';
 import { Button, Card, Field, Screen, Title } from '@/components/ui';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { useDeleteReward, useSaveReward } from '@/hooks/usePoints';
-import type { RewardRow } from '@/types/db';
+import type { RewardRow } from '@/types/models';
 
 /** Création / édition d'une récompense — parent uniquement (RLS) ; `childId` null = commune. */
 export function RewardForm({ reward }: { reward?: RewardRow }) {

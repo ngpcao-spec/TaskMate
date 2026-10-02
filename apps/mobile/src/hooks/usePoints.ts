@@ -14,9 +14,10 @@ import {
   type RewardInput,
 } from '@/api/points';
 import { serverErrorCode } from '@/api/tasks';
-import { pendingPointsDelta, projectBalance, type BalanceSnapshot } from '@/domain/rewards';
+import { projectBalance, type BalanceSnapshot } from '@/domain/rewards';
+import { parentPointsDelta } from '@/domain/task-state';
 import i18n from '@/i18n';
-import { mutationKeys, type ToggleVars } from '@/sync/mutations';
+import { mutationKeys, type ToggleVars, type ValidateVars } from '@/sync/mutations';
 import { useToastStore } from '@/store/toast';
 
 export const pointKeys = {
@@ -30,16 +31,20 @@ export function useBalance(childId: string | null) {
   return useQuery({ queryKey: pointKeys.balance(childId ?? 'none'), queryFn: () => fetchBalance(childId as string), enabled: childId !== null });
 }
 
-/** Solde + effet des coches encore en file d'attente (affichage projeté hors ligne, SPEC §5.2). */
-export function useProjectedBalance(childId: string | null): BalanceSnapshot | null {
+/**
+ * Solde + effet des écritures PARENT encore en file (affichage projeté hors ligne, SPEC §5.2).
+ * L'ENFANT ne voit jamais son solde monter de façon optimiste : seule la validation serveur crédite.
+ */
+export function useProjectedBalance(childId: string | null, role: 'parent' | 'child'): BalanceSnapshot | null {
   const base = useBalance(childId).data;
-  const pending = useMutationState({
-    filters: { mutationKey: mutationKeys.toggleTask, status: 'pending' },
-    select: (m) => m.state.variables as ToggleVars,
-  });
+  const toggles = useMutationState({ filters: { mutationKey: mutationKeys.toggleTask, status: 'pending' }, select: (m) => m.state.variables as ToggleVars });
+  const validations = useMutationState({ filters: { mutationKey: mutationKeys.validateTask, status: 'pending' }, select: (m) => m.state.variables as ValidateVars });
   if (!base) return null;
-  const mine = pending.filter((v) => v.task.child_id === childId).map((v) => ({ completed: v.completed, points: v.task.points }));
-  return projectBalance(base, pendingPointsDelta(mine));
+  if (role === 'child') return base;
+  const delta =
+    toggles.filter((v) => v.asParent && v.task.child_id === childId).reduce((sum, v) => sum + parentPointsDelta(v.completed ? 'toggle-on' : 'toggle-off', v.task), 0) +
+    validations.filter((v) => v.task.child_id === childId).reduce((sum, v) => sum + parentPointsDelta('validate', v.task), 0);
+  return projectBalance(base, delta);
 }
 
 export const useRewards = () => useQuery({ queryKey: pointKeys.rewards, queryFn: fetchRewards });

@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import '@/i18n';
 import CalendarScreen from '../app/(tabs)/calendar';
-import type { ChildRow, TaskRow } from '@/types/db';
+import type { ChildRow, TaskRow } from '@/types/models';
 
 jest.mock('expo-router', () => ({ useRouter: () => ({ push: jest.fn() }) }));
 jest.mock('react-native-safe-area-context', () => ({

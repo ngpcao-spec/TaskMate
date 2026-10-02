@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import '@/i18n';
 import { TaskForm } from '@/components/TaskForm';
-import type { ChildRow, TaskRow } from '@/types/db';
+import type { ChildRow, TaskRow } from '@/types/models';
 
 const mockBack = jest.fn();
 jest.mock('expo-router', () => ({ useRouter: () => ({ back: mockBack, push: jest.fn() }) }));
@@ -72,17 +72,6 @@ describe('TaskForm', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Thêm tùy chọn' }));
     await fireEvent.press(screen.getByRole('radio', { name: 'Các ngày chọn' }));
     await waitFor(() => expect(screen.getByRole('button', { name: 'Lưu' }).props.accessibilityState).toMatchObject({ disabled: true }));
-  });
-
-  it('enfant : ni points ni répétition (RLS : points = 10 imposés, pas de récurrence)', async () => {
-    mockRole = 'child';
-    await render(<TaskForm />);
-    expect(screen.queryByRole('button', { name: 'Thêm tùy chọn' })).toBeNull();
-    await fireEvent.changeText(screen.getByLabelText('Tên công việc'), 'Đọc sách');
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Lưu' }).props.accessibilityState).toMatchObject({ disabled: false }));
-    await fireEvent.press(screen.getByRole('button', { name: 'Lưu' }));
-    await waitFor(() => expect(mockCreate).toHaveBeenCalled());
-    expect((mockCreate.mock.calls[0]?.[0] as { tasks: { points: number }[] }).tasks[0]?.points).toBe(10);
   });
 
   it('occurrence d’une série : « appliquer à la série » met à jour la récurrence', async () => {

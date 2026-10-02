@@ -16,7 +16,8 @@ export function invalidationsFor(table: RealtimeTable, row: Row): readonly (read
   const childId = row?.child_id ?? null;
   switch (table) {
     case 'tasks':
-      return childId ? [['tasks', childId], ['task', row?.id ?? '']] : [['tasks']];
+      // la file « Cần duyệt » et les points en attente suivent les tâches
+      return childId ? [['tasks', childId], ['task', row?.id ?? ''], ['tasks', 'pending'], ['balance']] : [['tasks'], ['balance']];
     case 'goals':
       return [['goals', ...(childId ? [childId] : [])]];
     case 'rewards':

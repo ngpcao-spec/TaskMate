@@ -1,5 +1,5 @@
 import { DEFAULT_PREFS, normalizePrefs, type NotificationPrefs } from '@/domain/notification-prefs';
-import type { ActivityLogRow, RewardRequestRow } from '@/types/db';
+import type { ActivityLogRow, RewardRequestRow } from '@/types/models';
 import { supabase } from './supabase';
 
 export async function fetchPrefs(memberId: string): Promise<NotificationPrefs> {

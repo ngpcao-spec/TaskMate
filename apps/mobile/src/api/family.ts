@@ -1,4 +1,4 @@
-import type { ChildRow, FamilyRow, MemberRow } from '@/types/db';
+import type { ChildRow, FamilyRow, MemberRow } from '@/types/models';
 import { supabase } from './supabase';
 
 export type Me = { member: MemberRow; family: FamilyRow; children: ChildRow[] };
