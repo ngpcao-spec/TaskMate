@@ -14,7 +14,7 @@ App mobile familiale (Expo + Supabase). Spéc: `SPEC.md` (fait autorité). Trava
 - DB (sans Docker, cf. D-002): `./scripts/db-test.sh` (Postgres 16 local + pgTAP + shim Supabase + `db-concurrency.sh`)
 - Types DB : `supabase gen types typescript --local > apps/mobile/src/types/db.ts` (aujourd'hui écrits à la main, D-009)
 - Web (cible principale, D-025) : `pnpm --filter @taskmate/mobile export:web` → `apps/mobile/dist` ; implémentations web = fichiers `*.web.ts(x)` à côté des natifs (D-026)
-- E2E : `apps/mobile/e2e/README.md` (Maestro) ; build : `eas.json` ; HUMAN_TODO.md liste ce qui demande vos comptes
+- E2E web : `apps/mobile/e2e-web/README.md` (Playwright, Supabase local) ; déploiement : `vercel.json` (racine) ; HUMAN_TODO.md liste ce qui demande vos comptes (Supabase cloud, Vercel)
 
 ## Architecture
 - `apps/mobile/app` : écrans Expo Router uniquement. Écrans → hooks (`src/hooks`) → `src/api` (client Supabase, RPC typés) ; calculs purs dans `src/domain` (couverture ≥ 90 %).

@@ -9,6 +9,7 @@ export function Chip({ label, selected, onPress, color = colors.primary, role = 
       accessibilityRole={role}
       accessibilityLabel={label}
       accessibilityState={{ selected, checked: selected }}
+      aria-checked={selected}
       onPress={onPress}
       style={[styles.chip, selected && { backgroundColor: color, borderColor: color }]}
     >

@@ -39,6 +39,7 @@ export default function ProfileScreen() {
               accessibilityRole="radio"
               accessibilityLabel={`${c.name}, ${age}`}
               accessibilityState={{ selected: active }}
+              aria-checked={active}
               onPress={() => d.select(c.id)}
               style={[styles.childCard, { backgroundColor: `${color}1A` }, active && { borderColor: color }]}
             >

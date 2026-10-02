@@ -48,7 +48,7 @@ export default function StatsScreen() {
 
       <View style={styles.segment} accessibilityRole="tablist">
         {(['week', 'month'] as const).map((p) => (
-          <Pressable key={p} accessibilityRole="radio" accessibilityLabel={t(`stats.${p}`)} accessibilityState={{ selected: period === p, checked: period === p }} onPress={() => setPeriod(p)} style={[styles.segmentItem, period === p && styles.segmentActive]}>
+          <Pressable key={p} accessibilityRole="radio" accessibilityLabel={t(`stats.${p}`)} accessibilityState={{ selected: period === p, checked: period === p }} aria-checked={period === p} onPress={() => setPeriod(p)} style={[styles.segmentItem, period === p && styles.segmentActive]}>
             <Text style={[styles.segmentText, period === p && styles.segmentTextActive]}>{t(`stats.${p}`)}</Text>
           </Pressable>
         ))}

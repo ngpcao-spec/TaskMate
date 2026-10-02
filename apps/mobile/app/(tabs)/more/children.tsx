@@ -51,7 +51,7 @@ function ChildCard({ child, today }: { child: ChildRow; today: string }) {
       <Field label={t('onboarding.children.birthDate')} value={birth} onChangeText={setBirth} maxLength={10} error={birthError ? t(`onboarding.children.errors.${birthError}`) : null} />
       <View style={styles.palette}>
         {PALETTE.map((c) => (
-          <Pressable key={c} accessibilityRole="radio" accessibilityLabel={`${t('onboarding.children.color')} ${c}`} accessibilityState={{ selected: color === c }} onPress={() => setColor(c)} style={[styles.swatch, { backgroundColor: c }, color === c && styles.selected]} />
+          <Pressable key={c} accessibilityRole="radio" accessibilityLabel={`${t('onboarding.children.color')} ${c}`} accessibilityState={{ selected: color === c }} aria-checked={color === c} onPress={() => setColor(c)} style={[styles.swatch, { backgroundColor: c }, color === c && styles.selected]} />
         ))}
       </View>
       <Button label={t('common.save')} disabled={!dirty || !valid} loading={update.isPending} onPress={() => update.mutate({ id: child.id, patch: { name: name.trim(), birth_date: birth, color } })} />

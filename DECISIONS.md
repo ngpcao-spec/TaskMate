@@ -146,3 +146,18 @@ Les rappels « 10 min avant » de l'enfant reposent sur des notifications locale
 
 ## D-036 — Clés VAPID
 `scripts/generate-vapid.mjs` génère la paire. Publique : variable `EXPO_PUBLIC_VAPID_PUBLIC_KEY` (front). Privée : uniquement secrets Supabase. Jamais committées.
+
+## D-037 — CORS sur les Edge Functions appelées par le navigateur
+`redeem-invite` et `delete-account` n'avaient aucun traitement CORS (inutile en natif) : un navigateur aurait été bloqué au préflight OPTIONS. `supabase/functions/_shared/cors.ts` répond au préflight (204) et ajoute les en-têtes à toutes les réponses (`Access-Control-Allow-Origin: *` : l'accès repose sur le JWT, pas sur des cookies). Test Jest `edge-cors`. `send-push` (serveur → serveur) est inchangée.
+
+## D-038 — Playwright remplace Maestro
+Dossier `apps/mobile/e2e-web/`, Chromium, app exportée servie par `support/serve.mjs` (même logique de réécriture SPA que Vercel). Chaque test crée sa famille avec la clé de service du Supabase **local** (`support/seed.ts`) et ouvre les sessions en les injectant dans le localStorage (même clé que supabase-js) ; l'onboarding OTP par e-mail n'est pas rejoué (couvert par les tests Jest/pgTAP). Job CI `e2e` : `supabase start` + `supabase functions serve` (jointure par lien) + build web contre le local. Les flows Maestro sont supprimés (D-025).
+
+## D-039 — Vercel : Root Directory vide, tout dans `vercel.json`
+Un `vercel.json` ne peut pas fixer le « Root Directory ». On le laisse vide (racine du dépôt) : `installCommand` exécuté depuis la racine du workspace pnpm, `buildCommand` ciblant `apps/mobile` via `--filter`, `outputDirectory: apps/mobile/dist`. Réécriture SPA, en-têtes de cache (sw.js/index.html/manifest sans cache ; `/_expo/static` et `/assets` immutables un an), `Permissions-Policy: camera=(self)` pour le scan QR. Configuration validée avec `@vercel/routing-utils` (celui de Vercel) et testée (`vercel-config.test.ts`) ; build vérifié en local, rien déployé.
+
+## D-040 — PR empilées W1 → W2 → W3 → W4
+Chaque lot dépend du précédent (non fusionné, pas de fusion par moi) : chaque branche part du lot précédent et sa PR cible la branche précédente. Après fusion de W1 dans `main`, GitHub repointe la PR W2 sur `main`, etc. Fusionner dans l'ordre W1, W2, W3, W4.
+
+## D-041 — États d'accessibilité exposés au web (`aria-*`)
+`react-native-web` 0.21 n'utilise `accessibilityState` que pour `disabled` : cases cochées, onglets/pastilles sélectionnés, puces, chevrons déroulés et boutons occupés n'étaient pas annoncés aux lecteurs d'écran (découvert par les tests Playwright : `toBeChecked` voyait toujours « décoché »). Les composants concernés ajoutent `aria-checked` / `aria-selected` / `aria-expanded` / `aria-busy` en plus de `accessibilityState` (conservé pour le natif).

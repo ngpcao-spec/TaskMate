@@ -43,3 +43,55 @@ jobs:
           echo "=====GENERATED-TYPES-BEGIN====="
           cat apps/mobile/src/types/db.ts
           echo "=====GENERATED-TYPES-END====="
+  e2e:
+    # Tests Playwright (Chromium) de l'app web exportée contre un Supabase local — remplace les flows Maestro.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with: { node-version: 22, cache: pnpm }
+      - uses: supabase/setup-cli@v3
+        with: { version: "${{ env.SUPABASE_CLI_VERSION }}" }
+      - run: pnpm install --frozen-lockfile
+      - run: supabase start
+      - name: Variables du Supabase local
+        run: |
+          supabase status -o env > /tmp/supabase.env
+          sed 's/=.*/=<valeur>/' /tmp/supabase.env
+          set -a; . /tmp/supabase.env; set +a
+          ANON="${ANON_KEY:-$PUBLISHABLE_KEY}"; SERVICE="${SERVICE_ROLE_KEY:-$SECRET_KEY}"
+          echo "::add-mask::$ANON"; echo "::add-mask::$SERVICE"
+          {
+            echo "E2E_SUPABASE_URL=$API_URL"
+            echo "E2E_ANON_KEY=$ANON"
+            echo "E2E_SERVICE_ROLE_KEY=$SERVICE"
+          } >> "$GITHUB_ENV"
+      - name: Edge Functions locales (redeem-invite pour la jointure par lien)
+        run: |
+          supabase functions serve > /tmp/functions.log 2>&1 &
+          for i in $(seq 1 60); do
+            # sans jeton, la fonction (ou la passerelle) répond 401 : le runtime est joignable
+            code=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$E2E_SUPABASE_URL/functions/v1/redeem-invite" -H 'Content-Type: application/json' -d '{}' || true)
+            case "$code" in 401|403|200|204) echo "functions prêtes ($code)"; exit 0;; esac
+            sleep 2
+          done
+          echo "functions non prêtes (dernier code: $code)"; cat /tmp/functions.log; exit 1
+      - name: Build web contre le Supabase local
+        run: pnpm --filter @taskmate/mobile export:web
+        env:
+          EXPO_PUBLIC_SUPABASE_URL: ${{ env.E2E_SUPABASE_URL }}
+          EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ env.E2E_ANON_KEY }}
+      - run: pnpm --filter @taskmate/mobile exec playwright install --with-deps chromium
+      - run: pnpm --filter @taskmate/mobile e2e:web
+      - name: Journal des functions (diagnostic)
+        if: failure()
+        run: tail -n 80 /tmp/functions.log || true
+      - uses: actions/upload-artifact@v6
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            apps/mobile/playwright-report
+            apps/mobile/test-results
+          if-no-files-found: ignore

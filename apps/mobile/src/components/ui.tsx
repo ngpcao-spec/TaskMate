@@ -101,6 +101,7 @@ export function Button({ label, onPress, variant = 'primary', disabled = false, 
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{ disabled: inactive, busy: loading }}
+      aria-busy={loading}
       disabled={inactive}
       onPress={onPress}
       style={({ pressed }) => [

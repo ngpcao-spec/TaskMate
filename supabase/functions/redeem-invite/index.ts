@@ -3,10 +3,11 @@
 // (auth.uid() reste l'enfant). La limite « 5 échecs / 15 min » est appliquée en SQL, par compte et par IP.
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
-const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+import { jsonResponse as json, preflight } from '../_shared/cors.ts';
 
 Deno.serve(async (req) => {
+  const early = preflight(req);
+  if (early) return early;
   if (req.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
   const authorization = req.headers.get('Authorization');
   if (!authorization) return json({ error: 'not_authenticated' }, 401);
