@@ -1,0 +1,13 @@
+appId: app.taskmate.family
+---
+# Pré-requis : session enfant liée à Minh avec la tâche « Làm bài tập Toán » aujourd'hui (seed).
+- launchApp
+- assertVisible: "Làm bài tập Toán"
+- tapOn:
+    id: "Làm bài tập Toán"
+    index: 0
+- assertVisible: "Hôm nay 1/"
+- tapOn:
+    id: "Làm bài tập Toán"
+    index: 0
+- assertNotVisible: "Hôm nay 1/"

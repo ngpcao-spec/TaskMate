@@ -7,7 +7,9 @@ App mobile familiale (Expo + Supabase). Spéc: `SPEC.md` (fait autorité). Trava
 - Dev: `pnpm --filter @taskmate/mobile start`
 - Vérifs: `pnpm -w typecheck`, `pnpm -w lint`, `pnpm -w test`, `pnpm --filter @taskmate/mobile exec expo export --platform ios`
 - DB (Docker dispo): `supabase start`, `supabase db reset && supabase test db`, `supabase db lint`
-- DB (sans Docker, cf. D-002): `./scripts/db-test.sh` (Postgres 16 local + pgTAP + shim Supabase)
+- DB (sans Docker, cf. D-002): `./scripts/db-test.sh` (Postgres 16 local + pgTAP + shim Supabase + `db-concurrency.sh`)
+- Types DB : `supabase gen types typescript --local > apps/mobile/src/types/db.ts` (aujourd'hui écrits à la main, D-009)
+- E2E : `apps/mobile/e2e/README.md` (Maestro) ; build : `eas.json` ; HUMAN_TODO.md liste ce qui demande vos comptes
 
 ## Architecture
 - `apps/mobile/app` : écrans Expo Router uniquement. Écrans → hooks (`src/hooks`) → `src/api` (client Supabase, RPC typés) ; calculs purs dans `src/domain` (couverture ≥ 90 %).
@@ -22,3 +24,7 @@ App mobile familiale (Expo + Supabase). Spéc: `SPEC.md` (fait autorité). Trava
 - Aucune chaîne UI en dur (i18n). `accessibilityLabel` + cibles ≥ 44 pt. Aucun écran ne compare/classe les deux enfants.
 - `date` d'une tâche = jour local de la famille, jamais dérivé d'un timestamp UTC.
 - Ne pas modifier SPEC.md. Pas de push --force ni d'action sur services distants.
+
+## État
+Jalons M0 → M11 livrés (voir PROGRESS.md → rapport final). Pièges : jest-expo + RNTL 14 (`await render/fireEvent/act`), `jest.mock` factories : variables préfixées `mock`,
+mutations d'écriture = `sync/mutations.ts` (scope `writes`, ids fixés à la création), nouvelle table = RLS + pgTAP dans la même migration, tests SQL : un fichier = une transaction avec `tests.login(n)`.

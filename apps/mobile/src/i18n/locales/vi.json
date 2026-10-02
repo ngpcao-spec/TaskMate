@@ -177,7 +177,8 @@
     "tasks": "Danh sách việc",
     "points": "Điểm thưởng",
     "goals": "Mục tiêu",
-    "notifications": "Cài đặt thông báo"
+    "notifications": "Cài đặt thông báo",
+    "settings": "Cài đặt chung"
   },
   "taskList": {
     "upcoming": "Sắp tới",
@@ -312,5 +313,39 @@
     "saved": "Đã lưu cài đặt",
     "invalidTime": "Giờ không hợp lệ (HH:MM)",
     "reset": "Khôi phục mặc định"
+  },
+  "settings": {
+    "title": "Cài đặt chung",
+    "language": "Ngôn ngữ",
+    "lang": {
+      "vi": "Tiếng Việt",
+      "fr": "Français",
+      "en": "English"
+    },
+    "manageChildren": "Quản lý hồ sơ của các con",
+    "devices": "Thiết bị đã liên kết",
+    "devicesEmpty": "Chưa có thiết bị nào",
+    "thisDevice": "thiết bị này",
+    "roleChild": "Con",
+    "roleParent": "Phụ huynh",
+    "revoke": "Thu hồi",
+    "revokeTitle": "Thu hồi thiết bị",
+    "revokeBody": "Thiết bị của {{name}} sẽ bị đăng xuất và phải quét mã mời mới.",
+    "deviceRevoked": "Đã thu hồi thiết bị",
+    "coParent": "Mời phụ huynh cùng quản lý",
+    "coParentInvite": "Tạo mã mời phụ huynh",
+    "coParentHint": "Nhập mã này ở bước “Tham gia với mã đồng phụ huynh”. Hiệu lực 24 giờ.",
+    "timezone": "Múi giờ của gia đình",
+    "timezoneInvalid": "Múi giờ không hợp lệ (ví dụ Asia/Ho_Chi_Minh)",
+    "privacy": "Chính sách quyền riêng tư",
+    "logout": "Đăng xuất",
+    "deleteHint": "Xóa toàn bộ gia đình và dữ liệu của tất cả thành viên. Không thể hoàn tác.",
+    "deleteAccount": "Xóa tài khoản và dữ liệu",
+    "deleteTitle": "Xóa tài khoản?",
+    "deleteBody": "Toàn bộ dữ liệu của gia đình (việc, điểm, mục tiêu, hồ sơ các con) sẽ bị xóa vĩnh viễn.",
+    "deleteConfirm": "Xóa vĩnh viễn",
+    "deleteChild": "Xóa hồ sơ",
+    "deleteChildBody": "Xóa hồ sơ của {{name}}?",
+    "childDeleted": "Đã xóa hồ sơ"
   }
 }

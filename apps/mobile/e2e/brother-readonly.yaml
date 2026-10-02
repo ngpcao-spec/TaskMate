@@ -1,0 +1,7 @@
+appId: app.taskmate.family
+---
+# Enfant : le profil du frère est consultable en lecture seule, sans comparaison.
+- launchApp
+- tapOn: "Khang, 13 tuổi"
+- assertVisible: "Đang xem lịch của Khang"
+- assertNotVisible: "Thêm việc"

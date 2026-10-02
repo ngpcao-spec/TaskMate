@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 import { Chip } from '@/components/Chip';
+import { IconChoice } from '@/components/IconChoice';
 import { REWARD_ICON_NAMES, RewardIcon } from '@/components/RewardIcon';
 import { Button, Card, Field, Screen, Title } from '@/components/ui';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
@@ -33,7 +34,9 @@ export function RewardForm({ reward }: { reward?: RewardRow }) {
         <Field label={t('reward.cost')} value={cost} onChangeText={(v) => setCost(v.replace(/\D/g, ''))} keyboardType="number-pad" maxLength={6} />
         <View style={styles.wrap}>
           {REWARD_ICON_NAMES.map((name) => (
-            <Chip key={name} label={name} selected={icon === name} onPress={() => setIcon(name)} />
+            <IconChoice key={name} name={name} selected={icon === name} onPress={() => setIcon(name)}>
+              <RewardIcon name={name} />
+            </IconChoice>
           ))}
         </View>
         <View style={styles.wrap}>
@@ -42,7 +45,6 @@ export function RewardForm({ reward }: { reward?: RewardRow }) {
             <Chip key={c.id} label={c.name} color={c.color ?? undefined} selected={childId === c.id} onPress={() => setChildId(c.id)} />
           ))}
         </View>
-        <RewardIcon name={icon} size={32} />
       </Card>
       <Button
         label={t('common.save')}

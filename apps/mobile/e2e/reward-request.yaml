@@ -1,0 +1,10 @@
+appId: app.taskmate.family
+---
+# Enfant (solde ≥ 100) : demande « Chơi game 1 tiếng » → points réservés, pas débités.
+- launchApp
+- tapOn: "Thêm"
+- tapOn: "Điểm thưởng"
+- tapOn: "Chơi game 1 tiếng, 100 điểm"
+- tapOn: "Gửi yêu cầu"
+- assertVisible: "Đang chờ duyệt"
+- assertVisible: "trong đó 100 điểm đang chờ duyệt"

@@ -199,6 +199,7 @@ export type Database = {
         Args: { p_code: string; p_display_name?: string; p_extra_key?: string };
         Returns: string | null;
       };
+      delete_family: { Args: Record<string, never>; Returns: string[] };
       register_device: { Args: { p_token: string; p_platform: string }; Returns: string };
       revoke_device: { Args: { p_device_id: string }; Returns: undefined };
     };

@@ -4,13 +4,12 @@ import { Redirect, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import QRCode from 'react-native-qrcode-svg';
 import { createChild, createInvite } from '@/api/family';
 import { queryKeys } from '@/api/keys';
+import { InviteCard } from '@/components/InviteCard';
 import { Button, Card, ErrorText, Field, Screen, Subtitle, Title } from '@/components/ui';
 import { ageFromBirthDate } from '@/domain/age';
 import { validateBirthDate } from '@/domain/birth-date';
-import { buildInviteLink } from '@/domain/invite';
 import { useMe } from '@/hooks/useMe';
 import { colors, MIN_TARGET, typography } from '@/theme/tokens';
 
@@ -86,21 +85,11 @@ export default function ChildrenScreen() {
             <Text style={typography.secondary}>
               {t('common.yearsOld', { age: ageFromBirthDate(child.birth_date, today) })}
             </Text>
-            {code ? (
-              <View style={styles.invite}>
-                <QRCode value={buildInviteLink(code)} size={140} />
-                <Text accessibilityLabel={`${t('onboarding.children.inviteCode')} ${code}`} style={styles.code}>
-                  {code}
-                </Text>
-                <Text style={[typography.secondary, styles.hint]}>
-                  {t('onboarding.children.inviteHint', { name: child.name })}
-                </Text>
-              </View>
-            ) : null}
-            <Button
-              variant="secondary"
-              label={code ? t('onboarding.children.regenerate') : t('onboarding.children.inviteCode')}
-              onPress={() => regenerate(child.id)}
+            <InviteCard
+              code={code || null}
+              hint={t('onboarding.children.inviteHint', { name: child.name })}
+              actionLabel={code ? t('onboarding.children.regenerate') : t('onboarding.children.inviteCode')}
+              onGenerate={() => regenerate(child.id)}
             />
           </Card>
         );
@@ -149,9 +138,6 @@ export default function ChildrenScreen() {
 }
 
 const styles = StyleSheet.create({
-  invite: { alignItems: 'center', gap: 8, paddingVertical: 8 },
-  code: { fontSize: 32, fontWeight: '700', letterSpacing: 6, color: colors.text },
-  hint: { textAlign: 'center' },
   palette: { flexDirection: 'row', gap: 12 },
   swatch: { width: MIN_TARGET, height: MIN_TARGET, borderRadius: MIN_TARGET / 2, borderWidth: 3, borderColor: 'transparent' },
   swatchSelected: { borderColor: colors.text },

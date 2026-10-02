@@ -1,6 +1,25 @@
 # Progression
-Jalon courant : M11 — à démarrer
-Dernière vérification complète : OK (tag m10)
+Jalon courant : TERMINÉ (M0 → M11)
+Dernière vérification complète : OK (tag m11) — typecheck, lint, 244 tests Jest (domain ≥ 90 %), 313 assertions pgTAP (9 fichiers) + 3 tests de concurrence à 2 sessions, `expo export` iOS + Android
+
+## RAPPORT FINAL
+
+**Jalons livrés** (tags locaux `m0` … `m11`, branche `claude/lucid-hamilton-01g75d` poussée ; les tags n'ont pas pu être poussés — D-010) :
+M0 squelette · M1 schéma/RLS/RPC · M2 onboarding & auth · M3 accueil & tâches · M4 hors ligne & temps réel · M5 calendrier · M6 points & récompenses · M7 objectifs · M8 statistiques · M9 notifications · M10 récurrence · M11 finition (réglages, appareils, co-parent, suppression de compte, a11y, Maestro, EAS, confidentialité).
+
+**Critères d'acceptation (§8)** : 12/13 couverts par un test automatisé (table ci-dessous). Partiel : « visible chez le parent en < 5 s » — la chaîne (publication Realtime → invalidation → refetch) est testée, le délai réel doit être mesuré sur appareils. Les flows Maestro sont écrits (`apps/mobile/e2e`) mais non exécutés ici (pas de Docker/simulateur).
+
+**Décisions importantes** (voir `DECISIONS.md`, D-001 → D-018) : pas de Docker → Postgres 16 + pgTAP + shim Supabase (D-002) ; file hors ligne FIFO persistée avec ids idempotents (D-014) ; limite d'invitations en SQL (D-011) ; récurrence générée toutes les heures de façon idempotente (D-018) ; push via Database Webhook + Edge Function à logique pure (D-016) ; maquettes absentes → spec seule (D-001).
+
+**À faire par vous, dans l'ordre** (`HUMAN_TODO.md`) : #1 fournir les maquettes → #2 valider avec la vraie stack Docker (`supabase start/reset/test db/lint`, régénérer les types) → #3 projet Supabase cloud (Singapour) → #7 déployer fonctions + auth anonyme → #6 push (EAS projectId, APNs/FCM, webhook, cron récap) → #4 Apple/Google → #8 assets → #9 confidentialité & stores → #10 E2E Maestro → #11 validation sur appareils.
+
+**Dette technique connue**
+- Types DB écrits à la main (`src/types/db.ts`) — à régénérer avec la CLI ; `supabase db lint` non exécuté localement.
+- Apple/Google : boutons derrière un flag, handlers à brancher (D-013).
+- Jetons push invalides nettoyés au ticket Expo uniquement (pas de passe sur les reçus différés) ; textes push en vietnamien uniquement.
+- Création/édition de **séries** récurrentes en ligne uniquement ; changement d'enfant d'une série non supporté.
+- Écrans parent/enfant non vérifiés visuellement contre les maquettes (absentes) ni sur appareil ; avatars = initiales, icône/splash = placeholders Expo.
+- Pas d'actions notification « Approuver/Refuser » testées sur appareil (mapping et RPC testés en Jest).
 
 ## M0 — Squelette
 - [x] Monorepo pnpm, Expo SDK 57 + Router, TS strict
@@ -54,6 +73,10 @@ Non vérifiable ici : push réels (EAS/APNs/FCM) → HUMAN_TODO #6 ; livraison r
 Migration 6 : `generate_recurrence/generate_all_recurrences` (14 jours glissants, fuseau famille), trigger de synchronisation (futur non fait), cron horaire (D-018). pgTAP 08 (30 assertions : quotidien, jours choisis, bornes, modification, suppression, fuseaux, droits) + test de concurrence à 2 sessions.
 Client : option « Lặp lại » (parent), « appliquer à la série », « supprimer la série ».
 
+## M11 — Finition ✅ (tag m11)
+Réglages généraux (langue vi/fr/en persistée, déconnexion), parent : gestion des enfants + codes/QR, appareils liés (révocation), invitation co-parent, fuseau famille, **suppression du compte et des données** (RPC `delete_family` + Edge Function `delete-account`, pgTAP 09),
+accessibilité (libellés + cibles ≥ 44 pt testés), états vides, flows Maestro, `eas.json`, politique de confidentialité, config Supabase (auth anonyme, fonctions).
+
 ## Critères d'acceptation → tests
 | Critère §8 | Test | Statut |
 |---|---|---|
@@ -74,3 +97,5 @@ Client : option « Lặp lại » (parent), « appliquer à la série », « sup
 | Une tâche créée par le parent pour 20:00 déclenche un rappel local sur le téléphone de l'enfant | `notifications-service.test` (19:50 heure famille, replanif. sans doublon) + `domain/reminders.test` + pgTAP 07 (`task_assigned`) | ✅ |
 | Aucune notification à un enfant sur l'activité de son frère | `send-push-logic.test` (recipientsFor) | ✅ |
 | Récurrence : pas de doublon même si deux générations se chevauchent | pgTAP 08 (idempotence, `unique(recurrence_id,date)`) + `db-concurrency.sh` (2 sessions) | ✅ |
+| Accessibilité : libellés sur tous les éléments interactifs, cibles ≥ 44 pt (§Qualité) | `a11y.test` | ✅ |
+| Suppression du compte et des données (stores) | pgTAP 09 + `settings.test` | ✅ |

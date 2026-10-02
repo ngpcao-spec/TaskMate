@@ -177,7 +177,8 @@
     "tasks": "All tasks",
     "points": "Points & rewards",
     "goals": "Goals",
-    "notifications": "Notification settings"
+    "notifications": "Notification settings",
+    "settings": "General settings"
   },
   "taskList": {
     "upcoming": "Upcoming",
@@ -312,5 +313,39 @@
     "saved": "Settings saved",
     "invalidTime": "Invalid time (HH:MM)",
     "reset": "Reset to defaults"
+  },
+  "settings": {
+    "title": "General settings",
+    "language": "Language",
+    "lang": {
+      "vi": "Tiếng Việt",
+      "fr": "Français",
+      "en": "English"
+    },
+    "manageChildren": "Manage children profiles",
+    "devices": "Linked devices",
+    "devicesEmpty": "No linked devices",
+    "thisDevice": "this device",
+    "roleChild": "Child",
+    "roleParent": "Parent",
+    "revoke": "Revoke",
+    "revokeTitle": "Revoke device",
+    "revokeBody": "{{name}}'s device will be signed out and must scan a new invite code.",
+    "deviceRevoked": "Device revoked",
+    "coParent": "Invite a co-parent",
+    "coParentInvite": "Create co-parent code",
+    "coParentHint": "Enter it at the “Join with a co-parent code” step. Valid 24 h.",
+    "timezone": "Family time zone",
+    "timezoneInvalid": "Invalid time zone (e.g. Asia/Ho_Chi_Minh)",
+    "privacy": "Privacy policy",
+    "logout": "Sign out",
+    "deleteHint": "Deletes the whole family and every member's data. This cannot be undone.",
+    "deleteAccount": "Delete account and data",
+    "deleteTitle": "Delete account?",
+    "deleteBody": "All family data (tasks, points, goals, children profiles) will be permanently deleted.",
+    "deleteConfirm": "Delete permanently",
+    "deleteChild": "Delete profile",
+    "deleteChildBody": "Delete {{name}}'s profile?",
+    "childDeleted": "Profile deleted"
   }
 }

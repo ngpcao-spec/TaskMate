@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
-import { Chip } from '@/components/Chip';
+import { IconChoice } from '@/components/IconChoice';
 import { GoalIcon } from '@/components/GoalIcon';
 import { Button, Card, Field, Screen, Title } from '@/components/ui';
 import { GOAL_ICONS, goalFormSchema, type GoalFormValues } from '@/domain/goals';
@@ -58,11 +58,12 @@ export function GoalForm({ goal }: { goal?: GoalRow }) {
         <Controller control={control} name="icon" render={({ field }) => (
           <View style={styles.wrap}>
             {GOAL_ICONS.map((name) => (
-              <Chip key={name} label={name} selected={field.value === name} onPress={() => field.onChange(name)} />
+              <IconChoice key={name} name={name} selected={field.value === name} onPress={() => field.onChange(name)}>
+                <GoalIcon name={name} />
+              </IconChoice>
             ))}
           </View>
         )} />
-        <Controller control={control} name="icon" render={({ field }) => <GoalIcon name={field.value} size={32} />} />
       </Card>
       <Button label={t('common.save')} onPress={submit} disabled={!formState.isValid} loading={save.isPending} />
       {goal ? <Button variant="secondary" label={t('goals.delete')} loading={remove.isPending} onPress={() => remove.mutate(goal, { onSuccess: () => router.back() })} /> : null}

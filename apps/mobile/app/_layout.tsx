@@ -6,11 +6,13 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ToastHost } from '@/components/ToastHost';
 import { useAuthListener } from '@/hooks/useMe';
+import { applyStoredLanguage } from '@/i18n/language';
 import { createQueryClient, CACHE_MAX_AGE } from '@/sync/client';
 import { setupNetworkListeners } from '@/sync/network';
 import { persister } from '@/sync/persister';
 
 setupNetworkListeners();
+applyStoredLanguage();
 const queryClient = createQueryClient();
 
 function Root() {

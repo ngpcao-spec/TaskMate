@@ -177,7 +177,8 @@
     "tasks": "Liste des tâches",
     "points": "Points et récompenses",
     "goals": "Objectifs",
-    "notifications": "Réglages des notifications"
+    "notifications": "Réglages des notifications",
+    "settings": "Réglages généraux"
   },
   "taskList": {
     "upcoming": "À venir",
@@ -312,5 +313,39 @@
     "saved": "Réglages enregistrés",
     "invalidTime": "Heure invalide (HH:MM)",
     "reset": "Valeurs par défaut"
+  },
+  "settings": {
+    "title": "Réglages généraux",
+    "language": "Langue",
+    "lang": {
+      "vi": "Tiếng Việt",
+      "fr": "Français",
+      "en": "English"
+    },
+    "manageChildren": "Gérer les profils enfants",
+    "devices": "Appareils liés",
+    "devicesEmpty": "Aucun appareil lié",
+    "thisDevice": "cet appareil",
+    "roleChild": "Enfant",
+    "roleParent": "Parent",
+    "revoke": "Révoquer",
+    "revokeTitle": "Révoquer l'appareil",
+    "revokeBody": "L'appareil de {{name}} sera déconnecté et devra rescanner un code d'invitation.",
+    "deviceRevoked": "Appareil révoqué",
+    "coParent": "Inviter un co-parent",
+    "coParentInvite": "Créer un code co-parent",
+    "coParentHint": "À saisir à l'étape « Rejoindre avec un code co-parent ». Valable 24 h.",
+    "timezone": "Fuseau horaire de la famille",
+    "timezoneInvalid": "Fuseau invalide (ex. Asia/Ho_Chi_Minh)",
+    "privacy": "Politique de confidentialité",
+    "logout": "Se déconnecter",
+    "deleteHint": "Supprime toute la famille et les données de tous ses membres. Irréversible.",
+    "deleteAccount": "Supprimer le compte et les données",
+    "deleteTitle": "Supprimer le compte ?",
+    "deleteBody": "Toutes les données de la famille (tâches, points, objectifs, profils des enfants) seront supprimées définitivement.",
+    "deleteConfirm": "Supprimer définitivement",
+    "deleteChild": "Supprimer le profil",
+    "deleteChildBody": "Supprimer le profil de {{name}} ?",
+    "childDeleted": "Profil supprimé"
   }
 }

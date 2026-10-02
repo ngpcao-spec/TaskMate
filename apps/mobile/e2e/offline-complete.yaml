@@ -1,0 +1,17 @@
+appId: app.taskmate.family
+---
+# Critère §8 : cocher hors ligne puis revenir en ligne crédite UNE seule fois.
+- launchApp
+- setAirplaneMode: enabled
+- tapOn:
+    id: "Làm bài tập Toán"
+    index: 0
+- assertVisible: "Đang offline — thay đổi sẽ được đồng bộ khi có mạng"
+- assertVisible: "Hôm nay 1/"
+- setAirplaneMode: disabled
+- extendedWaitUntil:
+    notVisible: "Đang offline — thay đổi sẽ được đồng bộ khi có mạng"
+    timeout: 20000
+- tapOn: "Thêm"
+- tapOn: "Điểm thưởng"
+- assertVisible: "10 điểm"
