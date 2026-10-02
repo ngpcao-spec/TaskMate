@@ -158,3 +158,6 @@ Un `vercel.json` ne peut pas fixer le « Root Directory ». On le laisse vide (r
 
 ## D-040 — PR empilées W1 → W2 → W3 → W4
 Chaque lot dépend du précédent (non fusionné, pas de fusion par moi) : chaque branche part du lot précédent et sa PR cible la branche précédente. Après fusion de W1 dans `main`, GitHub repointe la PR W2 sur `main`, etc. Fusionner dans l'ordre W1, W2, W3, W4.
+
+## D-041 — États d'accessibilité exposés au web (`aria-*`)
+`react-native-web` 0.21 n'utilise `accessibilityState` que pour `disabled` : cases cochées, onglets/pastilles sélectionnés, puces, chevrons déroulés et boutons occupés n'étaient pas annoncés aux lecteurs d'écran (découvert par les tests Playwright : `toBeChecked` voyait toujours « décoché »). Les composants concernés ajoutent `aria-checked` / `aria-selected` / `aria-expanded` / `aria-busy` en plus de `accessibilityState` (conservé pour le natif).

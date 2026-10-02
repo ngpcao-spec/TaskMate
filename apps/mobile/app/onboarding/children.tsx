@@ -119,6 +119,7 @@ export default function ChildrenScreen() {
               accessibilityRole="radio"
               accessibilityLabel={`${t('onboarding.children.color')} ${c}`}
               accessibilityState={{ selected: color === c }}
+              aria-checked={color === c}
               onPress={() => setColor(c)}
               style={[styles.swatch, { backgroundColor: c }, color === c && styles.swatchSelected]}
             />

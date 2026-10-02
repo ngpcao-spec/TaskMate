@@ -47,6 +47,7 @@ export function TaskRow({ task, overdue, canToggle, canOpen, canValidate = false
           accessibilityRole="checkbox"
           accessibilityLabel={task.title}
           accessibilityState={{ checked, disabled: !canToggle }}
+          aria-checked={checked}
           disabled={!canToggle}
           onPress={onToggle}
           hitSlop={4}
