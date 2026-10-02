@@ -7,6 +7,13 @@ export const colors = {
   textSecondary: '#8A94A6',
   danger: '#E5484D',
   success: '#27AE60',
+  /** Fonds teintés des maquettes (pills inactives, badges, bannières). */
+  primaryTint: '#E8F1FE',
+  mintTint: '#DDF5EF',
+  warning: '#F5A623',
+  warningTint: '#FFF1DB',
+  successTint: '#E3F6EA',
+  separator: '#EEF2F8',
 } as const;
 
 export const radius = { card: 16, pill: 999 } as const;

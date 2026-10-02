@@ -1,4 +1,5 @@
 import { Redirect, Tabs } from 'expo-router';
+import { ChartColumn, EllipsisVertical, House, Calendar } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -25,11 +26,11 @@ export default function TabsLayout() {
       <SafeAreaView edges={['top']} style={{ backgroundColor: colors.background }}>
         <SyncBanner />
       </SafeAreaView>
-      <Tabs screenOptions={{ headerShown: false, tabBarActiveTintColor: colors.primary }}>
-        <Tabs.Screen name="today" options={{ title: t('tabs.today') }} />
-        <Tabs.Screen name="calendar" options={{ title: t('tabs.calendar') }} />
-        <Tabs.Screen name="stats" options={{ title: t('tabs.stats') }} />
-        <Tabs.Screen name="more" options={{ title: t('tabs.more'), tabBarBadge: approvals.total > 0 ? approvals.total : undefined, tabBarAccessibilityLabel: approvals.total > 0 ? `${t('tabs.more')}, ${t('approvals.badge', { count: approvals.total })}` : t('tabs.more') }} />
+      <Tabs screenOptions={{ headerShown: false, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.textSecondary, tabBarLabelStyle: { fontSize: 11, fontWeight: '500' }, tabBarStyle: { height: 68, paddingTop: 8, paddingBottom: 10, borderTopColor: colors.separator } }}>
+        <Tabs.Screen name="today" options={{ title: t('tabs.today'), tabBarIcon: ({ color, size }) => <House color={color} size={size} /> }} />
+        <Tabs.Screen name="calendar" options={{ title: t('tabs.calendar'), tabBarIcon: ({ color, size }) => <Calendar color={color} size={size} /> }} />
+        <Tabs.Screen name="stats" options={{ title: t('tabs.stats'), tabBarIcon: ({ color, size }) => <ChartColumn color={color} size={size} /> }} />
+        <Tabs.Screen name="more" options={{ title: t('tabs.more'), tabBarIcon: ({ color, size }) => <EllipsisVertical color={color} size={size} />, tabBarBadge: approvals.total > 0 ? approvals.total : undefined, tabBarAccessibilityLabel: approvals.total > 0 ? `${t('tabs.more')}, ${t('approvals.badge', { count: approvals.total })}` : t('tabs.more') }} />
       </Tabs>
     </View>
   );

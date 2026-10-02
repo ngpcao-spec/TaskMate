@@ -4,11 +4,13 @@ import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Switch, Text, View } from 'react-native';
+import { Clock, ChevronRight } from 'lucide-react-native';
+import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import { newId } from '@/api/ids';
 import { Chip } from '@/components/Chip';
 import { PickerField } from '@/components/PickerField';
-import { Button, Card, Field, Screen, Title } from '@/components/ui';
+import { CategoryIcon } from '@/components/CategoryIcon';
+import { Button, Card, Field, Screen, ScreenHeader } from '@/components/ui';
 import { defaultTaskSlot, todayInTz } from '@/domain/family-time';
 import { DEFAULT_POINTS, taskFormSchema, toRecurrenceFields, toTaskFields, type TaskFormValues } from '@/domain/task-form';
 import { formatWeekdayLabel, weekDays, type CalendarLanguage } from '@/domain/calendar';
@@ -18,7 +20,7 @@ import { useCreateRecurrences, useDeleteRecurrence, useUpdateRecurrence } from '
 import { useCreateTasks, useDeleteTask, useUpdateTask } from '@/hooks/useTasks';
 import { CATEGORY_COLORS, TASK_CATEGORIES } from '@/theme/categories';
 import { useToastStore } from '@/store/toast';
-import { typography } from '@/theme/tokens';
+import { colors, typography } from '@/theme/tokens';
 import type { TaskRow } from '@/types/models';
 
 type Props = { task?: TaskRow };
@@ -77,6 +79,8 @@ export function TaskForm({ task }: Props) {
   const form = useForm<TaskFormValues>({ resolver: zodResolver(taskFormSchema), defaultValues: defaults, mode: 'onChange' });
   const { control, handleSubmit, setValue, formState } = form;
   const timeKind = useWatch({ control, name: 'timeKind' });
+  const watchAll = useWatch({ control }) as TaskFormValues;
+  const [timeOpen, setTimeOpen] = useState(false);
   const repeat = useWatch({ control, name: 'repeat' });
   const lang = (['vi', 'fr', 'en'].includes(i18n.language) ? i18n.language : 'vi') as CalendarLanguage;
 
@@ -115,114 +119,151 @@ export function TaskForm({ task }: Props) {
 
   const timeKinds = ['range', 'deadline', 'anytime'] as const;
 
+  const values = watchAll;
+  const dateLabel = values.date === todayInTz(new Date(), tz) ? t('taskForm.todayWord') : values.date.slice(5).split('-').reverse().join('/');
+  const timeSummary =
+    values.timeKind === 'range'
+      ? `${dateLabel}, ${values.startTime ?? ''}`
+      : values.timeKind === 'deadline'
+        ? `${dateLabel}, ${t('taskForm.deadlineLabel', { time: values.endTime ?? '' })}`
+        : `${dateLabel}, ${t('taskForm.anytime')}`;
+
   return (
     <Screen>
-      <Title>{task ? t('taskForm.editTitle') : t('taskForm.title')}</Title>
-      <Card>
-        <Controller
-          control={control}
-          name="title"
-          render={({ field, fieldState }) => (
-            <Field
-              label={t('taskForm.name')}
-              value={field.value}
-              onChangeText={field.onChange}
-              onBlur={field.onBlur}
-              maxLength={80}
-              error={fieldState.isTouched ? err(fieldState.error?.message) : null}
-            />
-          )}
-        />
-        <Text style={typography.secondary}>{t('taskForm.category')}</Text>
-        <Controller
-          control={control}
-          name="category"
-          render={({ field }) => (
-            <View style={styles.wrap}>
-              {TASK_CATEGORIES.map((c) => (
-                <Chip key={c} label={t(`category.${c}`)} color={CATEGORY_COLORS[c]} selected={field.value === c} onPress={() => field.onChange(c)} />
-              ))}
-            </View>
-          )}
-        />
-      </Card>
+      <ScreenHeader title={task ? t('taskForm.editTitle') : t('taskForm.title')} />
 
-      <Card>
-        <Text style={typography.secondary}>{t('taskForm.time')}</Text>
-        <Controller
-          control={control}
-          name="date"
-          render={({ field, fieldState }) => (
-            <PickerField label={t('taskForm.date')} mode="date" value={field.value} onChange={field.onChange} error={err(fieldState.error?.message)} />
-          )}
-        />
-        <Controller
-          control={control}
-          name="timeKind"
-          render={({ field }) => (
-            <View style={styles.wrap}>
-              {timeKinds.map((k) => (
-                <Chip
-                  key={k}
-                  label={t(`taskForm.kind.${k}`)}
-                  selected={field.value === k}
-                  onPress={() => {
-                    field.onChange(k);
-                    if (k !== 'anytime' && !form.getValues('endTime')) {
-                      setValue('startTime', defaults.startTime, { shouldValidate: true });
-                      setValue('endTime', defaults.endTime, { shouldValidate: true });
-                    }
-                  }}
+      <Controller
+        control={control}
+        name="title"
+        render={({ field, fieldState }) => (
+          <Field
+            label={t('taskForm.name')}
+            placeholder={t('taskForm.namePlaceholder')}
+            value={field.value}
+            onChangeText={field.onChange}
+            onBlur={field.onBlur}
+            maxLength={80}
+            error={fieldState.isTouched ? err(fieldState.error?.message) : null}
+          />
+        )}
+      />
+
+      <Text style={styles.label}>{t('taskForm.category')}</Text>
+      <Controller
+        control={control}
+        name="category"
+        render={({ field }) => (
+          <View style={styles.tiles}>
+            {TASK_CATEGORIES.map((c) => {
+              const selected = field.value === c;
+              return (
+                <Pressable
+                  key={c}
+                  accessibilityRole="radio"
+                  accessibilityLabel={t(`category.${c}`)}
+                  accessibilityState={{ selected, checked: selected }}
+                  onPress={() => field.onChange(c)}
+                  style={styles.tileWrap}
+                >
+                  <View style={[styles.tile, { backgroundColor: `${CATEGORY_COLORS[c]}1F` }, selected && styles.tileSelected]}>
+                    <CategoryIcon category={c} size={26} />
+                  </View>
+                  <Text style={[styles.tileLabel, selected && styles.tileLabelSelected]}>{t(`category.${c}`)}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        )}
+      />
+
+      <Text style={styles.label}>{t('taskForm.time')}</Text>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${t('taskForm.time')}: ${timeSummary}`}
+        accessibilityState={{ expanded: timeOpen }}
+        onPress={() => setTimeOpen((v) => !v)}
+        style={styles.timeRow}
+      >
+        <Clock color={colors.textSecondary} size={20} />
+        <Text style={styles.timeSummary}>{timeSummary}</Text>
+        <ChevronRight color={colors.textSecondary} style={timeOpen ? styles.chevronOpen : undefined} />
+      </Pressable>
+      {timeOpen ? (
+        <Card>
+          <Controller
+            control={control}
+            name="date"
+            render={({ field, fieldState }) => (
+              <PickerField label={t('taskForm.date')} mode="date" value={field.value} onChange={field.onChange} error={err(fieldState.error?.message)} />
+            )}
+          />
+          <Controller
+            control={control}
+            name="timeKind"
+            render={({ field }) => (
+              <View style={styles.wrap}>
+                {timeKinds.map((k) => (
+                  <Chip
+                    key={k}
+                    label={t(`taskForm.kind.${k}`)}
+                    selected={field.value === k}
+                    onPress={() => {
+                      field.onChange(k);
+                      if (k !== 'anytime' && !form.getValues('endTime')) {
+                        setValue('startTime', defaults.startTime, { shouldValidate: true });
+                        setValue('endTime', defaults.endTime, { shouldValidate: true });
+                      }
+                    }}
+                  />
+                ))}
+              </View>
+            )}
+          />
+          {timeKind !== 'anytime' ? (
+            <View style={styles.row}>
+              {timeKind === 'range' ? (
+                <Controller
+                  control={control}
+                  name="startTime"
+                  render={({ field, fieldState }) => (
+                    <PickerField label={t('taskForm.from')} mode="time" value={field.value ?? '08:00'} onChange={field.onChange} error={err(fieldState.error?.message)} />
+                  )}
                 />
-              ))}
-            </View>
-          )}
-        />
-        {timeKind !== 'anytime' ? (
-          <View style={styles.row}>
-            {timeKind === 'range' ? (
+              ) : null}
               <Controller
                 control={control}
-                name="startTime"
+                name="endTime"
                 render={({ field, fieldState }) => (
-                  <PickerField label={t('taskForm.from')} mode="time" value={field.value ?? '08:00'} onChange={field.onChange} error={err(fieldState.error?.message)} />
+                  <PickerField
+                    label={timeKind === 'range' ? t('taskForm.to') : t('taskForm.before')}
+                    mode="time"
+                    value={field.value ?? '21:00'}
+                    onChange={field.onChange}
+                    error={err(fieldState.error?.message)}
+                  />
                 )}
               />
-            ) : null}
-            <Controller
-              control={control}
-              name="endTime"
-              render={({ field, fieldState }) => (
-                <PickerField
-                  label={timeKind === 'range' ? t('taskForm.to') : t('taskForm.before')}
-                  mode="time"
-                  value={field.value ?? '21:00'}
-                  onChange={field.onChange}
-                  error={err(fieldState.error?.message)}
-                />
-              )}
-            />
-          </View>
-        ) : null}
-      </Card>
+            </View>
+          ) : null}
+        </Card>
+      ) : null}
 
-      <Card>
-        <Controller
-          control={control}
-          name="note"
-          render={({ field, fieldState }) => (
-            <Field
-              label={t('taskForm.note')}
-              value={field.value ?? ''}
-              onChangeText={field.onChange}
-              multiline
-              maxLength={500}
-              style={styles.note}
-              error={err(fieldState.error?.message)}
-            />
-          )}
-        />
-      </Card>
+      <Controller
+        control={control}
+        name="note"
+        render={({ field, fieldState }) => (
+          <Field
+            label={t('taskForm.note')}
+            placeholder={t('taskForm.notePlaceholder')}
+            value={field.value ?? ''}
+            onChangeText={field.onChange}
+            multiline
+            maxLength={500}
+            style={styles.note}
+            error={err(fieldState.error?.message)}
+          />
+        )}
+      />
 
       {isParent ? (
         <>
@@ -343,6 +384,16 @@ export function TaskForm({ task }: Props) {
 }
 
 const styles = StyleSheet.create({
+  label: { fontSize: 15, fontWeight: '600', color: colors.text },
+  tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  tileWrap: { width: 76, alignItems: 'center', gap: 6 },
+  tile: { width: 68, height: 68, borderRadius: 18, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: 'transparent' },
+  tileSelected: { borderColor: colors.primary, backgroundColor: colors.primaryTint },
+  tileLabel: { fontSize: 12, color: colors.textSecondary },
+  tileLabelSelected: { color: colors.primary, fontWeight: '600' },
+  timeRow: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 56, backgroundColor: colors.card, borderRadius: 14, borderWidth: 1, borderColor: '#DDE5F0', paddingHorizontal: 14 },
+  timeSummary: { flex: 1, fontSize: 16, color: colors.text },
+  chevronOpen: { transform: [{ rotate: '90deg' }] },
   error: { color: '#E5484D', fontSize: 13 },
   switchRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   flexText: { flex: 1 },

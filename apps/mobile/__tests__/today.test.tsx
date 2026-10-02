@@ -122,7 +122,7 @@ describe('TodayScreen (SPEC v4)', () => {
   it('progression : tâches cochées (validées ou non) / total', async () => {
     mockTasks = [task({ id: 'a', completed_at: 'x' }), task({ id: 'b', completed_at: 'x', validated_at: 'y' }), task({ id: 'c' })];
     await render(<TodayScreen />);
-    expect(screen.getAllByText('Hôm nay 2/3 việc đã hoàn thành').length).toBeGreaterThan(0);
+    expect(screen.getAllByLabelText('Hôm nay 2/3 việc đã hoàn thành').length).toBeGreaterThan(0);
   });
 
   it('profil du frère : lecture seule — bandeau, pas de +, cases désactivées', async () => {

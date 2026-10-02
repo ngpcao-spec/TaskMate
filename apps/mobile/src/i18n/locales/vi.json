@@ -98,7 +98,7 @@
   },
   "today": {
     "greeting": "Chào {{name}}!",
-    "encouragement": "Cùng hoàn thành việc hôm nay nhé!",
+    "encouragement": "Cố gắng mỗi ngày nhé!",
     "progress": "Hôm nay {{done}}/{{total}} việc đã hoàn thành",
     "listTitle": "Việc cần làm hôm nay",
     "empty": "Hôm nay chưa có việc nào",
@@ -107,7 +107,9 @@
     "overdue": "Quá hạn",
     "taskGone": "Việc này đã bị xóa",
     "cannotUncheck": "Không thể bỏ chọn: điểm đã được dành cho phần thưởng",
-    "alreadyValidated": "Phụ huynh đã duyệt việc này, không thể bỏ chọn"
+    "alreadyValidated": "Phụ huynh đã duyệt việc này, không thể bỏ chọn",
+    "progressLabel": "Hôm nay",
+    "progressUnit": "việc đã hoàn thành"
   },
   "taskForm": {
     "title": "Thêm việc",
@@ -126,7 +128,7 @@
     "before": "Trước",
     "anytime": "Trong ngày",
     "deadlineLabel": "Trước {{time}}",
-    "note": "Ghi chú",
+    "note": "Ghi chú (tùy chọn)",
     "moreOptions": "Thêm tùy chọn",
     "lessOptions": "Ẩn tùy chọn",
     "points": "Điểm thưởng",
@@ -156,7 +158,10 @@
     "applyToSeries": "Áp dụng cho các việc sắp tới trong chuỗi",
     "deleteSeries": "Xóa cả chuỗi lặp",
     "seriesDeleted": "Đã xóa chuỗi lặp",
-    "seriesNeedsNetwork": "Cần kết nối mạng để tạo hoặc sửa việc lặp lại"
+    "seriesNeedsNetwork": "Cần kết nối mạng để tạo hoặc sửa việc lặp lại",
+    "namePlaceholder": "Ví dụ: Học tiếng Anh",
+    "notePlaceholder": "Thêm ghi chú…",
+    "todayWord": "Hôm nay"
   },
   "sync": {
     "offline": "Đang offline — thay đổi sẽ được đồng bộ khi có mạng",
@@ -280,7 +285,8 @@
       "excellent": "Xuất sắc!",
       "good": "Làm tốt lắm! Còn cố gắng hơn nữa nhé!",
       "keepGoing": "Cố lên, mỗi ngày một chút!"
-    }
+    },
+    "doneShort": "Hoàn thành"
   },
   "notifications": {
     "reminderStart": "Bắt đầu lúc {{time}} (còn {{minutes}} phút)",

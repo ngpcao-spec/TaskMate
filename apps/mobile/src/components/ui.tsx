@@ -1,3 +1,5 @@
+import { useRouter } from 'expo-router';
+import { ChevronLeft } from 'lucide-react-native';
 import type { ReactNode } from 'react';
 import {
   ActivityIndicator,
@@ -12,6 +14,7 @@ import {
   type TextInputProps,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import i18n from '@/i18n';
 import { colors, MIN_TARGET, radius, shadow, spacing, typography } from '@/theme/tokens';
 
 export function Screen({ children, scroll = true }: { children: ReactNode; scroll?: boolean }) {
@@ -28,6 +31,27 @@ export function Screen({ children, scroll = true }: { children: ReactNode; scrol
         {body}
       </KeyboardAvoidingView>
     </SafeAreaView>
+  );
+}
+
+type HeaderProps = { title: string; right?: ReactNode; onBack?: () => void; hideBack?: boolean };
+
+/** En-tête des maquettes : flèche retour + titre (22 semibold), élément optionnel à droite. */
+export function ScreenHeader({ title, right, onBack, hideBack = false }: HeaderProps) {
+  const router = useRouter();
+  const back = onBack ?? (() => (router.canGoBack() ? router.back() : router.replace('/(tabs)/today')));
+  return (
+    <View style={styles.header}>
+      {hideBack ? null : (
+        <Pressable accessibilityRole="button" accessibilityLabel={i18n.t('common.back')} onPress={back} style={styles.backButton}>
+          <ChevronLeft color={colors.text} size={26} />
+        </Pressable>
+      )}
+      <Text accessibilityRole="header" style={[typography.title, styles.headerTitle, hideBack && styles.headerTitleFlush]} numberOfLines={1}>
+        {title}
+      </Text>
+      {right}
+    </View>
   );
 }
 
@@ -90,14 +114,14 @@ export function Button({ label, onPress, variant = 'primary', disabled = false, 
 
 type FieldProps = TextInputProps & { label: string; error?: string | null };
 
-export function Field({ label, error, ...props }: FieldProps) {
+export function Field({ label, error, style, ...props }: FieldProps) {
   return (
     <View style={styles.field}>
-      <Text style={typography.secondary}>{label}</Text>
+      <Text style={styles.fieldLabel}>{label}</Text>
       <TextInput
         accessibilityLabel={label}
         placeholderTextColor={colors.textSecondary}
-        style={[styles.input, error ? styles.inputError : null]}
+        style={[styles.input, error ? styles.inputError : null, style]}
         {...props}
       />
       <ErrorText>{error}</ErrorText>
@@ -110,6 +134,10 @@ export function Card({ children }: { children: ReactNode }) {
 }
 
 const styles = StyleSheet.create({
+  header: { flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: MIN_TARGET, marginLeft: -8 },
+  backButton: { width: MIN_TARGET, height: MIN_TARGET, alignItems: 'center', justifyContent: 'center' },
+  headerTitle: { flex: 1, color: colors.text },
+  headerTitleFlush: { marginLeft: 8 },
   flex: { flex: 1 },
   screen: { flex: 1, backgroundColor: colors.background },
   screenContent: { padding: spacing.md, gap: spacing.md, flexGrow: 1 },
@@ -117,8 +145,8 @@ const styles = StyleSheet.create({
   subtitle: { marginTop: -spacing.sm },
   error: { color: colors.danger, fontSize: 13 },
   button: {
-    minHeight: MIN_TARGET + 4,
-    borderRadius: radius.card,
+    minHeight: MIN_TARGET + 8,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.lg,
@@ -130,6 +158,7 @@ const styles = StyleSheet.create({
   buttonLabel: { color: '#fff', fontSize: 16, fontWeight: '600' },
   buttonLabelAlt: { color: colors.primary },
   field: { gap: spacing.xs },
+  fieldLabel: { fontSize: 15, fontWeight: '600', color: colors.text },
   input: {
     minHeight: MIN_TARGET + 4,
     backgroundColor: colors.card,

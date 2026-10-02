@@ -1,12 +1,13 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Star } from 'lucide-react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { ProfilePills } from '@/components/ProfilePills';
-import { RewardIcon } from '@/components/RewardIcon';
-import { Button, Card, Screen, Title } from '@/components/ui';
+import { REWARD_TINTS, RewardIcon } from '@/components/RewardIcon';
+import { RewardRequestCard } from '@/components/RewardRequestCard';
+import { Button, Card, Screen, ScreenHeader } from '@/components/ui';
 import { todayInTz } from '@/domain/family-time';
-import { canAfford, daysUntilExpiry, recentRequests, reservedByPending } from '@/domain/rewards';
+import { canAfford, recentRequests, reservedByPending } from '@/domain/rewards';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import {
   useApproveRequest,
@@ -19,7 +20,7 @@ import {
 } from '@/hooks/usePoints';
 import { useApprovalCounts } from '@/hooks/useApprovals';
 import { useOnline } from '@/hooks/useSyncStatus';
-import { colors, MIN_TARGET, radius, typography } from '@/theme/tokens';
+import { colors, radius, shadow, typography } from '@/theme/tokens';
 import type { RewardRequestRow } from '@/types/models';
 
 export default function PointsScreen() {
@@ -36,7 +37,6 @@ export default function PointsScreen() {
   const cancel = useCancelRequest();
   const approve = useApproveRequest();
   const reject = useRejectRequest();
-  const [notes, setNotes] = useState<Record<string, string>>({});
   if (!d || !d.child) return null;
 
   const now = new Date();
@@ -59,18 +59,25 @@ export default function PointsScreen() {
 
   return (
     <Screen>
-      <Title>{t('points.title')}</Title>
-      {d.children.length > 1 ? <ProfilePills profiles={d.children} selectedId={d.child.id} onSelect={d.select} today={today} /> : null}
+      <ScreenHeader title={t('points.title')} />
+      {d.children.length > 1 ? <ProfilePills profiles={d.children} selectedId={d.child.id} onSelect={d.select} today={today} showName /> : null}
 
       <Pressable accessibilityRole="button" accessibilityLabel={t('points.history')} onPress={() => router.push('/more/points-history')}>
         <Card>
-          <Text accessibilityLabel={`${balance?.balance ?? 0} ${t('points.unit')}`} style={styles.balance}>
-            {balance?.balance ?? 0}
-            <Text style={styles.unit}> {t('points.unit')}</Text>
-          </Text>
-          <Text style={typography.secondary}>{t('points.totalLabel')}</Text>
-          {reserved > 0 ? <Text style={styles.reserved}>{t('points.reserved', { reserved })}</Text> : null}
-          {(balance?.pendingTaskPoints ?? 0) > 0 ? <Text style={styles.pendingTasks}>{t('points.pendingTasks', { points: balance?.pendingTaskPoints })}</Text> : null}
+          <View style={styles.balanceRow}>
+            <View style={styles.medal}>
+              <Star color="#fff" fill="#fff" size={30} />
+            </View>
+            <View style={styles.flex}>
+              <Text accessibilityLabel={`${balance?.balance ?? 0} ${t('points.unit')}`} style={styles.balance}>
+                {balance?.balance ?? 0}
+                <Text style={styles.unit}> {t('points.unit')}</Text>
+              </Text>
+              <Text style={typography.secondary}>{t('points.totalLabel')}</Text>
+              {reserved > 0 ? <Text style={styles.reserved}>{t('points.reserved', { reserved })}</Text> : null}
+              {(balance?.pendingTaskPoints ?? 0) > 0 ? <Text style={styles.pendingTasks}>{t('points.pendingTasks', { points: balance?.pendingTaskPoints })}</Text> : null}
+            </View>
+          </View>
         </Card>
       </Pressable>
 
@@ -83,26 +90,7 @@ export default function PointsScreen() {
             {t('points.toApprove', { count: pendingQueue.length })}
           </Text>
           {pendingQueue.map((r) => (
-            <Card key={r.id}>
-              <Text style={styles.rowTitle}>{t('points.requestLine', { name: childName(r.child_id), title: r.reward_title, cost: r.cost })}</Text>
-              <Text style={typography.secondary}>{t('points.expiresIn', { days: daysUntilExpiry(r.expires_at, now) })}</Text>
-              <TextInput
-                accessibilityLabel={t('points.rejectNote')}
-                placeholder={t('points.rejectNote')}
-                placeholderTextColor={colors.textSecondary}
-                value={notes[r.id] ?? ''}
-                onChangeText={(v) => setNotes((n) => ({ ...n, [r.id]: v }))}
-                style={styles.input}
-              />
-              <View style={styles.actions}>
-                <View style={styles.flex}>
-                  <Button label={t('points.approve')} onPress={() => approve.mutate(r.id)} disabled={!online} loading={approve.isPending} />
-                </View>
-                <View style={styles.flex}>
-                  <Button variant="secondary" label={t('points.reject')} onPress={() => reject.mutate({ id: r.id, note: notes[r.id]?.trim() || undefined })} disabled={!online} />
-                </View>
-              </View>
-            </Card>
+            <RewardRequestCard key={r.id} request={r} childName={childName(r.child_id)} now={now} online={online} busy={approve.isPending} onApprove={() => approve.mutate(r.id)} onReject={(note) => reject.mutate({ id: r.id, note })} />
           ))}
         </View>
       ) : null}
@@ -115,30 +103,36 @@ export default function PointsScreen() {
         {t('points.rewardsTitle')}
       </Text>
       {!online && !isParent && !d.readOnly ? <Text style={styles.offline}>{t('points.needsNetwork')}</Text> : null}
-      {visibleRewards.map((r) => {
-        const affordable = balance ? canAfford(balance.available, r.cost) : false;
-        const canRequest = !isParent && !d.readOnly && affordable && online;
-        return (
-          <Pressable
-            key={r.id}
-            accessibilityRole="button"
-            accessibilityLabel={`${r.title}, ${r.cost} ${t('points.unit')}${!affordable ? `, ${t('points.notEnough')}` : ''}`}
-            accessibilityState={{ disabled: isParent ? false : !canRequest }}
-            disabled={isParent ? false : !canRequest}
-            onPress={() => (isParent ? router.push({ pathname: '/reward/[id]', params: { id: r.id } }) : confirmRequest(r.id, r.title, r.cost))}
-            style={[styles.reward, !affordable && !isParent && styles.rewardDisabled]}
-          >
-            <RewardIcon name={r.icon} color={affordable || isParent ? colors.primary : colors.textSecondary} />
-            <Text style={[styles.rowTitle, styles.flex]}>{r.title}</Text>
-            <Text style={styles.cost}>
-              {r.cost} {t('points.unit')}
-            </Text>
-          </Pressable>
-        );
-      })}
+      <View style={styles.rewardsCard}>
+        {visibleRewards.map((r, index) => {
+          const affordable = balance ? canAfford(balance.available, r.cost) : false;
+          const canRequest = !isParent && !d.readOnly && affordable && online;
+          const tint = REWARD_TINTS[r.icon] ?? colors.primary;
+          return (
+            <Pressable
+              key={r.id}
+              accessibilityRole="button"
+              accessibilityLabel={`${r.title}, ${r.cost} ${t('points.unit')}${!affordable ? `, ${t('points.notEnough')}` : ''}`}
+              accessibilityState={{ disabled: isParent ? false : !canRequest }}
+              disabled={isParent ? false : !canRequest}
+              onPress={() => (isParent ? router.push({ pathname: '/reward/[id]', params: { id: r.id } }) : confirmRequest(r.id, r.title, r.cost))}
+              style={[styles.reward, index > 0 && styles.rewardSeparator, !affordable && !isParent && styles.rewardDisabled]}
+            >
+              <View style={[styles.rewardTile, { backgroundColor: `${tint}22` }]}>
+                <RewardIcon name={r.icon} color={affordable || isParent ? tint : colors.textSecondary} />
+              </View>
+              <Text style={[styles.rowTitle, styles.flex]}>{r.title}</Text>
+              <Text style={styles.cost}>
+                {r.cost} {t('points.unit')}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
       {isParent ? <Button label={t('points.addReward')} onPress={() => router.push('/reward/new')} /> : null}
 
       <View style={styles.banner}>
+        <Star color={colors.warning} fill={colors.warning} size={22} />
         <Text style={styles.bannerText}>{t('points.banner')}</Text>
       </View>
 
@@ -167,19 +161,22 @@ export default function PointsScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  balance: { fontSize: 40, fontWeight: '800', color: colors.primary },
-  unit: { fontSize: 18, fontWeight: '600' },
+  balanceRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  medal: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#F5B301', alignItems: 'center', justifyContent: 'center', borderWidth: 4, borderColor: '#FFD965' },
+  balance: { fontSize: 36, fontWeight: '800', color: colors.text },
+  unit: { fontSize: 20, fontWeight: '700' },
   reserved: { fontSize: 13, color: colors.textSecondary, marginTop: 4 },
   pendingTasks: { fontSize: 13, color: '#B86E00', fontWeight: '600', marginTop: 2 },
   section: { gap: 10 },
-  sectionTitle: { ...typography.title, color: colors.text },
-  rowTitle: { fontSize: 16, fontWeight: '600', color: colors.text },
-  cost: { fontSize: 15, fontWeight: '700', color: colors.primary },
-  actions: { flexDirection: 'row', gap: 8 },
-  input: { minHeight: MIN_TARGET, borderRadius: 12, borderWidth: 1, borderColor: '#DDE5F0', paddingHorizontal: 12, color: colors.text, backgroundColor: colors.card },
-  reward: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 64, backgroundColor: colors.card, borderRadius: radius.card, paddingHorizontal: 16 },
+  sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.text },
+  rowTitle: { fontSize: 15, fontWeight: '500', color: colors.text },
+  cost: { fontSize: 15, fontWeight: '600', color: colors.text },
+  rewardsCard: { backgroundColor: colors.card, borderRadius: radius.card, paddingHorizontal: 14, ...shadow },
+  reward: { flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: 64 },
+  rewardSeparator: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.separator },
+  rewardTile: { width: 40, height: 40, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   rewardDisabled: { opacity: 0.45 },
   offline: { color: colors.danger, fontSize: 13 },
-  banner: { backgroundColor: '#E8F1FE', borderRadius: radius.card, padding: 14 },
-  bannerText: { color: colors.primary, fontSize: 14, fontWeight: '600', textAlign: 'center' },
+  banner: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.primaryTint, borderRadius: radius.card, padding: 14 },
+  bannerText: { flex: 1, color: colors.text, fontSize: 13 },
 });

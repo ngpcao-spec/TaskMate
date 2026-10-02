@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
-import { Bell } from 'lucide-react-native';
+import { Bell, ChevronRight } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Fab } from '@/components/Fab';
@@ -18,7 +18,7 @@ import { useNow } from '@/hooks/useNow';
 import { useApprovalCounts } from '@/hooks/useApprovals';
 import { usePendingTaskIds } from '@/hooks/useSyncStatus';
 import { toggleVars, useDeleteTask, useRejectTask, useTasks, useToggleTask, useValidateTask, validateVars } from '@/hooks/useTasks';
-import { colors, MIN_TARGET, radius, spacing, typography } from '@/theme/tokens';
+import { colors, MIN_TARGET, radius, shadow, spacing, typography } from '@/theme/tokens';
 
 export default function TodayScreen() {
   const { t } = useTranslation();
@@ -51,13 +51,13 @@ export default function TodayScreen() {
 
   return (
     <SafeAreaView style={styles.screen}>
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <View style={[styles.avatar, { backgroundColor: child.color ?? colors.primary }]} accessible accessibilityLabel={child.name}>
             <Text style={styles.avatarText}>{child.name.slice(0, 1).toUpperCase()}</Text>
           </View>
           <View style={styles.flex}>
-            <Text accessibilityRole="header" style={[typography.title, { color: colors.text }]}>
+            <Text accessibilityRole="header" style={styles.greeting}>
               {t('today.greeting', { name: child.name })}
             </Text>
             <Text style={typography.secondary}>{t('today.encouragement')}</Text>
@@ -89,19 +89,20 @@ export default function TodayScreen() {
         <Pressable accessibilityRole="button" accessibilityLabel={t('today.progress', { done: progress.done, total: progress.total })} onPress={() => router.push('/(tabs)/stats')}>
           <Card>
             <View style={styles.progressRow}>
-              <ProgressRing
-                ratio={progress.ratio}
-                label={progress.total === 0 ? '—' : `${Math.round(progress.ratio * 100)}%`}
-                accessibilityLabel={t('today.progress', { done: progress.done, total: progress.total })}
-              />
-              <Text style={[typography.body, styles.flex, { color: colors.text }]}>
-                {t('today.progress', { done: progress.done, total: progress.total })}
-              </Text>
+              <ProgressRing ratio={progress.ratio} size={96} stroke={11} label={progress.total === 0 ? '—' : undefined} accessibilityLabel={t('today.progress', { done: progress.done, total: progress.total })} />
+              <View style={styles.flex}>
+                <Text style={typography.secondary}>{t('today.progressLabel')}</Text>
+                <Text style={styles.progressCount}>
+                  {progress.done}/{progress.total}
+                </Text>
+                <Text style={typography.secondary}>{t('today.progressUnit')}</Text>
+              </View>
+              <ChevronRight color={colors.textSecondary} />
             </View>
           </Card>
         </Pressable>
 
-        <Text accessibilityRole="header" style={[typography.title, styles.listTitle]}>
+        <Text accessibilityRole="header" style={styles.listTitle}>
           {t('today.listTitle')}
         </Text>
 
@@ -111,7 +112,7 @@ export default function TodayScreen() {
           <Text style={[typography.secondary, styles.empty]}>{t('today.empty')}</Text>
         ) : (
           <View style={styles.list}>
-            {tasks.map((task) => {
+            {tasks.map((task, index) => {
               const perms = taskPermissions(d.viewer, task);
               const row = (
                 <TaskRow
@@ -127,30 +128,28 @@ export default function TodayScreen() {
                   onReject={() => reject.mutate({ task })}
                 />
               );
+              const separated = index > 0 ? styles.separated : null;
               return perms.canDelete && !d.readOnly ? (
                 <ReanimatedSwipeable
                   key={task.id}
                   overshootRight={false}
                   renderRightActions={() => (
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel={t('taskForm.delete')}
-                      onPress={() => remove.mutate(task)}
-                      style={styles.deleteAction}
-                    >
+                    <Pressable accessibilityRole="button" accessibilityLabel={t('taskForm.delete')} onPress={() => remove.mutate(task)} style={styles.deleteAction}>
                       <Text style={styles.deleteText}>{t('taskForm.deleteShort')}</Text>
                     </Pressable>
                   )}
                 >
-                  {row}
+                  <View style={separated}>{row}</View>
                 </ReanimatedSwipeable>
               ) : (
-                <View key={task.id}>{row}</View>
+                <View key={task.id} style={separated}>
+                  {row}
+                </View>
               );
             })}
           </View>
         )}
-      </View>
+      </ScrollView>
       {d.readOnly || !isParent ? null : <Fab label={t('today.addTask')} onPress={() => router.push('/task/new')} />}
     </SafeAreaView>
   );
@@ -159,19 +158,22 @@ export default function TodayScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   flex: { flex: 1 },
-  content: { padding: spacing.md, gap: spacing.md },
+  content: { padding: spacing.md, gap: spacing.md, paddingBottom: 96 },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   avatar: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
-  bell: { width: MIN_TARGET, height: MIN_TARGET, alignItems: 'center', justifyContent: 'center' },
   avatarText: { color: '#fff', fontSize: 22, fontWeight: '700' },
-  banner: { backgroundColor: '#E8F1FE', borderRadius: radius.card, paddingVertical: 10, paddingHorizontal: 14 },
-  bannerPending: { backgroundColor: '#FFF1DB', borderRadius: radius.card, paddingVertical: 10, paddingHorizontal: 14 },
-  bannerPendingText: { color: '#B86E00', fontSize: 14, fontWeight: '700' },
+  greeting: { fontSize: 22, fontWeight: '700', color: colors.text },
+  bell: { width: MIN_TARGET, height: MIN_TARGET, alignItems: 'center', justifyContent: 'center' },
+  banner: { backgroundColor: colors.primaryTint, borderRadius: radius.card, paddingVertical: 10, paddingHorizontal: 14 },
   bannerText: { color: colors.primary, fontSize: 14, fontWeight: '600' },
-  progressRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  listTitle: { color: colors.text },
-  list: { gap: 10 },
+  bannerPending: { backgroundColor: colors.warningTint, borderRadius: radius.card, paddingVertical: 10, paddingHorizontal: 14 },
+  bannerPendingText: { color: '#B86E00', fontSize: 14, fontWeight: '700' },
+  progressRow: { flexDirection: 'row', alignItems: 'center', gap: 20 },
+  progressCount: { fontSize: 34, fontWeight: '800', color: colors.text, lineHeight: 40 },
+  listTitle: { fontSize: 18, fontWeight: '700', color: colors.text, marginTop: 4 },
+  list: { backgroundColor: colors.card, borderRadius: radius.card, paddingHorizontal: 12, ...shadow },
+  separated: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.separator },
   empty: { textAlign: 'center', paddingVertical: spacing.lg },
-  deleteAction: { backgroundColor: colors.danger, justifyContent: 'center', alignItems: 'center', width: 88, marginLeft: 8, borderRadius: radius.card },
+  deleteAction: { backgroundColor: colors.danger, justifyContent: 'center', alignItems: 'center', width: 88 },
   deleteText: { color: '#fff', fontWeight: '600' },
 });

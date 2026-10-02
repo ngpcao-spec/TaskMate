@@ -44,10 +44,10 @@ describe('StatsScreen', () => {
   it('message intermédiaire et faible', async () => {
     mockTasks = [task('1', 'study', true), task('2', 'study', false)];
     await render(<StatsScreen />);
-    expect(screen.getByText('Làm tốt lắm! Còn cố gắng hơn nữa nhé!')).toBeTruthy();
+    expect(screen.getByLabelText('Làm tốt lắm! Còn cố gắng hơn nữa nhé!')).toBeTruthy();
     mockTasks = [task('1', 'study', true), task('2', 'study', false), task('3', 'study', false)];
     await render(<StatsScreen />);
-    expect(screen.getAllByText('Cố lên, mỗi ngày một chút!').length).toBeGreaterThan(0);
+    expect(screen.getAllByLabelText('Cố lên, mỗi ngày một chút!').length).toBeGreaterThan(0);
   });
 
   it('bascule Semaine/Tháng : interroge la bonne période', async () => {
@@ -65,6 +65,6 @@ describe('StatsScreen', () => {
     mockReadOnly = true;
     await render(<StatsScreen />);
     expect(screen.getByText('Đang xem lịch của Khang')).toBeTruthy();
-    expect(screen.getAllByText('Hoàn thành')).toHaveLength(1); // une seule légende = un seul profil
+    expect(screen.getAllByLabelText(/^Hoàn thành: /)).toHaveLength(1); // une seule légende = un seul profil
   });
 });

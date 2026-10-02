@@ -1,4 +1,5 @@
 import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 
 /**
  * Stockage de session Supabase dans le Keychain/Keystore.
@@ -36,8 +37,18 @@ export async function secureSet(key: string, value: string): Promise<void> {
   await SecureStore.setItemAsync(countKey(key), String(total));
 }
 
-export const supabaseAuthStorage = {
-  getItem: secureGet,
-  setItem: secureSet,
-  removeItem: secureRemove,
+/** Web (aperçu/captures) : pas de Keychain → localStorage. Mobile : SecureStore (chunké). */
+const webStorage = {
+  getItem: async (key: string) => globalThis.localStorage?.getItem(key) ?? null,
+  setItem: async (key: string, value: string) => void globalThis.localStorage?.setItem(key, value),
+  removeItem: async (key: string) => void globalThis.localStorage?.removeItem(key),
 };
+
+export const supabaseAuthStorage =
+  Platform.OS === 'web'
+    ? webStorage
+    : {
+        getItem: secureGet,
+        setItem: secureSet,
+        removeItem: secureRemove,
+      };

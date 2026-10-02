@@ -10,3 +10,5 @@ supabase/.branches/
 supabase/.temp/
 .DS_Store
 .maestro/
+apps/mobile/dist-web/
+tools/visual/node_modules/

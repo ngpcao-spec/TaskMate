@@ -99,3 +99,22 @@ accessibilité (libellés + cibles ≥ 44 pt testés), états vides, flows Maest
 | Récurrence : pas de doublon même si deux générations se chevauchent | pgTAP 08 (idempotence, `unique(recurrence_id,date)`) + `db-concurrency.sh` (2 sessions) | ✅ |
 | Accessibilité : libellés sur tous les éléments interactifs, cibles ≥ 44 pt (§Qualité) | `a11y.test` | ✅ |
 | Suppression du compte et des données (stores) | pgTAP 09 + `settings.test` | ✅ |
+
+## C3 — Alignement visuel sur les maquettes
+
+**Méthode de comparaison.** `docs/mockups/taskmate.png` (8 écrans) a été ouvert avec l'outil de lecture d'images. L'app est exportée en web (`react-native-web`, `expo export --platform web`), servie avec un faux serveur PostgREST/Auth Node (`tools/visual/mock-server.mjs`, données `fixtures.mjs`) et photographiée avec Playwright + le Chromium préinstallé (`tools/visual/shoot.mjs`, viewport 390×844 @2x). Captures « avant » : `docs/screenshots/before/`, « après » : `docs/screenshots/after/`. Ce rendu web n'est pas un rendu iOS/Android natif (polices, ombres, safe areas diffèrent) : la comparaison valide la composition, les couleurs, les rayons et les libellés, pas le rendu pixel-perfect sur appareil.
+
+| Écran | Écarts corrigés | Écarts restants |
+|---|---|---|
+| Splash / rôle | Fond dégradé ciel + silhouettes familiales (SVG), logo et accroche, bouton principal arrondi | Illustration simplifiée (SVG maison, pas l'illustration exacte de la maquette) |
+| Accueil | Salutation + sous-titre, pastilles enfants teintées, anneau de progression + « n/m việc đã hoàn thành », lignes de tâche en cartes avec icône catégorie, tokens (rayons 16–24, couleurs, ombres), barre d'onglets 4 entrées | Polices système au lieu de la police des maquettes ; états `Chờ duyệt` / refusée absents des maquettes (style cohérent ajouté) |
+| Calendrier | Bandeau semaine, carte mois, sélection de jour, lignes de tâches | Pastilles enfants retirées (§1/§3 : pas de comparaison entre enfants) |
+| Ajout de tâche | Champs arrondis, placeholders, sélecteur catégorie/jour, note, bouton enregistrer | Sélecteurs de date/heure natifs non reproduits en web |
+| Profil (Plus) | Cartes enfants sélectionnables avec coche, liste de menu dans une carte, icônes colorées | Badge « à valider » et entrées parent propres à la spec v4 |
+| Objectifs | Cartes avec pastille d'icône, barre fine, n/m, pas −/+, bouton « + Thêm mục tiêu » | — |
+| Points | Médaille étoile, solde, liste de récompenses dans une carte avec pastilles colorées, bandeau | Ligne « +X điểm chờ duyệt » et bouton d'ajustement parent (spec v4) |
+| Statistiques | Segment Tuần/Tháng, anneau + légende à 3 lignes, barres par catégorie, message d'encouragement avec trophée | Pas de comparatif entre enfants (spec prime) |
+| File « Cần duyệt » (hors maquettes) | Style aligné sur les cartes ci-dessus | Aucune maquette de référence |
+| Réglages (hors maquettes) | Cartes/rangées au même style | Aucune maquette de référence |
+
+Vérifications locales : typecheck, lint, 299 tests Jest, `expo export --platform ios` OK. CI du lot : voir rapport final (C4).

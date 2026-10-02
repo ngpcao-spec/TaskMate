@@ -1,0 +1,1 @@
+{ "name": "taskmate-visual", "private": true, "type": "module", "description": "Captures web de l'app contre un faux backend (comparaison avec les maquettes, C3)", "devDependencies": { "playwright-core": "^1.50.0" } }

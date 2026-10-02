@@ -4,7 +4,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { CategoryIcon } from '@/components/CategoryIcon';
 import { taskState } from '@/domain/task-state';
 import { timeLabel } from '@/domain/task-time';
-import { colors, MIN_TARGET, radius, shadow } from '@/theme/tokens';
+import { CATEGORY_COLORS } from '@/theme/categories';
+import { colors, MIN_TARGET } from '@/theme/tokens';
 import type { TaskRow as Task } from '@/types/models';
 
 type Props = {
@@ -22,7 +23,10 @@ type Props = {
   onReject?: () => void;
 };
 
-/** Ligne de tâche (SPEC v4 §3.2) : case, titre, horaire, catégorie, badge d'état (Chờ duyệt / +N điểm), motif de refus. */
+/**
+ * Ligne de tâche (maquette « Hôm nay », SPEC v4 §3.2) : case, titre + horaire, pastille de catégorie, état.
+ * Rendue SANS carte : l'écran regroupe les lignes dans une seule carte à séparateurs.
+ */
 export function TaskRow({ task, overdue, canToggle, canOpen, canValidate = false, pending = false, onToggle, onOpen, onValidate, onReject }: Props) {
   const { t } = useTranslation();
   const state = taskState(task);
@@ -30,14 +34,14 @@ export function TaskRow({ task, overdue, canToggle, canOpen, canValidate = false
   const label = timeLabel(task);
   const time =
     label.kind === 'range'
-      ? `${label.start} – ${label.end}`
+      ? `${label.start} - ${label.end}`
       : label.kind === 'deadline'
         ? t('taskForm.deadlineLabel', { time: label.end })
         : t('taskForm.anytime');
   const stateLabel = state === 'pending' ? t('task.pending') : state === 'validated' ? t('task.validated', { points: task.points }) : '';
 
   return (
-    <View style={styles.card}>
+    <View>
       <View style={styles.row}>
         <Pressable
           accessibilityRole="checkbox"
@@ -48,7 +52,7 @@ export function TaskRow({ task, overdue, canToggle, canOpen, canValidate = false
           hitSlop={4}
           style={styles.checkHit}
         >
-          <View style={[styles.box, checked && styles.boxDone, !canToggle && styles.boxLocked]}>{checked ? <Check size={16} color="#fff" /> : null}</View>
+          <View style={[styles.box, checked && styles.boxDone, !canToggle && !checked && styles.boxLocked]}>{checked ? <Check size={16} color="#fff" strokeWidth={3} /> : null}</View>
         </Pressable>
         <Pressable
           accessibilityRole="button"
@@ -57,24 +61,27 @@ export function TaskRow({ task, overdue, canToggle, canOpen, canValidate = false
           onPress={onOpen}
           style={styles.body}
         >
-          <Text numberOfLines={1} style={[styles.title, checked && styles.titleDone]}>
+          <Text numberOfLines={1} style={styles.title}>
             {task.title}
           </Text>
           <Text style={[styles.time, overdue && styles.overdue]}>{overdue ? `${t('today.overdue')} · ${time}` : time}</Text>
         </Pressable>
+        <View style={[styles.tile, { backgroundColor: `${CATEGORY_COLORS[task.category]}1F` }]}>
+          <CategoryIcon category={task.category} size={18} />
+        </View>
         {state === 'pending' ? (
-          <View style={[styles.badge, styles.badgePending]}>
+          <View style={styles.badgePending}>
             <Text style={styles.badgePendingText}>{t('task.pending')}</Text>
           </View>
         ) : null}
         {state === 'validated' ? (
-          <View style={[styles.badge, styles.badgeDone]}>
-            <Text style={styles.badgeDoneText}>{t('task.validated', { points: task.points })}</Text>
+          <View accessible accessibilityLabel={t('task.validated', { points: task.points })} style={styles.validated}>
+            <Check size={14} color="#fff" strokeWidth={3} />
           </View>
         ) : null}
         {pending ? <RefreshCw size={14} color={colors.textSecondary} accessibilityLabel={t('sync.pendingItem')} /> : null}
-        <CategoryIcon category={task.category} />
       </View>
+      {state === 'validated' ? <Text style={styles.points}>{t('task.validated', { points: task.points })}</Text> : null}
       {state === 'todo' && task.rejection_note ? (
         <Text accessibilityLabel={`${t('task.rejectedLabel')}: ${task.rejection_note}`} style={styles.rejection}>
           {t('task.rejectedLabel')}: {task.rejection_note}
@@ -95,25 +102,23 @@ export function TaskRow({ task, overdue, canToggle, canOpen, canValidate = false
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: colors.card, borderRadius: radius.card, paddingHorizontal: 12, ...shadow },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 64 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 68 },
   checkHit: { width: MIN_TARGET, height: MIN_TARGET, alignItems: 'center', justifyContent: 'center' },
-  box: { width: 26, height: 26, borderRadius: 8, borderWidth: 2, borderColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
+  box: { width: 24, height: 24, borderRadius: 6, borderWidth: 2, borderColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
   boxDone: { backgroundColor: colors.primary },
   boxLocked: { borderColor: '#C8D2E0' },
   body: { flex: 1, minHeight: MIN_TARGET, justifyContent: 'center' },
   title: { fontSize: 16, fontWeight: '600', color: colors.text },
-  titleDone: { color: colors.textSecondary },
-  time: { fontSize: 13, color: colors.textSecondary },
+  time: { fontSize: 13, color: colors.textSecondary, marginTop: 2 },
   overdue: { color: colors.danger },
-  badge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
-  badgePending: { backgroundColor: '#FFF1DB' },
+  tile: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  badgePending: { backgroundColor: colors.warningTint, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
   badgePendingText: { color: '#B86E00', fontSize: 12, fontWeight: '700' },
-  badgeDone: { backgroundColor: '#E3F6EA' },
-  badgeDoneText: { color: '#1B7F43', fontSize: 12, fontWeight: '700' },
+  validated: { width: 22, height: 22, borderRadius: 11, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
+  points: { color: '#1B7F43', fontSize: 12, fontWeight: '700', marginTop: -10, marginBottom: 8, paddingLeft: MIN_TARGET + 10 },
   rejection: { color: colors.danger, fontSize: 13, paddingBottom: 10, paddingLeft: MIN_TARGET + 10 },
-  actions: { flexDirection: 'row', gap: 8, paddingBottom: 10 },
-  action: { flex: 1, minHeight: MIN_TARGET, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  actions: { flexDirection: 'row', gap: 8, paddingBottom: 10, paddingLeft: MIN_TARGET + 10 },
+  action: { flex: 1, minHeight: MIN_TARGET, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
   actionOk: { backgroundColor: colors.primary },
   actionOkText: { color: '#fff', fontWeight: '700' },
   actionKo: { backgroundColor: colors.card, borderWidth: 1.5, borderColor: colors.danger },

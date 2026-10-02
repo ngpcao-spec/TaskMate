@@ -1,14 +1,14 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format, parseISO } from 'date-fns';
 import { useRouter } from 'expo-router';
-import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { CalendarDays, CalendarRange, ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CalendarCard } from '@/components/CalendarCard';
-import { ProfilePills } from '@/components/ProfilePills';
+import { ScreenHeader } from '@/components/ui';
 import { WeekStrip } from '@/components/WeekStrip';
 import {
   formatDayTitle,
@@ -83,20 +83,14 @@ export default function CalendarScreen() {
     <SafeAreaView style={styles.screen} edges={['top']}>
       <GestureDetector gesture={swipe}>
         <ScrollView contentContainerStyle={styles.content}>
-          <View style={styles.header}>
-            <Text accessibilityRole="header" style={[typography.title, styles.flex, { color: colors.text }]}>
-              {formatMonthTitle(selected, lang)}
-            </Text>
-            <Pressable accessibilityRole="button" accessibilityLabel={t('calendar.prevWeek')} onPress={() => setPicked(shiftWeek(selected, -1))} style={styles.iconButton}>
-              <ChevronLeft color={colors.text} />
-            </Pressable>
-            <Pressable accessibilityRole="button" accessibilityLabel={t('calendar.nextWeek')} onPress={() => setPicked(shiftWeek(selected, 1))} style={styles.iconButton}>
-              <ChevronRight color={colors.text} />
-            </Pressable>
-            <Pressable accessibilityRole="button" accessibilityLabel={t('calendar.pickDate')} onPress={() => setPickerOpen((v) => !v)} style={styles.iconButton}>
-              <CalendarDays color={colors.primary} />
-            </Pressable>
-          </View>
+          <ScreenHeader
+            title={t('tabs.calendar')}
+            right={
+              <Pressable accessibilityRole="button" accessibilityLabel={t('calendar.pickDate')} onPress={() => setPickerOpen((v) => !v)} style={styles.iconButton}>
+                <CalendarDays color={colors.primary} />
+              </Pressable>
+            }
+          />
 
           {pickerOpen ? (
             <DateTimePicker
@@ -110,7 +104,17 @@ export default function CalendarScreen() {
             />
           ) : null}
 
-          {d.children.length > 1 ? <ProfilePills profiles={d.children} selectedId={d.child.id} onSelect={d.select} today={today} /> : null}
+          <View style={styles.monthRow}>
+            <Text style={styles.month}>{formatMonthTitle(selected, lang)}</Text>
+            <Pressable accessibilityRole="button" accessibilityLabel={t('calendar.prevWeek')} onPress={() => setPicked(shiftWeek(selected, -1))} style={styles.iconButton}>
+              <ChevronLeft color={colors.textSecondary} />
+            </Pressable>
+            <Pressable accessibilityRole="button" accessibilityLabel={t('calendar.nextWeek')} onPress={() => setPicked(shiftWeek(selected, 1))} style={styles.iconButton}>
+              <ChevronRight color={colors.textSecondary} />
+            </Pressable>
+          </View>
+
+          {d.readOnly || d.viewer.role === 'parent' ? <Text style={typography.secondary}>{d.child.name}</Text> : null}
 
           <WeekStrip days={days} selected={selected} today={today} lang={lang} onSelect={setPicked} />
 
@@ -145,7 +149,9 @@ export default function CalendarScreen() {
           )}
 
           <Pressable accessibilityRole="button" accessibilityLabel={weekMode ? t('calendar.viewDay') : t('calendar.viewWeek')} onPress={() => setWeekMode((v) => !v)} style={styles.toggle}>
+            <CalendarRange color={colors.primary} size={22} />
             <Text style={styles.toggleText}>{weekMode ? t('calendar.viewDay') : t('calendar.viewWeek')}</Text>
+            <ChevronRight color={colors.textSecondary} />
           </Pressable>
         </ScrollView>
       </GestureDetector>
@@ -156,13 +162,14 @@ export default function CalendarScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   flex: { flex: 1 },
-  content: { padding: spacing.md, gap: spacing.md, paddingBottom: spacing.xl },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  content: { padding: spacing.md, gap: spacing.sm, paddingBottom: spacing.xl },
   iconButton: { width: MIN_TARGET, height: MIN_TARGET, alignItems: 'center', justifyContent: 'center' },
   list: { gap: 10 },
   daySection: { gap: 8 },
   dayHeading: { fontSize: 15, fontWeight: '700', color: colors.text, marginTop: 8 },
   empty: { textAlign: 'center', paddingVertical: spacing.lg },
-  toggle: { minHeight: MIN_TARGET, alignItems: 'center', justifyContent: 'center' },
-  toggleText: { color: colors.primary, fontSize: 15, fontWeight: '600' },
+  toggle: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: MIN_TARGET + 12, backgroundColor: colors.card, borderRadius: 16, paddingHorizontal: 16 },
+  toggleText: { flex: 1, color: colors.text, fontSize: 16, fontWeight: '600' },
+  monthRow: { flexDirection: 'row', alignItems: 'center' },
+  month: { flex: 1, fontSize: 14, fontWeight: '600', color: colors.textSecondary, textTransform: 'capitalize' },
 });

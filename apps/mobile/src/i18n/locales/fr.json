@@ -98,7 +98,7 @@
   },
   "today": {
     "greeting": "Salut {{name}} !",
-    "encouragement": "Terminons les tâches du jour !",
+    "encouragement": "Courage, chaque jour compte !",
     "progress": "Aujourd'hui {{done}}/{{total}} tâches terminées",
     "listTitle": "Tâches du jour",
     "empty": "Aucune tâche aujourd'hui",
@@ -107,7 +107,9 @@
     "overdue": "En retard",
     "taskGone": "Cette tâche a été supprimée",
     "cannotUncheck": "Impossible de décocher : ces points sont réservés pour une récompense",
-    "alreadyValidated": "Un parent a déjà validé cette tâche, impossible de la décocher"
+    "alreadyValidated": "Un parent a déjà validé cette tâche, impossible de la décocher",
+    "progressLabel": "Aujourd'hui",
+    "progressUnit": "tâches terminées"
   },
   "taskForm": {
     "title": "Nouvelle tâche",
@@ -126,7 +128,7 @@
     "before": "Avant",
     "anytime": "Dans la journée",
     "deadlineLabel": "Avant {{time}}",
-    "note": "Note",
+    "note": "Note (facultatif)",
     "moreOptions": "Plus d'options",
     "lessOptions": "Moins d'options",
     "points": "Points attribués",
@@ -156,7 +158,10 @@
     "applyToSeries": "Appliquer aux prochaines occurrences de la série",
     "deleteSeries": "Supprimer toute la série",
     "seriesDeleted": "Série supprimée",
-    "seriesNeedsNetwork": "Une connexion est nécessaire pour créer ou modifier une série"
+    "seriesNeedsNetwork": "Une connexion est nécessaire pour créer ou modifier une série",
+    "namePlaceholder": "Ex. : Cours d'anglais",
+    "notePlaceholder": "Ajouter une note…",
+    "todayWord": "Aujourd'hui"
   },
   "sync": {
     "offline": "Hors ligne — les changements seront synchronisés au retour du réseau",
@@ -280,7 +285,8 @@
       "excellent": "Excellent !",
       "good": "Bien joué ! Encore un petit effort !",
       "keepGoing": "Courage, un peu chaque jour !"
-    }
+    },
+    "doneShort": "Terminées"
   },
   "notifications": {
     "reminderStart": "Début à {{time}} (dans {{minutes}} min)",

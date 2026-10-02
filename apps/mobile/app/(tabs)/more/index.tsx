@@ -1,8 +1,8 @@
 import { useRouter } from 'expo-router';
-import { Bell, ChevronRight, Gift, ListChecks, Settings, Target } from 'lucide-react-native';
+import { Bell, Check, ChevronRight, ListChecks, Settings, Star, Target } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Card, Screen, Title } from '@/components/ui';
+import { Card, Screen, ScreenHeader } from '@/components/ui';
 import { ageFromBirthDate } from '@/domain/age';
 import { todayInTz } from '@/domain/family-time';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
@@ -17,49 +17,50 @@ export default function ProfileScreen() {
   const d = useDisplayedChild();
   if (!d) return null;
   const today = todayInTz(new Date(), d.me.family.timezone);
-  const menu: { key: string; label: string; href: Href; icon: typeof Gift }[] = [
+  const menu: { key: string; label: string; href: Href; icon: typeof Star; tint?: string }[] = [
     { key: 'tasks', label: t('profile.tasks'), href: '/more/tasks', icon: ListChecks },
     { key: 'goals', label: t('profile.goals'), href: '/more/goals', icon: Target },
-    { key: 'points', label: t('profile.points'), href: '/more/points', icon: Gift },
+    { key: 'points', label: t('profile.points'), href: '/more/points', icon: Star, tint: colors.warning },
     { key: 'notifications', label: t('profile.notifications'), href: '/more/notification-settings', icon: Bell },
     { key: 'settings', label: t('profile.settings'), href: '/more/settings', icon: Settings },
   ];
 
   return (
     <Screen>
-      <Title>{t('profile.title')}</Title>
-      {d.children.map((c) => {
-        const active = c.id === d.child?.id;
-        return (
-          <Pressable
-            key={c.id}
-            accessibilityRole="radio"
-            accessibilityLabel={`${c.name}, ${t('common.yearsOld', { age: ageFromBirthDate(c.birth_date, today) })}`}
-            accessibilityState={{ selected: active }}
-            onPress={() => d.select(c.id)}
-          >
-            <Card>
-              <View style={styles.childRow}>
-                <View style={[styles.avatar, { backgroundColor: c.color ?? colors.primary }]}>
-                  <Text style={styles.avatarText}>{c.name.slice(0, 1).toUpperCase()}</Text>
+      <ScreenHeader title={t('profile.title')} hideBack />
+      <View style={styles.cards}>
+        {d.children.map((c) => {
+          const active = c.id === d.child?.id;
+          const age = t('common.yearsOld', { age: ageFromBirthDate(c.birth_date, today) });
+          const color = c.color ?? colors.primary;
+          return (
+            <Pressable
+              key={c.id}
+              accessibilityRole="radio"
+              accessibilityLabel={`${c.name}, ${age}`}
+              accessibilityState={{ selected: active }}
+              onPress={() => d.select(c.id)}
+              style={[styles.childCard, { backgroundColor: `${color}1A` }, active && { borderColor: color }]}
+            >
+              {active ? (
+                <View style={[styles.checkBadge, { backgroundColor: color }]}>
+                  <Check size={14} color="#fff" strokeWidth={3} />
                 </View>
-                <View style={styles.flex}>
-                  <Text style={[typography.title, { color: colors.text }]}>{c.name}</Text>
-                  <Text style={typography.secondary}>
-                    {[c.label, t('common.yearsOld', { age: ageFromBirthDate(c.birth_date, today) })].filter(Boolean).join(' · ')}
-                  </Text>
-                </View>
-                {active ? <Text style={styles.check}>✓</Text> : null}
+              ) : null}
+              <View style={[styles.avatar, { backgroundColor: color }]}>
+                <Text style={styles.avatarText}>{c.name.slice(0, 1).toUpperCase()}</Text>
               </View>
-            </Card>
-          </Pressable>
-        );
-      })}
+              <Text style={styles.childName}>{c.name}</Text>
+              <Text style={typography.secondary}>{age}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
       <Card>
-        {menu.map(({ key, label, href, icon: Icon }) => (
-          <Pressable key={key} accessibilityRole="button" accessibilityLabel={label} onPress={() => router.push(href)} style={styles.menuRow}>
-            <Icon color={colors.primary} size={22} />
-            <Text style={[styles.menuLabel]}>{label}</Text>
+        {menu.map(({ key, label, href, icon: Icon, tint }, i) => (
+          <Pressable key={key} accessibilityRole="button" accessibilityLabel={label} onPress={() => router.push(href)} style={[styles.menuRow, i > 0 && styles.menuSeparator]}>
+            <Icon color={tint ?? colors.primary} size={22} />
+            <Text style={styles.menuLabel}>{label}</Text>
             <ChevronRight color={colors.textSecondary} />
           </Pressable>
         ))}
@@ -69,11 +70,13 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  childRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  avatar: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { color: '#fff', fontSize: 20, fontWeight: '700' },
-  check: { color: colors.primary, fontSize: 22, fontWeight: '700' },
-  menuRow: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: MIN_TARGET + 4 },
+  cards: { flexDirection: 'row', gap: 12 },
+  childCard: { flex: 1, alignItems: 'center', gap: 4, paddingVertical: 16, borderRadius: 16, borderWidth: 2, borderColor: 'transparent', minHeight: 140 },
+  checkBadge: { position: 'absolute', top: 8, right: 8, width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
+  avatar: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  avatarText: { color: '#fff', fontSize: 26, fontWeight: '700' },
+  childName: { fontSize: 18, fontWeight: '700', color: colors.text },
+  menuRow: { flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: MIN_TARGET + 12 },
+  menuSeparator: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.separator },
   menuLabel: { flex: 1, fontSize: 16, color: colors.text },
 });

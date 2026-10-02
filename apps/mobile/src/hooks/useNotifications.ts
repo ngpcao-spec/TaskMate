@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 import { useEffect } from 'react';
+import { Platform } from 'react-native';
 import { newId } from '@/api/ids';
 import { fetchActivity, fetchDecidedRequests, fetchPrefs, savePrefs } from '@/api/notifications';
 import { DEFAULT_PREFS, type NotificationPrefs } from '@/domain/notification-prefs';
@@ -53,7 +54,7 @@ export function useNotificationSetup(): void {
   const router = useRouter();
   const memberId = useMe().data?.member.id ?? null;
   useEffect(() => {
-    if (!memberId) return;
+    if (!memberId || Platform.OS === 'web') return; // notifications natives uniquement
     let cancelled = false;
     void (async () => {
       await configureNotifications();
@@ -94,7 +95,7 @@ export function useReminderSync(): void {
   const tasks = useTasks(childId, today, shiftDay(today, 6)).data;
 
   useEffect(() => {
-    if (!isChild || !tasks) return;
+    if (!isChild || !tasks || Platform.OS === 'web') return;
     let cancelled = false;
     void (async () => {
       if (!(await ensureNotificationPermission()) || cancelled) return;

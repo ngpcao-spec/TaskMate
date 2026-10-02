@@ -98,7 +98,7 @@
   },
   "today": {
     "greeting": "Hi {{name}}!",
-    "encouragement": "Let's finish today's tasks!",
+    "encouragement": "Keep going every day!",
     "progress": "Today {{done}}/{{total}} tasks done",
     "listTitle": "Today's tasks",
     "empty": "No tasks today",
@@ -107,7 +107,9 @@
     "overdue": "Overdue",
     "taskGone": "This task was deleted",
     "cannotUncheck": "Can't uncheck: those points are reserved for a reward",
-    "alreadyValidated": "A parent already approved this task, it cannot be unchecked"
+    "alreadyValidated": "A parent already approved this task, it cannot be unchecked",
+    "progressLabel": "Today",
+    "progressUnit": "tasks completed"
   },
   "taskForm": {
     "title": "New task",
@@ -126,7 +128,7 @@
     "before": "Before",
     "anytime": "Any time",
     "deadlineLabel": "Before {{time}}",
-    "note": "Note",
+    "note": "Note (optional)",
     "moreOptions": "More options",
     "lessOptions": "Fewer options",
     "points": "Points",
@@ -156,7 +158,10 @@
     "applyToSeries": "Apply to upcoming tasks in the series",
     "deleteSeries": "Delete the whole series",
     "seriesDeleted": "Series deleted",
-    "seriesNeedsNetwork": "A connection is needed to create or edit a series"
+    "seriesNeedsNetwork": "A connection is needed to create or edit a series",
+    "namePlaceholder": "e.g. English class",
+    "notePlaceholder": "Add a note…",
+    "todayWord": "Today"
   },
   "sync": {
     "offline": "Offline — changes will sync when you are back online",
@@ -280,7 +285,8 @@
       "excellent": "Excellent!",
       "good": "Well done! Keep going a little more!",
       "keepGoing": "Keep it up, a little every day!"
-    }
+    },
+    "doneShort": "Done"
   },
   "notifications": {
     "reminderStart": "Starts at {{time}} (in {{minutes}} min)",
