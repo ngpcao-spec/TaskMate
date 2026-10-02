@@ -1,11 +1,13 @@
 /* Service worker TaskMate — mise en cache de l'app (coquille + assets hachés). Jamais l'API Supabase :
    les données passent par le cache TanStack Query persistant et la file d'écritures hors ligne. */
-const VERSION = 'taskmate-v1';
+importScripts('/sw-push.js'); // notifications push
+
+const VERSION = 'taskmate-v2';
 const SHELL = `${VERSION}-shell`;
 const ASSETS = `${VERSION}-assets`;
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(SHELL).then((cache) => cache.addAll(['/', '/manifest.webmanifest'])).then(() => self.skipWaiting()));
+  event.waitUntil(caches.open(SHELL).then((cache) => cache.addAll(['/', '/manifest.webmanifest', '/sw-push.js'])).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (event) => {

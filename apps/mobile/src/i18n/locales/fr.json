@@ -309,7 +309,8 @@
       "goal_achieved": "{{name}} a atteint son objectif : {{title}}",
       "points_adjusted": "Ajustement de {{delta}} points pour {{name}}",
       "task_assigned": "Nouvelle tâche pour {{name}} : {{title}}"
-    }
+    },
+    "unread": "{{count}} non lue(s)"
   },
   "notifSettings": {
     "title": "Réglages des notifications",
@@ -324,7 +325,20 @@
     "goalAchieved": "Quand un enfant atteint un objectif",
     "saved": "Réglages enregistrés",
     "invalidTime": "Heure invalide (HH:MM)",
-    "reset": "Valeurs par défaut"
+    "reset": "Valeurs par défaut",
+    "webPush": {
+      "title": "Notifications du navigateur",
+      "body": "Recevez les notifications même quand l'application est fermée.",
+      "enable": "Activer les notifications",
+      "disable": "Désactiver les notifications",
+      "on": "Activées sur cet appareil",
+      "off": "Désactivées",
+      "denied": "Le navigateur a bloqué les notifications. Autorisez-les dans les réglages du site.",
+      "unsupported": "Ce navigateur ne gère pas les notifications push. Elles restent disponibles dans l'application (icône cloche).",
+      "needsInstall": "Sur iPhone/iPad, ajoutez TaskMate à l'écran d'accueil (Partager → Sur l'écran d'accueil) puis ouvrez-le depuis cette icône pour activer les notifications.",
+      "notConfigured": "Les notifications push ne sont pas configurées sur le serveur.",
+      "failed": "Impossible d'activer les notifications. Réessayez."
+    }
   },
   "settings": {
     "title": "Réglages généraux",

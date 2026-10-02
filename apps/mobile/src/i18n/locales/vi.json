@@ -309,7 +309,8 @@
       "goal_achieved": "{{name}} đã đạt mục tiêu: {{title}}",
       "points_adjusted": "Điều chỉnh {{delta}} điểm cho {{name}}",
       "task_assigned": "Việc mới cho {{name}}: {{title}}"
-    }
+    },
+    "unread": "{{count}} chưa đọc"
   },
   "notifSettings": {
     "title": "Cài đặt thông báo",
@@ -324,7 +325,20 @@
     "goalAchieved": "Khi con đạt mục tiêu",
     "saved": "Đã lưu cài đặt",
     "invalidTime": "Giờ không hợp lệ (HH:MM)",
-    "reset": "Khôi phục mặc định"
+    "reset": "Khôi phục mặc định",
+    "webPush": {
+      "title": "Thông báo trên trình duyệt",
+      "body": "Nhận thông báo ngay cả khi không mở ứng dụng.",
+      "enable": "Bật thông báo",
+      "disable": "Tắt thông báo",
+      "on": "Đang bật trên thiết bị này",
+      "off": "Đang tắt",
+      "denied": "Trình duyệt đã chặn thông báo. Hãy cho phép trong cài đặt trang web.",
+      "unsupported": "Trình duyệt này không hỗ trợ thông báo đẩy. Thông báo vẫn có trong ứng dụng (biểu tượng chuông).",
+      "needsInstall": "Trên iPhone/iPad, hãy thêm TaskMate vào Màn hình chính (Chia sẻ → Thêm vào Màn hình chính) rồi mở từ biểu tượng đó để bật thông báo.",
+      "notConfigured": "Thông báo đẩy chưa được cấu hình trên máy chủ.",
+      "failed": "Không bật được thông báo. Vui lòng thử lại."
+    }
   },
   "settings": {
     "title": "Cài đặt chung",

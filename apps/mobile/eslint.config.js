@@ -3,7 +3,7 @@ const tseslint = require('typescript-eslint');
 
 module.exports = [
   ...expo,
-  { ignores: ['dist/*', 'dist-web/*', '.expo/*', 'node_modules/*', 'coverage/*'] },
+  { ignores: ['dist/*', 'dist-web/*', 'public/*', '.expo/*', 'node_modules/*', 'coverage/*'] },
   { files: ['*.config.js'], languageOptions: { globals: { __dirname: 'readonly', require: 'readonly', module: 'readonly' } } },
   {
     files: ['**/*.ts', '**/*.tsx'],

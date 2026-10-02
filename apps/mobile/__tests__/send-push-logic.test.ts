@@ -1,6 +1,10 @@
 import {
   GROUP_WINDOW_MS,
   buildMessages,
+  buildWebMessages,
+  buildWebRecapMessages,
+  deadEndpoints,
+  urlForType,
   countGroupedCompletions,
   buildRecapMessages,
   chunk,
@@ -135,5 +139,54 @@ describe('tâches à valider (SPEC v4 §5.6)', () => {
     expect(withPending[0]?.body).toBe('Minh: 3/5 việc · 3 mục chờ duyệt');
     expect(buildRecapMessages([parent1], devices, [{ name: 'Minh', done: 0, total: 0 }], { tasks: 1, requests: 0 })[0]?.body).toBe('1 mục chờ duyệt');
     expect(buildRecapMessages([parent1], devices, [{ name: 'Minh', done: 0, total: 0 }])).toEqual([]);
+  });
+});
+
+describe('Web Push', () => {
+  const sub = (id: string) => ({ endpoint: `https://push.example/${id}`, keys: { p256dh: 'k', auth: 'a' } });
+  const webDevices: DeviceInfo[] = [
+    { member_id: 'p1', expo_push_token: null, web_push_subscription: sub('p1') },
+    { member_id: 'p2', expo_push_token: null, web_push_subscription: sub('p2') },
+    { member_id: 'm-minh', expo_push_token: null, web_push_subscription: sub('minh') },
+    { member_id: 'm-khang', expo_push_token: null, web_push_subscription: sub('khang') },
+    { member_id: 'p1', expo_push_token: 'ExpoPushToken[p1]', web_push_subscription: null },
+  ];
+  const completed: ActivityRecord = { id: 'a1', family_id: 'f', child_id: 'c-minh', actor_member_id: 'm-minh', type: 'task_completed', payload: { title: 'Toán', task_id: 't1' } };
+
+  it('mêmes destinataires que le push mobile (préférences comprises) et ouverture de la file Cần duyệt', () => {
+    const out = buildWebMessages(completed, members, webDevices, 'Minh');
+    expect(out.map((m) => m.subscription.endpoint)).toEqual(['https://push.example/p1']); // p2 a désactivé « tâche faite »
+    expect(out[0]?.payload).toMatchObject({ url: '/approvals', tag: 'tasks-c-minh', data: { type: 'task_completed', childId: 'c-minh' } });
+    expect(out[0]?.payload.body).toContain('chờ duyệt');
+  });
+
+  it('jamais de notification à un enfant sur l\'activité de son frère', () => {
+    const validated: ActivityRecord = { ...completed, type: 'task_validated', actor_member_id: 'p1', payload: { title: 'Toán', points: 10 } };
+    const out = buildWebMessages(validated, members, webDevices, 'Minh');
+    expect(out.map((m) => m.subscription.endpoint)).toEqual(['https://push.example/minh']);
+  });
+
+  it('ignore les appareils sans abonnement web et les activités sans texte', () => {
+    expect(buildWebMessages(completed, members, devices, 'Minh')).toEqual([]);
+    expect(buildWebMessages({ ...completed, type: 'inconnu' }, members, webDevices, 'Minh')).toEqual([]);
+  });
+
+  it('récap du soir : parents seulement, avec les éléments en attente', () => {
+    const out = buildWebRecapMessages([parent1, parent2], webDevices, [{ name: 'Minh', done: 2, total: 3 }], { tasks: 1, requests: 1 });
+    expect(out).toHaveLength(2);
+    expect(out[0]?.payload).toMatchObject({ title: 'Tổng kết hôm nay', url: '/approvals' });
+    expect(out[0]?.payload.body).toContain('Minh: 2/3 việc');
+    expect(buildWebRecapMessages([parent1], webDevices, [], { tasks: 0, requests: 0 })).toEqual([]);
+  });
+
+  it('pages de destination selon le type', () => {
+    expect(urlForType('reward_requested')).toBe('/approvals');
+    expect(urlForType('reward_approved')).toBe('/more/points');
+    expect(urlForType('goal_achieved')).toBe('/more/goals');
+    expect(urlForType('task_assigned')).toBe('/');
+  });
+
+  it('abonnements morts : seuls 404/410 sont supprimés, sans doublon', () => {
+    expect(deadEndpoints([{ endpoint: 'a', statusCode: 410 }, { endpoint: 'a', statusCode: 404 }, { endpoint: 'b', statusCode: 500 }, { endpoint: 'c' }])).toEqual(['a']);
   });
 });

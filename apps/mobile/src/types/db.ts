@@ -69,13 +69,13 @@ isOneToOne: false
                   ]
                 },"devices": {
                   Row: {
-                    "created_at": string,"expo_push_token": string | null,"id": string,"last_seen_at": string,"member_id": string,"platform": string | null,"revoked_at": string | null,"updated_at": string
+                    "created_at": string,"expo_push_token": string | null,"id": string,"last_seen_at": string,"member_id": string,"platform": string | null,"revoked_at": string | null,"updated_at": string,"web_push_subscription": Json | null
                   }
                   Insert: {
-                    "created_at"?: string,"expo_push_token"?: string | null,"id"?: string,"last_seen_at"?: string,"member_id": string,"platform"?: string | null,"revoked_at"?: string | null,"updated_at"?: string
+                    "created_at"?: string,"expo_push_token"?: string | null,"id"?: string,"last_seen_at"?: string,"member_id": string,"platform"?: string | null,"revoked_at"?: string | null,"updated_at"?: string,"web_push_subscription"?: Json | null
                   }
                   Update: {
-                    "created_at"?: string,"expo_push_token"?: string | null,"id"?: string,"last_seen_at"?: string,"member_id"?: string,"platform"?: string | null,"revoked_at"?: string | null,"updated_at"?: string
+                    "created_at"?: string,"expo_push_token"?: string | null,"id"?: string,"last_seen_at"?: string,"member_id"?: string,"platform"?: string | null,"revoked_at"?: string | null,"updated_at"?: string,"web_push_subscription"?: Json | null
                   }
                   Relationships: [
                     {
@@ -539,6 +539,9 @@ isOneToOne: false
 "register_device":
 { Args: { "p_platform": string,"p_token": string }; Returns: string
                            },
+"register_web_push":
+{ Args: { "p_subscription": Json }; Returns: string
+                           },
 "reject_reward_request":
 { Args: { "p_note"?: string,"p_request_id": string }; Returns: undefined
                            },
@@ -575,6 +578,9 @@ isOneToOne: false
                            },
 "uncomplete_task":
 { Args: { "p_task_id": string,"p_tx_id": string }; Returns: undefined
+                           },
+"unregister_web_push":
+{ Args: { "p_endpoint": string }; Returns: undefined
                            },
 "validate_task":
 { Args: { "p_task_id": string,"p_tx_id": string }; Returns: undefined
