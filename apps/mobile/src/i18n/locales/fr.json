@@ -95,5 +95,54 @@
       "confirmBody": "L'app est maintenant liée au profil de {{name}} sur ce téléphone.",
       "confirmYes": "Oui, entrer dans l'app"
     }
+  },
+  "today": {
+    "greeting": "Salut {{name}} !",
+    "encouragement": "Terminons les tâches du jour !",
+    "progress": "Aujourd'hui {{done}}/{{total}} tâches terminées",
+    "listTitle": "Tâches du jour",
+    "empty": "Aucune tâche aujourd'hui",
+    "readOnlyBanner": "Vous consultez le planning de {{name}}",
+    "addTask": "Ajouter une tâche",
+    "overdue": "En retard",
+    "taskGone": "Cette tâche a été supprimée",
+    "cannotUncheck": "Impossible de décocher : ces points sont réservés pour une récompense"
+  },
+  "taskForm": {
+    "title": "Nouvelle tâche",
+    "editTitle": "Modifier la tâche",
+    "name": "Titre",
+    "category": "Catégorie",
+    "time": "Moment",
+    "date": "Date",
+    "kind": {
+      "range": "Plage horaire",
+      "deadline": "Avant une heure",
+      "anytime": "Dans la journée"
+    },
+    "from": "De",
+    "to": "À",
+    "before": "Avant",
+    "anytime": "Dans la journée",
+    "deadlineLabel": "Avant {{time}}",
+    "note": "Note",
+    "moreOptions": "Plus d'options",
+    "lessOptions": "Moins d'options",
+    "points": "Points attribués",
+    "forWhom": "Pour qui ?",
+    "delete": "Supprimer la tâche",
+    "deleteShort": "Suppr.",
+    "saved": "Tâche enregistrée",
+    "deleted": "Tâche supprimée",
+    "errors": {
+      "titleRequired": "Saisissez un titre",
+      "titleTooLong": "80 caractères maximum",
+      "noteTooLong": "500 caractères maximum",
+      "dateInvalid": "Date invalide",
+      "timeInvalid": "Heure invalide",
+      "endBeforeStart": "La fin doit suivre le début",
+      "pointsInvalid": "Les points vont de 0 à 1000",
+      "childRequired": "Choisissez au moins un enfant"
+    }
   }
 }

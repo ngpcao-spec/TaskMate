@@ -95,5 +95,54 @@
       "confirmBody": "Ứng dụng đã được liên kết với hồ sơ của {{name}} trên điện thoại này.",
       "confirmYes": "Đúng, vào ứng dụng"
     }
+  },
+  "today": {
+    "greeting": "Chào {{name}}!",
+    "encouragement": "Cùng hoàn thành việc hôm nay nhé!",
+    "progress": "Hôm nay {{done}}/{{total}} việc đã hoàn thành",
+    "listTitle": "Việc cần làm hôm nay",
+    "empty": "Hôm nay chưa có việc nào",
+    "readOnlyBanner": "Đang xem lịch của {{name}}",
+    "addTask": "Thêm việc",
+    "overdue": "Quá hạn",
+    "taskGone": "Việc này đã bị xóa",
+    "cannotUncheck": "Không thể bỏ chọn: điểm đã được dành cho phần thưởng"
+  },
+  "taskForm": {
+    "title": "Thêm việc",
+    "editTitle": "Sửa việc",
+    "name": "Tên công việc",
+    "category": "Danh mục",
+    "time": "Thời gian",
+    "date": "Ngày",
+    "kind": {
+      "range": "Khoảng giờ",
+      "deadline": "Trước giờ",
+      "anytime": "Cả ngày"
+    },
+    "from": "Từ",
+    "to": "Đến",
+    "before": "Trước",
+    "anytime": "Trong ngày",
+    "deadlineLabel": "Trước {{time}}",
+    "note": "Ghi chú",
+    "moreOptions": "Thêm tùy chọn",
+    "lessOptions": "Ẩn tùy chọn",
+    "points": "Điểm thưởng",
+    "forWhom": "Cho ai?",
+    "delete": "Xóa việc",
+    "deleteShort": "Xóa",
+    "saved": "Đã lưu việc",
+    "deleted": "Đã xóa việc",
+    "errors": {
+      "titleRequired": "Vui lòng nhập tên công việc",
+      "titleTooLong": "Tối đa 80 ký tự",
+      "noteTooLong": "Tối đa 500 ký tự",
+      "dateInvalid": "Ngày không hợp lệ",
+      "timeInvalid": "Giờ không hợp lệ",
+      "endBeforeStart": "Giờ kết thúc phải sau giờ bắt đầu",
+      "pointsInvalid": "Điểm phải từ 0 đến 1000",
+      "childRequired": "Chọn ít nhất một bạn"
+    }
   }
 }

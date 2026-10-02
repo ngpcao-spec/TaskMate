@@ -95,5 +95,54 @@
       "confirmBody": "The app is now linked to {{name}}'s profile on this phone.",
       "confirmYes": "Yes, open the app"
     }
+  },
+  "today": {
+    "greeting": "Hi {{name}}!",
+    "encouragement": "Let's finish today's tasks!",
+    "progress": "Today {{done}}/{{total}} tasks done",
+    "listTitle": "Today's tasks",
+    "empty": "No tasks today",
+    "readOnlyBanner": "Viewing {{name}}'s schedule",
+    "addTask": "Add task",
+    "overdue": "Overdue",
+    "taskGone": "This task was deleted",
+    "cannotUncheck": "Can't uncheck: those points are reserved for a reward"
+  },
+  "taskForm": {
+    "title": "New task",
+    "editTitle": "Edit task",
+    "name": "Task name",
+    "category": "Category",
+    "time": "Time",
+    "date": "Date",
+    "kind": {
+      "range": "Time range",
+      "deadline": "Before a time",
+      "anytime": "Any time today"
+    },
+    "from": "From",
+    "to": "To",
+    "before": "Before",
+    "anytime": "Any time",
+    "deadlineLabel": "Before {{time}}",
+    "note": "Note",
+    "moreOptions": "More options",
+    "lessOptions": "Fewer options",
+    "points": "Points",
+    "forWhom": "For whom?",
+    "delete": "Delete task",
+    "deleteShort": "Delete",
+    "saved": "Task saved",
+    "deleted": "Task deleted",
+    "errors": {
+      "titleRequired": "Enter a task name",
+      "titleTooLong": "80 characters max",
+      "noteTooLong": "500 characters max",
+      "dateInvalid": "Invalid date",
+      "timeInvalid": "Invalid time",
+      "endBeforeStart": "End must be after start",
+      "pointsInvalid": "Points must be 0–1000",
+      "childRequired": "Pick at least one child"
+    }
   }
 }

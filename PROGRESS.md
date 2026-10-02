@@ -1,6 +1,6 @@
 # Progression
-Jalon courant : M3 — à démarrer
-Dernière vérification complète : OK (tag m2)
+Jalon courant : M4 — à démarrer
+Dernière vérification complète : OK (tag m3)
 
 ## M0 — Squelette
 - [x] Monorepo pnpm, Expo SDK 57 + Router, TS strict
@@ -18,6 +18,11 @@ Client Supabase (session chunkée SecureStore), types DB, `redeem_invite` + limi
 écrans role/parent-auth/family/children (codes + QR)/join (saisie, QR, lien profond), routage par rôle (`domain/entry-route`).
 Différé : Apple/Google réels (D-013), non testé sur simulateur (pas de device ici) — couvert par tests Jest + `expo export`.
 
+## M3 — Accueil + tâches ✅ (tag m3)
+Accueil (pills, bandeau lecture seule, anneau, liste triée, swipe-suppression, FAB), formulaire Thêm việc (3 types d'horaire, catégories, note, points/« pour qui » parent),
+coche/décoche optimistes via RPC (tx_id fixé à la création), droits enfant/parent (`domain/permissions`), toasts. Domain : task-time, progress, permissions, task-form, family-time (100 % lignes).
+Différé : bannière « demandes à approuver » (M6), cloche notifications (M9), répétition dans « Plus d'options » (M10), création/édition hors ligne (M4).
+
 ## Critères d'acceptation → tests
 | Critère §8 | Test | Statut |
 |---|---|---|
@@ -29,3 +34,5 @@ Différé : Apple/Google réels (D-013), non testé sur simulateur (pas de devic
 | Refus/annulation/expiration : disponible revient | `03_rpc_rewards` (cancel/reject/expiration) | ✅ |
 | Appareil révoqué perd l'accès | `02` (membre révoqué), `04` (revoke_device) | ✅ |
 | Chaque politique RLS : test positif et négatif | `01_rls` | ✅ |
+| Tâche supprimée par le parent pendant que l'enfant coche : échec propre + toast | `useToggleTask.test` (task_not_found) + `02_rpc_points` | ✅ |
+| Aucun écran n'affiche les deux enfants côte à côte | à vérifier en M8 (stats) ; accueil/objectifs/points = un profil à la fois | ⏳ |
