@@ -78,9 +78,9 @@ select tests.login(11);
 select lives_ok($$insert into public.tasks (id, family_id, child_id, title, date, created_by) values (tests.u(350), tests.u(1), tests.u(201), 'À 20h', '2026-07-02', tests.u(111))$$, 'assigned: le parent crée une tâche pour Minh');
 select is((select count(*)::int from public.activity_log where type = 'task_assigned' and child_id = tests.u(201) and payload->>'task_id' = tests.u(350)::text), 1, 'assigned: journalisé pour l''enfant concerné');
 select tests.login(13);
-select lives_ok($$insert into public.tasks (id, family_id, child_id, title, date, created_by) values (tests.u(351), tests.u(1), tests.u(201), 'Perso', '2026-07-02', tests.u(113))$$, 'assigned: l''enfant crée sa propre tâche');
+select throws_ok($$insert into public.tasks (id, family_id, child_id, title, date, created_by) values (tests.u(351), tests.u(1), tests.u(201), 'Perso', '2026-07-02', tests.u(113))$$, '42501', null, 'assigned: l''enfant ne peut plus créer de tâche (SPEC v4)');
 select tests.login(11);
-select is((select count(*)::int from public.activity_log where type = 'task_assigned' and payload->>'task_id' = tests.u(351)::text), 0, 'assigned: pas de journal pour une tâche créée par l''enfant lui-même');
+select is((select count(*)::int from public.activity_log where type = 'task_assigned' and payload->>'task_id' = tests.u(351)::text), 0, 'assigned: aucune tâche ni journal côté enfant');
 
 select * from finish();
 rollback;

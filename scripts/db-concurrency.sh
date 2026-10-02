@@ -78,3 +78,36 @@ wait
 n=$(q "select count(*) from tasks where recurrence_id='$(u 901)'")
 [ "$n" = 14 ] || fail "attendu 14 occurrences sans doublon, obtenu $n"
 echo "ok : 14 occurrences, aucun doublon ni erreur"
+
+echo "== 2 parents valident la même tâche cochée simultanément =="
+as_pg "psql -qX -v ON_ERROR_STOP=1 -d $DB" >/dev/null <<SQL
+insert into tasks(id,family_id,child_id,title,date,points,created_by)
+ values ('$(u 950)','$(u 1)','$(u 201)','À valider','2026-07-03',40,'$(u 111)');
+SQL
+session 13 "select public.complete_task('$(u 950)','$(u 951)');" 0 > /dev/null
+before=$(q "select coalesce(sum(delta),0) from point_transactions where child_id='$(u 201)'")
+session 11 "select public.validate_task('$(u 950)','$(u 952)');" 1.5 > /tmp/conc_a.out &
+sleep 0.5
+session 12 "select public.validate_task('$(u 950)','$(u 953)');" 0 > /tmp/conc_b.out
+wait
+n=$(q "select count(*) from point_transactions where ref_id='$(u 950)' and reason='task_validated'")
+[ "$n" = 1 ] || fail "attendu 1 crédit, obtenu $n"
+grep -q not_pending /tmp/conc_a.out /tmp/conc_b.out || fail "la seconde validation aurait dû échouer proprement"
+after=$(q "select coalesce(sum(delta),0) from point_transactions where child_id='$(u 201)'")
+[ $((after - before)) = 40 ] || fail "crédit attendu 40, obtenu $((after - before))"
+echo "ok : un seul crédit de 40 points"
+
+echo "== validation et refus simultanés : un seul résultat =="
+as_pg "psql -qX -v ON_ERROR_STOP=1 -d $DB" >/dev/null <<SQL
+insert into tasks(id,family_id,child_id,title,date,points,created_by)
+ values ('$(u 960)','$(u 1)','$(u 201)','Course','2026-07-03',25,'$(u 111)');
+SQL
+session 13 "select public.complete_task('$(u 960)','$(u 961)');" 0 > /dev/null
+session 11 "select public.validate_task('$(u 960)','$(u 962)');" 1.5 > /tmp/conc_a.out &
+sleep 0.5
+session 12 "select public.reject_task('$(u 960)','non');" 0 > /tmp/conc_b.out
+wait
+state=$(q "select (validated_at is not null)::text || '/' || (completed_at is not null)::text from tasks where id='$(u 960)'")
+[ "$state" = "true/true" ] || fail "la validation (arrivée première) doit gagner, état = $state"
+grep -q not_pending /tmp/conc_b.out || fail "le refus tardif aurait dû échouer (not_pending)"
+echo "ok : validation gagnante, refus rejeté"
