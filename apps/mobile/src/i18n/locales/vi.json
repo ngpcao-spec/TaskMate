@@ -164,7 +164,8 @@
   "profile": {
     "title": "Hồ sơ",
     "tasks": "Danh sách việc",
-    "points": "Điểm thưởng"
+    "points": "Điểm thưởng",
+    "goals": "Mục tiêu"
   },
   "taskList": {
     "upcoming": "Sắp tới",
@@ -229,5 +230,25 @@
   },
   "home": {
     "toApprove": "{{count}} yêu cầu cần duyệt"
+  },
+  "goals": {
+    "title": "Mục tiêu",
+    "add": "Thêm mục tiêu",
+    "editTitle": "Sửa mục tiêu",
+    "name": "Tên mục tiêu",
+    "target": "Mục tiêu cần đạt",
+    "unit": "Đơn vị (tùy chọn)",
+    "empty": "Chưa có mục tiêu nào",
+    "achieved": "Đã đạt",
+    "achievedToast": "Chúc mừng! Bạn đã đạt mục tiêu “{{title}}”",
+    "increase": "Tăng",
+    "decrease": "Giảm",
+    "delete": "Xóa mục tiêu",
+    "errors": {
+      "titleRequired": "Vui lòng nhập tên mục tiêu",
+      "titleTooLong": "Tối đa 80 ký tự",
+      "targetInvalid": "Nhập số nguyên từ 1 đến 100000",
+      "unitTooLong": "Tối đa 20 ký tự"
+    }
   }
 }

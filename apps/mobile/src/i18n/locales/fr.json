@@ -164,7 +164,8 @@
   "profile": {
     "title": "Profil",
     "tasks": "Liste des tâches",
-    "points": "Points et récompenses"
+    "points": "Points et récompenses",
+    "goals": "Objectifs"
   },
   "taskList": {
     "upcoming": "À venir",
@@ -229,5 +230,25 @@
   },
   "home": {
     "toApprove": "{{count}} demande(s) à approuver"
+  },
+  "goals": {
+    "title": "Objectifs",
+    "add": "Ajouter un objectif",
+    "editTitle": "Modifier l'objectif",
+    "name": "Nom de l'objectif",
+    "target": "Cible à atteindre",
+    "unit": "Unité (facultatif)",
+    "empty": "Aucun objectif pour l'instant",
+    "achieved": "Atteint",
+    "achievedToast": "Bravo ! Objectif « {{title}} » atteint",
+    "increase": "Augmenter",
+    "decrease": "Diminuer",
+    "delete": "Supprimer l'objectif",
+    "errors": {
+      "titleRequired": "Saisissez un nom",
+      "titleTooLong": "80 caractères maximum",
+      "targetInvalid": "Entier de 1 à 100000",
+      "unitTooLong": "20 caractères maximum"
+    }
   }
 }

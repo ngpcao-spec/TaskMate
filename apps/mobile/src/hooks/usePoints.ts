@@ -53,6 +53,8 @@ function useInvalidatingMutation<V>(fn: (v: V) => Promise<void>, successMessage?
   const show = useToastStore((s) => s.show);
   return useMutation<void, unknown, V>({
     mutationFn: fn,
+    // jamais mis en file : un échange/une approbation exige le réseau (SPEC §3.7) → échec immédiat hors ligne
+    networkMode: 'always',
     onSuccess: () => successMessage && show(successMessage),
     onError: (error) => {
       const code = serverErrorCode(error);

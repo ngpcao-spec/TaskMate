@@ -164,7 +164,8 @@
   "profile": {
     "title": "Profile",
     "tasks": "All tasks",
-    "points": "Points & rewards"
+    "points": "Points & rewards",
+    "goals": "Goals"
   },
   "taskList": {
     "upcoming": "Upcoming",
@@ -229,5 +230,25 @@
   },
   "home": {
     "toApprove": "{{count}} request(s) to approve"
+  },
+  "goals": {
+    "title": "Goals",
+    "add": "Add a goal",
+    "editTitle": "Edit goal",
+    "name": "Goal name",
+    "target": "Target",
+    "unit": "Unit (optional)",
+    "empty": "No goals yet",
+    "achieved": "Achieved",
+    "achievedToast": "Congratulations! Goal “{{title}}” achieved",
+    "increase": "Increase",
+    "decrease": "Decrease",
+    "delete": "Delete goal",
+    "errors": {
+      "titleRequired": "Enter a name",
+      "titleTooLong": "80 characters max",
+      "targetInvalid": "Whole number from 1 to 100000",
+      "unitTooLong": "20 characters max"
+    }
   }
 }

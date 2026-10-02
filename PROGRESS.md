@@ -1,6 +1,6 @@
 # Progression
-Jalon courant : M7 — à démarrer
-Dernière vérification complète : OK (tag m6)
+Jalon courant : M8 — à démarrer
+Dernière vérification complète : OK (tag m7)
 
 ## M0 — Squelette
 - [x] Monorepo pnpm, Expo SDK 57 + Router, TS strict
@@ -37,6 +37,10 @@ Test clé : jeudi 2/7/2026 → « Thứ Năm » sous T5.
 CRUD récompenses, ajustement manuel (motif obligatoire), bannière « demandes à approuver » sur l'accueil parent, profil (cartes + menu) et « Danh sách việc » (filtres + recherche).
 Échanges nécessitent le réseau (boutons désactivés + message). Côté serveur : RPC/RLS/expiration déjà couverts par pgTAP (M1).
 Différé : actions Approuver/Refuser dans la notification push (M9).
+
+## M7 — Objectifs ✅ (tag m7)
+Écran Mục tiêu (cartes, barre, « 3/5 », −/+ manuel optimiste, badge + toast à l'atteinte), formulaire (titre, icône, cible ≥ 1, unité), frère en lecture seule.
+Serveur : `achieved_at` + `activity_log goal_achieved` posés par trigger (pgTAP 06) ; notification push au parent en M9. Progression manuelle (hypothèse §9 Q3).
 
 ## Critères d'acceptation → tests
 | Critère §8 | Test | Statut |

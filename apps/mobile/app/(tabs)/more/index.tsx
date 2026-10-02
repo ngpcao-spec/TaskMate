@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { ChevronRight, ListChecks, Gift } from 'lucide-react-native';
+import { ChevronRight, Gift, ListChecks, Target } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Card, Screen, Title } from '@/components/ui';
@@ -8,7 +8,7 @@ import { todayInTz } from '@/domain/family-time';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { colors, MIN_TARGET, typography } from '@/theme/tokens';
 
-type Href = '/more/tasks' | '/more/points';
+type Href = '/more/tasks' | '/more/goals' | '/more/points';
 
 /** Hồ sơ : cartes des enfants (parent) / sa carte + celle du frère (enfant) et menu (SPEC §3.5). */
 export default function ProfileScreen() {
@@ -19,6 +19,7 @@ export default function ProfileScreen() {
   const today = todayInTz(new Date(), d.me.family.timezone);
   const menu: { key: string; label: string; href: Href; icon: typeof Gift }[] = [
     { key: 'tasks', label: t('profile.tasks'), href: '/more/tasks', icon: ListChecks },
+    { key: 'goals', label: t('profile.goals'), href: '/more/goals', icon: Target },
     { key: 'points', label: t('profile.points'), href: '/more/points', icon: Gift },
   ];
 
