@@ -1,5 +1,9 @@
 # TaskMate — mémoire projet
 
+**Langue : réponds toujours en français** (messages, résumés, rapports, descriptions de PR). Le code et les identifiants suivent les conventions du repo ; les messages de commit restent en français.
+
+**Autonomie : ne demande jamais de confirmation à l'humain** pour les actions courantes de développement. Décide, applique, trace dans `DECISIONS.md`. Tu t'arrêtes uniquement pour une action irréversible ou qui exige un compte/secret que tu n'as pas (voir `HUMAN_TODO.md`).
+
 App mobile familiale (Expo + Supabase). Spéc: `SPEC.md` (fait autorité). Travail: `PROGRESS.md`, `DECISIONS.md`, `HUMAN_TODO.md`.
 
 ## Commandes
@@ -23,7 +27,9 @@ App mobile familiale (Expo + Supabase). Spéc: `SPEC.md` (fait autorité). Trava
 - Toute nouvelle table : RLS dans la même migration + tests pgTAP positifs ET négatifs.
 - Aucune chaîne UI en dur (i18n). `accessibilityLabel` + cibles ≥ 44 pt. Aucun écran ne compare/classe les deux enfants.
 - `date` d'une tâche = jour local de la famille, jamais dérivé d'un timestamp UTC.
-- Ne pas modifier SPEC.md. Pas de push --force ni d'action sur services distants.
+- Ne pas modifier SPEC.md. Pas de `push --force`, pas de réécriture d'historique.
+- Git : tu **commites et pousses** sur la branche de travail sans demander, puis vérifies la CI (`gh api repos/{owner}/{repo}/actions/runs`) ; ne déclare jamais la CI verte sans l'avoir constatée. Si une PR est possible (branche de destination distincte), ouvre-la toi-même ; sinon, dis-le en une ligne.
+- Interdit sans l'humain : déploiement, publication store, création de projet/ressource cloud, usage de secrets de production.
 
 ## État
 Jalons M0 → M11 + corrections C1 → C4 livrés (voir PROGRESS.md → rapport final). Spec v4 : l'enfant ne crée/modifie rien ; il coche → `pending`, le parent valide (`validate_task`) → points. Types DB générés (`src/types/db.ts`, contrôlés en CI) ; ne pas les éditer à la main. Captures de comparaison : `tools/visual`.
