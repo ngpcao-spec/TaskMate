@@ -19,6 +19,10 @@ jobs:
       - run: pnpm -w lint
       - run: pnpm -w test
       - run: pnpm --filter @taskmate/mobile exec expo export --platform ios
+      - name: Export web (PWA statique)
+        run: |
+          pnpm --filter @taskmate/mobile exec expo export --platform web
+          for f in index.html manifest.webmanifest sw.js icons/icon-512.png; do test -s "apps/mobile/dist/$f" || { echo "manquant: $f"; exit 1; }; done
   db:
     runs-on: ubuntu-latest
     steps:

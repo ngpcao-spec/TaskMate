@@ -27,6 +27,7 @@
     "expo-splash-screen": "~57.0.9",
     "expo-status-bar": "~57.0.1",
     "i18next": "^26.4.2",
+    "jsqr": "^1.4.0",
     "lucide-react-native": "^1.49.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -67,7 +68,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
     "test": "jest",
-    "export": "expo export --platform ios"
+    "export": "expo export --platform ios",
+    "export:web": "expo export --platform web"
   },
   "private": true
 }

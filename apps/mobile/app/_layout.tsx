@@ -10,8 +10,10 @@ import { applyStoredLanguage } from '@/i18n/language';
 import { createQueryClient, CACHE_MAX_AGE } from '@/sync/client';
 import { setupNetworkListeners } from '@/sync/network';
 import { persister } from '@/sync/persister';
+import { registerServiceWorker } from '@/pwa/registerServiceWorker';
 
 setupNetworkListeners();
+registerServiceWorker();
 applyStoredLanguage();
 const queryClient = createQueryClient();
 

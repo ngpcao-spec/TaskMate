@@ -6,7 +6,7 @@ import { supabaseAuthStorage } from './secureStorage';
 export const supabase = createClient<Database>(config.supabaseUrl, config.supabaseAnonKey, {
   auth: {
     storage: supabaseAuthStorage,
-    autoRefreshToken: true,
+    autoRefreshToken: typeof window !== 'undefined', // pas de minuteur pendant le rendu statique (Node)
     persistSession: true,
     detectSessionInUrl: false,
   },

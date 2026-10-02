@@ -1,16 +1,15 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { signInAnonymously } from '@/api/auth';
 import { fetchMe, redeemInvite, type RedeemResult } from '@/api/family';
 import { queryKeys } from '@/api/keys';
 import { supabase } from '@/api/supabase';
+import { QrScanner } from '@/components/QrScanner';
 import { Button, ErrorText, Field, Screen, Subtitle, Title } from '@/components/ui';
 import { isValidInviteCode, normalizeInviteCode, parseInviteLink } from '@/domain/invite';
-import { colors, radius, typography } from '@/theme/tokens';
 
 type JoinOutcome = { result: RedeemResult; name: string };
 
@@ -22,7 +21,6 @@ export default function JoinScreen() {
   const params = useLocalSearchParams<{ code?: string }>();
   const [code, setCode] = useState(() => (params.code ? normalizeInviteCode(params.code) : ''));
   const [scanning, setScanning] = useState(false);
-  const [permission, requestPermission] = useCameraPermissions();
 
   const joinMutation = useMutation<JoinOutcome, Error, string>({
     mutationFn: async (rawCode) => {
@@ -71,28 +69,16 @@ export default function JoinScreen() {
     return (
       <Screen scroll={false}>
         <Title>{t('onboarding.join.scan')}</Title>
-        {permission?.granted ? (
-          <>
-            <CameraView
-              style={styles.camera}
-              barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
-              onBarcodeScanned={({ data }) => {
-                const parsed = parseInviteLink(data);
-                if (parsed) {
-                  setScanning(false);
-                  setCode(parsed);
-                  join(parsed);
-                }
-              }}
-            />
-            <Text style={[typography.secondary, styles.center]}>{t('onboarding.join.scanning')}</Text>
-          </>
-        ) : (
-          <>
-            <ErrorText>{t('onboarding.join.cameraDenied')}</ErrorText>
-            <Button label={t('common.continue')} onPress={() => void requestPermission()} />
-          </>
-        )}
+        <QrScanner
+          onScan={(data) => {
+            const parsed = parseInviteLink(data);
+            if (parsed) {
+              setScanning(false);
+              setCode(parsed);
+              join(parsed);
+            }
+          }}
+        />
         <Button variant="ghost" label={t('common.cancel')} onPress={() => setScanning(false)} />
       </Screen>
     );
@@ -115,10 +101,7 @@ export default function JoinScreen() {
       <Button
         variant="secondary"
         label={t('onboarding.join.scan')}
-        onPress={() => {
-          setScanning(true);
-          if (!permission?.granted) void requestPermission();
-        }}
+        onPress={() => setScanning(true)}
       />
     </Screen>
   );
@@ -126,5 +109,4 @@ export default function JoinScreen() {
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 },
-  camera: { flex: 1, minHeight: 320, borderRadius: radius.card, overflow: 'hidden', backgroundColor: colors.text },
 });
