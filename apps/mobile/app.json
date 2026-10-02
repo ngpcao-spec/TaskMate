@@ -51,7 +51,13 @@
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro",
-      "output": "single"
+      "output": "static",
+      "name": "TaskMate",
+      "shortName": "TaskMate",
+      "description": "Việc nhà của gia đình — TaskMate",
+      "themeColor": "#1E88F5",
+      "backgroundColor": "#F5F9FF",
+      "lang": "vi"
     },
     "extra": {
       "eas": {}

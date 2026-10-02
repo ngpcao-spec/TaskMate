@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import * as Notifications from 'expo-notifications';
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
 import { newId } from '@/api/ids';
@@ -16,6 +15,7 @@ import {
   ensureNotificationPermission,
   handleNotificationResponse,
   registerPushToken,
+  subscribeToResponses,
   syncLocalReminders,
 } from '@/services/notifications';
 import { useMe } from './useMe';
@@ -68,14 +68,10 @@ export function useNotificationSetup(): void {
       rejectTask: async (id: string) => (await import('@/api/tasks')).rejectTaskRpc(id),
       navigate: (href: string) => router.push(href as never),
     };
-    const sub = Notifications.addNotificationResponseReceivedListener((r) => void handleNotificationResponse(r, deps));
-    // démarrage à froid depuis une notification
-    void Notifications.getLastNotificationResponseAsync().then((r) => {
-      if (r && !cancelled) void handleNotificationResponse(r, deps);
-    });
+    const unsubscribe = subscribeToResponses((r) => void handleNotificationResponse(r, deps));
     return () => {
       cancelled = true;
-      sub.remove();
+      unsubscribe();
     };
   }, [memberId, router]);
 }

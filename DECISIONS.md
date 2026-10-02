@@ -109,3 +109,16 @@ Les minuteurs de GC de TanStack Query gardaient Jest ouvert. `createTestQueryCli
 
 ## D-024 — Comparaison visuelle par rendu web
 Faute de simulateur, l'app est exportée en web et photographiée (Playwright + Chromium préinstallé) contre un faux serveur PostgREST (`tools/visual`). Limite : rendu non natif. Les pastilles enfants ont été retirées du calendrier et des statistiques (spec : pas de comparaison entre enfants).
+
+## D-025 — Web = cible principale ; mobile natif en second plan
+La V1 est une PWA hébergée sur Vercel. L'app native reste fonctionnelle (mêmes sources, tests Jest, `expo export --platform ios` en CI) mais n'est plus prioritaire : Apple/Google/EAS sortent de HUMAN_TODO.
+
+## D-026 — Implémentations web par fichiers `.web.ts(x)`
+Metro choisit `X.web.ts` sur le web : `sync/storage.web.ts` (localStorage + repli mémoire si refusé/quota), `sync/network.web.ts` (`navigator.onLine`, `online`/`offline`, `visibilitychange`), `api/secureStorage.web.ts` (session Supabase dans localStorage), `services/notifications.web.ts` (no-op + même mapping d'actions), `components/QrScanner.web.tsx`, `pwa/registerServiceWorker.web.ts`. localStorage plutôt qu'IndexedDB : le persister TanStack et la file de mutations exigent un stockage **synchrone** ; le quota (~5 Mo) couvre largement le cache d'une famille, et le repli mémoire évite tout plantage.
+
+## D-027 — Scan QR web : getUserMedia + jsQR
+`BarcodeDetector` est absent de Firefox et Safari ; `jsqr` (JS pur) décode les images du flux vidéo sur tous les navigateurs. Caméra refusée/absente → message, la saisie manuelle du code reste sur l'écran de jointure.
+
+## D-028 — Export web statique (`web.output = static`) et PWA
+`expo export --platform web` → `apps/mobile/dist` (une page HTML par route). PWA : `public/manifest.webmanifest`, icônes placeholders générées depuis `assets/icon.png` (192/512/maskable/apple-touch), `app/+html.tsx` (meta iOS/Android, focus visible), service worker `public/sw.js` : cache d'abord pour les fichiers hachés (`/_expo/static`, `/assets`, `/icons`), réseau d'abord avec repli sur la coquille pour les navigations, **jamais** l'API Supabase (autre origine). La file d'écritures hors ligne et son idempotence (tx_id fixé à la création) sont inchangées ; elles utilisent le stockage web.
+Limite connue : `expo export` affiche « Something prevented Expo from exiting » (handle ouvert pendant le rendu statique, code retour 0) — sans conséquence pour le build.
