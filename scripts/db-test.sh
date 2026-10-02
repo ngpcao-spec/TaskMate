@@ -18,6 +18,7 @@ if [ -f "$ROOT/supabase/seed.sql" ] && [ "${WITH_SEED:-0}" = 1 ]; then
   as_pg "psql -qX -v ON_ERROR_STOP=1 -f $ROOT/supabase/seed.sql $DB" >/dev/null
 fi
 shopt -s nullglob
-tests=("$ROOT"/supabase/tests/*.sql)
+tests=("$ROOT"/supabase/tests/database/*.sql)
 if [ ${#tests[@]} -eq 0 ]; then echo "no pgTAP tests yet"; exit 0; fi
 as_pg "pg_prove -U postgres -d $DB ${tests[*]}"
+./scripts/db-concurrency.sh
