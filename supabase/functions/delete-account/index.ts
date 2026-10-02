@@ -3,10 +3,11 @@
 // 2) suppression des comptes auth avec la clé service (impossible côté client).
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
-const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+import { jsonResponse as json, preflight } from '../_shared/cors.ts';
 
 Deno.serve(async (req) => {
+  const early = preflight(req);
+  if (early) return early;
   if (req.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
   const authorization = req.headers.get('Authorization');
   if (!authorization) return json({ error: 'not_authenticated' }, 401);

@@ -40,3 +40,6 @@ yarn-error.*
 /ios
 /android
 dist-web/
+
+playwright-report/
+test-results/
