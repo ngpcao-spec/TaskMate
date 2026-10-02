@@ -2,13 +2,17 @@ name: CI
 on:
   push:
   pull_request:
+
+env:
+  SUPABASE_CLI_VERSION: 2.119.0 # version qui a généré supabase/config.toml (une CLI plus ancienne rejette les clés récentes)
+
 jobs:
   app:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
         with: { node-version: 22, cache: pnpm }
       - run: pnpm install --frozen-lockfile
       - run: pnpm -w typecheck
@@ -18,9 +22,20 @@ jobs:
   db:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: supabase/setup-cli@v1
+      - uses: actions/checkout@v6
+      - uses: supabase/setup-cli@v3
+        with: { version: "${{ env.SUPABASE_CLI_VERSION }}" }
       - run: supabase start
       - run: supabase db reset
       - run: supabase test db
       - run: supabase db lint
+      - name: Types générés à jour
+        run: |
+          supabase gen types typescript --local > apps/mobile/src/types/db.ts
+          git diff --exit-code -- apps/mobile/src/types/db.ts
+      - name: Types générés (diagnostic)
+        if: failure()
+        run: |
+          echo "=====GENERATED-TYPES-BEGIN====="
+          cat apps/mobile/src/types/db.ts
+          echo "=====GENERATED-TYPES-END====="

@@ -2,7 +2,7 @@
 
 > Document de référence pour Claude Code. À placer à la racine du repo (`SPEC.md`) et à référencer depuis `CLAUDE.md`.
 > Source : 8 maquettes mobiles (UI en vietnamien). Les hypothèses prises là où les maquettes sont muettes sont marquées **[H]** et listées en fin de document.
-> **v3** : chaque enfant sur son propre téléphone (synchro multi-appareils) ; coche libre ; échanges soumis à approbation parentale ; frères visibles en lecture seule, sans classement.
+> **v4** : chaque enfant sur son propre téléphone (synchro multi-appareils) ; **seul le parent crée les tâches** ; l'enfant coche, **le parent valide avant tout crédit de points** ; échanges soumis à approbation parentale ; frères visibles en lecture seule, sans classement.
 
 ---
 
@@ -13,11 +13,12 @@ TaskMate est une app mobile familiale de gestion de tâches quotidiennes pour de
 Slogan affiché : *« Việc nhỏ hôm nay — Tương lai lớn ngày mai »* (Petites tâches aujourd'hui, grand avenir demain).
 
 ### Personas et appareils
-- **Enfant (Minh 17 ans, Khang 13 ans)** — sur **son propre téléphone**, l'app est liée à son profil : il consulte et coche librement ses tâches, en ajoute, suit ses objectifs, demande à échanger ses points. Il peut **consulter le profil de son frère en lecture seule** (planning, objectifs, points, stats), sans classement ni comparaison.
-- **Parent [H]** — sur son téléphone, la même app en **mode parent** : il voit les deux enfants, crée et édite tâches, objectifs et récompenses, **approuve ou refuse les demandes d'échange**, ajuste les points, reçoit les notifications d'activité.
+- **Enfant (Minh 17 ans, Khang 13 ans)** — sur **son propre téléphone**, l'app est liée à son profil : il consulte et coche ses tâches, suit ses objectifs, demande à échanger ses points. Il **ne crée, ne modifie et ne supprime aucune tâche**. Il peut **consulter le profil de son frère en lecture seule** (planning, objectifs, points, stats), sans classement ni comparaison.
+- **Parent [H]** — sur son téléphone, la même app en **mode parent** : il voit les deux enfants, **est le seul à créer et éditer les tâches**, crée objectifs et récompenses, **valide ou refuse les tâches cochées**, **approuve ou refuse les demandes d'échange**, ajuste les points, reçoit les notifications d'activité.
 
 ### Décisions produit validées
-- **Tâches** : l'enfant coche librement, les points sont crédités immédiatement, sans validation parentale.
+- **Tâches** : seul un parent crée, modifie ou supprime une tâche.
+- **Validation** : l'enfant coche une tâche → elle passe « en attente de validation » (`Chờ duyệt`). Les points ne sont crédités **que lorsqu'un parent valide**. Un refus remet la tâche à faire, avec un motif optionnel.
 - **Récompenses** : un échange est une **demande** soumise à l'approbation d'un parent.
 - **Frères** : chacun voit les données de l'autre en lecture seule ; **aucun classement**, aucune comparaison chiffrée entre eux.
 
@@ -63,6 +64,7 @@ Tabs
 |---|---|---|
 | Pills / cartes de profil | visibles ; son profil par défaut, celui du frère en **lecture seule** | visibles, sélection de l'enfant affiché |
 | Récompenses | lecture + demande d'échange | CRUD + approbation des demandes |
+| Tâches | lecture + coche ; pas de FAB, pas d'édition | CRUD + validation des tâches cochées |
 | Demandes en attente | les siennes (annulables) | file « À approuver » avec badge |
 | Gestion des enfants & codes d'invitation | — | Réglages généraux |
 | Ajustement manuel des points | — | oui |
@@ -80,14 +82,19 @@ Tabs
 ### 3.2 Accueil (Hôm nay)
 - En-tête : avatar, « Chào {prénom}! », sous-titre d'encouragement, icône cloche (→ centre de notifications **[H]**).
 - Pills de profil (« 17 tuổi » / « 13 tuổi ») dans les deux modes. En mode enfant, la pill du frère ouvre son profil en **lecture seule** : cases à cocher désactivées, pas de FAB, pas d'édition ni de swipe, bandeau discret « Đang xem lịch của {prénom} ».
-- Mode parent : bannière « X demandes à approuver » en haut de l'accueil s'il y en a.
-- Carte progression : anneau + « Hôm nay X/Y việc đã hoàn thành ». Tap → Statistiques.
+- Mode parent : bannière en haut de l'accueil s'il y a des éléments en attente : « X việc chờ duyệt » (tâches cochées à valider) et « X demandes à approuver ». Tap → file « Cần duyệt » (§3.10).
+- Carte progression : anneau + « Hôm nay X/Y việc đã hoàn thành » (X = tâches cochées, validées ou non). Tap → Statistiques.
 - Liste « Việc cần làm hôm nay » triée par heure de début (ou d'échéance), tâches sans heure en dernier.
-  - Chaque ligne : case à cocher, titre, plage horaire ou échéance, icône de catégorie.
-  - Cocher = tâche faite → points crédités (§5.2). Décocher = annulation des points.
+  - Chaque ligne : case à cocher, titre, plage horaire ou échéance, icône de catégorie, et un badge d'état :
+    - à faire : case vide ;
+    - **Chờ duyệt** (cochée, en attente) : case cochée + badge orange « Chờ duyệt » ;
+    - **Đã duyệt** (validée) : case cochée + badge vert « +10 điểm » ;
+    - refusée : redevient à faire, avec le motif du parent affiché sous le titre jusqu'à la prochaine coche.
+  - **Enfant** : cocher → `Chờ duyệt`, aucun point. Décocher possible tant que la tâche n'est pas validée. Une tâche validée n'est plus décochable par l'enfant.
+  - **Parent** : sur une tâche `Chờ duyệt`, boutons Valider / Refuser directement sur la ligne. Si le parent coche lui-même une tâche, elle est validée d'office. Décocher une tâche validée retire ses points.
   - Tâche en attente de synchronisation : petit indicateur discret **[H]**.
-  - Tap sur la ligne → édition. Swipe → supprimer (selon droits §5.7).
-- FAB « + » → écran Thêm việc.
+  - Parent : tap sur la ligne → édition, swipe → supprimer. Enfant : tap → détail en lecture seule (note comprise).
+- FAB « + » → écran Thêm việc : **mode parent uniquement**.
 
 ### 3.3 Calendrier (Lịch)
 - Bandeau semaine de lundi (T2) à dimanche (CN), jour sélectionné surligné, aujourd'hui marqué.
@@ -96,7 +103,7 @@ Tabs
 - Cartes de tâches colorées par catégorie : horaire + titre. Tâches faites atténuées **[H]**.
 - « Xem lịch tuần » → vue semaine compacte (liste groupée par jour) **[H]**.
 
-### 3.4 Ajouter / éditer une tâche (Thêm việc)
+### 3.4 Ajouter / éditer une tâche (Thêm việc) — parent uniquement
 | Champ | Règle |
 |---|---|
 | Tên công việc (titre) | requis, 1–80 caractères |
@@ -113,8 +120,10 @@ Les maquettes montrent les deux premiers formats dans les listes mais un seul ch
 
 Options repliées sous « Plus d'options » **[H]** :
 - Répétition : aucune / quotidienne / jours de semaine choisis.
-- Points attribués (défaut 10) : **modifiable uniquement par un parent**.
-- En mode parent : sélecteur « Pour qui ? » (un enfant, ou les deux → crée une tâche par enfant).
+- Points attribués (défaut 10).
+- Sélecteur « Pour qui ? » (un enfant, ou les deux → crée une tâche par enfant).
+
+Écran inaccessible en mode enfant (route protégée, pas seulement le bouton masqué). Modifier les points d'une tâche déjà validée ne change pas les points déjà crédités.
 
 Bouton « Lưu » désactivé tant que le formulaire est invalide. Après sauvegarde : retour + toast. La création fonctionne hors ligne.
 
@@ -132,7 +141,7 @@ Bouton « Lưu » désactivé tant que le formulaire est invalide. Après sauveg
 
 ### 3.7 Points (Điểm thưởng)
 - Pills de profil dans les deux modes (frère en lecture seule côté enfant : solde visible, pas de demande possible).
-- Carte solde : « 320 điểm — Tổng điểm hiện tại ». Si des demandes sont en attente, ligne secondaire « dont 150 điểm en attente d'approbation ». Tap → historique des mouvements.
+- Carte solde : « 320 điểm — Tổng điểm hiện tại ». Lignes secondaires si non nulles : « dont 150 điểm en attente d'approbation » (échanges) et « +30 điểm chờ duyệt » (tâches cochées non validées, **non comptées dans le solde**). Tap → historique des mouvements.
 - Liste « Đổi điểm lấy phần thưởng » : icône, titre, coût. Récompense dont le coût dépasse le **solde disponible** = grisée.
 - Bandeau : « Càng hoàn thành nhiều việc càng có nhiều điểm hơn! ».
 - Échange **nécessite le réseau** ; hors ligne, bouton désactivé avec message.
@@ -172,6 +181,13 @@ Récompenses par défaut (créées avec la famille) :
 - **Général** : langue (vi par défaut, fr, en), déconnexion.
 - **Général, mode parent** : gestion des enfants, génération/révocation des codes d'invitation, appareils liés (avec révocation), invitation d'un co-parent, fuseau horaire de la famille, suppression du compte et des données.
 
+### 3.10 File « Cần duyệt » (parent uniquement)
+Point d'entrée unique pour tout ce qui attend une décision parentale. Accessible depuis la bannière de l'accueil, l'onglet Điểm thưởng et les notifications.
+- **Onglet Tâches** : tâches cochées non validées, groupées par enfant puis par jour (plus anciennes en premier). Chaque ligne : titre, date, heure de coche, points. Actions : **Duyệt** (valider), **Từ chối** (refuser, motif optionnel). Bouton **« Duyệt tất cả »** par enfant (une confirmation, puis validation de chaque tâche).
+- **Onglet Récompenses** : demandes d'échange en attente (flux §3.7).
+- Une tâche en attente **n'expire pas** : elle reste dans la file jusqu'à décision, même les jours suivants.
+- Badge sur l'onglet « Thêm » avec le nombre total d'éléments en attente.
+
 ---
 
 ## 4. Modèle de données (Postgres / Supabase)
@@ -203,9 +219,13 @@ tasks
    date (date, jour local de la famille),
    time_kind ('range'|'deadline'|'anytime'), start_time?, end_time? (time),
    points int default 10,
-   completed_at?, completed_by? → members,
+   completed_at?, completed_by? → members,          -- coche (enfant ou parent)
+   validated_at?, validated_by? → members,          -- validation parentale = crédit des points
+   rejection_note?, rejected_at?,                   -- dernier refus, effacé à la coche suivante
    recurrence_id?, created_by → members)
   unique (recurrence_id, date)
+  check (validated_at is null or completed_at is not null)
+  -- état dérivé : todo (completed_at null) | pending (completed, non validée) | validated
 
 recurrences
   (id, family_id, child_id, title, category, note?, time_kind, start_time?, end_time?,
@@ -217,7 +237,7 @@ rewards          (id, family_id, title, icon, cost > 0, child_id? (null = commun
 
 point_transactions   -- journal immuable : INSERT uniquement via fonctions, ni UPDATE ni DELETE
   (id (généré côté client → idempotence), family_id, child_id, delta,
-   reason ('task_completed'|'task_uncompleted'|'reward_redeemed'|'manual_adjust'),
+   reason ('task_validated'|'task_unvalidated'|'reward_redeemed'|'manual_adjust'),
    ref_id?, note?, created_by, created_at)
 
 reward_requests
@@ -231,7 +251,7 @@ activity_log     (id, family_id, child_id, actor_member_id, type, payload jsonb,
 ```
 
 Vues :
-- `child_balances (child_id, balance, reserved, available)` : `balance = SUM(delta)`, `reserved = SUM(cost)` des demandes `pending`, `available = balance − reserved`.
+- `child_balances (child_id, balance, reserved, available, pending_task_points)` : `balance = SUM(delta)`, `reserved = SUM(cost)` des demandes `pending`, `available = balance − reserved`, `pending_task_points = SUM(points)` des tâches cochées non validées (informatif, **jamais** dans le solde).
 
 ### 4.3 Catégories (enum Postgres `task_category` + constante côté app)
 
@@ -254,45 +274,49 @@ Vues :
 Calculé à partir de `birth_date` à l'affichage. Jamais stocké.
 
 ### 5.2 Points — toujours via fonctions Postgres
-Le client n'écrit **jamais** directement dans `point_transactions` ni `tasks.completed_at`. Il appelle des RPC `security definer`, chacune atomique :
+Le client n'écrit **jamais** directement dans `point_transactions`, `tasks.completed_at`, `tasks.validated_at` ni `tasks.rejection_note`. Il appelle des RPC `security definer`, chacune atomique :
 
 | RPC | Effet |
 |---|---|
-| `complete_task(task_id, tx_id)` | `completed_at = now()` + transaction `+points` ; no-op si déjà faite |
-| `uncomplete_task(task_id, tx_id)` | `completed_at = null` + transaction `−points` ; refus si solde deviendrait négatif **[H]** |
+| `complete_task(task_id, tx_id)` | **enfant** (sa tâche) : `completed_at = now()`, efface `rejection_note`, **aucun point** → état `pending`. **Parent** : coche + valide dans la même transaction (+points). No-op si déjà cochée. |
+| `uncomplete_task(task_id, tx_id)` | **enfant** : seulement si `pending` → `todo`, aucun mouvement de points ; refus `already_validated` si validée. **Parent** : si validée, retire exactement les points crédités (`task_unvalidated`), refus si le solde disponible deviendrait négatif ; puis `todo`. |
+| `validate_task(task_id, tx_id)` | parent ; `pending` → `validated` + transaction `+points` (`task_validated`). Rejeu idempotent. Refus `not_pending` sinon. |
+| `reject_task(task_id, note?)` | parent ; `pending` → `todo` (`completed_at = null`), `rejection_note`, `rejected_at`. Aucun point. |
 | `request_reward(reward_id, request_id)` | enfant, pour lui-même ; refus si `available` < coût ; crée la demande `pending` |
 | `cancel_reward_request(request_id)` | enfant auteur ; `pending` → `cancelled` |
 | `approve_reward_request(request_id, tx_id)` | parent ; `pending` → `approved` + transaction `−cost` (`reward_redeemed`) |
 | `reject_reward_request(request_id, note?)` | parent ; `pending` → `rejected` |
 | `adjust_points(child_id, delta, note, tx_id)` | parent uniquement |
 
-- Chaque RPC de demande verrouille la ligne (`SELECT … FOR UPDATE`) : deux parents qui approuvent en même temps ne débitent qu'une fois ; une approbation sur une demande déjà annulée échoue proprement.
-- `uncomplete_task` refuse si le **solde disponible** deviendrait négatif (les points réservés sont protégés).
-- `pg_cron` horaire : passe en `expired` les demandes `pending` dont `expires_at` est dépassé.
+- Chaque RPC de demande ou de validation verrouille la ligne (`SELECT … FOR UPDATE`) : deux parents qui valident ou approuvent en même temps ne créditent/débitent qu'une fois ; une validation sur une tâche décochée entre-temps échoue proprement (`not_pending`).
+- `uncomplete_task` (parent, tâche validée) refuse si le **solde disponible** deviendrait négatif (les points réservés sont protégés).
+- `pg_cron` horaire : passe en `expired` les demandes d'échange `pending` dont `expires_at` est dépassé. Les tâches `pending` n'expirent pas.
 
-- `tx_id` est généré par le client : rejouer la même requête (file hors ligne, retry réseau) ne crédite jamais deux fois.
-- Hors ligne, cocher met à jour l'UI de façon optimiste (tâche cochée, solde projeté) et met l'appel RPC en file d'attente.
-- Supprimer une tâche faite ne retire pas les points déjà gagnés **[H]**.
+- `tx_id` est généré par le client à chaque action : rejouer la même requête (file hors ligne, retry réseau) ne crédite jamais deux fois.
+- Hors ligne, cocher (enfant) et valider/refuser (parent) mettent à jour l'UI de façon optimiste et mettent l'appel RPC en file d'attente. L'enfant ne voit **jamais** son solde augmenter de façon optimiste : seule la validation serveur crédite.
+- Supprimer une tâche validée ne retire pas les points déjà gagnés. Supprimer une tâche `pending` la retire de la file sans points.
+- Migration des données existantes : les tâches déjà cochées avec points crédités deviennent `validated` (`validated_at = completed_at`, transactions conservées, `reason` renommé en `task_validated` / `task_unvalidated`).
 
 ### 5.3 Récurrence (côté serveur) [H]
 Générée par une tâche planifiée `pg_cron` quotidienne (minuit, fuseau de la famille) qui matérialise les occurrences sur 14 jours glissants, plus à la création/modification d'une récurrence. L'unicité `(recurrence_id, date)` empêche les doublons. Modifier une récurrence met à jour les occurrences futures non faites. Générer côté serveur évite que deux téléphones créent les mêmes occurrences.
 
 ### 5.4 Statistiques
 - Semaine = lundi → dimanche, mois = mois civil, **dans le fuseau de la famille**.
-- Total = tâches non supprimées dont `date` est dans la période ; Hoàn thành = celles avec `completed_at` ; Chưa hoàn thành = différence.
+- Total = tâches non supprimées dont `date` est dans la période ; Hoàn thành = celles **cochées** (`completed_at`, validées ou en attente) ; Chưa hoàn thành = différence. La validation concerne les points, pas la statistique d'effort.
 - Taux = Hoàn thành / Total, arrondi ; « — » si Total = 0.
 - Répartition = nb tâches de la catégorie / Total.
 - Calcul dans `src/domain/stats.ts` (fonction pure sur les tâches en cache), pour fonctionner hors ligne.
 - Message : ≥ 80 % « Xuất sắc! », 50–79 % « Làm tốt lắm! Còn cố gắng hơn nữa nhé! », < 50 % « Cố lên, mỗi ngày một chút! ».
 
 ### 5.5 Tâche en retard
-Non faite et : `date` passée, ou aujourd'hui avec `end_time` dépassé. Horaire en rouge **[H]**.
+Non cochée et : `date` passée, ou aujourd'hui avec `end_time` dépassé. Horaire en rouge **[H]**. Une tâche `pending` n'est jamais en retard.
 
 ### 5.6 Notifications
 - **Locales** (expo-notifications), planifiées sur le téléphone de l'enfant pour ses propres rappels ; replanifiées à chaque synchro (une tâche ajoutée par le parent doit déclencher un rappel sur le téléphone de l'enfant).
 - **Push** (Expo Push via Edge Function déclenchée par trigger/webhook DB) :
-  - enfant → parent(s) : **demande d'échange** (avec actions Approuver / Refuser dans la notification), objectif atteint, récap du soir ;
-  - parent → enfant : demande approuvée / refusée / expirée, nouvelle tâche assignée, points ajustés.
+  - enfant → parent(s) : **tâche cochée à valider** (actions Duyệt / Từ chối dans la notification ; regroupées si plusieurs coches en moins de 10 min : « Minh đã hoàn thành 3 việc »), **demande d'échange** (actions Approuver / Refuser), objectif atteint, récap du soir (incluant le nombre d'éléments en attente) ;
+  - parent → enfant : tâche validée (« +10 điểm »), tâche refusée (avec motif), demande approuvée / refusée / expirée, nouvelle tâche assignée, points ajustés.
+- Préférence parent « Tâches cochées » activable/désactivable (le récap du soir et la file restent).
 - Aucune notification n'est envoyée à un enfant à propos de l'activité de son frère (évite l'effet compétition).
 - Les tokens invalides sont nettoyés à la réception des reçus Expo.
 
@@ -306,9 +330,10 @@ Non faite et : `date` passée, ou aujourd'hui avec `end_time` dépassé. Horaire
 | Écrire quoi que ce soit sur le profil de son frère | ✗ | ✓ |
 | Demander / annuler un échange | pour lui-même | — |
 | Approuver / refuser une demande | ✗ | ✓ |
-| Créer une tâche | pour lui-même, points = 10 imposés | pour n'importe quel enfant |
-| Modifier / supprimer une tâche | celles qu'il a créées | toutes |
-| Cocher / décocher | les siennes (RPC) | toutes (RPC) |
+| Créer / modifier / supprimer une tâche ou une série | ✗ | ✓ |
+| Cocher une tâche | les siennes (RPC) → `pending` | toutes (RPC) → `validated` |
+| Décocher | les siennes, si `pending` | toutes (retire les points si validée) |
+| Valider / refuser une tâche cochée | ✗ | ✓ |
 | Objectifs | CRUD sur les siens | CRUD |
 | Récompenses | lire, échanger | CRUD |
 | Ajuster les points, gérer enfants, codes, appareils | ✗ | ✓ |
@@ -320,6 +345,7 @@ Non faite et : `date` passée, ou aujourd'hui avec `end_time` dépassé. Horaire
 - Champs éditables (titre, horaire, note, objectif) : dernière écriture gagne sur `updated_at` serveur.
 - Complétion et points : jamais en conflit, car sérialisés par les RPC idempotentes.
 - Tâche supprimée par le parent pendant que l'enfant la coche hors ligne : la RPC échoue proprement, l'UI retire la tâche avec un toast.
+- Enfant qui décoche hors ligne une tâche que le parent a validée entre-temps : la RPC échoue (`already_validated`), l'UI rétablit l'état validé avec un toast.
 
 ---
 
@@ -413,8 +439,11 @@ Chaque jalon se termine par : `tsc` propre, lint propre, tests app + pgTAP verts
 
 ## 8. Critères d'acceptation clés
 
-- Minh coche une tâche sur son téléphone → elle apparaît cochée chez le parent en moins de 5 s (réseau normal).
-- Cocher hors ligne puis revenir en ligne crédite les points **une seule fois**, même après plusieurs retries.
+- Minh coche une tâche sur son téléphone → elle apparaît `Chờ duyệt` chez le parent en moins de 5 s (réseau normal) ; son solde **ne change pas**.
+- Le parent valide → le solde de Minh augmente des points de la tâche ; deux validations simultanées (deux parents, ou retry) ne créditent qu'une fois.
+- Le parent refuse → la tâche redevient à faire chez Minh avec le motif, aucun point.
+- Un enfant ne peut ni créer, ni modifier, ni supprimer une tâche, ni valider, ni décocher une tâche validée — vérifié par tests pgTAP (RLS + RPC), pas seulement par l'UI. Le test « enfant crée 30 tâches et les coche » doit échouer dès l'insertion.
+- Cocher hors ligne puis revenir en ligne ne produit qu'un passage en `pending`, sans aucun point ; valider hors ligne puis revenir en ligne ne crédite qu'une fois.
 - Un enfant peut lire les données de son frère mais ne peut rien y écrire (ni cocher, ni créer, ni demander d'échange), ne peut pas s'attribuer de points ni modifier `points` d'une tâche — vérifié par tests pgTAP, pas seulement par l'UI.
 - Une demande d'échange réserve les points sans les débiter ; seule l'approbation d'un parent crée la transaction `reward_redeemed`.
 - Deux demandes simultanées dont le total dépasse le solde disponible : la seconde est refusée côté serveur.
@@ -434,7 +463,7 @@ Chaque jalon se termine par : `tsc` propre, lint propre, tests app + pgTAP verts
 Les valeurs par défaut ci-dessus s'appliquent tant que rien n'est décidé.
 
 Tranchées :
-- Coche libre des tâches, points immédiats.
+- Coche des tâches par l'enfant, **points crédités uniquement après validation parentale** ; seul le parent crée les tâches.
 - Échange soumis à approbation parentale.
 - Frères visibles en lecture seule, sans classement.
 - **Aucun plafond** d'échange par récompense (pas de limite de fréquence).
