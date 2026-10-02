@@ -92,9 +92,11 @@ export async function seedInvite(family: FamilyFixture, child: 'minh' | 'khang',
 export async function serverState(family: FamilyFixture, child: 'minh' | 'khang', title: string) {
   const db = admin();
   const { data: task } = await db.from('tasks').select('completed_at, validated_at').eq('family_id', family.familyId).eq('title', title).single();
-  const { data: balance } = await db.from('child_balances').select('balance').eq('child_id', family[child].childId as string).maybeSingle();
-  const { count } = await db.from('point_transactions').select('id', { count: 'exact', head: true }).eq('child_id', family[child].childId as string);
-  return { completed: !!task?.completed_at, validated: !!task?.validated_at, balance: balance?.balance ?? 0, transactions: count ?? 0 };
+  // le solde se lit dans le journal des points (la vue child_balances dépend de auth.uid(), vide avec la clé de service)
+  const { data: txs } = await db.from('point_transactions').select('delta').eq('child_id', family[child].childId as string);
+  const balance = (txs ?? []).reduce((sum, t) => sum + t.delta, 0);
+  const count = txs?.length ?? 0;
+  return { completed: !!task?.completed_at, validated: !!task?.validated_at, balance, transactions: count };
 }
 
 async function sessionOf(person: Person): Promise<Session> {
