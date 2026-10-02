@@ -1,0 +1,12 @@
+{
+  "app": { "name": "TaskMate", "slogan": "Petites tâches aujourd'hui, grand avenir demain" },
+  "common": { "start": "Commencer", "save": "Enregistrer", "cancel": "Annuler" },
+  "tabs": { "today": "Aujourd'hui", "calendar": "Calendrier", "stats": "Statistiques", "more": "Plus" },
+  "category": {
+    "study": "Études",
+    "sport": "Sport",
+    "chores": "Tâches ménagères",
+    "personal": "Personnel",
+    "other": "Autre"
+  }
+}

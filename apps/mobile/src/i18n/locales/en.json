@@ -1,0 +1,12 @@
+{
+  "app": { "name": "TaskMate", "slogan": "Small tasks today, a big future tomorrow" },
+  "common": { "start": "Get started", "save": "Save", "cancel": "Cancel" },
+  "tabs": { "today": "Today", "calendar": "Calendar", "stats": "Stats", "more": "More" },
+  "category": {
+    "study": "Study",
+    "sport": "Sport",
+    "chores": "Chores",
+    "personal": "Personal",
+    "other": "Other"
+  }
+}

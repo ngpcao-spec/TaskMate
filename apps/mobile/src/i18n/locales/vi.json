@@ -1,0 +1,12 @@
+{
+  "app": { "name": "TaskMate", "slogan": "Việc nhỏ hôm nay — Tương lai lớn ngày mai" },
+  "common": { "start": "Bắt đầu", "save": "Lưu", "cancel": "Hủy" },
+  "tabs": { "today": "Hôm nay", "calendar": "Lịch", "stats": "Thống kê", "more": "Thêm" },
+  "category": {
+    "study": "Học tập",
+    "sport": "Thể thao",
+    "chores": "Việc nhà",
+    "personal": "Cá nhân",
+    "other": "Khác"
+  }
+}
