@@ -8,7 +8,7 @@ Dernière vérification complète (locale, après C3) : typecheck, lint, 299 tes
 - Avant corrections : **rouge** sur les 11 runs (job `db` : `supabase start` ; job `app` : timeout du test settings au M11). L'ancien rapport « OK » était faux : il ne reflétait que les tests locaux.
 - C1 : cause du job `db` = CLI Supabase par défaut (2.20.3) qui rejetait les clés de `config.toml` → CLI épinglée à 2.119.0. Cause du job `app` = timeout (5 s) sur runner froid → `testTimeout: 30000`. Jest ne se terminait pas à cause des minuteurs de garbage-collection de TanStack Query → `gcTime: Infinity` dans le client de test (`test-utils/queryClient.ts`), sans `--forceExit`. Actions passées en versions Node 24 (checkout v6, setup-node v6, pnpm/action-setup v6, supabase/setup-cli v3). Types DB désormais **générés** (`supabase gen types`) et vérifiés par la CI (`git diff --exit-code`).
 - **Run vert constaté : [#14, id 36972137433](https://github.com/ngpcao-spec/TaskMate/actions/runs/36972137433)** (commit `9448190`, fin du lot C2) : jobs `app` et `db` verts, y compris `supabase start`, `db reset`, `supabase test db`, `db lint` et le contrôle des types générés.
-- Lot C3 (`4b31ceb`) : run [#15, id 36973311752](https://github.com/ngpcao-spec/TaskMate/actions/runs/36973311752) en cours au moment de la rédaction — résultat non constaté (voir le commit suivant).
+- **Runs verts constatés** : [#15, id 36973311752](https://github.com/ngpcao-spec/TaskMate/actions/runs/36973311752) (lot C3, `4b31ceb`) et [#16, id 36973414796](https://github.com/ngpcao-spec/TaskMate/actions/runs/36973414796) (lot C4, `35c8137`) — jobs `app` et `db` au vert.
 
 ### Jalons et corrections
 M0 → M11 (voir ci-dessous) · C1 CI/Jest/types générés · C2 validation parentale des tâches (spec v4) · C3 alignement visuel sur les maquettes · C4 ce rapport.
@@ -139,4 +139,4 @@ Vérifications locales : typecheck, lint, 299 tests Jest, `expo export --platfor
 | **v4** Coche enfant hors ligne = `pending` seulement ; validation parent hors ligne créditée une seule fois | `validation-queue.test`, `projected-balance.test`, `offline-queue.test` | ✅ |
 | **v4** File « Cần duyệt », « Duyệt tất cả » par enfant, badge, ligne « +X điểm chờ duyệt » | `approvals.test`, `domain/approvals.test`, `points.test` | ✅ |
 | **v4** Push : `task_completed` regroupée < 10 min, actions Duyệt/Từ chối, `task_validated`/`task_rejected` à l'enfant, récap avec nombre en attente | `send-push-logic.test`, `notification-actions.test`, `notifications-service.test` (appareil réel non testé) | ⚠️ logique seule |
-| CI verte | Run #14 (`36972137433`) vert, voir « État de la CI » | ✅ constaté |
+| CI verte | Runs #14, #15 et #16 verts, voir « État de la CI » | ✅ constaté |
