@@ -2,11 +2,9 @@
 
 Projet Supabase : `olftkozksanvnzlsvwrp` (Sydney) · Web : https://taskmate-rho-nine.vercel.app · Dépôt : `ngpcao-spec/TaskMate`.
 Vous n'avez jamais besoin de me donner la clé `service_role` ni le mot de passe de la base — ne les saisissez nulle part dans le dépôt.
-**Ordre conseillé** : 1 → 7, puis le contrôle final. Chaque étape dit où cliquer, quoi saisir, comment vérifier.
-Les liens directs ci-dessous ouvrent le bon projet si vous êtes connecté à Supabase.
-
-## 0. Avant tout : fusionner les PR dans l'ordre
-W1 → W2 → W3 → W4 → cette PR (« prod Supabase + diagnostic »), toutes vers `main`. L'étape 4 applique alors les 10 migrations automatiquement.
+**Ordre obligatoire** : 1 → 2 → 3 → 4 → 5, **puis seulement** la fusion des PR, puis 6 → 7, puis le contrôle final.
+Pourquoi : l'intégration GitHub de l'étape 4 doit être active **avant la première fusion sur `main`**, sinon les migrations ne se déclenchent pas ; et les variables Vercel de l'étape 5 doivent exister avant le premier déploiement de `main`.
+Chaque étape dit où cliquer, quoi saisir, comment vérifier. Les liens directs ouvrent le bon projet si vous êtes connecté à Supabase.
 
 ## 1. Activer les connexions anonymes (les enfants en ont besoin)
 - **Où** : https://supabase.com/dashboard/project/olftkozksanvnzlsvwrp/auth/providers → *Authentication → Sign In / Providers* → section **User Signups**.
@@ -33,8 +31,8 @@ W1 → W2 → W3 → W4 → cette PR (« prod Supabase + diagnostic »), toutes 
 - **Où** : https://supabase.com/dashboard/project/olftkozksanvnzlsvwrp/settings/integrations → *Project Settings → Integrations → GitHub Integration*.
 - **Saisir** : dépôt `ngpcao-spec/TaskMate` · **Working directory** : `.` (point) · branche de production `main` · **Deploy to production** : **ON** · **Automatic branching** : OFF → **Enable integration** (ou **Save** si déjà activée).
 - **Ce que ça fait** (doc officielle) : à chaque fusion sur `main`, applique les nouvelles migrations de `supabase/migrations` dans l'ordre (sans le `seed.sql`) et déploie les Edge Functions déclarées dans `supabase/config.toml`. Ne règle **pas** Auth (étapes 1 à 3) ni les secrets (étape 6).
-- **Vérifier** (après la fusion de l'étape 0) : *Database → Migrations* liste **10** migrations (de `…core_schema_rls` à `…diagnostics`) ; *Edge Functions* liste `redeem-invite`, `delete-account`, `send-push`.
-- **Si une migration échoue** : le message est dans *Project Settings → Integrations → GitHub* (ou le commentaire du commit). Envoyez-le moi.
+- **Vérifier maintenant** : la page *Integrations → GitHub* affiche le dépôt `ngpcao-spec/TaskMate` connecté, **Deploy to production** sur ON, branche `main`. Rien ne s'applique tant que vous n'avez pas fusionné (section suivante) ; le résultat se vérifie après la fusion : *Database → Migrations* liste **10** migrations (de `…core_schema_rls` à `…diagnostics`) et *Edge Functions* liste `redeem-invite`, `delete-account`, `send-push`.
+- **Si une migration échoue** : le message est dans la coche/croix à côté du commit de fusion sur GitHub (clic → *Details*). Envoyez-le moi.
 
 ## 5. Variables d'environnement Vercel
 - **Où** : Vercel → projet **taskmate** → *Settings → Environment Variables*. Cocher **Production** et **Preview**.
@@ -49,8 +47,37 @@ W1 → W2 → W3 → W4 → cette PR (« prod Supabase + diagnostic »), toutes 
 | `EXPO_PUBLIC_PRIVACY_URL` | *(facultatif)* URL de la politique de confidentialité |
 
 - **Réglages du projet** (*Settings → General*) : **Root Directory** vide, **Framework Preset** « Other » (le reste vient de `vercel.json`), branche de production `main`.
-- **Redéployer** (les variables sont lues au *build*) : *Deployments →* dernier déploiement → ⋯ → **Redeploy**.
-- **Vérifier** : app → Réglages → Diagnostic → « Connexion à Supabase : OK » et plus d'alerte « Adresse Supabase de l'application ».
+- **Quand redéployer** : les variables sont lues au *build*. Saisies **avant** la première fusion, elles servent dès le premier déploiement de `main` (rien à faire). Si vous les changez plus tard : *Deployments →* dernier déploiement → ⋯ → **Redeploy**.
+- **Vérifier** : le tableau affiche 3 variables obligatoires cochées Production + Preview. Le contrôle fonctionnel se fait après les fusions (Réglages → Diagnostic : « Connexion à Supabase : OK », plus d'alerte « Adresse Supabase de l'application »).
+
+## ▶ FUSION DES PR (seulement après les étapes 1 à 5)
+Les 5 PR sont **empilées** : #1 cible `main`, #2 cible la branche de #1, #3 celle de #2, etc. Si une branche n'est pas supprimée après sa fusion, la PR suivante fusionne dans l'ancienne branche et **`main` reste incomplet**. Suivez exactement ceci, **dans l'ordre #1 → #2 → #3 → #4 → #5** (https://github.com/ngpcao-spec/TaskMate/pulls) :
+1. Ouvrir la PR. Sous le titre, lire « *X wants to merge … into* **`main`** » : la branche de destination doit être `main`. Pour #1 c'est déjà le cas. Pour #2 à #5, ce sera `main` **uniquement si** vous avez supprimé la branche de la PR précédente (point 4).
+   - Si la destination n'est **pas** `main` : ne fusionnez pas. Cliquer **Edit** (à droite du titre) → liste « base » → choisir `main` → **Change base**.
+2. Vérifier que les contrôles en bas de page sont verts (« All checks have passed »). Le contrôle Vercel peut rester en attente : sans importance.
+3. Cliquer la flèche à droite de **Merge pull request** → choisir **Create a merge commit** (**pas** « Squash and merge », **pas** « Rebase and merge ») → **Confirm merge**.
+4. Cliquer **Delete branch** (bouton affiché juste après la fusion). C'est ce clic qui fait cibler `main` à la PR suivante.
+5. Passer à la PR suivante et recommencer au point 1.
+**Contrôle après la dernière** (#5) : sur https://github.com/ngpcao-spec/TaskMate (branche `main`), vérifier que le dossier `apps/mobile/e2e-web` et le fichier `supabase/migrations/20260702000010_diagnostics.sql` existent. Puis étape *Vérifier* de l'étape 4 : *Database → Migrations* = 10 lignes, *Edge Functions* = 3 fonctions.
+*Raccourci équivalent* : la branche de #5 contient déjà tous les commits des 4 PR précédentes. Fusionner **seulement #5** (même procédure : « Create a merge commit ») met aussi `main` complet en un clic ; les PR #1 à #4 se ferment alors d'elles-mêmes comme « Merged ».
+*Si vous avez fusionné par erreur dans une ancienne branche* : ouvrir une nouvelle PR depuis `claude/prod-supabase` vers `main` (Pull requests → New pull request → base `main`, compare `claude/prod-supabase`) et la fusionner : cela rattrape tout.
+
+## ▶ PLAN B — Database → Migrations est vide après les fusions
+Sans aucune clé secrète. Essayer dans l'ordre :
+1. **Comprendre** : GitHub → `main` → page du dernier commit (clic sur le message) → l'icône à côté du titre (coche/croix/rond) → **Details** → ligne « Supabase » : le message dit pourquoi (intégration non activée, mauvais *Working directory*, erreur SQL…). Corriger l'étape 4 si besoin (**Working directory** = `.`, **Deploy to production** = ON, branche = `main`).
+2. **Re-déclencher sans outil** (un commit « vide » n'existe pas dans l'interface web ; un commit qui touche `supabase/` fait la même chose) : GitHub → dépôt → dossier `supabase` → **Add file → Create new file** → nom `redeploy.txt` (dans `supabase/`), contenu `redeploy` → **Commit changes… → Commit directly to the `main` branch** → **Commit changes**. Attendre 1 à 2 minutes puis recharger *Database → Migrations*. (Vous pouvez supprimer ce fichier ensuite : même procédure, corbeille.)
+3. **Appliquer à la main** (dernier recours, toujours sans clé) : Supabase → *SQL Editor* → *New query*. Pour **chaque** fichier de `supabase/migrations`, **dans l'ordre des noms** (…0001 puis …0002 … jusqu'à …0010) : ouvrir le fichier sur GitHub → **Copy raw file** → coller dans l'éditeur → **Run** → attendre « Success ». S'arrêter à la première erreur et me l'envoyer. Ensuite, **une seule fois**, enregistrer les migrations comme appliquées (sinon l'intégration tentera de les rejouer) : nouvelle requête →
+   ```sql
+   create schema if not exists supabase_migrations;
+   create table if not exists supabase_migrations.schema_migrations (version text primary key, statements text[], name text);
+   insert into supabase_migrations.schema_migrations (version, name) values
+     ('20260702000001','core_schema_rls'), ('20260702000002','rpc_points_invites'), ('20260702000003','redeem_rate_limit'),
+     ('20260702000004','realtime'), ('20260702000005','notification_prefs'), ('20260702000006','recurrence'),
+     ('20260702000007','delete_family'), ('20260702000008','task_validation'), ('20260702000009','web_push'),
+     ('20260702000010','diagnostics')
+   on conflict (version) do nothing;
+   ```
+   → **Run**. Les Edge Functions se déploient alors par la méthode de repli de l'étape 6.
 
 ## 6. Edge Functions et secrets
 - **Déploiement** : automatique par l'étape 4 (rien à installer). Vérifier dans *Edge Functions* que les 3 fonctions sont listées ; sinon, **méthode de repli sans outil** :
