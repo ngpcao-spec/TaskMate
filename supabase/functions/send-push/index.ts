@@ -21,10 +21,11 @@ import {
 } from './logic.ts';
 
 const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send';
-const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+import { jsonResponse as json, preflight } from '../_shared/cors.ts';
 
 Deno.serve(async (req) => {
+  const early = preflight(req);
+  if (early) return early;
   if (req.headers.get('x-webhook-secret') !== Deno.env.get('WEBHOOK_SECRET')) return json({ error: 'unauthorized' }, 401);
   const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
   const body = (await req.json().catch(() => ({}))) as { type?: string; record?: ActivityRecord };

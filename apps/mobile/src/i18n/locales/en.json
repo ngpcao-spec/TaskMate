@@ -372,7 +372,8 @@
     "deleteConfirm": "Delete permanently",
     "deleteChild": "Delete profile",
     "deleteChildBody": "Delete {{name}}'s profile?",
-    "childDeleted": "Profile deleted"
+    "childDeleted": "Profile deleted",
+    "diagnostics": "Diagnostics"
   },
   "task": {
     "pending": "To approve",
@@ -399,5 +400,104 @@
     "alreadyHandled": "This task was already handled or no longer exists",
     "openQueue": "To approve ({{count}})",
     "badge": "{{count}} item(s) to review"
+  },
+  "health": {
+    "screenTitle": "Diagnostics",
+    "intro": "Checks that the production server is ready: connection, authentication, tables, functions, realtime. This test changes nothing.",
+    "run": "Run diagnostics again",
+    "running": "Checking…",
+    "summary": "{{ok}} OK · {{warn}} to watch · {{fail}} to fix",
+    "allGood": "Everything is in order.",
+    "status": {
+      "ok": "OK",
+      "warn": "Watch",
+      "fail": "Fix"
+    },
+    "itemTitle": {
+      "connection": "Supabase connection",
+      "frontUrl": "App's Supabase address",
+      "webUrl": "App's public address",
+      "anonymous": "Anonymous sign-ins",
+      "email": "Email sign-in (OTP code)",
+      "migrations": "Migrations",
+      "tables": "Tables",
+      "rpc": "SQL functions (RPC)",
+      "rls": "Row-level security (RLS)",
+      "publication": "Realtime: published tables",
+      "cron": "Scheduled jobs (pg_cron)",
+      "realtime": "Realtime: connection",
+      "fn-redeem-invite": "Edge Function redeem-invite",
+      "fn-delete-account": "Edge Function delete-account",
+      "fn-send-push": "Edge Function send-push",
+      "vapid": "Web Push key (VAPID)"
+    },
+    "connection": {
+      "ok": "The server answers ({{url}}).",
+      "fail": "The server {{url}} does not answer. Check EXPO_PUBLIC_SUPABASE_URL in Vercel (Settings → Environment Variables), then redeploy."
+    },
+    "frontUrl": {
+      "local": "The app still points to a local server ({{url}}). In Vercel, set EXPO_PUBLIC_SUPABASE_URL to the Supabase project URL, then redeploy."
+    },
+    "webUrl": {
+      "missing": "EXPO_PUBLIC_WEB_URL is empty: invite links will use the browser address. Set the app URL in Vercel.",
+      "ok": "Invite links are generated on {{url}}."
+    },
+    "anonymous": {
+      "ok": "Anonymous sign-ins are enabled (children need them).",
+      "disabled": "Anonymous sign-ins are DISABLED: children cannot join. Supabase → Authentication → Sign In / Providers → “Allow anonymous sign-ins” → turn on → Save.",
+      "unknown": "Cannot read the authentication settings (invalid public key or network). Check EXPO_PUBLIC_SUPABASE_ANON_KEY."
+    },
+    "email": {
+      "ok": "Email sign-in is enabled.",
+      "disabled": "Email sign-in is disabled: parents cannot sign in. Supabase → Authentication → Sign In / Providers → Email → turn on."
+    },
+    "migrations": {
+      "missingRpc": "Migrations are not (all) applied: the “diagnostics” function is missing. Supabase → Database → Migrations: check the list; otherwise Project Settings → Integrations → GitHub → “Deploy to production”, then merge to main again.",
+      "forbidden": "This diagnostic is for parents only.",
+      "error": "The server returned an unexpected error for the “diagnostics” RPC. See Supabase → Logs → Postgres."
+    },
+    "tables": {
+      "ok": "All {{count}} expected tables exist.",
+      "missing": "Missing tables: {{list}}. Migrations are not all applied (Supabase → Database → Migrations)."
+    },
+    "rpc": {
+      "ok": "All {{count}} expected SQL functions exist.",
+      "missing": "Missing SQL functions: {{list}}. Migrations are not all applied (Supabase → Database → Migrations)."
+    },
+    "rls": {
+      "ok": "Row-level security is enabled on all tables.",
+      "disabled": "RLS DISABLED on: {{list}}. Danger: these tables are readable by everyone. Re-run the migrations."
+    },
+    "publication": {
+      "ok": "All business tables are published to Realtime.",
+      "missing": "Not published to Realtime: {{list}}. Supabase → Database → Publications → supabase_realtime → add these tables."
+    },
+    "cron": {
+      "ok": "Both scheduled jobs exist (request expiry, recurrence generation).",
+      "missing": "Missing pg_cron jobs: {{list}}. Supabase → Database → Extensions → enable pg_cron, then in SQL Editor: select public.schedule_cron_jobs();",
+      "unknown": "pg_cron jobs unreadable (extension not enabled?). Supabase → Database → Extensions → enable pg_cron, then in SQL Editor: select public.schedule_cron_jobs();"
+    },
+    "realtime": {
+      "ok": "Realtime works (connection established).",
+      "fail": "Realtime cannot connect (state: {{status}}). Supabase → Project Settings → API: check Realtime is enabled; try another network."
+    },
+    "functions": {
+      "ok": "{{name}} is deployed.",
+      "missing": "{{name}} is NOT deployed. Supabase → Edge Functions: it must be listed. Otherwise Project Settings → Integrations → GitHub → “Deploy to production”, or run the “Deploy Edge Functions” workflow (see HUMAN_TODO).",
+      "unknown": "{{name}}: deployment cannot be checked from this browser (network or CORS). Check Supabase → Edge Functions."
+    },
+    "vapid": {
+      "ok": "Web Push public key present (browser notifications possible).",
+      "missing": "Optional: no Web Push key. Generate it below, set the public key in Vercel (EXPO_PUBLIC_VAPID_PUBLIC_KEY) and the private key in Supabase → Edge Functions → Secrets."
+    },
+    "vapidTool": {
+      "title": "Generate Web Push keys (VAPID)",
+      "body": "Keys are created in your browser and are neither stored nor sent. Copy them now: never publish the private key.",
+      "generate": "Generate a key pair",
+      "publicLabel": "Public key → Vercel: EXPO_PUBLIC_VAPID_PUBLIC_KEY and Supabase (secret VAPID_PUBLIC_KEY)",
+      "privateLabel": "Private key → Supabase only (secret VAPID_PRIVATE_KEY)",
+      "copy": "Copy",
+      "copied": "Copied"
+    }
   }
 }

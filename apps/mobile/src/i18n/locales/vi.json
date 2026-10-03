@@ -372,7 +372,8 @@
     "deleteConfirm": "Xóa vĩnh viễn",
     "deleteChild": "Xóa hồ sơ",
     "deleteChildBody": "Xóa hồ sơ của {{name}}?",
-    "childDeleted": "Đã xóa hồ sơ"
+    "childDeleted": "Đã xóa hồ sơ",
+    "diagnostics": "Chẩn đoán"
   },
   "task": {
     "pending": "Chờ duyệt",
@@ -399,5 +400,104 @@
     "alreadyHandled": "Việc này đã được xử lý hoặc không còn nữa",
     "openQueue": "Cần duyệt ({{count}})",
     "badge": "{{count}} mục cần duyệt"
+  },
+  "health": {
+    "screenTitle": "Chẩn đoán",
+    "intro": "Kiểm tra máy chủ sản xuất đã sẵn sàng: kết nối, xác thực, bảng dữ liệu, hàm, thời gian thực. Bài kiểm tra này không thay đổi gì.",
+    "run": "Chạy lại chẩn đoán",
+    "running": "Đang kiểm tra…",
+    "summary": "{{ok}} ổn · {{warn}} cần theo dõi · {{fail}} cần sửa",
+    "allGood": "Mọi thứ đều ổn.",
+    "status": {
+      "ok": "Ổn",
+      "warn": "Theo dõi",
+      "fail": "Cần sửa"
+    },
+    "itemTitle": {
+      "connection": "Kết nối Supabase",
+      "frontUrl": "Địa chỉ Supabase của ứng dụng",
+      "webUrl": "Địa chỉ công khai của ứng dụng",
+      "anonymous": "Đăng nhập ẩn danh",
+      "email": "Đăng nhập bằng email (mã OTP)",
+      "migrations": "Migration",
+      "tables": "Bảng",
+      "rpc": "Hàm SQL (RPC)",
+      "rls": "Bảo mật theo dòng (RLS)",
+      "publication": "Realtime: bảng được phát",
+      "cron": "Tác vụ định kỳ (pg_cron)",
+      "realtime": "Realtime: kết nối",
+      "fn-redeem-invite": "Edge Function redeem-invite",
+      "fn-delete-account": "Edge Function delete-account",
+      "fn-send-push": "Edge Function send-push",
+      "vapid": "Khóa Web Push (VAPID)"
+    },
+    "connection": {
+      "ok": "Máy chủ phản hồi ({{url}}).",
+      "fail": "Máy chủ {{url}} không phản hồi. Kiểm tra EXPO_PUBLIC_SUPABASE_URL trong Vercel rồi triển khai lại."
+    },
+    "frontUrl": {
+      "local": "Ứng dụng vẫn trỏ tới máy chủ cục bộ ({{url}}). Trong Vercel, đặt EXPO_PUBLIC_SUPABASE_URL là URL dự án Supabase rồi triển khai lại."
+    },
+    "webUrl": {
+      "missing": "EXPO_PUBLIC_WEB_URL đang trống: liên kết mời sẽ dùng địa chỉ trình duyệt. Hãy nhập URL ứng dụng trong Vercel.",
+      "ok": "Liên kết mời được tạo trên {{url}}."
+    },
+    "anonymous": {
+      "ok": "Đăng nhập ẩn danh đã bật (các con cần tính năng này).",
+      "disabled": "Đăng nhập ẩn danh đang TẮT: các con không thể tham gia. Supabase → Authentication → Sign In / Providers → bật “Allow anonymous sign-ins” → Save.",
+      "unknown": "Không đọc được cài đặt xác thực (khóa công khai sai hoặc mất mạng). Kiểm tra EXPO_PUBLIC_SUPABASE_ANON_KEY."
+    },
+    "email": {
+      "ok": "Đăng nhập bằng email đã bật.",
+      "disabled": "Đăng nhập bằng email đang tắt: phụ huynh không thể đăng nhập. Supabase → Authentication → Sign In / Providers → Email → bật."
+    },
+    "migrations": {
+      "missingRpc": "Migration chưa được áp dụng đầy đủ: thiếu hàm “diagnostics”. Supabase → Database → Migrations để kiểm tra; nếu không, Project Settings → Integrations → GitHub → “Deploy to production” rồi merge lại vào main.",
+      "forbidden": "Chẩn đoán này chỉ dành cho phụ huynh.",
+      "error": "Máy chủ trả lỗi bất ngờ cho RPC “diagnostics”. Xem Supabase → Logs → Postgres."
+    },
+    "tables": {
+      "ok": "Đủ {{count}} bảng cần thiết.",
+      "missing": "Thiếu bảng: {{list}}. Migration chưa áp dụng đủ (Supabase → Database → Migrations)."
+    },
+    "rpc": {
+      "ok": "Đủ {{count}} hàm SQL cần thiết.",
+      "missing": "Thiếu hàm SQL: {{list}}. Migration chưa áp dụng đủ (Supabase → Database → Migrations)."
+    },
+    "rls": {
+      "ok": "Bảo mật theo dòng đã bật trên mọi bảng.",
+      "disabled": "RLS đang TẮT trên: {{list}}. Nguy hiểm: ai cũng đọc được các bảng này. Hãy chạy lại migration."
+    },
+    "publication": {
+      "ok": "Mọi bảng nghiệp vụ đều được phát qua Realtime.",
+      "missing": "Chưa phát qua Realtime: {{list}}. Supabase → Database → Publications → supabase_realtime → thêm các bảng này."
+    },
+    "cron": {
+      "ok": "Cả hai tác vụ định kỳ đều có (hết hạn yêu cầu, tạo việc lặp).",
+      "missing": "Thiếu tác vụ pg_cron: {{list}}. Supabase → Database → Extensions → bật pg_cron, rồi trong SQL Editor: select public.schedule_cron_jobs();",
+      "unknown": "Không đọc được tác vụ pg_cron (chưa bật tiện ích?). Supabase → Database → Extensions → bật pg_cron, rồi trong SQL Editor: select public.schedule_cron_jobs();"
+    },
+    "realtime": {
+      "ok": "Realtime hoạt động (đã kết nối).",
+      "fail": "Realtime không kết nối được (trạng thái: {{status}}). Supabase → Project Settings → API: kiểm tra Realtime đã bật; thử mạng khác."
+    },
+    "functions": {
+      "ok": "{{name}} đã được triển khai.",
+      "missing": "{{name}} CHƯA được triển khai. Supabase → Edge Functions: phải thấy hàm này. Nếu không, Project Settings → Integrations → GitHub → “Deploy to production”, hoặc chạy workflow “Deploy Edge Functions” (xem HUMAN_TODO).",
+      "unknown": "{{name}}: không kiểm tra được từ trình duyệt này (mạng hoặc CORS). Xem Supabase → Edge Functions."
+    },
+    "vapid": {
+      "ok": "Đã có khóa công khai Web Push (có thể dùng thông báo trình duyệt).",
+      "missing": "Tùy chọn: chưa có khóa Web Push. Tạo bên dưới, nhập khóa công khai vào Vercel (EXPO_PUBLIC_VAPID_PUBLIC_KEY) và khóa riêng vào Supabase → Edge Functions → Secrets."
+    },
+    "vapidTool": {
+      "title": "Tạo khóa Web Push (VAPID)",
+      "body": "Khóa được tạo ngay trong trình duyệt, không được lưu hay gửi đi. Hãy sao chép ngay: tuyệt đối không công khai khóa riêng.",
+      "generate": "Tạo cặp khóa",
+      "publicLabel": "Khóa công khai → Vercel: EXPO_PUBLIC_VAPID_PUBLIC_KEY và Supabase (secret VAPID_PUBLIC_KEY)",
+      "privateLabel": "Khóa riêng → chỉ Supabase (secret VAPID_PRIVATE_KEY)",
+      "copy": "Sao chép",
+      "copied": "Đã sao chép"
+    }
   }
 }

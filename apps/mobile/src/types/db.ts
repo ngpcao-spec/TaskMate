@@ -500,6 +500,9 @@ isOneToOne: false
 "delete_family":
 { Args: Record<PropertyKey, never>; Returns: (string)[]
                            },
+"diagnostics":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "expire_reward_requests":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
@@ -572,6 +575,9 @@ isOneToOne: false
       } },
 "revoke_device":
 { Args: { "p_device_id": string }; Returns: undefined
+                           },
+"schedule_cron_jobs":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "sync_recurrence":
 { Args: { "p_now"?: string,"p_recurrence": string }; Returns: undefined

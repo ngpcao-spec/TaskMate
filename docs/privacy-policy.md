@@ -23,7 +23,7 @@ Un enfant n'a besoin ni d'e-mail ni de mot de passe : son appareil est lié par 
 - Les données d'une famille ne sont jamais accessibles à une autre famille (contrôle d'accès appliqué par la base de données).
 
 ## 3. Hébergement et sécurité
-Données hébergées chez Supabase (région recommandée : Singapour). Chiffrement en transit (TLS). Session stockée dans le trousseau sécurisé de l'appareil.
+Données hébergées chez Supabase (région : Sydney, Australie). Chiffrement en transit (TLS). Session stockée dans le trousseau sécurisé de l'appareil.
 Un parent peut **révoquer un appareil** à tout moment : il perd l'accès immédiatement.
 
 ## 4. Conservation et suppression
