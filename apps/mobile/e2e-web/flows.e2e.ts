@@ -188,3 +188,20 @@ test.describe('accessibilité clavier', () => {
     await expect(page).toHaveURL(/\/notifications/);
   });
 });
+
+test.describe('diagnostic de production', () => {
+  test('Réglages → Diagnostic vérifie le serveur et signale une adresse Supabase locale', async ({ browser }) => {
+    const family = await createFamily();
+    const ctx = await browser.newContext();
+    await signInContext(ctx, family.parent);
+    const page = await ctx.newPage();
+    await open(page, '/more/settings');
+    await page.getByRole('button', { name: 'Chẩn đoán' }).click(); // libellé du bouton dans la langue de l'app (vi)
+    await expect(page.getByRole('heading', { name: 'Diagnostic' })).toBeVisible();
+    for (const label of ['Connexion à Supabase', 'Connexions anonymes', 'Tables', 'Fonctions SQL \\(RPC\\)', 'Sécurité des lignes \\(RLS\\)', 'Realtime : tables publiées', 'Realtime : connexion', 'Edge Function redeem-invite', 'Edge Function delete-account', 'Edge Function send-push']) {
+      await expect(page.getByLabel(new RegExp(`^${label} : OK`))).toBeVisible({ timeout: 20_000 });
+    }
+    // le front de test est construit contre 127.0.0.1 : le diagnostic doit le dire
+    await expect(page.getByLabel(/^Adresse Supabase de l'application : À corriger/)).toBeVisible();
+  });
+});

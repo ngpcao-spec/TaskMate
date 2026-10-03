@@ -71,6 +71,7 @@ export default function SettingsScreen() {
         <>
           <Button variant="secondary" label={t('settings.manageChildren')} onPress={() => router.push('/more/children')} />
           <Button variant="secondary" label={t('settings.devices')} onPress={() => router.push('/more/devices')} />
+          <Button variant="secondary" label={t('settings.diagnostics')} onPress={() => router.push('/more/diagnostics')} />
 
           <Card>
             <Text accessibilityRole="header" style={styles.section}>{t('settings.coParent')}</Text>
