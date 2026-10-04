@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { Bell, Check, ChevronRight, ListChecks, Settings, Star, Target } from 'lucide-react-native';
+import { Bell, Check, ChevronRight, ListChecks, Plus, Settings, Star, Target } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Card, Screen, ScreenHeader } from '@/components/ui';
@@ -56,6 +56,19 @@ export default function ProfileScreen() {
             </Pressable>
           );
         })}
+        {d.viewer.role === 'parent' ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('addChild.button')}
+            onPress={() => router.push('/more/add-child')}
+            style={[styles.childCard, styles.addCard]}
+          >
+            <View style={styles.addIcon}>
+              <Plus size={28} color={colors.primary} strokeWidth={2.5} />
+            </View>
+            <Text style={styles.addText}>{t('addChild.button')}</Text>
+          </Pressable>
+        ) : null}
       </View>
       <Card>
         {menu.map(({ key, label, href, icon: Icon, tint }, i) => (
@@ -71,12 +84,15 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  cards: { flexDirection: 'row', gap: 12 },
-  childCard: { flex: 1, alignItems: 'center', gap: 4, paddingVertical: 16, borderRadius: 16, borderWidth: 2, borderColor: 'transparent', minHeight: 140 },
+  cards: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  childCard: { flexGrow: 1, flexBasis: 140, alignItems: 'center', gap: 4, paddingVertical: 16, borderRadius: 16, borderWidth: 2, borderColor: 'transparent', minHeight: 140 },
   checkBadge: { position: 'absolute', top: 8, right: 8, width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   avatar: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   avatarText: { color: '#fff', fontSize: 26, fontWeight: '700' },
   childName: { fontSize: 18, fontWeight: '700', color: colors.text },
+  addCard: { justifyContent: 'center', paddingHorizontal: 8, backgroundColor: colors.primaryTint, borderColor: colors.primary, borderStyle: 'dashed' },
+  addIcon: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.card },
+  addText: { fontSize: 15, fontWeight: '700', color: colors.primary, textAlign: 'center' },
   menuRow: { flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: MIN_TARGET + 12 },
   menuSeparator: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.separator },
   menuLabel: { flex: 1, fontSize: 16, color: colors.text },

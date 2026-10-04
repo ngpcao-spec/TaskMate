@@ -528,5 +528,19 @@
       "not_authenticated": "Session expirée. Reconnectez-vous.",
       "server_error": "Une erreur est survenue. Réessayez."
     }
+  },
+  "addChild": {
+    "button": "Ajouter un enfant",
+    "title": "Ajouter un enfant",
+    "submit": "Créer l'enfant et son accès",
+    "createdTitle": "{{name}} est ajouté(e)",
+    "credentialsTitle": "Accès de {{name}}",
+    "loginIdIs": "Identifiant : {{id}}",
+    "passwordIs": "Mot de passe : {{password}}",
+    "shownOnce": "Notez ou copiez ces informations maintenant : le mot de passe ne sera plus jamais affiché. Vous pourrez en définir un nouveau dans Gérer les profils enfants.",
+    "copy": "Copier l'identifiant et le mot de passe",
+    "copyText": "Accès TaskMate de {{name}} — identifiant : {{loginId}} — mot de passe : {{password}}",
+    "copied": "Copié dans le presse-papiers",
+    "copyFailed": "Copie impossible : notez-les à la main"
   }
 }

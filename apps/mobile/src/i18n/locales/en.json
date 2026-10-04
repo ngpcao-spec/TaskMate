@@ -528,5 +528,19 @@
       "not_authenticated": "Session expired. Sign in again.",
       "server_error": "Something went wrong. Try again."
     }
+  },
+  "addChild": {
+    "button": "Add a child",
+    "title": "Add a child",
+    "submit": "Create the child and their access",
+    "createdTitle": "{{name}} was added",
+    "credentialsTitle": "{{name}}'s sign-in details",
+    "loginIdIs": "Username: {{id}}",
+    "passwordIs": "Password: {{password}}",
+    "shownOnce": "Write down or copy these details now: the password will never be shown again. You can set a new one in Manage children profiles.",
+    "copy": "Copy username and password",
+    "copyText": "TaskMate sign-in for {{name}} — username: {{loginId}} — password: {{password}}",
+    "copied": "Copied to the clipboard",
+    "copyFailed": "Copy failed: write them down"
   }
 }

@@ -3,17 +3,15 @@ import { format } from 'date-fns';
 import { Redirect, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Text } from 'react-native';
 import { createChild } from '@/api/family';
 import { queryKeys } from '@/api/keys';
 import { ChildAccountSection } from '@/components/ChildAccountSection';
-import { Button, Card, ErrorText, Field, Screen, Subtitle, Title } from '@/components/ui';
+import { CHILD_PALETTE as PALETTE, ChildProfileFields, isChildProfileValid } from '@/components/ChildProfileFields';
+import { Button, Card, ErrorText, Screen, Subtitle, Title } from '@/components/ui';
 import { ageFromBirthDate } from '@/domain/age';
-import { validateBirthDate } from '@/domain/birth-date';
 import { useMe } from '@/hooks/useMe';
-import { colors, MIN_TARGET, typography } from '@/theme/tokens';
-
-const PALETTE = [colors.primary, colors.mint, '#8B5CF6', '#F5A623', '#E5484D'] as const;
+import { typography } from '@/theme/tokens';
 
 export default function ChildrenScreen() {
   const { t } = useTranslation();
@@ -27,7 +25,6 @@ export default function ChildrenScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const today = format(new Date(), 'yyyy-MM-dd');
-  const birthError = birthDate === '' ? null : validateBirthDate(birthDate, today);
 
   if (me.data && me.data.member.role !== 'parent') return <Redirect href="/" />;
   const children = me.data?.children ?? [];
@@ -56,7 +53,7 @@ export default function ChildrenScreen() {
     }
   };
 
-  const formValid = name.trim() !== '' && birthDate !== '' && birthError === null;
+  const formValid = isChildProfileValid(name, birthDate, today);
 
   return (
     <Screen>
@@ -76,35 +73,7 @@ export default function ChildrenScreen() {
       })}
 
       <Card>
-        <Field
-          label={t('onboarding.children.name')}
-          value={name}
-          onChangeText={setName}
-          maxLength={40}
-        />
-        <Field
-          label={t('onboarding.children.birthDate')}
-          placeholder="2012-05-01"
-          value={birthDate}
-          onChangeText={setBirthDate}
-          keyboardType="numbers-and-punctuation"
-          maxLength={10}
-          error={birthError ? t(`onboarding.children.errors.${birthError}`) : null}
-        />
-        <Text style={typography.secondary}>{t('onboarding.children.color')}</Text>
-        <View style={styles.palette}>
-          {PALETTE.map((c) => (
-            <Pressable
-              key={c}
-              accessibilityRole="radio"
-              accessibilityLabel={`${t('onboarding.children.color')} ${c}`}
-              accessibilityState={{ selected: color === c }}
-              aria-checked={color === c}
-              onPress={() => setColor(c)}
-              style={[styles.swatch, { backgroundColor: c }, color === c && styles.swatchSelected]}
-            />
-          ))}
-        </View>
+        <ChildProfileFields name={name} onName={setName} birthDate={birthDate} onBirthDate={setBirthDate} color={color} onColor={setColor} today={today} />
         <ErrorText>{error}</ErrorText>
         <Button label={t('onboarding.children.add')} onPress={add} loading={busy} disabled={!formValid || !me.data} />
       </Card>
@@ -117,9 +86,3 @@ export default function ChildrenScreen() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  palette: { flexDirection: 'row', gap: 12 },
-  swatch: { width: MIN_TARGET, height: MIN_TARGET, borderRadius: MIN_TARGET / 2, borderWidth: 3, borderColor: 'transparent' },
-  swatchSelected: { borderColor: colors.text },
-});

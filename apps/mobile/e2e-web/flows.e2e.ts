@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { createFamily, revokeChildMembers, seedTask, serverState, signInContext, supabaseUrl } from './support/seed';
+import { createFamily, revokeChildMembers, seedTask, taskChildId, serverState, signInContext, supabaseUrl } from './support/seed';
 
 const title = (label: string) => `${label} ${Math.random().toString(36).slice(2, 7)}`;
 
@@ -258,6 +258,109 @@ test.describe('comptes e-mail / identifiant (aucune invitation)', () => {
     expect(await call('create-child', { childId, loginId: 'pirate.khang', password: 'abc123' })).toMatchObject({ status: 403, body: { error: 'forbidden' } });
     expect(await call('reset-child-password', { childId, password: 'abc123' })).toMatchObject({ status: 403, body: { error: 'forbidden' } });
     expect(await call('delete-child', { childId })).toMatchObject({ status: 403, body: { error: 'forbidden' } });
+  });
+});
+
+test.describe('ajouter un enfant après l\'onboarding', () => {
+  test('le parent ajoute un enfant depuis Hồ sơ, l\'enfant se connecte, la tâche va à l\'enfant choisi', async ({ browser }) => {
+    test.setTimeout(180_000);
+    const tag = Math.random().toString(36).slice(2, 7);
+    const loginId = `cam.${tag}`;
+    const family = await createFamily();
+    const parentCtx = await browser.newContext();
+    await signInContext(parentCtx, family.parent);
+    const parent = await parentCtx.newPage();
+    trace(parent, 'parent');
+    await open(parent, '/more');
+
+    // cartes des enfants existants (sélectionnables) + carte « Thêm con »
+    await expect(parent.getByRole('radio', { name: /^Minh,/ })).toBeVisible();
+    await expect(parent.getByRole('radio', { name: /^Khang,/ })).toBeVisible();
+    await parent.getByRole('button', { name: 'Thêm con' }).click();
+
+    // identifiant déjà pris : l'erreur s'affiche et aucun profil fantôme n'est conservé
+    await parent.getByLabel('Tên của con').fill('Cam');
+    await parent.getByLabel('Ngày sinh (YYYY-MM-DD)').fill('2016-02-01');
+    await parent.getByLabel('Tên đăng nhập (chữ, số, . _ -)').fill(`dup.${tag}`);
+    await parent.getByLabel('Mật khẩu (tối thiểu 6 ký tự)').fill('secret1');
+    const { createClient } = await import('@supabase/supabase-js');
+    const admin = createClient(supabaseUrl(), process.env.E2E_SERVICE_ROLE_KEY as string, { auth: { persistSession: false } });
+    await admin.auth.admin.createUser({ email: `dup.${tag}@child.taskmate.invalid`, password: 'secret1', email_confirm: true });
+    await parent.getByRole('button', { name: 'Tạo hồ sơ và tài khoản cho con' }).click();
+    await expect(parent.getByText('Tên đăng nhập này đã có người dùng. Hãy chọn tên khác.')).toBeVisible({ timeout: 20_000 });
+
+    // identifiant libre : l'enfant est créé et l'accès est affiché une seule fois
+    await parent.getByLabel('Tên đăng nhập (chữ, số, . _ -)').fill(loginId);
+    await parent.getByRole('button', { name: 'Tạo hồ sơ và tài khoản cho con' }).click();
+    await expect(parent.getByText(`Tên đăng nhập: ${loginId}`)).toBeVisible({ timeout: 20_000 });
+    await expect(parent.getByText('Mật khẩu: secret1')).toBeVisible();
+    await expect(parent.getByText(/sẽ không hiển thị lại/)).toBeVisible();
+    await expect(parent.getByRole('button', { name: 'Sao chép tên đăng nhập và mật khẩu Cam' })).toBeVisible();
+    await parent.getByRole('button', { name: 'Hoàn tất' }).click();
+    await expect(parent.getByRole('radio', { name: /^Cam,/ })).toBeVisible();
+    await expect(parent.getByText('Mật khẩu: secret1')).toHaveCount(0);
+
+    // l'enfant se connecte sur son téléphone
+    const childCtx = await browser.newContext();
+    const child = await childCtx.newPage();
+    await open(child);
+    await child.getByRole('button', { name: 'Bắt đầu' }).click();
+    await child.getByRole('button', { name: 'Tôi là con' }).click();
+    await child.getByLabel('Tên đăng nhập', { exact: true }).fill(loginId);
+    await child.getByLabel('Mật khẩu', { exact: true }).fill('secret1');
+    await child.getByRole('button', { name: 'Đăng nhập' }).click();
+    await expect(child.getByText('Chào Cam!')).toBeVisible({ timeout: 20_000 });
+
+    // le parent crée une tâche pour Cam (« Cho ai? » : Cam seule cochée)
+    const taskTitle = title('Tưới cây');
+    await parent.getByRole('radio', { name: /^Cam,/ }).click();
+    await parent.getByRole('tab', { name: /Hôm nay/ }).click(); // navigation interne : l'enfant affiché (Cam) est conservé
+    await parent.getByRole('button', { name: 'Thêm việc' }).click();
+    await parent.getByLabel('Tên công việc').fill(taskTitle);
+    await parent.getByRole('button', { name: 'Thêm tùy chọn' }).click();
+    await expect(parent.getByText('Cho ai?')).toBeVisible();
+    await expect(parent.getByRole('checkbox', { name: 'Cam' })).toBeChecked();
+    await expect(parent.getByRole('checkbox', { name: 'Minh' })).not.toBeChecked();
+    await parent.getByRole('button', { name: 'Lưu' }).click();
+    await expect.poll(() => taskChildId(family, taskTitle), { timeout: 20_000 }).not.toBeNull();
+    await expect(child.getByRole('checkbox', { name: taskTitle })).toBeVisible({ timeout: 20_000 });
+  });
+
+  test('Gérer les profils : le parent change le mot de passe puis supprime le compte', async ({ browser }) => {
+    test.setTimeout(120_000);
+    const family = await createFamily();
+    await revokeChildMembers(family);
+    const parentCtx = await browser.newContext();
+    await signInContext(parentCtx, family.parent);
+    const parent = await parentCtx.newPage();
+    await open(parent, '/more/children');
+    const tag = Math.random().toString(36).slice(2, 7);
+    await expect(parent.getByRole('button', { name: 'Thêm con' })).toBeVisible();
+    await parent.getByLabel('Tên đăng nhập (chữ, số, . _ -)').first().fill(`gest.${tag}`);
+    await parent.getByLabel('Mật khẩu (tối thiểu 6 ký tự)').first().fill('abc123');
+    await parent.getByRole('button', { name: 'Tạo tài khoản Minh' }).click();
+    await expect(parent.getByText(`Tên đăng nhập: gest.${tag}`)).toBeVisible({ timeout: 20_000 });
+    await parent.getByLabel('Mật khẩu mới').fill('nouveau1');
+    await parent.getByRole('button', { name: 'Đổi mật khẩu Minh' }).click();
+    await expect(parent.getByText('Đã đổi mật khẩu')).toBeVisible({ timeout: 20_000 });
+    parent.once('dialog', (d) => void d.accept());
+    await parent.getByRole('button', { name: 'Xóa tài khoản Minh' }).click();
+    await expect(parent.getByRole('button', { name: 'Tạo tài khoản Minh' })).toBeVisible({ timeout: 20_000 });
+  });
+
+  test('un enfant ne voit ni « Thêm con » ni les écrans d\'ajout et de gestion', async ({ browser }) => {
+    const family = await createFamily();
+    const ctx = await browser.newContext();
+    await signInContext(ctx, family.minh);
+    const page = await ctx.newPage();
+    await open(page, '/more');
+    await expect(page.getByRole('radio', { name: /^Minh,/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Thêm con' })).toHaveCount(0);
+    await open(page, '/more/add-child');
+    await expect(page.getByLabel('Tên của con')).toHaveCount(0);
+    await open(page, '/more/children');
+    await expect(page.getByRole('button', { name: 'Thêm con' })).toHaveCount(0);
+    await expect(page.getByLabel('Mật khẩu mới')).toHaveCount(0);
   });
 });
 

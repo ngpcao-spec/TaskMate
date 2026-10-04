@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { confirmDialog } from '@/components/confirm';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ChildAccountSection } from '@/components/ChildAccountSection';
+import { useRouter } from 'expo-router';
 import { Button, Card, Field, Screen, Title } from '@/components/ui';
 import { ageFromBirthDate } from '@/domain/age';
 import { validateBirthDate } from '@/domain/birth-date';
@@ -17,12 +18,14 @@ const PALETTE = [colors.primary, colors.mint, '#8B5CF6', '#F5A623', '#E5484D'] a
 /** Gestion des enfants (parent) : modifier, supprimer, comptes de connexion (SPEC §3.9). */
 export default function ChildrenAdminScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
   const me = useMe().data;
   if (!me || me.member.role !== 'parent') return null;
   const today = todayInTz(new Date(), me.family.timezone);
   return (
     <Screen>
       <Title>{t('settings.manageChildren')}</Title>
+      <Button label={t('addChild.button')} onPress={() => router.push('/more/add-child')} />
       {me.children.map((c) => (
         <ChildCard key={c.id} child={c} today={today} />
       ))}

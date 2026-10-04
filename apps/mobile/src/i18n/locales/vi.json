@@ -528,5 +528,19 @@
       "not_authenticated": "Phiên đã hết hạn. Hãy đăng nhập lại.",
       "server_error": "Đã xảy ra lỗi. Hãy thử lại."
     }
+  },
+  "addChild": {
+    "button": "Thêm con",
+    "title": "Thêm con",
+    "submit": "Tạo hồ sơ và tài khoản cho con",
+    "createdTitle": "Đã thêm {{name}}",
+    "credentialsTitle": "Thông tin đăng nhập của {{name}}",
+    "loginIdIs": "Tên đăng nhập: {{id}}",
+    "passwordIs": "Mật khẩu: {{password}}",
+    "shownOnce": "Hãy ghi lại hoặc sao chép ngay: mật khẩu sẽ không hiển thị lại. Bạn có thể đặt mật khẩu mới trong Quản lý hồ sơ của các con.",
+    "copy": "Sao chép tên đăng nhập và mật khẩu",
+    "copyText": "Đăng nhập TaskMate của {{name}} — tên đăng nhập: {{loginId}} — mật khẩu: {{password}}",
+    "copied": "Đã sao chép",
+    "copyFailed": "Không sao chép được: hãy ghi lại"
   }
 }
