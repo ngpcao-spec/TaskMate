@@ -20,7 +20,8 @@ export default function FamilyScreen() {
     setError(null);
     try {
       await createFamily(familyName.trim(), yourName.trim());
-      await queryClient.invalidateQueries({ queryKey: queryKeys.me });
+      // refetchType 'all' : la requête `me` est inactive sur cet écran ; sans cela l'accueil lirait le cache « pas de famille » et renverrait ici
+      await queryClient.invalidateQueries({ queryKey: queryKeys.me, refetchType: 'all' });
       router.replace('/');
     } catch {
       setError(t('common.error'));

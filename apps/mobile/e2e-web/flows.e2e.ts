@@ -11,6 +11,13 @@ function trace(page: Page, who: string) {
   page.on('console', (m) => {
     if (m.type() === 'error') console.log(`[${who}] console.error ${m.text().slice(0, 300)}`);
   });
+  page.on('websocket', (ws) => {
+    console.log(`[${who}] ws ouvert ${ws.url().replace(/apikey=[^&]+/, 'apikey=…')}`);
+    ws.on('framereceived', (f) => {
+      const text = String(f.payload);
+      if (/postgres_changes|phx_reply|"system"|error/.test(text)) console.log(`[${who}] ws ← ${text.slice(0, 220)}`);
+    });
+  });
   page.on('pageerror', (e) => console.log(`[${who}] pageerror ${e.message.slice(0, 300)}`));
 }
 
@@ -38,6 +45,7 @@ test.describe('validation parentale (spec v4)', () => {
     const parentCtx = await browser.newContext();
     await signInContext(parentCtx, family.parent);
     const parent = await parentCtx.newPage();
+    trace(parent, 'parent');
     await open(parent);
     await expect(parent.getByText('Chào Minh!')).toBeVisible();
     await parent.getByRole('button', { name: 'Thêm việc' }).click();
@@ -63,7 +71,6 @@ test.describe('validation parentale (spec v4)', () => {
     await expect(child.getByText('+10 điểm chờ duyệt')).toBeVisible();
 
     // 3. parent : la bannière « 1 việc chờ duyệt » apparaît (Realtime, sans recharger) puis valide depuis la file « Cần duyệt »
-    trace(parent, 'parent');
     await expectVisibleOrDump(parent, parent.getByRole('button', { name: '1 việc chờ duyệt' }), 'parent', 15_000);
     await parent.getByRole('button', { name: '1 việc chờ duyệt' }).click({ timeout: 15_000 });
     await expect(parent).toHaveURL(/\/approvals/);
