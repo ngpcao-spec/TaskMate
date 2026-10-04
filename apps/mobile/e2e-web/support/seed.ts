@@ -86,6 +86,12 @@ export async function revokeChildMembers(family: FamilyFixture): Promise<void> {
   if (error) throw new Error(`members: ${error.message}`);
 }
 
+/** Enfant auquel est affectée la tâche `title` (lecture serveur, indépendante de l'UI). */
+export async function taskChildId(family: FamilyFixture, title: string): Promise<string | null> {
+  const { data } = await admin().from('tasks').select('child_id').eq('family_id', family.familyId).eq('title', title).maybeSingle();
+  return data?.child_id ?? null;
+}
+
 /** Lecture directe (service local) pour vérifier l'état serveur indépendamment de l'UI. */
 export async function serverState(family: FamilyFixture, child: 'minh' | 'khang', title: string) {
   const db = admin();

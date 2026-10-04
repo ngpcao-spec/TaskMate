@@ -1,4 +1,6 @@
 import { normalizeLoginId, toChildAccountError, type ChildAccountErrorCode } from '@/domain/child-account';
+import type { ChildRow } from '@/types/models';
+import { createChild, type NewChild } from './family';
 import { supabase } from './supabase';
 
 /** Erreur renvoyée par les Edge Functions de comptes enfants (code stable, traduit par l'écran). */
@@ -33,4 +35,19 @@ export async function fetchChildAccounts(): Promise<ChildAccountInfo[]> {
   const { data, error } = await supabase.from('child_accounts').select('child_id, login_id');
   if (error) throw error;
   return data;
+}
+
+/**
+ * « Ajouter un enfant » : profil puis compte de connexion. Si le compte est refusé (identifiant déjà pris, mot de passe…),
+ * le profil qu'on vient de créer est retiré : aucun enfant fantôme sans accès.
+ */
+export async function addChildWithAccount(familyId: string, profile: NewChild, loginId: string, password: string): Promise<ChildRow> {
+  const child = await createChild(familyId, profile);
+  try {
+    await createChildAccount(child.id, loginId, password);
+  } catch (error) {
+    await deleteChildAccount(child.id, true).catch(() => undefined);
+    throw error;
+  }
+  return child;
 }

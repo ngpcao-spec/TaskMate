@@ -10,7 +10,9 @@ jest.mock('@react-native-community/datetimepicker', () => ({ __esModule: true, d
 
 const minh = { id: 'c-minh', name: 'Minh', birth_date: '2009-03-01', color: '#1E88F5' } as ChildRow;
 const khang = { id: 'c-khang', name: 'Khang', birth_date: '2013-05-01', color: '#2EC4A6' } as ChildRow;
+const cam = { id: 'c-cam', name: 'Cam', birth_date: '2016-02-01', color: '#8B5CF6' } as ChildRow;
 let mockRole: 'parent' | 'child' = 'parent';
+let mockChildren: ChildRow[] = [minh, khang];
 const mockCreate = jest.fn();
 const mockSeries = jest.fn();
 const mockUpdateSeries = jest.fn();
@@ -19,7 +21,7 @@ jest.mock('@/hooks/useDisplayedChild', () => ({
   useDisplayedChild: () => ({
     me: { family: { timezone: 'Asia/Ho_Chi_Minh', id: 'f1' }, member: { id: 'm-p' } },
     viewer: { role: mockRole, memberId: mockRole === 'parent' ? 'm-p' : 'm-minh', childId: mockRole === 'child' ? 'c-minh' : null },
-    children: [minh, khang], child: minh, readOnly: false, select: jest.fn(),
+    children: mockChildren, child: minh, readOnly: false, select: jest.fn(),
   }),
 }));
 jest.mock('@/hooks/useTasks', () => ({
@@ -34,7 +36,7 @@ jest.mock('@/hooks/useRecurrences', () => ({
 }));
 
 describe('TaskForm', () => {
-  beforeEach(() => { jest.clearAllMocks(); mockRole = 'parent'; });
+  beforeEach(() => { jest.clearAllMocks(); mockRole = 'parent'; mockChildren = [minh, khang]; });
 
   it('Lưu désactivé tant que le titre est vide, puis crée la tâche (hors ligne : file optimiste)', async () => {
     await render(<TaskForm />);
@@ -64,6 +66,29 @@ describe('TaskForm', () => {
     expect(rows.map((r) => r.child_id).sort()).toEqual(['c-khang', 'c-minh']);
     expect(rows[0]).toMatchObject({ rule: 'weekdays', weekdays: [1, 4] });
     expect(mockCreate).not.toHaveBeenCalled();
+  });
+
+  it('« Pour qui ? » propose chaque enfant dès qu\'il y en a plusieurs (3e enfant inclus) et affecte la tâche aux enfants choisis', async () => {
+    mockChildren = [minh, khang, cam];
+    await render(<TaskForm />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Thêm tùy chọn' }));
+    expect(screen.getByText('Cho ai?')).toBeTruthy();
+    for (const name of ['Minh', 'Khang', 'Cam']) expect(screen.getByRole('checkbox', { name })).toBeTruthy();
+    await fireEvent.changeText(screen.getByLabelText('Tên công việc'), 'Tưới cây');
+    await fireEvent.press(screen.getByRole('checkbox', { name: 'Cam' }));
+    await fireEvent.press(screen.getByRole('checkbox', { name: 'Minh' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Lưu' }).props.accessibilityState).toMatchObject({ disabled: false }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Lưu' }));
+    await waitFor(() => expect(mockCreate).toHaveBeenCalledTimes(1));
+    const vars = mockCreate.mock.calls[0]?.[0] as { tasks: { child_id: string }[] };
+    expect(vars.tasks.map((x) => x.child_id)).toEqual(['c-cam']);
+  });
+
+  it('un seul enfant : pas de choix « Pour qui ? »', async () => {
+    mockChildren = [minh];
+    await render(<TaskForm />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Thêm tùy chọn' }));
+    expect(screen.queryByText('Cho ai?')).toBeNull();
   });
 
   it('« jours choisis » sans jour : enregistrement impossible', async () => {
