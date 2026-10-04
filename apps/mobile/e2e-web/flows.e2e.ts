@@ -4,7 +4,11 @@ import { createFamily, revokeChildMembers, seedTask, serverState, signInContext,
 const title = (label: string) => `${label} ${Math.random().toString(36).slice(2, 7)}`;
 
 /** Diagnostic : journalise les réponses Supabase en erreur et les erreurs console (visible dans la sortie CI). */
-function trace(page: Page, who: string) {
+function trace(page: Page, who: string): Promise<void> {
+  let markSubscribed: () => void = () => undefined;
+  const subscribed = new Promise<void>((resolve) => {
+    markSubscribed = resolve;
+  });
   page.on('response', async (res) => {
     if (res.status() >= 400 && res.url().includes('/rest/v1/')) console.log(`[${who}] ${res.status()} ${res.request().method()} ${res.url().replace(/^.*\/rest\/v1\//, '')} ${(await res.text().catch(() => '')).slice(0, 300)}`);
   });
@@ -15,10 +19,12 @@ function trace(page: Page, who: string) {
     console.log(`[${who}] ws ouvert ${ws.url().replace(/apikey=[^&]+/, 'apikey=…')}`);
     ws.on('framereceived', (f) => {
       const text = String(f.payload);
+      if (text.includes('Subscribed to PostgreSQL')) markSubscribed();
       if (/postgres_changes|phx_reply|"system"|error/.test(text)) console.log(`[${who}] ws ← ${text.slice(0, 220)}`);
     });
   });
   page.on('pageerror', (e) => console.log(`[${who}] pageerror ${e.message.slice(0, 300)}`));
+  return subscribed;
 }
 
 /** Diagnostic CI : si l'attente échoue, journalise l'URL et le texte de la page avant de relancer l'erreur. */
@@ -45,13 +51,16 @@ test.describe('validation parentale (spec v4)', () => {
     const parentCtx = await browser.newContext();
     await signInContext(parentCtx, family.parent);
     const parent = await parentCtx.newPage();
-    trace(parent, 'parent');
+    const parentSubscribed = trace(parent, 'parent');
     await open(parent);
     await expect(parent.getByText('Chào Minh!')).toBeVisible();
     await parent.getByRole('button', { name: 'Thêm việc' }).click();
     await parent.getByLabel('Tên công việc').fill(taskTitle);
     await parent.getByRole('button', { name: 'Lưu' }).click();
     await expect(parent.getByRole('checkbox', { name: taskTitle })).toBeVisible();
+
+    // le canal Realtime du parent doit être abonné AVANT que l'enfant coche (sinon l'évènement est manqué, abonnement parfois lent en CI)
+    await Promise.race([parentSubscribed, new Promise((resolve) => setTimeout(resolve, 20_000))]);
 
     // 2. enfant : coche → « Chờ duyệt », aucun point
     const childCtx = await browser.newContext();
