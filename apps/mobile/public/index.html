@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="%LANG_ISO_CODE%">
+  <head>
+    <meta charset="utf-8" />
+    <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>%WEB_TITLE%</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="TaskMate" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <!-- Gabarit PWA (sortie `single`, D-028). Reset react-native-web : https://necolas.github.io/react-native-web/docs/setup/#root-element -->
+    <style id="expo-reset">
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        overflow: hidden;
+        background-color: #f5f9ff;
+        overscroll-behavior-y: none;
+      }
+      #root {
+        display: flex;
+        height: 100%;
+        flex: 1;
+      }
+      /* Focus clavier visible (accessibilité) */
+      :focus-visible {
+        outline: 3px solid #1e88f5 !important;
+        outline-offset: 2px;
+        border-radius: 8px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <noscript>TaskMate nécessite JavaScript. / TaskMate needs JavaScript.</noscript>
+    <div id="root"></div>
+  </body>
+</html>

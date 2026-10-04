@@ -109,3 +109,81 @@ Les minuteurs de GC de TanStack Query gardaient Jest ouvert. `createTestQueryCli
 
 ## D-024 — Comparaison visuelle par rendu web
 Faute de simulateur, l'app est exportée en web et photographiée (Playwright + Chromium préinstallé) contre un faux serveur PostgREST (`tools/visual`). Limite : rendu non natif. Les pastilles enfants ont été retirées du calendrier et des statistiques (spec : pas de comparaison entre enfants).
+
+## D-025 — Web = cible principale ; mobile natif en second plan
+La V1 est une PWA hébergée sur Vercel. L'app native reste fonctionnelle (mêmes sources, tests Jest, `expo export --platform ios` en CI) mais n'est plus prioritaire : Apple/Google/EAS sortent de HUMAN_TODO.
+
+## D-026 — Implémentations web par fichiers `.web.ts(x)`
+Metro choisit `X.web.ts` sur le web : `sync/storage.web.ts` (localStorage + repli mémoire si refusé/quota), `sync/network.web.ts` (`navigator.onLine`, `online`/`offline`, `visibilitychange`), `api/secureStorage.web.ts` (session Supabase dans localStorage), `services/notifications.web.ts` (no-op + même mapping d'actions), `components/QrScanner.web.tsx`, `pwa/registerServiceWorker.web.ts`. localStorage plutôt qu'IndexedDB : le persister TanStack et la file de mutations exigent un stockage **synchrone** ; le quota (~5 Mo) couvre largement le cache d'une famille, et le repli mémoire évite tout plantage.
+
+## D-027 — Scan QR web : getUserMedia + jsQR
+`BarcodeDetector` est absent de Firefox et Safari ; `jsqr` (JS pur) décode les images du flux vidéo sur tous les navigateurs. Caméra refusée/absente → message, la saisie manuelle du code reste sur l'écran de jointure.
+
+## D-028 — Export web et PWA (sortie amendée par D-029)
+`expo export --platform web` → `apps/mobile/dist` (SPA : un seul index.html). PWA : `public/manifest.webmanifest`, icônes placeholders générées depuis `assets/icon.png` (192/512/maskable/apple-touch), `app/+html.tsx` (meta iOS/Android, focus visible), service worker `public/sw.js` : cache d'abord pour les fichiers hachés (`/_expo/static`, `/assets`, `/icons`), réseau d'abord avec repli sur la coquille pour les navigations, **jamais** l'API Supabase (autre origine). La file d'écritures hors ligne et son idempotence (tx_id fixé à la création) sont inchangées ; elles utilisent le stockage web.
+Limite connue : `expo export` affiche « Something prevented Expo from exiting » (handle ouvert pendant le rendu statique, code retour 0) — sans conséquence pour le build.
+
+## D-029 — Export web `single` (remplace `static` de D-028) + gabarit `public/index.html`
+Le rendu statique d'Expo Router pré-rend chaque route sans session : mismatch d'hydratation React (#418) sur l'écran d'accueil, et le CLI ne se terminait pas seul. L'app étant entièrement pilotée par la session (aucun contenu public à référencer), on passe à `web.output = "single"` : un seul `index.html`, aucune erreur d'hydratation, plus de message « prevented Expo from exiting ». Les balises PWA (manifest, apple-touch-icon, meta iOS, focus visible) sont dans `apps/mobile/public/index.html` (gabarit Expo), `+html.tsx` supprimé. Les liens profonds (`/join?code=…`) passent par la réécriture SPA vers `index.html` (Vercel, lot W4).
+
+## D-030 — Mise en page responsive (seuil 900 px)
+`useIsWide()` (`hooks/useLayout.ts`). ≥ 900 px : navigation latérale (`tabBarPosition: 'left'`, variante `material`), file « Cần duyệt » en deux colonnes Tâches | Récompenses ; en dessous : onglets du bas et onglets Tâches/Récompenses. Contenu centré (`Screen`, max 760 px ; 1100 px pour les écrans à colonnes). Mobile-first conservé.
+
+## D-031 — Confirmations multiplateformes
+`Alert.alert` est un no-op sur react-native-web : toutes les confirmations (suppression d'enfant/de compte, révocation d'appareil, « Duyệt tất cả », demande d'échange) passent par `components/confirm.ts` (Alert natif) / `confirm.web.ts` (`window.confirm`).
+
+## D-032 — Liens d'invitation web
+Lien partageable `https://<origine>/join?code=XXXXXX` (origine = `EXPO_PUBLIC_WEB_URL`, sinon `window.location.origin`, sinon lien natif `taskmate://`). Le QR encode ce lien ; `parseInviteLink` lit liens natifs, liens web et codes bruts. Partage : `navigator.share` sinon presse-papiers (web), `Share.share` (natif).
+
+## D-033 — Centre de notifications intégré = canal principal sur le web
+Cloche avec compteur de non lues (journal d'activité pour le parent, décisions sur les demandes pour l'enfant), carte « N mục chờ duyệt » en tête du centre, badge « Cần duyệt » sur l'onglet/menu latéral, badge d'icône de la PWA (`navigator.setAppBadge`) et titre d'onglet `(n) TaskMate`. « Non lu » = plus récent que le dernier passage dans le centre, stocké localement par membre (`store/notificationSeen.ts`) ; à la première ouverture sur un appareil l'historique est considéré comme lu. Le centre se rafraîchit via Realtime (tâches, demandes, points → invalidation de `['activity']`).
+
+## D-034 — Web Push optionnel (VAPID)
+Migration 9 : `devices.platform` accepte `web`, colonne `web_push_subscription` (jsonb validé : endpoint HTTPS + clés), RPC `register_web_push` / `unregister_web_push` (pas d'écriture directe ; un navigateur = un appareil actif, réattribué si le compte change). pgTAP `10_web_push` (positifs et négatifs). Le client s'abonne via `PushManager.subscribe` avec `EXPO_PUBLIC_VAPID_PUBLIC_KEY` depuis un geste utilisateur (réglages → « Notifications du navigateur »). `send-push` envoie en plus via `npm:web-push` si `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` sont définis (sinon ignoré) ; mêmes destinataires, préférences et textes que le mobile ; abonnements 404/410 révoqués. Le service worker (`public/sw-push.js`) affiche la notification et ouvre la page utile au clic : **pas de boutons Duyệt/Từ chối dans la notification web** (le service worker n'a pas de session) — la décision se prend dans l'app.
+
+## D-035 — Pas de rappels locaux planifiés sur le web
+Les rappels « 10 min avant » de l'enfant reposent sur des notifications locales planifiées, impossibles dans un navigateur sans push serveur. Sur le web : centre de notifications + Web Push d'activité ; les rappels planifiés restent natifs. Limite documentée dans HUMAN_TODO.
+
+## D-036 — Clés VAPID
+`scripts/generate-vapid.mjs` génère la paire. Publique : variable `EXPO_PUBLIC_VAPID_PUBLIC_KEY` (front). Privée : uniquement secrets Supabase. Jamais committées.
+
+## D-037 — CORS sur les Edge Functions appelées par le navigateur
+`redeem-invite` et `delete-account` n'avaient aucun traitement CORS (inutile en natif) : un navigateur aurait été bloqué au préflight OPTIONS. `supabase/functions/_shared/cors.ts` répond au préflight (204) et ajoute les en-têtes à toutes les réponses (`Access-Control-Allow-Origin: *` : l'accès repose sur le JWT, pas sur des cookies). Test Jest `edge-cors`. `send-push` (serveur → serveur) est inchangée.
+
+## D-038 — Playwright remplace Maestro
+Dossier `apps/mobile/e2e-web/`, Chromium, app exportée servie par `support/serve.mjs` (même logique de réécriture SPA que Vercel). Chaque test crée sa famille avec la clé de service du Supabase **local** (`support/seed.ts`) et ouvre les sessions en les injectant dans le localStorage (même clé que supabase-js) ; l'onboarding OTP par e-mail n'est pas rejoué (couvert par les tests Jest/pgTAP). Job CI `e2e` : `supabase start` + `supabase functions serve` (jointure par lien) + build web contre le local. Les flows Maestro sont supprimés (D-025).
+
+## D-039 — Vercel : Root Directory vide, tout dans `vercel.json`
+Un `vercel.json` ne peut pas fixer le « Root Directory ». On le laisse vide (racine du dépôt) : `installCommand` exécuté depuis la racine du workspace pnpm, `buildCommand` ciblant `apps/mobile` via `--filter`, `outputDirectory: apps/mobile/dist`. Réécriture SPA, en-têtes de cache (sw.js/index.html/manifest sans cache ; `/_expo/static` et `/assets` immutables un an), `Permissions-Policy: camera=(self)` pour le scan QR. Configuration validée avec `@vercel/routing-utils` (celui de Vercel) et testée (`vercel-config.test.ts`) ; build vérifié en local, rien déployé.
+
+## D-040 — PR empilées W1 → W2 → W3 → W4
+Chaque lot dépend du précédent (non fusionné, pas de fusion par moi) : chaque branche part du lot précédent et sa PR cible la branche précédente. Après fusion de W1 dans `main`, GitHub repointe la PR W2 sur `main`, etc. Fusionner dans l'ordre W1, W2, W3, W4.
+
+## D-041 — États d'accessibilité exposés au web (`aria-*`)
+`react-native-web` 0.21 n'utilise `accessibilityState` que pour `disabled` : cases cochées, onglets/pastilles sélectionnés, puces, chevrons déroulés et boutons occupés n'étaient pas annoncés aux lecteurs d'écran (découvert par les tests Playwright : `toBeChecked` voyait toujours « décoché »). Les composants concernés ajoutent `aria-checked` / `aria-selected` / `aria-expanded` / `aria-busy` en plus de `accessibilityState` (conservé pour le natif).
+
+## D-042 — Projet Supabase de production en région Sydney (ap-southeast-2), pas Singapour
+Le projet cloud existe : https://olftkozksanvnzlsvwrp.supabase.co, région **Sydney**. HUMAN_TODO et les décisions précédentes parlaient de Singapour (plus proche du Vietnam) : sans conséquence fonctionnelle, seulement une latence un peu plus élevée. Rien n'est changé ; migrer vers Singapour supposerait un nouveau projet et la restauration des données. Hébergement web : Vercel, projet `taskmate`, https://taskmate-rho-nine.vercel.app (branche de production `main`).
+
+## D-043 — Intégration GitHub de Supabase : ce qu'elle fait (doc lue le 2026-10-03)
+Source : documentation officielle « GitHub integration » (dépôt supabase/supabase). Répertoire de travail = dossier PARENT de `supabase/` → ici `.` (le dossier `supabase/` est à la racine : aucune restructuration nécessaire). Avec l'option **Deploy to production**, un push/une fusion sur la branche de production : (1) applique les **nouvelles** migrations de `supabase/migrations` dans l'ordre des horodatages (chacune dans une transaction ; pas de `create index concurrently`, aucune dans nos fichiers) ; (2) déploie les Edge Functions **déclarées dans `config.toml`** (nos trois le sont) ; (3) déploie les buckets Storage déclarés. **Ignorés** : `seed.sql` en production, la configuration Auth/API (donc : connexions anonymes, Site URL, gabarits d'e-mail se règlent à la main dans le Dashboard), et les **secrets** des Edge Functions (Dashboard → Edge Functions → Secrets). Les 10 migrations s'appliquent donc toutes seules dès la première fusion sur `main` — **à condition que l'intégration soit active avant** (HUMAN_TODO : étape 4 avant les fusions). Les PR étant empilées, chaque branche doit être supprimée après fusion pour que la suivante cible `main` ; Plan B documenté (re-déclenchement par un commit touchant `supabase/`, ou application manuelle dans le SQL Editor + enregistrement dans `supabase_migrations.schema_migrations`).
+
+## D-044 — Migrations durcies pour Supabase cloud
+Une migration qui échoue bloque tout le déploiement. Risque identifié : `pg_cron` (extension à activer, créée par un autre rôle selon la méthode, docs : `create extension pg_cron with schema pg_catalog`). Les migrations 2 et 6 (jamais appliquées sur une base de production vierge, donc modifiables sans conséquence) planifient maintenant les tâches dans un bloc **non bloquant** (échec = `warning`, pas d'erreur). Migration 10 : `schedule_cron_jobs()` (rattrapage idempotent, réservée aux rôles de la base) et `diagnostics()`. Publication Realtime et extensions : déjà gardées/idempotentes (migration 4 teste l'existence de `supabase_realtime`). Vérifié par pgTAP `11_diagnostics` (tâches cron et publication présentes sur la vraie image Supabase de la CI, RLS activée partout, droits).
+
+## D-045 — Écran Réglages → Diagnostic
+RPC `diagnostics()` (parents uniquement ; ne renvoie que des NOMS : tables, fonctions, extensions, publication Realtime, tâches cron, tables sans RLS) + sondes côté navigateur : `GET /auth/v1/settings` (champ `external.anonymous_users` : lit l'état sans créer d'utilisateur), websocket Realtime, présence des 3 Edge Functions par `GET` (404 = absente ; **jamais** de POST : `delete-account` supprime la famille). Listes attendues dérivées des types générés avec une garde de complétude à la compilation. Textes **toujours en français** (outil d'exploitation du propriétaire). L'exécution réelle dans un navigateur a révélé 3 défauts corrigés avec tests : récursion infinie `removeChannel` ↔ statut `CLOSED`, sonde sans délai, réponse mal formée qui plantait l'écran.
+
+## D-046 — Clés VAPID générées dans le navigateur
+Pour éviter d'installer Node : Réglages → Diagnostic → « Générer des clés Web Push » (WebCrypto, rien n'est stocké ni envoyé). Pas de workflow GitHub qui afficherait la clé privée dans des journaux publics (dépôt public).
+
+## D-047 — Déploiement des Edge Functions : intégration d'abord, workflow manuel en repli
+Méthode principale : l'intégration GitHub (D-043), aucun outil à installer. Repli : `.github/workflows/deploy-functions.yml` (`workflow_dispatch` uniquement, secret GitHub `SUPABASE_ACCESS_TOKEN`). Les secrets des fonctions (WEBHOOK_SECRET, VAPID_*) se saisissent dans le Dashboard.
+
+## D-048 — Comptes e-mail/mot de passe (parents) et identifiant/mot de passe (enfants) ; fin des invitations
+Changement de produit : plus de code d'invitation, QR, lien, OTP ni connexion anonyme. **Parent** : un écran e-mail + mot de passe (≥ 8, contrôlé côté client uniquement car le minimum GoTrue doit rester ≤ 6 pour les enfants), « Créer un compte » (`signUp`) / « Se connecter » (`signInWithPassword`) ; « Confirm email » doit être OFF (sinon `signUp` ne renvoie pas de session et l'app l'explique ; le diagnostic le détecte via `mailer_autoconfirm`). **Enfant** : le parent crée le compte dans l'app (identifiant 3-30 car. `[a-z0-9._-]`, mot de passe ≥ 6), peut le changer ou le supprimer ; l'enfant se connecte avec identifiant + mot de passe, sur son propre téléphone.
+- **Edge Functions** `create-child`, `reset-child-password`, `delete-child` (`verify_jwt = true`) : la clé `service_role` vient uniquement de l'environnement des fonctions (jamais dans le code, git ou le client). L'autorisation est revérifiée côté serveur : la RPC `child_account_target` est exécutée **avec le JWT de l'appelant** et refuse (42501 → 403 `forbidden`) tout appelant qui n'est pas parent de la famille de l'enfant ; un enfant ne peut donc appeler aucune des trois.
+- **E-mail interne fictif** `<identifiant>@child.taskmate.invalid` (domaine réservé RFC 2606, jamais affiché ni utilisé pour envoyer) : déterministe, donc la connexion enfant n'exige aucun appel serveur ; l'identifiant est un espace de noms global (unicité garantie par GoTrue ET par un index unique SQL) ; « identifiant déjà pris » est géré (409 `identifier_taken`). Les comptes enfants portent `app_metadata.account_type = 'child'` (non modifiable par l'utilisateur) : `create_family` les refuse.
+- **Table `child_accounts`** (RLS : lecture réservée aux parents de la famille ; aucune écriture directe) ; écritures via `register_child_account` / `remove_child_account`, réservées à `service_role`. pgTAP positifs et négatifs (`12_child_accounts.test.sql`), dont « un enfant ne peut pas créer, modifier ni supprimer un compte ».
+- **Suppression** : le compte auth est verrouillé (e-mail remplacé par un jeton inutilisable, mot de passe aléatoire, bannissement) puis le membre est révoqué — `members.user_id` référence `auth.users`, donc pas de suppression physique ; l'identifiant est libéré, l'historique (tâches, points) reste attaché au profil. Supprimer le profil entier (`deleteProfile`) retire aussi l'enfant.
+- **Retiré** : `redeem-invite`, `create_invite`, `redeem_invite`, tables `invite_codes` et `redeem_attempts`, écrans de jointure, lien `/join`, scanner QR, partage, dépendances `expo-camera`, `jsqr`, `react-native-qrcode-svg`, permission caméra, `EXPO_PUBLIC_SOCIAL_AUTH`, connexions anonymes. Droits RLS enfant/parent de la spec v4 inchangés. Nouvelle migration `20260702000011_child_accounts.sql` (les anciennes ne sont pas réécrites). Un second parent n'a plus de mécanisme d'invitation (hors périmètre de ce changement).

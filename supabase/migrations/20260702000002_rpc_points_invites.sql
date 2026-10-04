@@ -356,10 +356,14 @@ begin
 end $$;
 
 -- ───────────────────────── pg_cron (si disponible : Supabase oui, Postgres nu non) ─────────────────────────
+-- Non bloquant : sur Supabase cloud l'extension peut être absente ou déjà créée par un autre rôle ; un échec ici ne doit
+-- jamais empêcher le déploiement des migrations (planification rattrapable : `select public.schedule_cron_jobs();`, migration 10).
 do $$
 begin
   if exists (select 1 from pg_available_extensions where name = 'pg_cron') then
-    create extension if not exists pg_cron;
+    create extension if not exists pg_cron with schema pg_catalog;
     perform cron.schedule('expire-reward-requests', '0 * * * *', 'select public.expire_reward_requests()');
   end if;
+exception when others then
+  raise warning 'pg_cron : planification de expire-reward-requests ignorée (%)', sqlerrm;
 end $$;

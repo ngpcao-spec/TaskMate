@@ -35,41 +35,41 @@
       "child": "Tôi là con"
     },
     "auth": {
-      "title": "Đăng nhập phụ huynh",
+      "title": "Khu vực phụ huynh",
+      "subtitle": "Tạo tài khoản hoặc đăng nhập bằng email và mật khẩu.",
       "email": "Email",
       "emailPlaceholder": "ban@example.com",
-      "sendCode": "Gửi mã",
-      "code": "Mã xác nhận",
-      "codePlaceholder": "Nhập mã 6 số",
-      "codeSent": "Đã gửi mã đến {{email}}",
-      "verify": "Xác nhận",
-      "changeEmail": "Đổi email",
-      "apple": "Tiếp tục với Apple",
-      "google": "Tiếp tục với Google",
+      "password": "Mật khẩu",
+      "signUp": "Tạo tài khoản",
+      "signIn": "Đăng nhập",
       "invalidEmail": "Email không hợp lệ",
-      "invalidCode": "Mã không đúng hoặc đã hết hạn"
+      "passwordTooShort": "Mật khẩu tối thiểu {{min}} ký tự.",
+      "errors": {
+        "invalidCredentials": "Email hoặc mật khẩu không đúng.",
+        "alreadyExists": "Email này đã có tài khoản: hãy chọn « Đăng nhập ».",
+        "weakPassword": "Mật khẩu quá yếu (tối thiểu {{min}} ký tự).",
+        "confirmEmailOn": "Hệ thống vẫn yêu cầu xác nhận email. Hãy liên hệ quản trị viên.",
+        "rateLimited": "Thử quá nhiều lần. Hãy thử lại sau ít phút.",
+        "network": "Không có kết nối. Hãy thử lại.",
+        "unknown": "Đã xảy ra lỗi. Hãy thử lại."
+      }
     },
     "family": {
       "title": "Gia đình của bạn",
       "create": "Tạo gia đình mới",
-      "join": "Tham gia với mã đồng phụ huynh",
       "familyName": "Tên gia đình",
       "familyNamePlaceholder": "Gia đình Nguyễn",
       "yourName": "Tên của bạn",
       "yourNamePlaceholder": "Ba / Mẹ",
-      "coParentCode": "Mã mời đồng phụ huynh",
       "required": "Vui lòng nhập thông tin này"
     },
     "children": {
       "title": "Thêm hồ sơ cho con",
-      "subtitle": "Mỗi con có điện thoại riêng, liên kết bằng mã mời.",
+      "subtitle": "Mỗi con có điện thoại riêng và đăng nhập bằng tên đăng nhập và mật khẩu do bố mẹ tạo.",
       "name": "Tên của con",
       "birthDate": "Ngày sinh (YYYY-MM-DD)",
       "add": "Thêm con",
       "color": "Màu đại diện",
-      "inviteCode": "Mã mời",
-      "inviteHint": "Nhập mã hoặc quét QR trên điện thoại của {{name}}. Hiệu lực 24 giờ, dùng một lần.",
-      "regenerate": "Tạo mã mới",
       "finish": "Hoàn tất",
       "labelFirst": "Con trai lớn",
       "labelNext": "Con trai út",
@@ -80,20 +80,21 @@
         "tooOld": "Quá lớn tuổi"
       }
     },
-    "join": {
-      "title": "Tham gia với mã mời",
-      "codeLabel": "Mã 6 ký tự",
-      "codePlaceholder": "ABC234",
-      "submit": "Tham gia",
-      "scan": "Quét mã QR",
-      "scanning": "Đưa mã QR vào khung hình",
-      "cameraDenied": "Cần quyền camera để quét mã QR",
-      "invalid": "Mã không hợp lệ hoặc đã hết hạn",
-      "tooMany": "Thử quá nhiều lần. Vui lòng thử lại sau 15 phút.",
-      "alreadyMember": "Tài khoản này đã được liên kết.",
-      "confirmTitle": "Bạn là {{name}}?",
-      "confirmBody": "Ứng dụng đã được liên kết với hồ sơ của {{name}} trên điện thoại này.",
-      "confirmYes": "Đúng, vào ứng dụng"
+    "childLogin": {
+      "title": "Con đăng nhập",
+      "subtitle": "Nhập tên đăng nhập và mật khẩu do bố mẹ cung cấp.",
+      "loginId": "Tên đăng nhập",
+      "password": "Mật khẩu",
+      "submit": "Đăng nhập",
+      "errors": {
+        "invalidCredentials": "Tên đăng nhập hoặc mật khẩu không đúng.",
+        "alreadyExists": "Đã xảy ra lỗi. Con hãy thử lại.",
+        "weakPassword": "Đã xảy ra lỗi. Con hãy thử lại.",
+        "confirmEmailOn": "Đã xảy ra lỗi. Con hãy thử lại.",
+        "rateLimited": "Thử quá nhiều lần. Con hãy thử lại sau ít phút.",
+        "network": "Không có kết nối. Con hãy thử lại.",
+        "unknown": "Đã xảy ra lỗi. Con hãy thử lại."
+      }
     }
   },
   "today": {
@@ -306,7 +307,8 @@
       "goal_achieved": "{{name}} đã đạt mục tiêu: {{title}}",
       "points_adjusted": "Điều chỉnh {{delta}} điểm cho {{name}}",
       "task_assigned": "Việc mới cho {{name}}: {{title}}"
-    }
+    },
+    "unread": "{{count}} chưa đọc"
   },
   "notifSettings": {
     "title": "Cài đặt thông báo",
@@ -321,7 +323,20 @@
     "goalAchieved": "Khi con đạt mục tiêu",
     "saved": "Đã lưu cài đặt",
     "invalidTime": "Giờ không hợp lệ (HH:MM)",
-    "reset": "Khôi phục mặc định"
+    "reset": "Khôi phục mặc định",
+    "webPush": {
+      "title": "Thông báo trên trình duyệt",
+      "body": "Nhận thông báo ngay cả khi không mở ứng dụng.",
+      "enable": "Bật thông báo",
+      "disable": "Tắt thông báo",
+      "on": "Đang bật trên thiết bị này",
+      "off": "Đang tắt",
+      "denied": "Trình duyệt đã chặn thông báo. Hãy cho phép trong cài đặt trang web.",
+      "unsupported": "Trình duyệt này không hỗ trợ thông báo đẩy. Thông báo vẫn có trong ứng dụng (biểu tượng chuông).",
+      "needsInstall": "Trên iPhone/iPad, hãy thêm TaskMate vào Màn hình chính (Chia sẻ → Thêm vào Màn hình chính) rồi mở từ biểu tượng đó để bật thông báo.",
+      "notConfigured": "Thông báo đẩy chưa được cấu hình trên máy chủ.",
+      "failed": "Không bật được thông báo. Vui lòng thử lại."
+    }
   },
   "settings": {
     "title": "Cài đặt chung",
@@ -339,11 +354,8 @@
     "roleParent": "Phụ huynh",
     "revoke": "Thu hồi",
     "revokeTitle": "Thu hồi thiết bị",
-    "revokeBody": "Thiết bị của {{name}} sẽ bị đăng xuất và phải quét mã mời mới.",
+    "revokeBody": "Thiết bị của {{name}} sẽ bị đăng xuất và phải đăng nhập lại bằng tên đăng nhập.",
     "deviceRevoked": "Đã thu hồi thiết bị",
-    "coParent": "Mời phụ huynh cùng quản lý",
-    "coParentInvite": "Tạo mã mời phụ huynh",
-    "coParentHint": "Nhập mã này ở bước “Tham gia với mã đồng phụ huynh”. Hiệu lực 24 giờ.",
     "timezone": "Múi giờ của gia đình",
     "timezoneInvalid": "Múi giờ không hợp lệ (ví dụ Asia/Ho_Chi_Minh)",
     "privacy": "Chính sách quyền riêng tư",
@@ -355,7 +367,8 @@
     "deleteConfirm": "Xóa vĩnh viễn",
     "deleteChild": "Xóa hồ sơ",
     "deleteChildBody": "Xóa hồ sơ của {{name}}?",
-    "childDeleted": "Đã xóa hồ sơ"
+    "childDeleted": "Đã xóa hồ sơ",
+    "diagnostics": "Chẩn đoán"
   },
   "task": {
     "pending": "Chờ duyệt",
@@ -382,5 +395,138 @@
     "alreadyHandled": "Việc này đã được xử lý hoặc không còn nữa",
     "openQueue": "Cần duyệt ({{count}})",
     "badge": "{{count}} mục cần duyệt"
+  },
+  "health": {
+    "screenTitle": "Chẩn đoán",
+    "intro": "Kiểm tra máy chủ sản xuất đã sẵn sàng: kết nối, xác thực, bảng dữ liệu, hàm, thời gian thực. Bài kiểm tra này không thay đổi gì.",
+    "run": "Chạy lại chẩn đoán",
+    "running": "Đang kiểm tra…",
+    "summary": "{{ok}} ổn · {{warn}} cần theo dõi · {{fail}} cần sửa",
+    "allGood": "Mọi thứ đều ổn.",
+    "status": {
+      "ok": "Ổn",
+      "warn": "Theo dõi",
+      "fail": "Cần sửa"
+    },
+    "itemTitle": {
+      "connection": "Kết nối Supabase",
+      "frontUrl": "Địa chỉ Supabase của ứng dụng",
+      "webUrl": "Địa chỉ công khai của ứng dụng",
+      "email": "Đăng nhập bằng email và mật khẩu",
+      "migrations": "Migration",
+      "tables": "Bảng",
+      "rpc": "Hàm SQL (RPC)",
+      "rls": "Bảo mật theo dòng (RLS)",
+      "publication": "Realtime: bảng được phát",
+      "cron": "Tác vụ định kỳ (pg_cron)",
+      "realtime": "Realtime: kết nối",
+      "fn-create-child": "Edge Function create-child",
+      "fn-reset-child-password": "Edge Function reset-child-password",
+      "fn-delete-child": "Edge Function delete-child",
+      "fn-delete-account": "Edge Function delete-account",
+      "fn-send-push": "Edge Function send-push",
+      "vapid": "Khóa Web Push (VAPID)",
+      "confirmEmail": "Đã tắt xác nhận email"
+    },
+    "connection": {
+      "ok": "Máy chủ phản hồi ({{url}}).",
+      "fail": "Máy chủ {{url}} không phản hồi. Kiểm tra EXPO_PUBLIC_SUPABASE_URL trong Vercel rồi triển khai lại."
+    },
+    "frontUrl": {
+      "local": "Ứng dụng vẫn trỏ tới máy chủ cục bộ ({{url}}). Trong Vercel, đặt EXPO_PUBLIC_SUPABASE_URL là URL dự án Supabase rồi triển khai lại."
+    },
+    "webUrl": {
+      "missing": "EXPO_PUBLIC_WEB_URL đang trống: hãy nhập URL ứng dụng trong Vercel (liên kết thông báo).",
+      "ok": "Địa chỉ công khai của ứng dụng: {{url}}."
+    },
+    "email": {
+      "ok": "Đăng nhập bằng email và mật khẩu đã bật.",
+      "disabled": "Đăng nhập bằng email đang tắt: phụ huynh không thể đăng nhập. Supabase → Authentication → Sign In / Providers → Email → bật."
+    },
+    "migrations": {
+      "missingRpc": "Migration chưa được áp dụng đầy đủ: thiếu hàm “diagnostics”. Supabase → Database → Migrations để kiểm tra; nếu không, Project Settings → Integrations → GitHub → “Deploy to production” rồi merge lại vào main.",
+      "forbidden": "Chẩn đoán này chỉ dành cho phụ huynh.",
+      "error": "Máy chủ trả lỗi bất ngờ cho RPC “diagnostics”. Xem Supabase → Logs → Postgres."
+    },
+    "tables": {
+      "ok": "Đủ {{count}} bảng cần thiết.",
+      "missing": "Thiếu bảng: {{list}}. Migration chưa áp dụng đủ (Supabase → Database → Migrations)."
+    },
+    "rpc": {
+      "ok": "Đủ {{count}} hàm SQL cần thiết.",
+      "missing": "Thiếu hàm SQL: {{list}}. Migration chưa áp dụng đủ (Supabase → Database → Migrations)."
+    },
+    "rls": {
+      "ok": "Bảo mật theo dòng đã bật trên mọi bảng.",
+      "disabled": "RLS đang TẮT trên: {{list}}. Nguy hiểm: ai cũng đọc được các bảng này. Hãy chạy lại migration."
+    },
+    "publication": {
+      "ok": "Mọi bảng nghiệp vụ đều được phát qua Realtime.",
+      "missing": "Chưa phát qua Realtime: {{list}}. Supabase → Database → Publications → supabase_realtime → thêm các bảng này."
+    },
+    "cron": {
+      "ok": "Cả hai tác vụ định kỳ đều có (hết hạn yêu cầu, tạo việc lặp).",
+      "missing": "Thiếu tác vụ pg_cron: {{list}}. Supabase → Database → Extensions → bật pg_cron, rồi trong SQL Editor: select public.schedule_cron_jobs();",
+      "unknown": "Không đọc được tác vụ pg_cron (chưa bật tiện ích?). Supabase → Database → Extensions → bật pg_cron, rồi trong SQL Editor: select public.schedule_cron_jobs();"
+    },
+    "realtime": {
+      "ok": "Realtime hoạt động (đã kết nối).",
+      "fail": "Realtime không kết nối được (trạng thái: {{status}}). Supabase → Project Settings → API: kiểm tra Realtime đã bật; thử mạng khác."
+    },
+    "functions": {
+      "ok": "{{name}} đã được triển khai.",
+      "missing": "{{name}} CHƯA được triển khai. Supabase → Edge Functions: phải thấy hàm này. Nếu không, Project Settings → Integrations → GitHub → “Deploy to production”, hoặc chạy workflow “Deploy Edge Functions” (xem HUMAN_TODO).",
+      "unknown": "{{name}}: không kiểm tra được từ trình duyệt này (mạng hoặc CORS). Xem Supabase → Edge Functions."
+    },
+    "vapid": {
+      "ok": "Đã có khóa công khai Web Push (có thể dùng thông báo trình duyệt).",
+      "missing": "Tùy chọn: chưa có khóa Web Push. Tạo bên dưới, nhập khóa công khai vào Vercel (EXPO_PUBLIC_VAPID_PUBLIC_KEY) và khóa riêng vào Supabase → Edge Functions → Secrets."
+    },
+    "vapidTool": {
+      "title": "Tạo khóa Web Push (VAPID)",
+      "body": "Khóa được tạo ngay trong trình duyệt, không được lưu hay gửi đi. Hãy sao chép ngay: tuyệt đối không công khai khóa riêng.",
+      "generate": "Tạo cặp khóa",
+      "publicLabel": "Khóa công khai → Vercel: EXPO_PUBLIC_VAPID_PUBLIC_KEY và Supabase (secret VAPID_PUBLIC_KEY)",
+      "privateLabel": "Khóa riêng → chỉ Supabase (secret VAPID_PRIVATE_KEY)",
+      "copy": "Sao chép",
+      "copied": "Đã sao chép"
+    },
+    "confirmEmail": {
+      "ok": "“Confirm email” đang tắt: đăng ký của phụ huynh không gửi email.",
+      "enabled": "“Confirm email” đang BẬT: phụ huynh không đăng ký được nếu không có email. Supabase → Authentication → Sign In / Providers → Email → tắt “Confirm email” → Save.",
+      "unknown": "Không đọc được cài đặt xác thực (khóa công khai sai hoặc mất mạng). Kiểm tra EXPO_PUBLIC_SUPABASE_ANON_KEY."
+    }
+  },
+  "childAccount": {
+    "title": "Tài khoản đăng nhập",
+    "hint": "Tạo tên đăng nhập và mật khẩu để {{name}} dùng trên điện thoại của con.",
+    "loginId": "Tên đăng nhập (chữ, số, . _ -)",
+    "password": "Mật khẩu (tối thiểu 6 ký tự)",
+    "create": "Tạo tài khoản",
+    "created": "Đã tạo tài khoản",
+    "loginIdIs": "Tên đăng nhập: {{id}}",
+    "newPassword": "Mật khẩu mới",
+    "changePassword": "Đổi mật khẩu",
+    "passwordChanged": "Đã đổi mật khẩu",
+    "delete": "Xóa tài khoản",
+    "deleteBody": "Xóa tài khoản của {{name}}? Con sẽ không đăng nhập được nữa; hồ sơ và điểm vẫn được giữ.",
+    "deleted": "Đã xóa tài khoản",
+    "loginIdErrors": {
+      "required": "Bắt buộc",
+      "tooShort": "Tối thiểu 3 ký tự",
+      "tooLong": "Tối đa 30 ký tự",
+      "invalidChars": "Chỉ gồm chữ, số, dấu chấm, gạch ngang và gạch dưới",
+      "invalidStart": "Phải bắt đầu bằng chữ hoặc số"
+    },
+    "errors": {
+      "identifier_taken": "Tên đăng nhập này đã có người dùng. Hãy chọn tên khác.",
+      "invalid_identifier": "Tên đăng nhập không hợp lệ.",
+      "weak_password": "Mật khẩu tối thiểu {{min}} ký tự.",
+      "account_exists": "Con đã có tài khoản.",
+      "no_account": "Con chưa có tài khoản.",
+      "forbidden": "Chỉ phụ huynh của gia đình mới thực hiện được.",
+      "not_authenticated": "Phiên đã hết hạn. Hãy đăng nhập lại.",
+      "server_error": "Đã xảy ra lỗi. Hãy thử lại."
+    }
   }
 }

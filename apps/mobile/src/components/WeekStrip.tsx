@@ -19,6 +19,7 @@ export function WeekStrip({ days, selected, today, lang, onSelect }: Props) {
             accessibilityRole="button"
             accessibilityLabel={`${formatDayTitle(day, lang)}${isToday ? `, ${t('calendar.today')}` : ''}`}
             accessibilityState={{ selected: active }}
+            aria-selected={active}
             onPress={() => onSelect(day)}
             style={styles.day}
           >

@@ -35,41 +35,41 @@
       "child": "I'm a child"
     },
     "auth": {
-      "title": "Parent sign-in",
+      "title": "Parent area",
+      "subtitle": "Create your account or sign in with your email and a password.",
       "email": "Email",
       "emailPlaceholder": "you@example.com",
-      "sendCode": "Send code",
-      "code": "Verification code",
-      "codePlaceholder": "6-digit code",
-      "codeSent": "Code sent to {{email}}",
-      "verify": "Verify",
-      "changeEmail": "Change email",
-      "apple": "Continue with Apple",
-      "google": "Continue with Google",
+      "password": "Password",
+      "signUp": "Create an account",
+      "signIn": "Sign in",
       "invalidEmail": "Invalid email",
-      "invalidCode": "Wrong or expired code"
+      "passwordTooShort": "Password: at least {{min}} characters.",
+      "errors": {
+        "invalidCredentials": "Wrong email or password.",
+        "alreadyExists": "An account already exists with this email: use “Sign in”.",
+        "weakPassword": "Password too weak (at least {{min}} characters).",
+        "confirmEmailOn": "The service still requires email confirmation. Contact the administrator.",
+        "rateLimited": "Too many attempts. Try again in a few minutes.",
+        "network": "No connection. Try again.",
+        "unknown": "Something went wrong. Try again."
+      }
     },
     "family": {
       "title": "Your family",
       "create": "Create a new family",
-      "join": "Join with a co-parent code",
       "familyName": "Family name",
       "familyNamePlaceholder": "The Nguyen family",
       "yourName": "Your name",
       "yourNamePlaceholder": "Dad / Mom",
-      "coParentCode": "Co-parent invite code",
       "required": "Required"
     },
     "children": {
       "title": "Children profiles",
-      "subtitle": "Each child has their own phone, linked with an invite code.",
+      "subtitle": "Each child has their own phone and signs in with a username and password you create.",
       "name": "Child's name",
       "birthDate": "Birth date (YYYY-MM-DD)",
       "add": "Add child",
       "color": "Colour",
-      "inviteCode": "Invite code",
-      "inviteHint": "Enter this code or scan the QR on {{name}}'s phone. Valid 24 h, single use.",
-      "regenerate": "New code",
       "finish": "Finish",
       "labelFirst": "Older son",
       "labelNext": "Younger son",
@@ -80,20 +80,21 @@
         "tooOld": "Too old"
       }
     },
-    "join": {
-      "title": "Join with an invite code",
-      "codeLabel": "6-character code",
-      "codePlaceholder": "ABC234",
-      "submit": "Join",
-      "scan": "Scan QR code",
-      "scanning": "Point the camera at the QR code",
-      "cameraDenied": "Camera access is needed to scan the QR code",
-      "invalid": "Invalid or expired code",
-      "tooMany": "Too many attempts. Try again in 15 minutes.",
-      "alreadyMember": "This account is already linked.",
-      "confirmTitle": "Are you {{name}}?",
-      "confirmBody": "The app is now linked to {{name}}'s profile on this phone.",
-      "confirmYes": "Yes, open the app"
+    "childLogin": {
+      "title": "Child sign-in",
+      "subtitle": "Enter the username and password your parent gave you.",
+      "loginId": "Username",
+      "password": "Password",
+      "submit": "Sign in",
+      "errors": {
+        "invalidCredentials": "Wrong username or password.",
+        "alreadyExists": "Something went wrong. Try again.",
+        "weakPassword": "Something went wrong. Try again.",
+        "confirmEmailOn": "Something went wrong. Try again.",
+        "rateLimited": "Too many tries. Try again in a few minutes.",
+        "network": "No connection. Try again.",
+        "unknown": "Something went wrong. Try again."
+      }
     }
   },
   "today": {
@@ -306,7 +307,8 @@
       "goal_achieved": "{{name}} reached a goal: {{title}}",
       "points_adjusted": "{{delta}} points adjustment for {{name}}",
       "task_assigned": "New task for {{name}}: {{title}}"
-    }
+    },
+    "unread": "{{count}} unread"
   },
   "notifSettings": {
     "title": "Notification settings",
@@ -321,7 +323,20 @@
     "goalAchieved": "When a child reaches a goal",
     "saved": "Settings saved",
     "invalidTime": "Invalid time (HH:MM)",
-    "reset": "Reset to defaults"
+    "reset": "Reset to defaults",
+    "webPush": {
+      "title": "Browser notifications",
+      "body": "Get notifications even when the app is closed.",
+      "enable": "Turn on notifications",
+      "disable": "Turn off notifications",
+      "on": "On for this device",
+      "off": "Off",
+      "denied": "The browser blocked notifications. Allow them in the site settings.",
+      "unsupported": "This browser does not support push notifications. They remain available in the app (bell icon).",
+      "needsInstall": "On iPhone/iPad, add TaskMate to the Home Screen (Share → Add to Home Screen), then open it from that icon to turn notifications on.",
+      "notConfigured": "Push notifications are not configured on the server.",
+      "failed": "Could not turn notifications on. Please try again."
+    }
   },
   "settings": {
     "title": "General settings",
@@ -339,11 +354,8 @@
     "roleParent": "Parent",
     "revoke": "Revoke",
     "revokeTitle": "Revoke device",
-    "revokeBody": "{{name}}'s device will be signed out and must scan a new invite code.",
+    "revokeBody": "{{name}}'s device will be signed out and must sign in again with their username.",
     "deviceRevoked": "Device revoked",
-    "coParent": "Invite a co-parent",
-    "coParentInvite": "Create co-parent code",
-    "coParentHint": "Enter it at the “Join with a co-parent code” step. Valid 24 h.",
     "timezone": "Family time zone",
     "timezoneInvalid": "Invalid time zone (e.g. Asia/Ho_Chi_Minh)",
     "privacy": "Privacy policy",
@@ -355,7 +367,8 @@
     "deleteConfirm": "Delete permanently",
     "deleteChild": "Delete profile",
     "deleteChildBody": "Delete {{name}}'s profile?",
-    "childDeleted": "Profile deleted"
+    "childDeleted": "Profile deleted",
+    "diagnostics": "Diagnostics"
   },
   "task": {
     "pending": "To approve",
@@ -382,5 +395,138 @@
     "alreadyHandled": "This task was already handled or no longer exists",
     "openQueue": "To approve ({{count}})",
     "badge": "{{count}} item(s) to review"
+  },
+  "health": {
+    "screenTitle": "Diagnostics",
+    "intro": "Checks that the production server is ready: connection, authentication, tables, functions, realtime. This test changes nothing.",
+    "run": "Run diagnostics again",
+    "running": "Checking…",
+    "summary": "{{ok}} OK · {{warn}} to watch · {{fail}} to fix",
+    "allGood": "Everything is in order.",
+    "status": {
+      "ok": "OK",
+      "warn": "Watch",
+      "fail": "Fix"
+    },
+    "itemTitle": {
+      "connection": "Supabase connection",
+      "frontUrl": "App's Supabase address",
+      "webUrl": "App's public address",
+      "email": "Email and password sign-in",
+      "migrations": "Migrations",
+      "tables": "Tables",
+      "rpc": "SQL functions (RPC)",
+      "rls": "Row-level security (RLS)",
+      "publication": "Realtime: published tables",
+      "cron": "Scheduled jobs (pg_cron)",
+      "realtime": "Realtime: connection",
+      "fn-create-child": "Edge Function create-child",
+      "fn-reset-child-password": "Edge Function reset-child-password",
+      "fn-delete-child": "Edge Function delete-child",
+      "fn-delete-account": "Edge Function delete-account",
+      "fn-send-push": "Edge Function send-push",
+      "vapid": "Web Push key (VAPID)",
+      "confirmEmail": "Email confirmation turned off"
+    },
+    "connection": {
+      "ok": "The server answers ({{url}}).",
+      "fail": "The server {{url}} does not answer. Check EXPO_PUBLIC_SUPABASE_URL in Vercel (Settings → Environment Variables), then redeploy."
+    },
+    "frontUrl": {
+      "local": "The app still points to a local server ({{url}}). In Vercel, set EXPO_PUBLIC_SUPABASE_URL to the Supabase project URL, then redeploy."
+    },
+    "webUrl": {
+      "missing": "EXPO_PUBLIC_WEB_URL is empty: set the app URL in Vercel (notification links).",
+      "ok": "Public app address: {{url}}."
+    },
+    "email": {
+      "ok": "Email and password sign-in is enabled.",
+      "disabled": "Email sign-in is disabled: parents cannot sign in. Supabase → Authentication → Sign In / Providers → Email → turn on."
+    },
+    "migrations": {
+      "missingRpc": "Migrations are not (all) applied: the “diagnostics” function is missing. Supabase → Database → Migrations: check the list; otherwise Project Settings → Integrations → GitHub → “Deploy to production”, then merge to main again.",
+      "forbidden": "This diagnostic is for parents only.",
+      "error": "The server returned an unexpected error for the “diagnostics” RPC. See Supabase → Logs → Postgres."
+    },
+    "tables": {
+      "ok": "All {{count}} expected tables exist.",
+      "missing": "Missing tables: {{list}}. Migrations are not all applied (Supabase → Database → Migrations)."
+    },
+    "rpc": {
+      "ok": "All {{count}} expected SQL functions exist.",
+      "missing": "Missing SQL functions: {{list}}. Migrations are not all applied (Supabase → Database → Migrations)."
+    },
+    "rls": {
+      "ok": "Row-level security is enabled on all tables.",
+      "disabled": "RLS DISABLED on: {{list}}. Danger: these tables are readable by everyone. Re-run the migrations."
+    },
+    "publication": {
+      "ok": "All business tables are published to Realtime.",
+      "missing": "Not published to Realtime: {{list}}. Supabase → Database → Publications → supabase_realtime → add these tables."
+    },
+    "cron": {
+      "ok": "Both scheduled jobs exist (request expiry, recurrence generation).",
+      "missing": "Missing pg_cron jobs: {{list}}. Supabase → Database → Extensions → enable pg_cron, then in SQL Editor: select public.schedule_cron_jobs();",
+      "unknown": "pg_cron jobs unreadable (extension not enabled?). Supabase → Database → Extensions → enable pg_cron, then in SQL Editor: select public.schedule_cron_jobs();"
+    },
+    "realtime": {
+      "ok": "Realtime works (connection established).",
+      "fail": "Realtime cannot connect (state: {{status}}). Supabase → Project Settings → API: check Realtime is enabled; try another network."
+    },
+    "functions": {
+      "ok": "{{name}} is deployed.",
+      "missing": "{{name}} is NOT deployed. Supabase → Edge Functions: it must be listed. Otherwise Project Settings → Integrations → GitHub → “Deploy to production”, or run the “Deploy Edge Functions” workflow (see HUMAN_TODO).",
+      "unknown": "{{name}}: deployment cannot be checked from this browser (network or CORS). Check Supabase → Edge Functions."
+    },
+    "vapid": {
+      "ok": "Web Push public key present (browser notifications possible).",
+      "missing": "Optional: no Web Push key. Generate it below, set the public key in Vercel (EXPO_PUBLIC_VAPID_PUBLIC_KEY) and the private key in Supabase → Edge Functions → Secrets."
+    },
+    "vapidTool": {
+      "title": "Generate Web Push keys (VAPID)",
+      "body": "Keys are created in your browser and are neither stored nor sent. Copy them now: never publish the private key.",
+      "generate": "Generate a key pair",
+      "publicLabel": "Public key → Vercel: EXPO_PUBLIC_VAPID_PUBLIC_KEY and Supabase (secret VAPID_PUBLIC_KEY)",
+      "privateLabel": "Private key → Supabase only (secret VAPID_PRIVATE_KEY)",
+      "copy": "Copy",
+      "copied": "Copied"
+    },
+    "confirmEmail": {
+      "ok": "“Confirm email” is off: parent sign-up sends no email.",
+      "enabled": "“Confirm email” is ON: parents cannot sign up without an email. Supabase → Authentication → Sign In / Providers → Email → turn off “Confirm email” → Save.",
+      "unknown": "Cannot read the authentication settings (invalid public key or network). Check EXPO_PUBLIC_SUPABASE_ANON_KEY."
+    }
+  },
+  "childAccount": {
+    "title": "Sign-in account",
+    "hint": "Create the username and password {{name}} will use on their phone.",
+    "loginId": "Username (letters, digits, . _ -)",
+    "password": "Password (at least 6 characters)",
+    "create": "Create account",
+    "created": "Account created",
+    "loginIdIs": "Username: {{id}}",
+    "newPassword": "New password",
+    "changePassword": "Change password",
+    "passwordChanged": "Password changed",
+    "delete": "Delete account",
+    "deleteBody": "Delete {{name}}'s account? They will no longer be able to sign in; their profile and points are kept.",
+    "deleted": "Account deleted",
+    "loginIdErrors": {
+      "required": "Required",
+      "tooShort": "At least 3 characters",
+      "tooLong": "At most 30 characters",
+      "invalidChars": "Letters, digits, dot, dash and underscore only",
+      "invalidStart": "Must start with a letter or a digit"
+    },
+    "errors": {
+      "identifier_taken": "This username is already taken. Pick another one.",
+      "invalid_identifier": "Invalid username.",
+      "weak_password": "Password: at least {{min}} characters.",
+      "account_exists": "This child already has an account.",
+      "no_account": "This child has no account.",
+      "forbidden": "Only the family's parents can do this.",
+      "not_authenticated": "Session expired. Sign in again.",
+      "server_error": "Something went wrong. Try again."
+    }
   }
 }

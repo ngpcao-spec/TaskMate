@@ -115,3 +115,18 @@ export async function handleNotificationResponse(
   else if (intent.kind === 'navigate') deps.navigate(intent.href);
   return intent;
 }
+
+type NotificationResponse = Parameters<typeof handleNotificationResponse>[0];
+
+/** Abonne un handler aux taps/boutons de notification (+ démarrage à froid). Renvoie la fonction de désabonnement. */
+export function subscribeToResponses(handler: (r: NotificationResponse) => void): () => void {
+  let active = true;
+  const sub = Notifications.addNotificationResponseReceivedListener(handler);
+  void Notifications.getLastNotificationResponseAsync().then((r) => {
+    if (r && active) handler(r);
+  });
+  return () => {
+    active = false;
+    sub.remove();
+  };
+}

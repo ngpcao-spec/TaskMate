@@ -15,8 +15,8 @@ describe('resolveEntryRoute', () => {
   it('envoie un compte sans famille vers la création/jointure', () => {
     expect(resolveEntryRoute(base)).toBe('/onboarding/family');
   });
-  it('envoie un appareil anonyme sans membership (révoqué) rescanner un code', () => {
-    expect(resolveEntryRoute({ ...base, isAnonymous: true })).toBe('/onboarding/join');
+  it('renvoie un compte enfant sans profil à la connexion enfant (jamais de création de famille)', () => {
+    expect(resolveEntryRoute({ ...base, isChildAccount: true })).toBe('/onboarding/child-login');
   });
   it('envoie un parent sans enfant vers la création des profils', () => {
     expect(resolveEntryRoute({ ...base, member: { role: 'parent' } })).toBe('/onboarding/children');

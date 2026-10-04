@@ -31,11 +31,6 @@ export async function updateChild(id: string, patch: { name?: string; birth_date
   if (error) throw error;
 }
 
-export async function deleteChild(id: string): Promise<void> {
-  const { error } = await supabase.from('children').update({ deleted_at: new Date().toISOString() }).eq('id', id);
-  if (error) throw error;
-}
-
 export async function updateFamilyTimezone(familyId: string, timezone: string): Promise<void> {
   const { error } = await supabase.from('families').update({ timezone }).eq('id', familyId);
   if (error) throw error;

@@ -35,41 +35,41 @@
       "child": "Je suis un enfant"
     },
     "auth": {
-      "title": "Connexion parent",
+      "title": "Espace parent",
+      "subtitle": "Créez votre compte ou connectez-vous avec votre e-mail et un mot de passe.",
       "email": "Email",
       "emailPlaceholder": "vous@example.com",
-      "sendCode": "Envoyer le code",
-      "code": "Code de vérification",
-      "codePlaceholder": "Code à 6 chiffres",
-      "codeSent": "Code envoyé à {{email}}",
-      "verify": "Valider",
-      "changeEmail": "Changer d'email",
-      "apple": "Continuer avec Apple",
-      "google": "Continuer avec Google",
+      "password": "Mot de passe",
+      "signUp": "Créer un compte",
+      "signIn": "Se connecter",
       "invalidEmail": "Email invalide",
-      "invalidCode": "Code incorrect ou expiré"
+      "passwordTooShort": "Mot de passe : {{min}} caractères minimum.",
+      "errors": {
+        "invalidCredentials": "Email ou mot de passe incorrect.",
+        "alreadyExists": "Un compte existe déjà avec cet email : utilisez « Se connecter ».",
+        "weakPassword": "Mot de passe trop faible ({{min}} caractères minimum).",
+        "confirmEmailOn": "Le service exige encore une confirmation par e-mail. Contactez l'administrateur.",
+        "rateLimited": "Trop de tentatives. Réessayez dans quelques minutes.",
+        "network": "Pas de connexion. Réessayez.",
+        "unknown": "Une erreur est survenue. Réessayez."
+      }
     },
     "family": {
       "title": "Votre famille",
       "create": "Créer une nouvelle famille",
-      "join": "Rejoindre avec un code co-parent",
       "familyName": "Nom de la famille",
       "familyNamePlaceholder": "Famille Nguyễn",
       "yourName": "Votre prénom",
       "yourNamePlaceholder": "Papa / Maman",
-      "coParentCode": "Code d'invitation co-parent",
       "required": "Champ obligatoire"
     },
     "children": {
       "title": "Profils des enfants",
-      "subtitle": "Chaque enfant a son propre téléphone, lié par un code d'invitation.",
+      "subtitle": "Chaque enfant a son propre téléphone et se connecte avec un identifiant et un mot de passe créés par vous.",
       "name": "Prénom de l'enfant",
       "birthDate": "Date de naissance (AAAA-MM-JJ)",
       "add": "Ajouter l'enfant",
       "color": "Couleur",
-      "inviteCode": "Code d'invitation",
-      "inviteHint": "Saisissez ce code ou scannez le QR sur le téléphone de {{name}}. Valable 24 h, usage unique.",
-      "regenerate": "Nouveau code",
       "finish": "Terminer",
       "labelFirst": "Fils aîné",
       "labelNext": "Fils cadet",
@@ -80,20 +80,21 @@
         "tooOld": "Trop âgé"
       }
     },
-    "join": {
-      "title": "Rejoindre avec un code",
-      "codeLabel": "Code à 6 caractères",
-      "codePlaceholder": "ABC234",
-      "submit": "Rejoindre",
-      "scan": "Scanner le QR",
-      "scanning": "Placez le QR code dans le cadre",
-      "cameraDenied": "L'accès à la caméra est nécessaire pour scanner",
-      "invalid": "Code invalide ou expiré",
-      "tooMany": "Trop de tentatives. Réessayez dans 15 minutes.",
-      "alreadyMember": "Ce compte est déjà lié.",
-      "confirmTitle": "Tu es {{name}} ?",
-      "confirmBody": "L'app est maintenant liée au profil de {{name}} sur ce téléphone.",
-      "confirmYes": "Oui, entrer dans l'app"
+    "childLogin": {
+      "title": "Connexion de l'enfant",
+      "subtitle": "Saisis l'identifiant et le mot de passe donnés par ton parent.",
+      "loginId": "Identifiant",
+      "password": "Mot de passe",
+      "submit": "Se connecter",
+      "errors": {
+        "invalidCredentials": "Identifiant ou mot de passe incorrect.",
+        "alreadyExists": "Une erreur est survenue. Réessaie.",
+        "weakPassword": "Une erreur est survenue. Réessaie.",
+        "confirmEmailOn": "Une erreur est survenue. Réessaie.",
+        "rateLimited": "Trop d'essais. Réessaie dans quelques minutes.",
+        "network": "Pas de connexion. Réessaie.",
+        "unknown": "Une erreur est survenue. Réessaie."
+      }
     }
   },
   "today": {
@@ -306,7 +307,8 @@
       "goal_achieved": "{{name}} a atteint son objectif : {{title}}",
       "points_adjusted": "Ajustement de {{delta}} points pour {{name}}",
       "task_assigned": "Nouvelle tâche pour {{name}} : {{title}}"
-    }
+    },
+    "unread": "{{count}} non lue(s)"
   },
   "notifSettings": {
     "title": "Réglages des notifications",
@@ -321,7 +323,20 @@
     "goalAchieved": "Quand un enfant atteint un objectif",
     "saved": "Réglages enregistrés",
     "invalidTime": "Heure invalide (HH:MM)",
-    "reset": "Valeurs par défaut"
+    "reset": "Valeurs par défaut",
+    "webPush": {
+      "title": "Notifications du navigateur",
+      "body": "Recevez les notifications même quand l'application est fermée.",
+      "enable": "Activer les notifications",
+      "disable": "Désactiver les notifications",
+      "on": "Activées sur cet appareil",
+      "off": "Désactivées",
+      "denied": "Le navigateur a bloqué les notifications. Autorisez-les dans les réglages du site.",
+      "unsupported": "Ce navigateur ne gère pas les notifications push. Elles restent disponibles dans l'application (icône cloche).",
+      "needsInstall": "Sur iPhone/iPad, ajoutez TaskMate à l'écran d'accueil (Partager → Sur l'écran d'accueil) puis ouvrez-le depuis cette icône pour activer les notifications.",
+      "notConfigured": "Les notifications push ne sont pas configurées sur le serveur.",
+      "failed": "Impossible d'activer les notifications. Réessayez."
+    }
   },
   "settings": {
     "title": "Réglages généraux",
@@ -339,11 +354,8 @@
     "roleParent": "Parent",
     "revoke": "Révoquer",
     "revokeTitle": "Révoquer l'appareil",
-    "revokeBody": "L'appareil de {{name}} sera déconnecté et devra rescanner un code d'invitation.",
+    "revokeBody": "L'appareil de {{name}} sera déconnecté et devra se reconnecter avec son identifiant.",
     "deviceRevoked": "Appareil révoqué",
-    "coParent": "Inviter un co-parent",
-    "coParentInvite": "Créer un code co-parent",
-    "coParentHint": "À saisir à l'étape « Rejoindre avec un code co-parent ». Valable 24 h.",
     "timezone": "Fuseau horaire de la famille",
     "timezoneInvalid": "Fuseau invalide (ex. Asia/Ho_Chi_Minh)",
     "privacy": "Politique de confidentialité",
@@ -355,7 +367,8 @@
     "deleteConfirm": "Supprimer définitivement",
     "deleteChild": "Supprimer le profil",
     "deleteChildBody": "Supprimer le profil de {{name}} ?",
-    "childDeleted": "Profil supprimé"
+    "childDeleted": "Profil supprimé",
+    "diagnostics": "Diagnostic"
   },
   "task": {
     "pending": "À valider",
@@ -382,5 +395,138 @@
     "alreadyHandled": "Cette tâche a déjà été traitée ou n'existe plus",
     "openQueue": "À approuver ({{count}})",
     "badge": "{{count}} élément(s) à traiter"
+  },
+  "health": {
+    "screenTitle": "Diagnostic",
+    "intro": "Vérifie que le serveur de production est prêt : connexion, authentification, tables, fonctions, temps réel. Rien n'est modifié par ce test.",
+    "run": "Relancer le diagnostic",
+    "running": "Vérification en cours…",
+    "summary": "{{ok}} OK · {{warn}} à surveiller · {{fail}} à corriger",
+    "allGood": "Tout est en ordre.",
+    "status": {
+      "ok": "OK",
+      "warn": "À surveiller",
+      "fail": "À corriger"
+    },
+    "itemTitle": {
+      "connection": "Connexion à Supabase",
+      "frontUrl": "Adresse Supabase de l'application",
+      "webUrl": "Adresse publique de l'application",
+      "email": "Connexion par e-mail et mot de passe",
+      "migrations": "Migrations",
+      "tables": "Tables",
+      "rpc": "Fonctions SQL (RPC)",
+      "rls": "Sécurité des lignes (RLS)",
+      "publication": "Realtime : tables publiées",
+      "cron": "Tâches planifiées (pg_cron)",
+      "realtime": "Realtime : connexion",
+      "fn-create-child": "Edge Function create-child",
+      "fn-reset-child-password": "Edge Function reset-child-password",
+      "fn-delete-child": "Edge Function delete-child",
+      "fn-delete-account": "Edge Function delete-account",
+      "fn-send-push": "Edge Function send-push",
+      "vapid": "Clé Web Push (VAPID)",
+      "confirmEmail": "Confirmation d'e-mail désactivée"
+    },
+    "connection": {
+      "ok": "Le serveur répond ({{url}}).",
+      "fail": "Le serveur {{url}} ne répond pas. Vérifiez EXPO_PUBLIC_SUPABASE_URL dans Vercel (Settings → Environment Variables) puis redéployez."
+    },
+    "frontUrl": {
+      "local": "L'application pointe encore vers un serveur local ({{url}}). Dans Vercel, saisissez l'URL du projet Supabase dans EXPO_PUBLIC_SUPABASE_URL puis redéployez."
+    },
+    "webUrl": {
+      "missing": "EXPO_PUBLIC_WEB_URL est vide : saisissez l'URL de l'application dans Vercel (liens des notifications).",
+      "ok": "Adresse publique de l'application : {{url}}."
+    },
+    "email": {
+      "ok": "La connexion par e-mail et mot de passe est activée.",
+      "disabled": "La connexion par e-mail est désactivée : les parents ne pourront pas se connecter. Supabase → Authentication → Sign In / Providers → Email → activer."
+    },
+    "migrations": {
+      "missingRpc": "Les migrations ne sont pas (toutes) appliquées : la fonction « diagnostics » est absente. Supabase → Database → Migrations : vérifiez la liste ; sinon Project Settings → Integrations → GitHub → « Deploy to production » puis refusionnez sur main.",
+      "forbidden": "Ce diagnostic est réservé aux parents.",
+      "error": "Le serveur a répondu par une erreur inattendue à la RPC « diagnostics ». Consultez Supabase → Logs → Postgres."
+    },
+    "tables": {
+      "ok": "Les {{count}} tables attendues existent.",
+      "missing": "Tables manquantes : {{list}}. Les migrations ne sont pas toutes appliquées (Supabase → Database → Migrations)."
+    },
+    "rpc": {
+      "ok": "Les {{count}} fonctions SQL attendues existent.",
+      "missing": "Fonctions SQL manquantes : {{list}}. Les migrations ne sont pas toutes appliquées (Supabase → Database → Migrations)."
+    },
+    "rls": {
+      "ok": "La sécurité des lignes est activée sur toutes les tables.",
+      "disabled": "RLS DÉSACTIVÉE sur : {{list}}. Danger : ces tables sont lisibles par tous. Supabase → Authentication → Policies, ou refaites passer les migrations."
+    },
+    "publication": {
+      "ok": "Toutes les tables métier sont publiées en Realtime.",
+      "missing": "Non publiées en Realtime : {{list}}. Supabase → Database → Publications → supabase_realtime → ajoutez ces tables."
+    },
+    "cron": {
+      "ok": "Les deux tâches planifiées existent (expiration des demandes, génération des récurrences).",
+      "missing": "Tâches pg_cron manquantes : {{list}}. Supabase → Database → Extensions → activer pg_cron, puis dans SQL Editor : select public.schedule_cron_jobs();",
+      "unknown": "Tâches pg_cron non lisibles (extension non activée ?). Supabase → Database → Extensions → activer pg_cron, puis dans SQL Editor : select public.schedule_cron_jobs();"
+    },
+    "realtime": {
+      "ok": "Realtime fonctionne (connexion établie).",
+      "fail": "Realtime ne se connecte pas (état : {{status}}). Supabase → Project Settings → API : vérifiez que Realtime est activé ; essayez un autre réseau."
+    },
+    "functions": {
+      "ok": "{{name}} est déployée.",
+      "missing": "{{name}} n'est PAS déployée. Supabase → Edge Functions : elle doit apparaître. Sinon Project Settings → Integrations → GitHub → « Deploy to production », ou lancez le workflow « Deploy Edge Functions » (voir HUMAN_TODO).",
+      "unknown": "{{name}} : déploiement non vérifiable depuis ce navigateur (réseau ou CORS). Contrôlez Supabase → Edge Functions."
+    },
+    "vapid": {
+      "ok": "Clé publique Web Push présente (notifications du navigateur possibles).",
+      "missing": "Optionnel : pas de clé Web Push. Générez-la ci-dessous, saisissez la clé publique dans Vercel (EXPO_PUBLIC_VAPID_PUBLIC_KEY) et la clé privée dans Supabase → Edge Functions → Secrets."
+    },
+    "vapidTool": {
+      "title": "Générer des clés Web Push (VAPID)",
+      "body": "Les clés sont créées dans votre navigateur, ne sont ni enregistrées ni envoyées. Copiez-les immédiatement : la clé privée ne doit jamais être publiée.",
+      "generate": "Générer une paire de clés",
+      "publicLabel": "Clé publique → Vercel : EXPO_PUBLIC_VAPID_PUBLIC_KEY et Supabase (secret VAPID_PUBLIC_KEY)",
+      "privateLabel": "Clé privée → Supabase uniquement (secret VAPID_PRIVATE_KEY)",
+      "copy": "Copier",
+      "copied": "Copié"
+    },
+    "confirmEmail": {
+      "ok": "« Confirm email » est désactivé : l'inscription d'un parent n'envoie aucun e-mail.",
+      "enabled": "« Confirm email » est ACTIVÉ : les parents ne pourront pas s'inscrire sans e-mail. Supabase → Authentication → Sign In / Providers → Email → désactiver « Confirm email » → Save.",
+      "unknown": "Impossible de lire les réglages d'authentification (clé publique invalide ou réseau). Vérifiez EXPO_PUBLIC_SUPABASE_ANON_KEY."
+    }
+  },
+  "childAccount": {
+    "title": "Compte de connexion",
+    "hint": "Créez l'identifiant et le mot de passe que {{name}} utilisera sur son téléphone.",
+    "loginId": "Identifiant (lettres, chiffres, . _ -)",
+    "password": "Mot de passe (6 caractères minimum)",
+    "create": "Créer le compte",
+    "created": "Compte créé",
+    "loginIdIs": "Identifiant : {{id}}",
+    "newPassword": "Nouveau mot de passe",
+    "changePassword": "Changer le mot de passe",
+    "passwordChanged": "Mot de passe modifié",
+    "delete": "Supprimer le compte",
+    "deleteBody": "Supprimer le compte de {{name}} ? Il ne pourra plus se connecter ; son profil et ses points sont conservés.",
+    "deleted": "Compte supprimé",
+    "loginIdErrors": {
+      "required": "Champ obligatoire",
+      "tooShort": "3 caractères minimum",
+      "tooLong": "30 caractères maximum",
+      "invalidChars": "Lettres, chiffres, point, tiret et underscore uniquement",
+      "invalidStart": "Doit commencer par une lettre ou un chiffre"
+    },
+    "errors": {
+      "identifier_taken": "Cet identifiant est déjà pris. Choisissez-en un autre.",
+      "invalid_identifier": "Identifiant invalide.",
+      "weak_password": "Mot de passe : {{min}} caractères minimum.",
+      "account_exists": "Cet enfant a déjà un compte.",
+      "no_account": "Cet enfant n'a pas de compte.",
+      "forbidden": "Action réservée aux parents de la famille.",
+      "not_authenticated": "Session expirée. Reconnectez-vous.",
+      "server_error": "Une erreur est survenue. Réessayez."
+    }
   }
 }

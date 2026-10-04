@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import * as Notifications from 'expo-notifications';
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
 import { newId } from '@/api/ids';
 import { fetchActivity, fetchDecidedRequests, fetchPrefs, savePrefs } from '@/api/notifications';
+import { latestAt, unreadCount } from '@/domain/notification-center';
+import { useNotificationSeen } from '@/store/notificationSeen';
 import { DEFAULT_PREFS, type NotificationPrefs } from '@/domain/notification-prefs';
 import { planReminders } from '@/domain/reminders';
 import { shiftDay } from '@/domain/calendar';
@@ -16,6 +17,7 @@ import {
   ensureNotificationPermission,
   handleNotificationResponse,
   registerPushToken,
+  subscribeToResponses,
   syncLocalReminders,
 } from '@/services/notifications';
 import { useMe } from './useMe';
@@ -68,14 +70,10 @@ export function useNotificationSetup(): void {
       rejectTask: async (id: string) => (await import('@/api/tasks')).rejectTaskRpc(id),
       navigate: (href: string) => router.push(href as never),
     };
-    const sub = Notifications.addNotificationResponseReceivedListener((r) => void handleNotificationResponse(r, deps));
-    // démarrage à froid depuis une notification
-    void Notifications.getLastNotificationResponseAsync().then((r) => {
-      if (r && !cancelled) void handleNotificationResponse(r, deps);
-    });
+    const unsubscribe = subscribeToResponses((r) => void handleNotificationResponse(r, deps));
     return () => {
       cancelled = true;
-      sub.remove();
+      unsubscribe();
     };
   }, [memberId, router]);
 }
@@ -105,4 +103,25 @@ export function useReminderSync(): void {
       cancelled = true;
     };
   }, [isChild, tasks, prefs, tz, today]);
+}
+
+/**
+ * Compteur de notifications non lues (centre de notifications intégré, canal principal sur le web).
+ * Première ouverture sur un appareil : l'historique existant est considéré comme lu (aucun faux compteur).
+ */
+export function useUnreadNotifications(): number {
+  const me = useMe().data ?? null;
+  const memberId = me?.member.id ?? null;
+  const isParent = me?.member.role === 'parent';
+  const activity = useActivity(isParent);
+  const decided = useDecidedRequests(!isParent && me !== null);
+  const seen = useNotificationSeen((s) => (memberId ? (s.seen[memberId] ?? null) : null));
+  const markSeen = useNotificationSeen((s) => s.markSeen);
+  const rows = isParent ? activity.data?.map((a) => ({ at: a.created_at })) : decided.data?.map((r) => ({ at: r.updated_at }));
+  const loaded = rows !== undefined;
+  useEffect(() => {
+    if (memberId && seen === null && loaded) markSeen(memberId, latestAt(rows ?? []) ?? new Date().toISOString());
+  }, [memberId, seen, loaded, rows, markSeen]);
+  if (!memberId || !rows || seen === null) return 0;
+  return unreadCount(rows, seen);
 }

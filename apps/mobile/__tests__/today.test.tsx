@@ -30,6 +30,8 @@ jest.mock('@/hooks/useDisplayedChild', () => ({
     children: [minh, khang], child: mockReadOnly ? khang : minh, readOnly: mockReadOnly, select: jest.fn(),
   }),
 }));
+let mockUnread = 0;
+jest.mock('@/hooks/useNotifications', () => ({ useUnreadNotifications: () => mockUnread }));
 jest.mock('@/hooks/useApprovals', () => ({ useApprovalCounts: () => mockCounts }));
 jest.mock('@/hooks/useSyncStatus', () => ({ usePendingTaskIds: () => new Set<string>() }));
 jest.mock('@/hooks/useTasks', () => ({
@@ -135,6 +137,15 @@ describe('TodayScreen (SPEC v4)', () => {
     expect(box.props.accessibilityState).toMatchObject({ disabled: true });
     await fireEvent.press(box);
     expect(mockToggle).not.toHaveBeenCalled();
+  });
+
+  it('cloche : compteur de notifications non lues dans le libellé et le badge', async () => {
+    mockUnread = 3;
+    mockTasks = [task({ id: 'a' })];
+    await render(<TodayScreen />);
+    expect(screen.getByRole('button', { name: /Thông báo.*3 chưa đọc/ })).toBeTruthy();
+    expect(screen.getByText('3')).toBeTruthy();
+    mockUnread = 0;
   });
 
   it('jour vide : message et anneau « — » sans NaN', async () => {

@@ -1,46 +1,104 @@
-# Actions humaines
+# À faire par vous (clics dans les tableaux de bord)
 
-(alimenté au fil de l'eau — voir ordre dans le rapport final de PROGRESS.md)
+Projet Supabase : `olftkozksanvnzlsvwrp` (Sydney) · Web : https://taskmate-rho-nine.vercel.app · Dépôt : `ngpcao-spec/TaskMate`.
+Vous n'avez jamais besoin de me donner la clé `service_role` ni le mot de passe de la base — ne les saisissez nulle part dans le dépôt.
+**Ordre obligatoire** : 1 → 2 → 3 → 4 → 5, **puis seulement** la fusion des PR, puis 6 → 7, puis le contrôle final.
+Pourquoi : l'intégration GitHub de l'étape 4 doit être active **avant la première fusion sur `main`**, sinon les migrations ne se déclenchent pas ; et les variables Vercel de l'étape 5 doivent exister avant le premier déploiement de `main`.
+Chaque étape dit où cliquer, quoi saisir, comment vérifier. Les liens directs ouvrent le bon projet si vous êtes connecté à Supabase.
 
-## 1. (fait) Maquettes et validation Docker
-`docs/mockups/taskmate.png` est fournie et la CI GitHub exécute la vraie stack (`supabase start`, `test db`, `db lint`, types générés). Rien à faire ; pour rejouer en local avec Docker : `supabase start && supabase db reset && supabase test db`.
+## 1. Désactiver « Confirm email » (inscription des parents sans e-mail)
+- **Où** : https://supabase.com/dashboard/project/olftkozksanvnzlsvwrp/auth/providers → *Authentication → Sign In / Providers* → **Email**.
+- **Faire** : fournisseur **Email** activé ; **Confirm email** désactivé (OFF) ; **Allow new users to sign up** activé → **Save**. Ne touchez pas à *Minimum password length* (6 convient : les mots de passe des enfants ont 6 caractères minimum, les parents 8 contrôlés par l'app).
+- **Pourquoi** : le parent crée son compte avec e-mail + mot de passe, **aucun e-mail n'est envoyé** ni attendu (pas de code, pas de lien). Si « Confirm email » reste activé, l'inscription échoue avec un message explicite.
+- **Les connexions anonymes ne sont plus nécessaires** : laissez **Allow anonymous sign-ins** désactivé (c'est la valeur par défaut). Les enfants se connectent avec identifiant + mot de passe créés par le parent dans l'app.
+- **Vérifier** : app → Réglages → Diagnostic → « Confirmation d'e-mail désactivée : OK » et « Connexion par e-mail et mot de passe : OK ».
 
-## 1bis. Valider le rendu sur appareil
-Comparer l'app native aux maquettes (la comparaison automatisée n'a utilisé qu'un rendu web, cf. PROGRESS.md → C3).
+## 2. Site URL et Redirect URLs
+- **Où** : https://supabase.com/dashboard/project/olftkozksanvnzlsvwrp/auth/url-configuration → *Authentication → URL Configuration*.
+- **Site URL** : `https://taskmate-rho-nine.vercel.app`
+- **Redirect URLs** (bouton *Add URL*, une ligne chacune) : `https://taskmate-rho-nine.vercel.app/**` · `http://localhost:8081/**` (développement local) · *(facultatif, aperçus Vercel)* `https://taskmate-*.vercel.app/**` → **Save changes**.
+- **Vérifier** : les 3 lignes apparaissent dans la liste après rechargement de la page.
 
-## 3. Créer le projet Supabase cloud (région Singapour recommandée)
-Puis `supabase link` + `supabase db push`, activer `pg_cron` (Database → Extensions) — la migration planifie
-`expire-reward-requests` automatiquement si l'extension est disponible. Renseigner `.env` (URL + clé anon uniquement).
+## 3. Rien à configurer pour les e-mails
+Plus de gabarit d'e-mail, plus de code à 6 chiffres, plus de SMTP : l'application n'envoie aucun e-mail. (Étape conservée pour garder la numérotation.)
 
-## 4. Sign in with Apple / Google
-Créer les identifiants (Apple Developer : Services ID + clé ; Google Cloud : client OAuth iOS/Android/Web), les renseigner dans Supabase → Auth → Providers,
-installer `expo-apple-authentication` / `@react-native-google-signin/google-signin`, brancher les deux handlers de `app/onboarding/parent-auth.tsx`, puis `EXPO_PUBLIC_SOCIAL_AUTH=1`.
+## 4. Intégration GitHub : migrations et fonctions automatiques
+- **Où** : https://supabase.com/dashboard/project/olftkozksanvnzlsvwrp/settings/integrations → *Project Settings → Integrations → GitHub Integration*.
+- **Saisir** : dépôt `ngpcao-spec/TaskMate` · **Working directory** : `.` (point) · branche de production `main` · **Deploy to production** : **ON** · **Automatic branching** : OFF → **Enable integration** (ou **Save** si déjà activée).
+- **Ce que ça fait** (doc officielle) : à chaque fusion sur `main`, applique les nouvelles migrations de `supabase/migrations` dans l'ordre (sans le `seed.sql`) et déploie les Edge Functions déclarées dans `supabase/config.toml`. Ne règle **pas** Auth (étapes 1 à 3) ni les secrets (étape 6).
+- **Vérifier maintenant** : la page *Integrations → GitHub* affiche le dépôt `ngpcao-spec/TaskMate` connecté, **Deploy to production** sur ON, branche `main`. Rien ne s'applique tant que vous n'avez pas fusionné (section suivante) ; le résultat se vérifie après la fusion : *Database → Migrations* liste **11** migrations (de `…core_schema_rls` à `…child_accounts`) et *Edge Functions* liste `create-child`, `reset-child-password`, `delete-child`, `delete-account`, `send-push`.
+- **Si une migration échoue** : le message est dans la coche/croix à côté du commit de fusion sur GitHub (clic → *Details*). Envoyez-le moi.
 
-## 5. Déployer l'Edge Function d'invitation
-`supabase functions deploy redeem-invite` (après `supabase link`). Activer « Anonymous sign-ins » (Auth → Providers) — requis pour la session enfant.
-Personnaliser le template d'e-mail OTP (Auth → Email Templates) pour afficher `{{ .Token }}`.
+## 5. Variables d'environnement Vercel
+- **Où** : Vercel → projet **taskmate** → *Settings → Environment Variables*. Cocher **Production** et **Preview**.
+- **Noms exacts** :
 
-## 6. Notifications push (Expo + Supabase)
-1. `eas init` (crée le projet EAS) puis reporter le `projectId` dans `apps/mobile/app.json` → `expo.extra.eas.projectId` (sans lui, le jeton push n'est pas enregistré).
-2. iOS : clé APNs ; Android : FCM (`eas credentials`) — requis pour les push réels.
-3. `supabase secrets set WEBHOOK_SECRET=<valeur aléatoire>` puis `supabase functions deploy send-push`.
-4. Dashboard Supabase → Database → Webhooks → créer « activity-log-push » : table `public.activity_log`, événement INSERT, type « Supabase Edge Function » → `send-push`, en-tête `x-webhook-secret: <même valeur>`.
-5. Récap du soir des parents : planifier (pg_cron + pg_net, ou Scheduled Function) un `POST /functions/v1/send-push` avec `{"type":"evening_recap"}` et le même en-tête, à l'heure voulue (ex. 20:30 Asia/Ho_Chi_Minh = 13:30 UTC).
+| Nom | Valeur |
+|---|---|
+| `EXPO_PUBLIC_SUPABASE_URL` | `https://olftkozksanvnzlsvwrp.supabase.co` |
+| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | la clé **Publishable** (`sb_publishable_…`), ou à défaut la clé **anon** — Supabase → *Project Settings → API Keys*. **Jamais** `service_role` / « secret ». |
+| `EXPO_PUBLIC_WEB_URL` | `https://taskmate-rho-nine.vercel.app` |
+| `EXPO_PUBLIC_VAPID_PUBLIC_KEY` | *(facultatif, étape 6)* clé VAPID publique |
+| `EXPO_PUBLIC_PRIVACY_URL` | *(facultatif)* URL de la politique de confidentialité |
 
-## 7. Déployer les fonctions et activer l'auth anonyme (projet cloud)
-`supabase functions deploy redeem-invite delete-account send-push`. Dashboard → Authentication → Providers : **Anonymous sign-ins activé** (config locale déjà à true),
-Email OTP avec le gabarit affichant `{{ .Token }}`. Région du projet : Singapour. `pg_cron` activé (récurrences + expiration des demandes).
+- **Réglages du projet** (*Settings → General*) : **Root Directory** vide, **Framework Preset** « Other » (le reste vient de `vercel.json`), branche de production `main`.
+- **Quand redéployer** : les variables sont lues au *build*. Saisies **avant** la première fusion, elles servent dès le premier déploiement de `main` (rien à faire). Si vous les changez plus tard : *Deployments →* dernier déploiement → ⋯ → **Redeploy**.
+- **Vérifier** : le tableau affiche 3 variables obligatoires cochées Production + Preview. Le contrôle fonctionnel se fait après les fusions (Réglages → Diagnostic : « Connexion à Supabase : OK », plus d'alerte « Adresse Supabase de l'application »).
 
-## 8. Assets graphiques (placeholders actuels)
-Fournir : icône d'app (1024², sans transparence), icône adaptive Android (avant/arrière/monochrome), splash (logo + illustration), avatars des enfants (optionnel : l'app affiche l'initiale dans la couleur du profil).
-Déposer dans `apps/mobile/assets/` et mettre à jour `app.json`.
+## ▶ FUSION DES PR (seulement après les étapes 1 à 5)
+Les 5 PR sont **empilées** : #1 cible `main`, #2 cible la branche de #1, #3 celle de #2, etc. Si une branche n'est pas supprimée après sa fusion, la PR suivante fusionne dans l'ancienne branche et **`main` reste incomplet**. Suivez exactement ceci, **dans l'ordre #1 → #2 → #3 → #4 → #5** (https://github.com/ngpcao-spec/TaskMate/pulls) :
+1. Ouvrir la PR. Sous le titre, lire « *X wants to merge … into* **`main`** » : la branche de destination doit être `main`. Pour #1 c'est déjà le cas. Pour #2 à #5, ce sera `main` **uniquement si** vous avez supprimé la branche de la PR précédente (point 4).
+   - Si la destination n'est **pas** `main` : ne fusionnez pas. Cliquer **Edit** (à droite du titre) → liste « base » → choisir `main` → **Change base**.
+2. Vérifier que les contrôles en bas de page sont verts (« All checks have passed »). Le contrôle Vercel peut rester en attente : sans importance.
+3. Cliquer la flèche à droite de **Merge pull request** → choisir **Create a merge commit** (**pas** « Squash and merge », **pas** « Rebase and merge ») → **Confirm merge**.
+4. Cliquer **Delete branch** (bouton affiché juste après la fusion). C'est ce clic qui fait cibler `main` à la PR suivante.
+5. Passer à la PR suivante et recommencer au point 1.
+**Contrôle après la dernière** (#5) : sur https://github.com/ngpcao-spec/TaskMate (branche `main`), vérifier que le dossier `apps/mobile/e2e-web` et le fichier `supabase/migrations/20260702000010_diagnostics.sql` existent. Puis étape *Vérifier* de l'étape 4 : *Database → Migrations* = 10 lignes, *Edge Functions* = 3 fonctions.
+*Raccourci équivalent* : la branche de #5 contient déjà tous les commits des 4 PR précédentes. Fusionner **seulement #5** (même procédure : « Create a merge commit ») met aussi `main` complet en un clic ; les PR #1 à #4 se ferment alors d'elles-mêmes comme « Merged ».
+*Si vous avez fusionné par erreur dans une ancienne branche* : ouvrir une nouvelle PR depuis `claude/prod-supabase` vers `main` (Pull requests → New pull request → base `main`, compare `claude/prod-supabase`) et la fusionner : cela rattrape tout.
 
-## 9. Politique de confidentialité & stores
-Relire/adapter `docs/privacy-policy.md`, l'héberger (URL publique), renseigner `EXPO_PUBLIC_PRIVACY_URL`, puis la saisir dans App Store Connect / Google Play Console.
-Fiches stores : catégorie « Famille/Productivité », déclaration de données (e-mail, identifiants d'appareil/push, données d'enfants saisies par le parent), âge cible.
-Builds : `eas build --profile production --platform all` puis `eas submit` (comptes Apple Developer / Google Play requis).
+## ▶ PLAN B — Database → Migrations est vide après les fusions
+Sans aucune clé secrète. Essayer dans l'ordre :
+1. **Comprendre** : GitHub → `main` → page du dernier commit (clic sur le message) → l'icône à côté du titre (coche/croix/rond) → **Details** → ligne « Supabase » : le message dit pourquoi (intégration non activée, mauvais *Working directory*, erreur SQL…). Corriger l'étape 4 si besoin (**Working directory** = `.`, **Deploy to production** = ON, branche = `main`).
+2. **Re-déclencher sans outil** (un commit « vide » n'existe pas dans l'interface web ; un commit qui touche `supabase/` fait la même chose) : GitHub → dépôt → dossier `supabase` → **Add file → Create new file** → nom `redeploy.txt` (dans `supabase/`), contenu `redeploy` → **Commit changes… → Commit directly to the `main` branch** → **Commit changes**. Attendre 1 à 2 minutes puis recharger *Database → Migrations*. (Vous pouvez supprimer ce fichier ensuite : même procédure, corbeille.)
+3. **Appliquer à la main** (dernier recours, toujours sans clé) : Supabase → *SQL Editor* → *New query*. Pour **chaque** fichier de `supabase/migrations`, **dans l'ordre des noms** (…0001 puis …0002 … jusqu'à …0011) : ouvrir le fichier sur GitHub → **Copy raw file** → coller dans l'éditeur → **Run** → attendre « Success ». S'arrêter à la première erreur et me l'envoyer. Ensuite, **une seule fois**, enregistrer les migrations comme appliquées (sinon l'intégration tentera de les rejouer) : nouvelle requête →
+   ```sql
+   create schema if not exists supabase_migrations;
+   create table if not exists supabase_migrations.schema_migrations (version text primary key, statements text[], name text);
+   insert into supabase_migrations.schema_migrations (version, name) values
+     ('20260702000001','core_schema_rls'), ('20260702000002','rpc_points_invites'), ('20260702000003','redeem_rate_limit'),
+     ('20260702000004','realtime'), ('20260702000005','notification_prefs'), ('20260702000006','recurrence'),
+     ('20260702000007','delete_family'), ('20260702000008','task_validation'), ('20260702000009','web_push'),
+     ('20260702000010','diagnostics'), ('20260702000011','child_accounts')
+   on conflict (version) do nothing;
+   ```
+   → **Run**. Les Edge Functions se déploient alors par la méthode de repli de l'étape 6.
 
-## 10. Exécuter les flows E2E Maestro
-Voir `apps/mobile/e2e/README.md` (nécessite Docker + build de développement) — non exécutés dans l'environnement de développement automatique.
+## 6. Edge Functions et secrets
+- **Déploiement** : automatique par l'étape 4 (rien à installer). Vérifier dans *Edge Functions* que les 3 fonctions sont listées ; sinon, **méthode de repli sans outil** :
+  1. Supabase → https://supabase.com/dashboard/account/tokens → **Generate new token** (nom `github-actions`) → copier le jeton.
+  2. GitHub → dépôt → *Settings → Secrets and variables → Actions → New repository secret* : nom `SUPABASE_ACCESS_TOKEN`, valeur = le jeton.
+  3. GitHub → onglet *Actions* → **Deploy Edge Functions** → **Run workflow**. Vérifier : le job est vert et les 3 fonctions apparaissent.
+- **Secrets** : https://supabase.com/dashboard/project/olftkozksanvnzlsvwrp/functions/secrets → *Edge Functions → Secrets* → **Add new secrets** (clé / valeur) → **Save** :
 
-## 11. Sign-in Apple / Google — voir #4. Valider sur appareils réels : NetInfo/MMKV natifs, caméra QR, notifications locales/push, latence Realtime (< 5 s).
+| Clé | Valeur |
+|---|---|
+| `WEBHOOK_SECRET` | une chaîne aléatoire d'au moins 32 caractères (« Suggérer un mot de passe fort » sur iPhone). **Notez-la** : étape 7. |
+| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | *(Web Push, facultatif)* dans l'app : Réglages → **Diagnostic** → **Générer une paire de clés** (calculé dans votre navigateur, rien n'est stocké). Clé publique → `VAPID_PUBLIC_KEY` **et** Vercel (`EXPO_PUBLIC_VAPID_PUBLIC_KEY`, puis redéployer) ; clé privée → `VAPID_PRIVATE_KEY` **uniquement ici**, jamais ailleurs. `VAPID_SUBJECT` = `mailto:` + votre e-mail. |
+
+  `SUPABASE_URL` et la clé de service sont injectées automatiquement dans les fonctions : ne les saisissez pas.
+- **Vérifier** : Diagnostic → les 3 « Edge Function … : OK » (sans `WEBHOOK_SECRET`, `send-push` répond 401 : normal, la fonction existe).
+
+## 7. Database Webhook (notifications)
+- **Où** : https://supabase.com/dashboard/project/olftkozksanvnzlsvwrp/integrations/webhooks/overview → *Integrations → Database Webhooks → Create a new hook*.
+- **Saisir** : Name `activity-log-push` · Table `public.activity_log` · Events **Insert** · Type **Supabase Edge Functions** · Edge Function `send-push` · Method `POST` · Timeout `5000` · **HTTP Headers** → *Add a new header* : nom `x-webhook-secret`, valeur = **le même** `WEBHOOK_SECRET` → **Create webhook**.
+- **Vérifier** : avec un compte enfant, cocher une tâche ; puis *Edge Functions → send-push → Logs* montre un appel en **200** (la réponse contient `"sent":0` tant qu'aucun appareil n'a activé les notifications). Un 401 = secret différent entre l'en-tête et `WEBHOOK_SECRET`.
+- *(Facultatif, plus tard)* récap du soir des parents : tâche pg_cron appelant `send-push` avec `{"type":"evening_recap"}` et le même en-tête ; dites-le-moi et je prépare le SQL.
+
+## Contrôle final
+App → **Réglages → Diagnostic** → « Relancer » : objectif **0 à corriger**. Les « à surveiller » acceptables : adresse publique vide (corrigée à l'étape 5), clé Web Push (facultative), pg_cron.
+Si **pg_cron** est signalé : Supabase → *Database → Extensions* → activer **pg_cron**, puis *SQL Editor* : `select public.schedule_cron_jobs();` → Run. Diagnostic → « Tâches planifiées : OK ».
+
+## À valider sur de vrais appareils (non automatisable)
+Installer la PWA (iPhone : Safari → Partager → « Sur l'écran d'accueil » ; Android/Chrome : « Installer l'application »), connecter un enfant sur son propre téléphone (identifiant + mot de passe créés par le parent), recevoir une notification Web Push (iOS ≥ 16.4 et PWA installée uniquement ; l'autorisation se demande depuis le bouton des réglages), latence Realtime (< 5 s).
+Limites connues : pas de rappels planifiés « avant l'heure » sur le web (D-035) ; pas de boutons Duyệt/Từ chối dans une notification web (D-034).

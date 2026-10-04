@@ -9,6 +9,7 @@ export function IconChoice({ name, selected, onPress, children }: { name: string
       accessibilityRole="radio"
       accessibilityLabel={name}
       accessibilityState={{ selected, checked: selected }}
+      aria-checked={selected}
       onPress={onPress}
       style={[styles.choice, selected && styles.selected]}
     >

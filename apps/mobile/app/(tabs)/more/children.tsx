@@ -1,19 +1,20 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
-import { InviteCard } from '@/components/InviteCard';
+import { confirmDialog } from '@/components/confirm';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { ChildAccountSection } from '@/components/ChildAccountSection';
 import { Button, Card, Field, Screen, Title } from '@/components/ui';
 import { ageFromBirthDate } from '@/domain/age';
 import { validateBirthDate } from '@/domain/birth-date';
 import { todayInTz } from '@/domain/family-time';
-import { useCreateInvite, useDeleteChild, useUpdateChild } from '@/hooks/useFamilyAdmin';
+import { useDeleteChild, useUpdateChild } from '@/hooks/useFamilyAdmin';
 import { useMe } from '@/hooks/useMe';
 import { colors, MIN_TARGET, typography } from '@/theme/tokens';
 import type { ChildRow } from '@/types/models';
 
 const PALETTE = [colors.primary, colors.mint, '#8B5CF6', '#F5A623', '#E5484D'] as const;
 
-/** Gestion des enfants (parent) : modifier, supprimer, codes d'invitation / QR (SPEC §3.9). */
+/** Gestion des enfants (parent) : modifier, supprimer, comptes de connexion (SPEC §3.9). */
 export default function ChildrenAdminScreen() {
   const { t } = useTranslation();
   const me = useMe().data;
@@ -33,11 +34,9 @@ function ChildCard({ child, today }: { child: ChildRow; today: string }) {
   const { t } = useTranslation();
   const update = useUpdateChild();
   const remove = useDeleteChild();
-  const invite = useCreateInvite();
   const [name, setName] = useState(child.name);
   const [birth, setBirth] = useState(child.birth_date);
   const [color, setColor] = useState(child.color ?? colors.primary);
-  const [code, setCode] = useState<string | null>(null);
   const birthError = validateBirthDate(birth, today);
   const dirty = name.trim() !== child.name || birth !== child.birth_date || color !== child.color;
   const valid = name.trim() !== '' && birthError === null;
@@ -50,25 +49,23 @@ function ChildCard({ child, today }: { child: ChildRow; today: string }) {
       <Field label={t('onboarding.children.birthDate')} value={birth} onChangeText={setBirth} maxLength={10} error={birthError ? t(`onboarding.children.errors.${birthError}`) : null} />
       <View style={styles.palette}>
         {PALETTE.map((c) => (
-          <Pressable key={c} accessibilityRole="radio" accessibilityLabel={`${t('onboarding.children.color')} ${c}`} accessibilityState={{ selected: color === c }} onPress={() => setColor(c)} style={[styles.swatch, { backgroundColor: c }, color === c && styles.selected]} />
+          <Pressable key={c} accessibilityRole="radio" accessibilityLabel={`${t('onboarding.children.color')} ${c}`} accessibilityState={{ selected: color === c }} aria-checked={color === c} onPress={() => setColor(c)} style={[styles.swatch, { backgroundColor: c }, color === c && styles.selected]} />
         ))}
       </View>
       <Button label={t('common.save')} disabled={!dirty || !valid} loading={update.isPending} onPress={() => update.mutate({ id: child.id, patch: { name: name.trim(), birth_date: birth, color } })} />
-      <InviteCard
-        code={code}
-        hint={t('onboarding.children.inviteHint', { name: child.name })}
-        actionLabel={code ? t('onboarding.children.regenerate') : t('onboarding.children.inviteCode')}
-        loading={invite.isPending}
-        onGenerate={() => invite.mutate(child.id, { onSuccess: setCode })}
-      />
+      <ChildAccountSection childId={child.id} childName={child.name} />
       <Button
         variant="secondary"
         label={`${t('settings.deleteChild')} ${child.name}`}
         onPress={() =>
-          Alert.alert(t('settings.deleteChild'), t('settings.deleteChildBody', { name: child.name }), [
-            { text: t('common.cancel'), style: 'cancel' },
-            { text: t('settings.deleteChild'), style: 'destructive', onPress: () => remove.mutate(child.id) },
-          ])
+          confirmDialog({
+            title: t('settings.deleteChild'),
+            message: t('settings.deleteChildBody', { name: child.name }),
+            confirmLabel: t('settings.deleteChild'),
+            cancelLabel: t('common.cancel'),
+            destructive: true,
+            onConfirm: () => remove.mutate(child.id),
+          })
         }
       />
     </Card>

@@ -1,6 +1,6 @@
 import NetInfo from '@react-native-community/netinfo';
 import { focusManager, onlineManager } from '@tanstack/react-query';
-import { AppState, Platform } from 'react-native';
+import { AppState } from 'react-native';
 
 let installed = false;
 
@@ -13,7 +13,7 @@ export function setupNetworkListeners(): void {
   );
   focusManager.setEventListener((handleFocus) => {
     const sub = AppState.addEventListener('change', (status) => {
-      if (Platform.OS !== 'web') handleFocus(status === 'active');
+      handleFocus(status === 'active');
     });
     return () => sub.remove();
   });

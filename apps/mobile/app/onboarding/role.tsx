@@ -37,7 +37,7 @@ export default function RoleScreen() {
               <Pressable accessibilityRole="button" accessibilityLabel={t('onboarding.role.parent')} onPress={() => router.push('/onboarding/parent-auth')} style={styles.cta}>
                 <Text style={styles.ctaText}>{t('onboarding.role.parent')}</Text>
               </Pressable>
-              <Pressable accessibilityRole="button" accessibilityLabel={t('onboarding.role.child')} onPress={() => router.push('/onboarding/join')} style={[styles.cta, styles.ctaOutline]}>
+              <Pressable accessibilityRole="button" accessibilityLabel={t('onboarding.role.child')} onPress={() => router.push('/onboarding/child-login')} style={[styles.cta, styles.ctaOutline]}>
                 <Text style={[styles.ctaText, styles.ctaOutlineText]}>{t('onboarding.role.child')}</Text>
               </Pressable>
             </>

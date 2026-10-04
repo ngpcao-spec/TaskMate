@@ -15,7 +15,8 @@ export type MemberInfo = {
   display_name: string;
   prefs: unknown;
 };
-export type DeviceInfo = { member_id: string; expo_push_token: string | null };
+export type WebPushSubscription = { endpoint: string; keys: { p256dh: string; auth: string }; expirationTime?: number | null };
+export type DeviceInfo = { member_id: string; expo_push_token: string | null; web_push_subscription?: WebPushSubscription | null };
 export type PushMessage = {
   to: string;
   title: string;
@@ -180,3 +181,82 @@ export const chunk = <T>(items: readonly T[], size: number): T[][] => {
   for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
   return out;
 };
+
+
+// ───────────────────────── Web Push (W3) ─────────────────────────
+
+export type WebPushPayload = { title: string; body: string; data: Record<string, unknown>; tag?: string; url: string };
+export type WebPushMessage = { subscription: WebPushSubscription; payload: WebPushPayload };
+
+/** Page ouverte au clic sur la notification (le service worker ne porte aucune session : pas de boutons d'action). */
+export function urlForType(type: string): string {
+  switch (type) {
+    case 'task_completed':
+    case 'reward_requested':
+      return '/approvals';
+    case 'goal_achieved':
+      return '/more/goals';
+    case 'reward_approved':
+    case 'reward_rejected':
+    case 'reward_expired':
+    case 'points_adjusted':
+      return '/more/points';
+    default:
+      return '/';
+  }
+}
+
+const webDevicesOf = (devices: readonly DeviceInfo[], memberId: string) =>
+  devices.filter((d) => d.member_id === memberId && d.web_push_subscription?.endpoint);
+
+/** Mêmes destinataires et mêmes textes que les push mobiles (préférences comprises), pour les navigateurs abonnés. */
+export function buildWebMessages(
+  activity: ActivityRecord,
+  members: readonly MemberInfo[],
+  devices: readonly DeviceInfo[],
+  childName: string,
+  groupedCount = 1,
+): WebPushMessage[] {
+  const text = textFor(activity, childName, groupedCount);
+  if (!text) return [];
+  const data = { type: activity.type, childId: activity.child_id };
+  const out: WebPushMessage[] = [];
+  for (const member of recipientsFor(activity, members)) {
+    for (const d of webDevicesOf(devices, member.id)) {
+      out.push({
+        subscription: d.web_push_subscription as WebPushSubscription,
+        payload: {
+          ...text,
+          data,
+          url: urlForType(activity.type),
+          // les coches groupées d'un enfant se remplacent (même tag)
+          ...(activity.type === 'task_completed' ? { tag: `tasks-${activity.child_id}` } : {}),
+        },
+      });
+    }
+  }
+  return out;
+}
+
+export function buildWebRecapMessages(
+  parents: readonly MemberInfo[],
+  devices: readonly DeviceInfo[],
+  summary: readonly { name: string; done: number; total: number }[],
+  pending: { tasks: number; requests: number } = { tasks: 0, requests: 0 },
+): WebPushMessage[] {
+  const lines = summary.filter((s) => s.total > 0).map((s) => `${s.name}: ${s.done}/${s.total} việc`);
+  const waiting = pending.tasks + pending.requests;
+  if (waiting > 0) lines.push(`${waiting} mục chờ duyệt`);
+  if (lines.length === 0) return [];
+  return parents.flatMap((parent) =>
+    webDevicesOf(devices, parent.id).map((d) => ({
+      subscription: d.web_push_subscription as WebPushSubscription,
+      payload: { title: 'Tổng kết hôm nay', body: lines.join(' · '), data: { type: 'evening_recap' }, url: waiting > 0 ? '/approvals' : '/' },
+    })),
+  );
+}
+
+/** Abonnements à supprimer : le service push répond 404/410 (« Gone ») quand le navigateur s'est désabonné. */
+export function deadEndpoints(results: readonly { endpoint: string; statusCode?: number }[]): string[] {
+  return [...new Set(results.filter((r) => r.statusCode === 404 || r.statusCode === 410).map((r) => r.endpoint))];
+}

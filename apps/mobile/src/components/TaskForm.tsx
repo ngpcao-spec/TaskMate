@@ -162,6 +162,7 @@ export function TaskForm({ task }: Props) {
                   accessibilityRole="radio"
                   accessibilityLabel={t(`category.${c}`)}
                   accessibilityState={{ selected, checked: selected }}
+                  aria-checked={selected}
                   onPress={() => field.onChange(c)}
                   style={styles.tileWrap}
                 >
@@ -181,6 +182,7 @@ export function TaskForm({ task }: Props) {
         accessibilityRole="button"
         accessibilityLabel={`${t('taskForm.time')}: ${timeSummary}`}
         accessibilityState={{ expanded: timeOpen }}
+        aria-expanded={timeOpen}
         onPress={() => setTimeOpen((v) => !v)}
         style={styles.timeRow}
       >

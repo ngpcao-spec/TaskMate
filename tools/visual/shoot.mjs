@@ -1,4 +1,5 @@
 // Usage : node shoot.mjs <dossier-sortie> [parent|child]
+// Variables : DIST (dossier exporté), VIEWPORT (ex. 1280x800).
 // Prérequis : `node mock-server.mjs` lancé ; app exportée en web (voir README.md) dans ../../apps/mobile/dist-web.
 import { chromium } from 'playwright-core';
 import http from 'node:http';
@@ -8,7 +9,8 @@ import { ids } from './fixtures.mjs';
 
 const out = process.argv[2] ?? '../../docs/screenshots/after';
 const role = process.argv[3] ?? 'parent';
-const root = path.resolve('../../apps/mobile/dist-web');
+const root = path.resolve(process.env.DIST ?? '../../apps/mobile/dist-web');
+const [vw, vh] = (process.env.VIEWPORT ?? '390x844').split('x').map(Number);
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.ttf': 'font/ttf', '.json': 'application/json', '.svg': 'image/svg+xml' };
 const server = http.createServer((req, res) => {
   let p = path.join(root, decodeURIComponent(new URL(req.url, 'http://x').pathname));
@@ -42,7 +44,7 @@ const screens = [
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM ?? undefined, args: ['--no-sandbox'] });
 fs.mkdirSync(out, { recursive: true });
 for (const [name, route, authed] of screens) {
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, locale: 'vi-VN', timezoneId: 'Asia/Ho_Chi_Minh' });
+  const ctx = await browser.newContext({ viewport: { width: vw, height: vh }, deviceScaleFactor: vw < 900 ? 2 : 1, isMobile: vw < 900, locale: 'vi-VN', timezoneId: 'Asia/Ho_Chi_Minh' });
   if (authed) await ctx.addInitScript(([k, v]) => localStorage.setItem(k, v), ['sb-127-auth-token', JSON.stringify(session)]);
   const page = await ctx.newPage();
   page.on('pageerror', (e) => console.log(`[${name}] pageerror:`, e.message.slice(0, 200)));

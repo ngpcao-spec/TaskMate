@@ -22,6 +22,7 @@ export function ProfilePills({ profiles, selectedId, onSelect, today, showName =
             accessibilityRole="tab"
             accessibilityLabel={showName ? label : `${c.name}, ${label}`}
             accessibilityState={{ selected: active }}
+            aria-selected={active}
             onPress={() => onSelect(c.id)}
             style={[styles.pill, { backgroundColor: active ? color : `${color}26` }]}
           >

@@ -52,6 +52,6 @@ export function useEntryRoute(): EntryRoute {
     memberLoaded: !me.isPending,
     member: me.data ? { role: me.data.member.role } : null,
     childrenCount: me.data?.children.length ?? 0,
-    isAnonymous: session?.user.is_anonymous ?? false,
+    isChildAccount: session?.user.app_metadata?.account_type === 'child',
   });
 }

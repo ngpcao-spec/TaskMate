@@ -8,15 +8,15 @@ export type EntryState = {
   memberLoaded: boolean;
   member: EntryMember | null;
   childrenCount: number;
-  /** Session anonyme = appareil d'enfant (ou appareil révoqué à relier). */
-  isAnonymous?: boolean;
+  /** Compte enfant (app_metadata.account_type = 'child') dont le profil a été retiré : jamais de création de famille. */
+  isChildAccount?: boolean;
 };
 
 export type EntryRoute =
   | 'loading'
   | '/onboarding/role'
   | '/onboarding/family'
-  | '/onboarding/join'
+  | '/onboarding/child-login'
   | '/onboarding/children'
   | '/(tabs)/today';
 
@@ -25,8 +25,8 @@ export function resolveEntryRoute(s: EntryState): EntryRoute {
   if (!s.authReady) return 'loading';
   if (!s.hasSession) return '/onboarding/role';
   if (!s.memberLoaded) return 'loading';
-  // Compte sans membership : un parent crée/rejoint une famille ; un appareil enfant (ou révoqué) rescanne un code.
-  if (!s.member) return s.isAnonymous ? '/onboarding/join' : '/onboarding/family';
+  // Compte sans membership : un parent crée sa famille ; un compte enfant supprimé/retiré retourne à la connexion enfant.
+  if (!s.member) return s.isChildAccount ? '/onboarding/child-login' : '/onboarding/family';
   if (s.member.role === 'parent' && s.childrenCount === 0) return '/onboarding/children';
   return '/(tabs)/today';
 }

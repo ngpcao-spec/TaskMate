@@ -11,7 +11,6 @@ const mockReplace = jest.fn();
 const mockPush = jest.fn();
 jest.mock('expo-router', () => ({ useRouter: () => ({ replace: mockReplace, push: mockPush }) }));
 jest.mock('react-native-safe-area-context', () => ({ SafeAreaView: ({ children }: { children: React.ReactNode }) => children }));
-jest.mock('react-native-qrcode-svg', () => ({ __esModule: true, default: () => null }));
 jest.mock('@/sync/storage', () => ({ kvStorage: { getItem: jest.fn(() => null), setItem: jest.fn(), removeItem: jest.fn() } }));
 const mockSignOut = jest.fn().mockResolvedValue(undefined);
 jest.mock('@/api/auth', () => ({ signOut: () => mockSignOut() }));
@@ -22,12 +21,11 @@ jest.mock('@/hooks/useMe', () => ({
 }));
 const mockRevoke = jest.fn();
 const mockDeleteAccount = jest.fn();
-const mockInvite = jest.fn();
 let mockDevices: unknown[] = [];
 jest.mock('@/hooks/useFamilyAdmin', () => ({
   useDevices: () => ({ data: mockDevices }),
   useRevokeDevice: () => ({ mutate: mockRevoke, isPending: false }),
-  useCreateInvite: () => ({ mutate: (...a: unknown[]) => mockInvite(...a), isPending: false }),
+  useChildAccounts: () => ({ data: [] }),
   useDeleteAccount: () => ({ mutate: (...a: unknown[]) => mockDeleteAccount(...a), isPending: false }),
   useUpdateTimezone: () => ({ mutate: jest.fn(), isPending: false }),
 }));
@@ -46,13 +44,12 @@ describe('SettingsScreen', () => {
     expect(screen.getByText('Réglages généraux')).toBeTruthy();
   });
 
-  it('parent : enfants, appareils, co-parent, fuseau, suppression ; génère un code co-parent', async () => {
+  it('parent : enfants, appareils, fuseau, suppression ; plus aucun code d\'invitation', async () => {
     await renderWithClient(<SettingsScreen />);
     expect(screen.getByRole('button', { name: 'Quản lý hồ sơ của các con' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Thiết bị đã liên kết' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Xóa tài khoản và dữ liệu' })).toBeTruthy();
-    await fireEvent.press(screen.getByRole('button', { name: 'Tạo mã mời phụ huynh' }));
-    expect(mockInvite).toHaveBeenCalledWith(null, expect.any(Object));
+    expect(screen.queryByRole('button', { name: 'Tạo mã mời phụ huynh' })).toBeNull();
   });
 
   it('enfant : seulement langue et déconnexion (pas de gestion du foyer ni de suppression)', async () => {
