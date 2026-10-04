@@ -31,8 +31,8 @@ async function authSettings(deps: ProbeDeps): Promise<{ reachable: boolean; auth
   if (!res) return { reachable: false, auth: null };
   if (!res.ok) return { reachable: true, auth: null };
   try {
-    const body = (await res.json()) as { external?: { anonymous_users?: boolean; email?: boolean } };
-    return { reachable: true, auth: { anonymousUsers: body.external?.anonymous_users === true, email: body.external?.email === true } };
+    const body = (await res.json()) as { external?: { email?: boolean }; mailer_autoconfirm?: boolean };
+    return { reachable: true, auth: { autoconfirm: body.mailer_autoconfirm === true, email: body.external?.email === true } };
   } catch {
     return { reachable: true, auth: null };
   }

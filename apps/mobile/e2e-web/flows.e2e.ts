@@ -1,8 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
-import { createFamily, seedInvite, seedTask, serverState, signInContext, supabaseUrl } from './support/seed';
+import { createFamily, revokeChildMembers, seedTask, serverState, signInContext, supabaseUrl } from './support/seed';
 
-const INVITE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-const randomCode = () => Array.from({ length: 6 }, () => INVITE_ALPHABET[Math.floor(Math.random() * INVITE_ALPHABET.length)]).join('');
 const title = (label: string) => `${label} ${Math.random().toString(36).slice(2, 7)}`;
 
 /** Diagnostic : journalise les réponses Supabase en erreur et les erreurs console (visible dans la sortie CI). */
@@ -116,27 +114,116 @@ test.describe('droits de l\'enfant', () => {
   });
 });
 
-test.describe('jointure par lien', () => {
-  test('/join?code=… ouvre directement la jointure enfant', async ({ browser }) => {
-    const family = await createFamily();
-    const code = randomCode();
-    await seedInvite(family, 'minh', code);
+test.describe('comptes e-mail / identifiant (aucune invitation)', () => {
+  const LOGIN_FIELD = 'Tên đăng nhập (chữ, số, . _ -)';
+  const PASSWORD_FIELD = 'Mật khẩu (tối thiểu 6 ký tự)';
 
-    const ctx = await browser.newContext(); // aucun compte : session anonyme créée par l'app
-    const page = await ctx.newPage();
-    await open(page, `/join?code=${code}`);
-    await expect(page).toHaveURL(/\/onboarding\/join/);
-    await expect(page.getByText('Bạn là Minh?')).toBeVisible();
-    await page.getByRole('button', { name: 'Đúng, vào ứng dụng' }).click();
-    await expect(page.getByText('Chào Minh!')).toBeVisible();
-  });
-
-  test('un code invalide affiche l\'erreur et garde la saisie manuelle', async ({ browser }) => {
+  async function childSignIn(browser: import('@playwright/test').Browser, loginId: string, password: string) {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
-    await open(page, `/join?code=${randomCode()}`);
-    await expect(page.getByText('Mã không hợp lệ hoặc đã hết hạn')).toBeVisible();
-    await expect(page.getByLabel('Mã 6 ký tự')).toBeVisible();
+    await open(page);
+    await page.getByRole('button', { name: 'Bắt đầu' }).click();
+    await page.getByRole('button', { name: 'Tôi là con' }).click();
+    await page.getByLabel('Tên đăng nhập', { exact: true }).fill(loginId);
+    await page.getByLabel('Mật khẩu', { exact: true }).fill(password);
+    await page.getByRole('button', { name: 'Đăng nhập' }).click();
+    return page;
+  }
+
+  test('le parent s\'inscrit, crée le compte d\'un enfant, qui se connecte avec identifiant + mot de passe ; mot de passe changé puis compte supprimé', async ({ browser }) => {
+    test.setTimeout(180_000);
+    const tag = Math.random().toString(36).slice(2, 8);
+    const loginId = `bin.${tag}`;
+
+    // parent : inscription e-mail + mot de passe (aucun e-mail envoyé), famille, enfant
+    const parentCtx = await browser.newContext();
+    const parent = await parentCtx.newPage();
+    trace(parent, 'parent');
+    await open(parent);
+    await parent.getByRole('button', { name: 'Bắt đầu' }).click();
+    await parent.getByRole('button', { name: 'Tôi là phụ huynh' }).click();
+    await parent.getByLabel('Email', { exact: true }).fill(`ba-${tag}@e2e.test`);
+    await parent.getByLabel('Mật khẩu', { exact: true }).fill('motdepasse-1');
+    await parent.getByRole('button', { name: 'Tạo tài khoản' }).click();
+    await parent.getByLabel('Tên gia đình').fill(`Gia đình ${tag}`);
+    await parent.getByLabel('Tên của bạn').fill('Ba');
+    await parent.getByRole('button', { name: 'Tiếp tục' }).click();
+    await parent.getByLabel('Tên của con').fill('Bin');
+    await parent.getByLabel('Ngày sinh (YYYY-MM-DD)').fill('2012-05-01');
+    await parent.getByRole('button', { name: 'Thêm con' }).click();
+
+    // le parent crée le compte de Bin dans l'app
+    await parent.getByLabel(LOGIN_FIELD).fill(loginId);
+    await parent.getByLabel(PASSWORD_FIELD).fill('abc123');
+    await parent.getByRole('button', { name: 'Tạo tài khoản Bin' }).click();
+    await expect(parent.getByText(`Tên đăng nhập: ${loginId}`)).toBeVisible({ timeout: 20_000 });
+
+    // l'enfant se connecte sur son propre appareil
+    const child = await childSignIn(browser, loginId, 'abc123');
+    await expect(child.getByText('Chào Bin!')).toBeVisible({ timeout: 20_000 });
+
+    // mauvais mot de passe refusé
+    const wrong = await childSignIn(browser, loginId, 'mauvais1');
+    await expect(wrong.getByText('Tên đăng nhập hoặc mật khẩu không đúng.')).toBeVisible();
+
+    // le parent change le mot de passe : l'ancien ne marche plus, le nouveau oui
+    await parent.getByLabel('Mật khẩu mới').fill('nouveau1');
+    await parent.getByRole('button', { name: 'Đổi mật khẩu Bin' }).click();
+    await expect(parent.getByText('Đã đổi mật khẩu')).toBeVisible({ timeout: 20_000 });
+    const oldPw = await childSignIn(browser, loginId, 'abc123');
+    await expect(oldPw.getByText('Tên đăng nhập hoặc mật khẩu không đúng.')).toBeVisible();
+    const newPw = await childSignIn(browser, loginId, 'nouveau1');
+    await expect(newPw.getByText('Chào Bin!')).toBeVisible({ timeout: 20_000 });
+
+    // le parent supprime le compte : connexion impossible, identifiant libéré
+    parent.once('dialog', (d) => void d.accept());
+    await parent.getByRole('button', { name: 'Xóa tài khoản Bin' }).click();
+    await expect(parent.getByLabel(LOGIN_FIELD)).toBeVisible({ timeout: 20_000 });
+    const gone = await childSignIn(browser, loginId, 'nouveau1');
+    await expect(gone.getByText('Tên đăng nhập hoặc mật khẩu không đúng.')).toBeVisible();
+    await parent.getByLabel(LOGIN_FIELD).fill(loginId);
+    await parent.getByLabel(PASSWORD_FIELD).fill('abc123');
+    await parent.getByRole('button', { name: 'Tạo tài khoản Bin' }).click();
+    await expect(parent.getByText(`Tên đăng nhập: ${loginId}`)).toBeVisible({ timeout: 20_000 });
+  });
+
+  test('« tên đăng nhập đã có người dùng » est signalé', async ({ browser }) => {
+    const tag = Math.random().toString(36).slice(2, 8);
+    const family = await createFamily();
+    await revokeChildMembers(family); // profils sans compte de connexion
+    const ctx = await browser.newContext();
+    await signInContext(ctx, family.parent);
+    const page = await ctx.newPage();
+    await open(page, '/more/children');
+    // premier enfant (Minh) : compte créé ; second (Khang) : même identifiant refusé
+    await page.getByLabel(LOGIN_FIELD).first().fill(`dup.${tag}`);
+    await page.getByLabel(PASSWORD_FIELD).first().fill('abc123');
+    await page.getByRole('button', { name: 'Tạo tài khoản Minh' }).click();
+    await expect(page.getByText(`Tên đăng nhập: dup.${tag}`)).toBeVisible({ timeout: 20_000 });
+    await page.getByLabel(LOGIN_FIELD).fill(`dup.${tag}`);
+    await page.getByLabel(PASSWORD_FIELD).fill('abc123');
+    await page.getByRole('button', { name: 'Tạo tài khoản Khang' }).click();
+    await expect(page.getByText('Tên đăng nhập này đã có người dùng. Hãy chọn tên khác.')).toBeVisible({ timeout: 20_000 });
+  });
+
+  test('un enfant ne peut ni créer, ni modifier, ni supprimer un compte (Edge Functions)', async () => {
+    const family = await createFamily();
+    const { createClient } = await import('@supabase/supabase-js');
+    const client = createClient(supabaseUrl(), process.env.E2E_ANON_KEY as string, { auth: { persistSession: false } });
+    const { data, error } = await client.auth.signInWithPassword({ email: family.minh.email, password: family.minh.password });
+    expect(error).toBeNull();
+    const call = async (fn: string, body: Record<string, unknown>) => {
+      const res = await fetch(`${supabaseUrl()}/functions/v1/${fn}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', apikey: process.env.E2E_ANON_KEY as string, Authorization: `Bearer ${data.session?.access_token}` },
+        body: JSON.stringify(body),
+      });
+      return { status: res.status, body: (await res.json()) as { error?: string } };
+    };
+    const childId = family.khang.childId as string;
+    expect(await call('create-child', { childId, loginId: 'pirate.khang', password: 'abc123' })).toMatchObject({ status: 403, body: { error: 'forbidden' } });
+    expect(await call('reset-child-password', { childId, password: 'abc123' })).toMatchObject({ status: 403, body: { error: 'forbidden' } });
+    expect(await call('delete-child', { childId })).toMatchObject({ status: 403, body: { error: 'forbidden' } });
   });
 });
 
@@ -198,7 +285,7 @@ test.describe('diagnostic de production', () => {
     await open(page, '/more/settings');
     await page.getByRole('button', { name: 'Chẩn đoán' }).click(); // libellé du bouton dans la langue de l'app (vi)
     await expect(page.getByRole('heading', { name: 'Diagnostic' })).toBeVisible();
-    for (const label of ['Connexion à Supabase', 'Connexions anonymes', 'Tables', 'Fonctions SQL \\(RPC\\)', 'Sécurité des lignes \\(RLS\\)', 'Realtime : tables publiées', 'Realtime : connexion', 'Edge Function redeem-invite', 'Edge Function delete-account', 'Edge Function send-push']) {
+    for (const label of ['Connexion à Supabase', 'Confirmation d\'e-mail désactivée', 'Tables', 'Fonctions SQL \\(RPC\\)', 'Sécurité des lignes \\(RLS\\)', 'Realtime : tables publiées', 'Realtime : connexion', 'Edge Function create-child', 'Edge Function reset-child-password', 'Edge Function delete-child', 'Edge Function delete-account', 'Edge Function send-push']) {
       await expect(page.getByLabel(new RegExp(`^${label} : OK`))).toBeVisible({ timeout: 20_000 });
     }
     // le front de test est construit contre 127.0.0.1 : le diagnostic doit le dire

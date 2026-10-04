@@ -12,12 +12,6 @@
       "expo-secure-store",
       "expo-localization",
       [
-        "expo-camera",
-        {
-          "cameraPermission": "TaskMate uses the camera to scan the invite QR code."
-        }
-      ],
-      [
         "expo-notifications",
         {
           "color": "#1E88F5"
@@ -31,7 +25,6 @@
       "supportsTablet": false,
       "bundleIdentifier": "app.taskmate.family",
       "infoPlist": {
-        "NSCameraUsageDescription": "TaskMate uses the camera to scan the invite QR code.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -44,7 +37,6 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "permissions": [
-        "CAMERA",
         "POST_NOTIFICATIONS"
       ]
     },
@@ -54,7 +46,7 @@
       "output": "single",
       "name": "TaskMate",
       "shortName": "TaskMate",
-      "description": "Việc nhà của gia đình — TaskMate",
+      "description": "Vi\u1ec7c nh\u00e0 c\u1ee7a gia \u0111\u00ecnh \u2014 TaskMate",
       "themeColor": "#1E88F5",
       "backgroundColor": "#F5F9FF",
       "lang": "vi"

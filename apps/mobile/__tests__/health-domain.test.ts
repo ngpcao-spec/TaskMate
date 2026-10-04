@@ -13,10 +13,10 @@ const healthyData: DiagnosticsData = {
 };
 const healthy: Probes = {
   reachable: true,
-  auth: { anonymousUsers: true, email: true },
+  auth: { autoconfirm: true, email: true },
   diagnostics: { ok: true, data: healthyData },
   realtime: 'SUBSCRIBED',
-  functions: { 'redeem-invite': true, 'delete-account': true, 'send-push': true },
+  functions: { 'create-child': true, 'reset-child-password': true, 'delete-child': true, 'delete-account': true, 'send-push': true },
 };
 const env = { supabaseUrl: 'https://olftkozksanvnzlsvwrp.supabase.co', webUrl: 'https://taskmate-rho-nine.vercel.app', vapidPublicKey: 'KEY' };
 const find = (items: ReturnType<typeof evaluateHealth>, id: string) => items.find((i) => i.id === id);
@@ -30,12 +30,13 @@ describe('diagnostic de production', () => {
 
   it('les listes attendues couvrent exactement les types générés (garde de compilation) et les tables Realtime', () => {
     expect(COMPLETENESS).toBe(true);
-    expect(EDGE_FUNCTIONS).toEqual(['redeem-invite', 'delete-account', 'send-push']);
+    expect(EDGE_FUNCTIONS).toEqual(['create-child', 'reset-child-password', 'delete-child', 'delete-account', 'send-push']);
   });
 
-  it('connexions anonymes désactivées : échec avec la consigne', () => {
-    const items = evaluateHealth({ ...healthy, auth: { anonymousUsers: false, email: true } }, env);
-    expect(find(items, 'anonymous')).toMatchObject({ status: 'fail', messageKey: 'health.anonymous.disabled' });
+  it('« Confirm email » activé : échec avec la consigne ; désactivé : OK', () => {
+    const items = evaluateHealth({ ...healthy, auth: { autoconfirm: false, email: true } }, env);
+    expect(find(items, 'confirmEmail')).toMatchObject({ status: 'fail', messageKey: 'health.confirmEmail.enabled' });
+    expect(find(evaluateHealth(healthy, env), 'confirmEmail')?.status).toBe('ok');
   });
 
   it('API injoignable ou front pointé sur le local', () => {
@@ -73,11 +74,11 @@ describe('diagnostic de production', () => {
 
   it('Realtime, Edge Functions et Web Push', () => {
     const items = evaluateHealth(
-      { ...healthy, realtime: 'TIMED_OUT', functions: { 'redeem-invite': false, 'delete-account': null, 'send-push': true } },
+      { ...healthy, realtime: 'TIMED_OUT', functions: { 'create-child': false, 'reset-child-password': true, 'delete-child': true, 'delete-account': null, 'send-push': true } },
       { ...env, vapidPublicKey: '', webUrl: '' },
     );
     expect(find(items, 'realtime')).toMatchObject({ status: 'fail', params: { status: 'TIMED_OUT' } });
-    expect(find(items, 'fn-redeem-invite')?.status).toBe('fail');
+    expect(find(items, 'fn-create-child')?.status).toBe('fail');
     expect(find(items, 'fn-delete-account')?.status).toBe('warn');
     expect(find(items, 'fn-send-push')?.status).toBe('ok');
     expect(find(items, 'vapid')?.status).toBe('warn');

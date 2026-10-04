@@ -57,30 +57,3 @@ export async function createChild(familyId: string, child: NewChild): Promise<Ch
   if (error) throw error;
   return data;
 }
-
-export async function createInvite(childId: string | null): Promise<string> {
-  const { data, error } = await supabase.rpc('create_invite', {
-    ...(childId ? { p_child_id: childId } : {}),
-    p_role: childId ? 'child' : 'parent',
-  });
-  if (error) throw error;
-  return data;
-}
-
-export type RedeemResult = { ok: true } | { ok: false; reason: 'invalid' | 'tooMany' | 'alreadyMember' };
-
-/** Passe par l'Edge Function `redeem-invite` (limite par IP en plus de la limite SQL par compte, D-011). */
-export async function redeemInvite(code: string, displayName?: string): Promise<RedeemResult> {
-  const { data, error } = await supabase.functions.invoke<{ memberId: string | null; error?: string }>(
-    'redeem-invite',
-    { body: { code, displayName } },
-  );
-  if (error) {
-    const body: unknown = await (error as { context?: Response }).context?.json?.().catch(() => null);
-    const message = (body as { error?: string } | null)?.error ?? '';
-    if (message === 'too_many_attempts') return { ok: false, reason: 'tooMany' };
-    if (message === 'already_member') return { ok: false, reason: 'alreadyMember' };
-    throw error;
-  }
-  return data?.memberId ? { ok: true } : { ok: false, reason: 'invalid' };
-}

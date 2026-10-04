@@ -80,12 +80,10 @@ export async function seedTask(family: FamilyFixture, child: 'minh' | 'khang', t
   return data.id;
 }
 
-/** Code d'invitation enfant valide 24 h. */
-export async function seedInvite(family: FamilyFixture, child: 'minh' | 'khang', code: string): Promise<void> {
-  const { error } = await admin()
-    .from('invite_codes')
-    .insert({ family_id: family.familyId, child_id: family[child].childId as string, role: 'child', code, expires_at: new Date(Date.now() + 86_400_000).toISOString(), created_by: family.parent.memberId });
-  if (error) throw new Error(`invite_codes: ${error.message}`);
+/** Retire l'accès des comptes enfants de la fixture (membres révoqués) : les enfants n'ont alors plus de compte, comme juste après leur création. */
+export async function revokeChildMembers(family: FamilyFixture): Promise<void> {
+  const { error } = await admin().from('members').update({ revoked_at: new Date().toISOString() }).eq('family_id', family.familyId).eq('role', 'child');
+  if (error) throw new Error(`members: ${error.message}`);
 }
 
 /** Lecture directe (service local) pour vérifier l'état serveur indépendamment de l'UI. */

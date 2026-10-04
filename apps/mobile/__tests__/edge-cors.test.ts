@@ -2,7 +2,7 @@ import { corsHeaders, jsonResponse, preflight } from '../../../supabase/function
 
 describe('CORS des Edge Functions (appels depuis le navigateur)', () => {
   it('répond au préflight OPTIONS sans authentification, avec les en-têtes requis par supabase-js', () => {
-    const res = preflight(new Request('https://x.supabase.co/functions/v1/redeem-invite', { method: 'OPTIONS' }));
+    const res = preflight(new Request('https://x.supabase.co/functions/v1/create-child', { method: 'OPTIONS' }));
     expect(res?.status).toBe(204);
     expect(res?.headers.get('Access-Control-Allow-Origin')).toBe('*');
     const allowed = res?.headers.get('Access-Control-Allow-Headers') ?? '';

@@ -8,16 +8,15 @@ type DbFunction = keyof Database['public']['Functions'];
 
 export const EXPECTED_TABLES = [
   'activity_log',
+  'child_accounts',
   'children',
   'devices',
   'families',
   'goals',
-  'invite_codes',
   'members',
   'notification_prefs',
   'point_transactions',
   'recurrences',
-  'redeem_attempts',
   'reward_requests',
   'rewards',
   'tasks',
@@ -27,12 +26,12 @@ export const EXPECTED_FUNCTIONS = [
   'adjust_points',
   'approve_reward_request',
   'cancel_reward_request',
+  'child_account_target',
   'child_balance',
   'child_pending_task_points',
   'child_reserved',
   'complete_task',
   'create_family',
-  'create_invite',
   'delete_family',
   'diagnostics',
   'expire_reward_requests',
@@ -46,10 +45,11 @@ export const EXPECTED_FUNCTIONS = [
   'my_member_id',
   'my_role',
   'recurrence_matches',
-  'redeem_invite',
+  'register_child_account',
   'register_device',
   'register_web_push',
   'reject_reward_request',
+  'remove_child_account',
   'reject_task',
   'request_reward',
   'require_member',
@@ -67,7 +67,7 @@ type NotListedFunction = Exclude<DbFunction, (typeof EXPECTED_FUNCTIONS)[number]
 export const COMPLETENESS: [NotListedTable, NotListedFunction] extends [never, never] ? true : never = true;
 
 export const EXPECTED_CRON_JOBS = ['expire-reward-requests', 'generate-recurrences'] as const;
-export const EDGE_FUNCTIONS = ['redeem-invite', 'delete-account', 'send-push'] as const;
+export const EDGE_FUNCTIONS = ['create-child', 'reset-child-password', 'delete-child', 'delete-account', 'send-push'] as const;
 export type EdgeFunctionName = (typeof EDGE_FUNCTIONS)[number];
 
 export type DiagnosticsData = {
@@ -96,7 +96,8 @@ export type Probes = {
   /** L'API répond (GET /auth/v1/settings). */
   reachable: boolean;
   /** Réglages publics d'Auth ; null si illisibles. */
-  auth: { anonymousUsers: boolean; email: boolean } | null;
+  /** `autoconfirm` = « Confirm email » désactivé (aucun e-mail n'est envoyé à l'inscription). */
+  auth: { autoconfirm: boolean; email: boolean } | null;
   /** Résultat de la RPC `diagnostics`. */
   diagnostics: { ok: true; data: DiagnosticsData } | { ok: false; reason: 'missing_rpc' | 'forbidden' | 'error' };
   realtime: RealtimeStatus;
@@ -125,9 +126,9 @@ export function evaluateHealth(p: Probes, env: Env): HealthItem[] {
   else add('webUrl', 'ok', 'health.webUrl.ok', { url: env.webUrl });
 
   // 2. Auth
-  if (!p.auth) add('anonymous', 'warn', 'health.anonymous.unknown');
-  else if (!p.auth.anonymousUsers) add('anonymous', 'fail', 'health.anonymous.disabled');
-  else add('anonymous', 'ok', 'health.anonymous.ok');
+  if (!p.auth) add('confirmEmail', 'warn', 'health.confirmEmail.unknown');
+  else if (!p.auth.autoconfirm) add('confirmEmail', 'fail', 'health.confirmEmail.enabled');
+  else add('confirmEmail', 'ok', 'health.confirmEmail.ok');
   if (p.auth && !p.auth.email) add('email', 'fail', 'health.email.disabled');
   else if (p.auth) add('email', 'ok', 'health.email.ok');
 

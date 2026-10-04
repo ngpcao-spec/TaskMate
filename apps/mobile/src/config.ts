@@ -8,5 +8,4 @@ export const config = {
   /** Clé VAPID publique (Web Push, optionnel). Générer avec `node scripts/generate-vapid.mjs` ; la clé privée reste côté Supabase (secrets). */
   vapidPublicKey: process.env.EXPO_PUBLIC_VAPID_PUBLIC_KEY ?? '',
   privacyPolicyUrl: process.env.EXPO_PUBLIC_PRIVACY_URL ?? '',
-  socialAuthEnabled: process.env.EXPO_PUBLIC_SOCIAL_AUTH === '1',
 } as const;

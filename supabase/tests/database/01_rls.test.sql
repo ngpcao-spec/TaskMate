@@ -51,9 +51,9 @@ insert into public.tasks (id, family_id, child_id, title, note, date, created_by
   (tests.u(302), tests.u(1), tests.u(202), 'Tâche Khang', 'secret?', '2026-07-02', tests.u(114)),
   (tests.u(303), tests.u(1), tests.u(201), 'Tâche Minh (perso)', null, '2026-07-02', tests.u(113)),
   (tests.u(321), tests.u(2), tests.u(221), 'Tâche B', null, '2026-07-02', tests.u(121));
--- Invite, appareil, solde, demande, activité pour les tests de lecture
-insert into public.invite_codes (family_id, child_id, role, code, expires_at, created_by)
-  values (tests.u(1), tests.u(201), 'child', 'ABCDEF', now() + interval '1 day', tests.u(111));
+-- Compte enfant, appareil, solde, demande, activité pour les tests de lecture
+insert into public.child_accounts (family_id, child_id, member_id, login_id)
+  values (tests.u(1), tests.u(201), tests.u(113), 'minh.test');
 insert into public.devices (id, member_id, expo_push_token) values
   (tests.u(601), tests.u(113), 'tok-minh'), (tests.u(602), tests.u(114), 'tok-khang'), (tests.u(621), tests.u(121), 'tok-b');
 insert into public.point_transactions (id, family_id, child_id, delta, reason, created_by) values
@@ -98,14 +98,27 @@ select throws_ok($$update public.members set role = 'parent' where id = tests.u(
 select tests.login(21);
 select is(tests.n('select 1 from public.members'), 1::bigint, 'members: autre famille invisible');
 
--- ═══ invite_codes ═══
+-- ═══ child_accounts (identifiants de connexion des enfants) ═══
 select tests.login(11);
-select is(tests.n('select 1 from public.invite_codes'), 1::bigint, 'invite_codes: le parent voit les codes de sa famille');
+select is(tests.n('select 1 from public.child_accounts'), 1::bigint, 'child_accounts: le parent voit les identifiants de sa famille');
 select tests.login(13);
-select is(tests.n('select 1 from public.invite_codes'), 0::bigint, 'invite_codes: invisibles pour un enfant');
+select is(tests.n('select 1 from public.child_accounts'), 0::bigint, 'child_accounts: invisibles pour l''enfant (même le sien)');
+select tests.login(14);
+select is(tests.n('select 1 from public.child_accounts'), 0::bigint, 'child_accounts: invisibles pour le frère');
 select tests.login(21);
-select is(tests.n('select 1 from public.invite_codes'), 0::bigint, 'invite_codes: invisibles pour une autre famille');
-select throws_ok($$insert into public.invite_codes (family_id, role, code, expires_at, created_by) values (tests.u(2), 'parent', 'ZZZZZZ', now(), tests.u(121))$$, '42501', null, 'invite_codes: aucun insert direct');
+select is(tests.n('select 1 from public.child_accounts'), 0::bigint, 'child_accounts: invisibles pour une autre famille');
+-- un enfant ne peut ni créer, ni modifier, ni supprimer un compte ; un parent non plus en direct (Edge Functions uniquement)
+select tests.login(13);
+select throws_ok($$insert into public.child_accounts (family_id, child_id, member_id, login_id) values (tests.u(1), tests.u(202), tests.u(114), 'khang.pirate')$$, '42501', null, 'child_accounts: un enfant ne crée pas de compte');
+select throws_ok($$update public.child_accounts set login_id = 'pirate'$$, '42501', null, 'child_accounts: un enfant ne modifie pas un compte');
+select throws_ok($$delete from public.child_accounts$$, '42501', null, 'child_accounts: un enfant ne supprime pas un compte');
+select tests.login(11);
+select throws_ok($$insert into public.child_accounts (family_id, child_id, member_id, login_id) values (tests.u(1), tests.u(202), tests.u(114), 'khang.direct')$$, '42501', null, 'child_accounts: pas d''insert direct, même parent');
+select throws_ok($$update public.child_accounts set login_id = 'direct'$$, '42501', null, 'child_accounts: pas d''update direct, même parent');
+select throws_ok($$delete from public.child_accounts$$, '42501', null, 'child_accounts: pas de delete direct, même parent');
+select tests.logout();
+set local role anon;
+select throws_ok($$select 1 from public.child_accounts$$, '42501', null, 'child_accounts: anon n''a aucun accès');
 
 -- ═══ devices ═══
 select tests.login(13);

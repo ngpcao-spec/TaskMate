@@ -48,6 +48,43 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"child_accounts": {
+                  Row: {
+                    "child_id": string,"created_at": string,"family_id": string,"id": string,"login_id": string,"member_id": string
+                  }
+                  Insert: {
+                    "child_id": string,"created_at"?: string,"family_id": string,"id"?: string,"login_id": string,"member_id": string
+                  }
+                  Update: {
+                    "child_id"?: string,"created_at"?: string,"family_id"?: string,"id"?: string,"login_id"?: string,"member_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "child_accounts_child_id_family_id_fkey"
+      columns: ["child_id","family_id"]
+isOneToOne: false
+      referencedRelation: "child_balances"
+      referencedColumns: ["child_id","family_id"]
+    },{
+      foreignKeyName: "child_accounts_child_id_family_id_fkey"
+      columns: ["child_id","family_id"]
+isOneToOne: false
+      referencedRelation: "children"
+      referencedColumns: ["id","family_id"]
+    },{
+      foreignKeyName: "child_accounts_family_id_fkey"
+      columns: ["family_id"]
+isOneToOne: false
+      referencedRelation: "families"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "child_accounts_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: true
+      referencedRelation: "members"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"children": {
                   Row: {
                     "avatar": string | null,"birth_date": string,"color": string | null,"created_at": string,"deleted_at": string | null,"family_id": string,"id": string,"label": string | null,"name": string,"sort_order": number,"updated_at": string
@@ -130,43 +167,6 @@ isOneToOne: false
       referencedColumns: ["id"]
     },{
       foreignKeyName: "goals_family_id_fkey"
-      columns: ["family_id"]
-isOneToOne: false
-      referencedRelation: "families"
-      referencedColumns: ["id"]
-    }
-                  ]
-                },"invite_codes": {
-                  Row: {
-                    "child_id": string | null,"code": string,"created_at": string,"created_by": string,"expires_at": string,"family_id": string,"id": string,"revoked_at": string | null,"role": Database["public"]['Enums']["member_role"],"updated_at": string,"used_at": string | null
-                  }
-                  Insert: {
-                    "child_id"?: string | null,"code": string,"created_at"?: string,"created_by": string,"expires_at": string,"family_id": string,"id"?: string,"revoked_at"?: string | null,"role": Database["public"]['Enums']["member_role"],"updated_at"?: string,"used_at"?: string | null
-                  }
-                  Update: {
-                    "child_id"?: string | null,"code"?: string,"created_at"?: string,"created_by"?: string,"expires_at"?: string,"family_id"?: string,"id"?: string,"revoked_at"?: string | null,"role"?: Database["public"]['Enums']["member_role"],"updated_at"?: string,"used_at"?: string | null
-                  }
-                  Relationships: [
-                    {
-      foreignKeyName: "invite_codes_child_id_family_id_fkey"
-      columns: ["child_id","family_id"]
-isOneToOne: false
-      referencedRelation: "child_balances"
-      referencedColumns: ["child_id","family_id"]
-    },{
-      foreignKeyName: "invite_codes_child_id_family_id_fkey"
-      columns: ["child_id","family_id"]
-isOneToOne: false
-      referencedRelation: "children"
-      referencedColumns: ["id","family_id"]
-    },{
-      foreignKeyName: "invite_codes_created_by_fkey"
-      columns: ["created_by"]
-isOneToOne: false
-      referencedRelation: "members"
-      referencedColumns: ["id"]
-    },{
-      foreignKeyName: "invite_codes_family_id_fkey"
       columns: ["family_id"]
 isOneToOne: false
       referencedRelation: "families"
@@ -296,19 +296,6 @@ isOneToOne: false
       referencedRelation: "families"
       referencedColumns: ["id"]
     }
-                  ]
-                },"redeem_attempts": {
-                  Row: {
-                    "created_at": string,"id": number,"key": string
-                  }
-                  Insert: {
-                    "created_at"?: string,"id"?: never,"key": string
-                  }
-                  Update: {
-                    "created_at"?: string,"id"?: never,"key"?: string
-                  }
-                  Relationships: [
-                    
                   ]
                 },"reward_requests": {
                   Row: {
@@ -479,6 +466,9 @@ isOneToOne: false
 "cancel_reward_request":
 { Args: { "p_request_id": string }; Returns: undefined
                            },
+"child_account_target":
+{ Args: { "p_child_id": string }; Returns: Json
+                           },
 "child_balance":
 { Args: { "p_child": string }; Returns: number
                            },
@@ -493,9 +483,6 @@ isOneToOne: false
                            },
 "create_family":
 { Args: { "p_display_name": string,"p_name": string,"p_timezone"?: string }; Returns: string
-                           },
-"create_invite":
-{ Args: { "p_child_id"?: string,"p_role"?: Database["public"]['Enums']["member_role"] }; Returns: string
                            },
 "delete_family":
 { Args: Record<PropertyKey, never>; Returns: (string)[]
@@ -536,8 +523,8 @@ isOneToOne: false
 "recurrence_matches":
 { Args: { "p_day": string,"r": Database["public"]['Tables']["recurrences"]['Row'] }; Returns: boolean
                            },
-"redeem_invite":
-{ Args: { "p_code": string,"p_display_name"?: string,"p_extra_key"?: string }; Returns: string
+"register_child_account":
+{ Args: { "p_child_id": string,"p_login_id": string,"p_user_id": string }; Returns: string
                            },
 "register_device":
 { Args: { "p_platform": string,"p_token": string }; Returns: string
@@ -550,6 +537,9 @@ isOneToOne: false
                            },
 "reject_task":
 { Args: { "p_note"?: string,"p_task_id": string }; Returns: undefined
+                           },
+"remove_child_account":
+{ Args: { "p_child_id": string }; Returns: string
                            },
 "request_reward":
 { Args: { "p_request_id": string,"p_reward_id": string }; Returns: undefined

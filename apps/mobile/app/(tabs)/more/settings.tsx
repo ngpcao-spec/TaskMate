@@ -6,26 +6,23 @@ import { confirmDialog } from '@/components/confirm';
 import { Linking, StyleSheet, Text, View } from 'react-native';
 import { signOut } from '@/api/auth';
 import { Chip } from '@/components/Chip';
-import { InviteCard } from '@/components/InviteCard';
 import { Button, Card, Field, Screen, Title } from '@/components/ui';
 import { config } from '@/config';
 import { isValidTimeZone } from '@/domain/timezone';
-import { useCreateInvite, useDeleteAccount, useUpdateTimezone } from '@/hooks/useFamilyAdmin';
+import { useDeleteAccount, useUpdateTimezone } from '@/hooks/useFamilyAdmin';
 import { useMe } from '@/hooks/useMe';
 import { SUPPORTED_LANGUAGES } from '@/i18n';
 import { setLanguage } from '@/i18n/language';
 import { colors, typography } from '@/theme/tokens';
 
-/** Cài đặt chung (SPEC §3.9) : langue, déconnexion ; parent : enfants, appareils, co-parent, fuseau, suppression. */
+/** Cài đặt chung (SPEC §3.9) : langue, déconnexion ; parent : enfants, appareils, fuseau, suppression. */
 export default function SettingsScreen() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const queryClient = useQueryClient();
   const me = useMe().data;
-  const invite = useCreateInvite();
   const deleteAccount = useDeleteAccount();
   const updateTz = useUpdateTimezone();
-  const [coParentCode, setCoParentCode] = useState<string | null>(null);
   const [tz, setTz] = useState(me?.family.timezone ?? 'Asia/Ho_Chi_Minh');
   if (!me) return null;
   const isParent = me.member.role === 'parent';
@@ -72,17 +69,6 @@ export default function SettingsScreen() {
           <Button variant="secondary" label={t('settings.manageChildren')} onPress={() => router.push('/more/children')} />
           <Button variant="secondary" label={t('settings.devices')} onPress={() => router.push('/more/devices')} />
           <Button variant="secondary" label={t('settings.diagnostics')} onPress={() => router.push('/more/diagnostics')} />
-
-          <Card>
-            <Text accessibilityRole="header" style={styles.section}>{t('settings.coParent')}</Text>
-            <InviteCard
-              code={coParentCode}
-              hint={t('settings.coParentHint')}
-              actionLabel={coParentCode ? t('onboarding.children.regenerate') : t('settings.coParentInvite')}
-              loading={invite.isPending}
-              onGenerate={() => invite.mutate(null, { onSuccess: setCoParentCode })}
-            />
-          </Card>
 
           <Card>
             <Field label={t('settings.timezone')} value={tz} onChangeText={setTz} autoCapitalize="none" autoCorrect={false} error={tzValid ? null : t('settings.timezoneInvalid')} />

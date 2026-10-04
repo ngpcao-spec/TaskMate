@@ -4,11 +4,11 @@ Remplacent les flows Maestro (supprimés). Chromium, app exportée en web, Supab
 
 | Fichier | Couvre |
 |---|---|
-| `flows.e2e.ts` | parent crée une tâche → enfant coche (« Chờ duyệt », 0 point) → parent valide → points crédités une seule fois ; enfant hors ligne (coche locale, envoi unique au retour du réseau) ; frère en lecture seule + route de création protégée ; jointure par lien `/join?code=…` (et code invalide) ; file « Cần duyệt » en deux colonnes sur grand écran ; navigation clavier + focus visible |
+| `flows.e2e.ts` | parent crée une tâche → enfant coche (« Chờ duyệt », 0 point) → parent valide → points crédités une seule fois ; enfant hors ligne (coche locale, envoi unique au retour du réseau) ; frère en lecture seule + route de création protégée ; comptes sans invitation (inscription e-mail + mot de passe du parent, création du compte enfant dans l'app, connexion enfant identifiant + mot de passe, changement de mot de passe, suppression, identifiant déjà pris, un enfant ne peut appeler aucune Edge Function de comptes) ; file « Cần duyệt » en deux colonnes sur grand écran ; navigation clavier + focus visible |
 | `pwa.e2e.ts` | manifest installable (icônes, maskable, métadonnées iOS), service worker, démarrage hors ligne |
 
 ## En CI
-Job `e2e` de `.github/workflows/ci.yml` : `supabase start`, `supabase functions serve` (pour `redeem-invite`), build web contre le Supabase local, `playwright test`.
+Job `e2e` de `.github/workflows/ci.yml` : `supabase start`, `supabase functions serve` (pour `create-child`, `reset-child-password`, `delete-child`), build web contre le Supabase local, `playwright test`.
 
 ## En local
 ```bash

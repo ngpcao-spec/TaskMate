@@ -140,3 +140,6 @@ Vérifications locales : typecheck, lint, 299 tests Jest, `expo export --platfor
 | **v4** File « Cần duyệt », « Duyệt tất cả » par enfant, badge, ligne « +X điểm chờ duyệt » | `approvals.test`, `domain/approvals.test`, `points.test` | ✅ |
 | **v4** Push : `task_completed` regroupée < 10 min, actions Duyệt/Từ chối, `task_validated`/`task_rejected` à l'enfant, récap avec nombre en attente | `send-push-logic.test`, `notification-actions.test`, `notifications-service.test` (appareil réel non testé) | ⚠️ logique seule |
 | CI verte | Runs #14, #15 et #16 verts, voir « État de la CI » | ✅ constaté |
+
+## Changement produit — comptes e-mail/identifiant (D-048)
+Invitations/QR/OTP/connexion anonyme remplacés par : parent e-mail + mot de passe ; enfant identifiant + mot de passe créé par le parent (Edge Functions `create-child`, `reset-child-password`, `delete-child`). Migration `…0011_child_accounts`, pgTAP 12, tests Jest (domaine, fonctions, écrans) et E2E adaptés. Les sections ci-dessus décrivent l'ancien flux d'invitation (historique).

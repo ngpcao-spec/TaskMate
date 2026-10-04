@@ -19,7 +19,7 @@ describe('vercel.json (monorepo)', () => {
     expect(config.outputDirectory).toBe('apps/mobile/dist');
     expect(fs.existsSync(path.resolve(__dirname, '../../../pnpm-workspace.yaml'))).toBe(true);
   });
-  it('réécrit toutes les routes vers index.html (liens profonds /join?code=…)', () => {
+  it('réécrit toutes les routes vers index.html (liens profonds, rechargement d\'une page)', () => {
     expect(config.rewrites).toContainEqual({ source: '/(.*)', destination: '/index.html' });
   });
   it('service worker et coquille sans cache, fichiers hachés en cache long', () => {
@@ -30,9 +30,10 @@ describe('vercel.json (monorepo)', () => {
     expect(cache('/_expo/static/(.*)')).toContain('immutable');
     expect(cache('/assets/(.*)')).toContain('immutable');
   });
-  it('autorise la caméra pour le scan QR et jamais de secret dans le fichier', () => {
+  it('n\'autorise ni caméra ni micro (plus de scan QR) et jamais de secret dans le fichier', () => {
     const all = JSON.stringify(config);
-    expect(all).toContain('camera=(self)');
+    expect(all).toContain('camera=()');
+    expect(all).not.toContain('camera=(self)');
     expect(all).not.toMatch(/service_role|secret|eyJ/i);
   });
 });

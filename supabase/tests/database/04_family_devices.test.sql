@@ -69,74 +69,12 @@ select tests.logout();
 set local role anon;
 select throws_ok($$select public.create_family('X', 'Y')$$, '42501', null, 'create_family: refusé à anon');
 
--- ═══ create_invite ═══
-select tests.login(31);
+-- fixture : l'enfant C et son compte (créés en vrai par les Edge Functions ; insérés ici en direct pour tester les appareils)
+reset role;
 insert into public.children (id, family_id, name, birth_date)
   select tests.u(231), family_id, 'Enfant C', '2012-02-02' from public.members where user_id = tests.u(31);
-select matches(public.create_invite(tests.u(231), 'child'), '^[A-HJ-NP-Z2-9]{6}$', 'create_invite: 6 caractères sans 0/O/1/I');
-select is((select count(*)::int from public.invite_codes where child_id = tests.u(231) and used_at is null and revoked_at is null), 1, 'create_invite: un code actif');
-select is((select expires_at between now() + interval '23 hours' and now() + interval '25 hours' from public.invite_codes limit 1), true, 'create_invite: valide 24 h');
-select public.create_invite(tests.u(231), 'child');
-select is((select count(*)::int from public.invite_codes where child_id = tests.u(231) and used_at is null and revoked_at is null), 1, 'create_invite: régénérer révoque l''ancien code');
-select throws_ok($$select public.create_invite(null, 'child')$$, '22023', 'invalid_invite', 'create_invite: enfant sans child_id refusé');
-select throws_ok($$select public.create_invite(tests.u(231), 'parent')$$, '22023', 'invalid_invite', 'create_invite: parent avec child_id refusé');
-select throws_ok($$select public.create_invite(tests.u(201), 'child')$$, 'P0002', 'child_not_found', 'create_invite: enfant d''une autre famille introuvable');
-select tests.login(13);
-select throws_ok($$select public.create_invite(tests.u(201), 'child')$$, '42501', 'forbidden', 'create_invite: un enfant ne génère pas de code');
-
--- ═══ redeem_invite ═══
-select tests.login(31);
-create temp table codes (k text primary key, c text);
-grant all on codes to authenticated;
-insert into codes values ('child', public.create_invite(tests.u(231), 'child')), ('parent', public.create_invite(null, 'parent'));
-select tests.login(32);
-select lives_ok($$select public.redeem_invite((select c from codes where k = 'child'), 'Bé C')$$, 'redeem_invite: l''enfant rejoint son profil');
-select is((select child_id from public.members where user_id = tests.u(32)), tests.u(231), 'redeem_invite: lié au bon profil');
-select is((select role::text from public.members where user_id = tests.u(32)), 'child', 'redeem_invite: rôle child');
-select tests.logout();
-select isnt((select used_at from public.invite_codes where code = (select c from codes where k = 'child')), null, 'redeem_invite: code consommé');
-select tests.login(33);
-select is(public.redeem_invite((select c from codes where k = 'child'), 'Pirate'), null, 'redeem_invite: usage unique');
-select is(public.redeem_invite('ZZZZZZ', 'Pirate'), null, 'redeem_invite: code inconnu → null');
-select throws_ok($$select 1 from public.redeem_attempts$$, '42501', null, 'redeem_attempts: table interne inaccessible aux clients');
-select tests.login(32);
-select throws_ok($$select public.redeem_invite((select c from codes where k = 'parent'), 'Bé')$$, 'P0001', 'already_member', 'redeem_invite: déjà membre');
-select tests.login(34);
-select lives_ok($$select public.redeem_invite(lower((select c from codes where k = 'parent')) || ' ', 'Mẹ C')$$, 'redeem_invite: code insensible à la casse/espaces → co-parent');
-select is((select role::text from public.members where user_id = tests.u(34)), 'parent', 'redeem_invite: co-parent');
-select is((select child_id from public.members where user_id = tests.u(34)), null, 'redeem_invite: co-parent sans child_id');
--- expiré / révoqué
-select tests.login(31);
-insert into codes values ('old', public.create_invite(tests.u(231), 'child'));
-select tests.logout();
-update public.invite_codes set expires_at = now() - interval '1 minute' where code = (select c from codes where k = 'old');
-select tests.login(33);
-select is(public.redeem_invite((select c from codes where k = 'old'), 'Bé'), null, 'redeem_invite: code expiré refusé');
-select tests.login(31);
-insert into codes values ('rev', public.create_invite(tests.u(231), 'child'));
-select public.create_invite(tests.u(231), 'child');
-select tests.login(33);
-select is(public.redeem_invite((select c from codes where k = 'rev'), 'Bé'), null, 'redeem_invite: code révoqué refusé');
--- limite de tentatives : 5 échecs / 15 min par utilisateur (ici déjà 4 : 2 + expiré + révoqué)
-select is(public.redeem_invite('AAAAAA', 'Bé'), null, 'rate limit: 5e échec toléré');
-select tests.login(31);
-insert into codes values ('good', public.create_invite(tests.u(231), 'child'));
-select tests.login(33);
-select throws_ok($$select public.redeem_invite((select c from codes where k = 'good'), 'Bé')$$, 'P0001', 'too_many_attempts', 'rate limit: 6e tentative bloquée, même avec un bon code');
--- clé IP partagée entre deux comptes anonymes
-select tests.login(35);
-select public.redeem_invite('AAAAAA', 'x', '1.2.3.4');
-select public.redeem_invite('AAAAAB', 'x', '1.2.3.4');
-select public.redeem_invite('AAAAAC', 'x', '1.2.3.4');
-select public.redeem_invite('AAAAAD', 'x', '1.2.3.4');
-select public.redeem_invite('AAAAAE', 'x', '1.2.3.4');
-select tests.login(36);
-select throws_ok($$select public.redeem_invite((select c from codes where k = 'good'), 'Bé', '1.2.3.4')$$, 'P0001', 'too_many_attempts', 'rate limit: la clé IP bloque un autre compte');
-select lives_ok($$select public.redeem_invite((select c from codes where k = 'good'), 'Bé', '9.9.9.9')$$, 'rate limit: une autre IP n''est pas bloquée');
-select tests.login(32);
-select tests.logout();
-set local role anon;
-select throws_ok($$select public.redeem_invite('ABCDEF', 'X')$$, '42501', null, 'redeem_invite: refusé à anon');
+insert into public.members (family_id, user_id, role, child_id, display_name)
+  select family_id, tests.u(32), 'child', tests.u(231), 'Bé C' from public.members where user_id = tests.u(31);
 
 -- ═══ appareils ═══
 select tests.login(32);
@@ -154,11 +92,6 @@ select lives_ok($$select public.revoke_device((select id from public.devices lim
 select tests.login(32);
 select is(tests.n('select 1 from public.children'), 0::bigint, 'revoke_device: l''appareil perd l''accès dès la requête suivante');
 select throws_ok($$select public.register_device('tok-2', 'ios')$$, '28000', 'not_authenticated', 'revoke_device: RPC refusée après révocation');
-select tests.login(31);
-insert into codes values ('again', public.create_invite(tests.u(231), 'child'));
-select tests.login(32);
-select lives_ok($$select public.redeem_invite((select c from codes where k = 'again'), 'Bé C')$$, 'revoke_device: re-scanner un nouveau code rétablit l''accès');
-select is(tests.n('select 1 from public.children'), 1::bigint, 'revoke_device: accès rétabli');
 select tests.login(31);
 
 select * from finish();

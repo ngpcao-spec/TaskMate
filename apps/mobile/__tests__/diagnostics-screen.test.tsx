@@ -14,10 +14,10 @@ jest.mock('@/hooks/useHealth', () => ({ useHealth: () => ({ data: mockData, isFe
 
 const probes = (over: Partial<Probes> = {}): Probes => ({
   reachable: true,
-  auth: { anonymousUsers: false, email: true },
+  auth: { autoconfirm: false, email: true },
   diagnostics: { ok: true, data: { tables: [...EXPECTED_TABLES], tables_without_rls: [], functions: EXPECTED_FUNCTIONS.filter((f) => f !== 'validate_task'), realtime_tables: ['tasks'], extensions: [], cron_jobs: null } },
   realtime: 'SUBSCRIBED',
-  functions: { 'redeem-invite': true, 'delete-account': false, 'send-push': null },
+  functions: { 'create-child': true, 'reset-child-password': true, 'delete-child': true, 'delete-account': false, 'send-push': null },
   ...over,
 });
 const build = (p: Probes) => {
@@ -33,8 +33,8 @@ describe('Réglages → Diagnostic', () => {
 
   it('affiche en français ce qui manque et où cliquer', async () => {
     await render(<DiagnosticsScreen />);
-    expect(screen.getByText(/Les connexions anonymes sont DÉSACTIVÉES/)).toBeTruthy();
-    expect(screen.getByText(/Allow anonymous sign-ins/)).toBeTruthy();
+    expect(screen.getByText(/« Confirm email » est ACTIVÉ/)).toBeTruthy();
+    expect(screen.getByText(/désactiver « Confirm email »/)).toBeTruthy();
     expect(screen.getByText(/Fonctions SQL manquantes : validate_task/)).toBeTruthy();
     expect(screen.getByText(/Non publiées en Realtime/)).toBeTruthy();
     expect(screen.getByText(/delete-account n'est PAS déployée/)).toBeTruthy();
@@ -44,7 +44,7 @@ describe('Réglages → Diagnostic', () => {
 
   it('chaque constat a un libellé accessible complet (titre, état, consigne)', async () => {
     await render(<DiagnosticsScreen />);
-    expect(screen.getByLabelText(/Connexions anonymes : À corriger\. Les connexions anonymes sont DÉSACTIVÉES/)).toBeTruthy();
+    expect(screen.getByLabelText(/Confirmation d'e-mail désactivée : À corriger\. « Confirm email » est ACTIVÉ/)).toBeTruthy();
   });
 
   it('« Relancer le diagnostic » relance les sondes', async () => {
@@ -56,9 +56,9 @@ describe('Réglages → Diagnostic', () => {
   it('tout est en ordre : message de succès', async () => {
     mockData = build(
       probes({
-        auth: { anonymousUsers: true, email: true },
+        auth: { autoconfirm: true, email: true },
         diagnostics: { ok: true, data: { tables: [...EXPECTED_TABLES], tables_without_rls: [], functions: [...EXPECTED_FUNCTIONS], realtime_tables: ['tasks', 'goals', 'rewards', 'reward_requests', 'point_transactions', 'children'], extensions: [], cron_jobs: ['expire-reward-requests', 'generate-recurrences'] } },
-        functions: { 'redeem-invite': true, 'delete-account': true, 'send-push': true },
+        functions: { 'create-child': true, 'reset-child-password': true, 'delete-child': true, 'delete-account': true, 'send-push': true },
       }),
     );
     mockData = { ...mockData, items: mockData.items.filter((i) => i.status === 'ok'), summary: { ok: mockData.items.length, warn: 0, fail: 0 } };

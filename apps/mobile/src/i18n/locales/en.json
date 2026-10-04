@@ -35,41 +35,41 @@
       "child": "I'm a child"
     },
     "auth": {
-      "title": "Parent sign-in",
+      "title": "Parent area",
+      "subtitle": "Create your account or sign in with your email and a password.",
       "email": "Email",
       "emailPlaceholder": "you@example.com",
-      "sendCode": "Send code",
-      "code": "Verification code",
-      "codePlaceholder": "6-digit code",
-      "codeSent": "Code sent to {{email}}",
-      "verify": "Verify",
-      "changeEmail": "Change email",
-      "apple": "Continue with Apple",
-      "google": "Continue with Google",
+      "password": "Password",
+      "signUp": "Create an account",
+      "signIn": "Sign in",
       "invalidEmail": "Invalid email",
-      "invalidCode": "Wrong or expired code"
+      "passwordTooShort": "Password: at least {{min}} characters.",
+      "errors": {
+        "invalidCredentials": "Wrong email or password.",
+        "alreadyExists": "An account already exists with this email: use “Sign in”.",
+        "weakPassword": "Password too weak (at least {{min}} characters).",
+        "confirmEmailOn": "The service still requires email confirmation. Contact the administrator.",
+        "rateLimited": "Too many attempts. Try again in a few minutes.",
+        "network": "No connection. Try again.",
+        "unknown": "Something went wrong. Try again."
+      }
     },
     "family": {
       "title": "Your family",
       "create": "Create a new family",
-      "join": "Join with a co-parent code",
       "familyName": "Family name",
       "familyNamePlaceholder": "The Nguyen family",
       "yourName": "Your name",
       "yourNamePlaceholder": "Dad / Mom",
-      "coParentCode": "Co-parent invite code",
       "required": "Required"
     },
     "children": {
       "title": "Children profiles",
-      "subtitle": "Each child has their own phone, linked with an invite code.",
+      "subtitle": "Each child has their own phone and signs in with a username and password you create.",
       "name": "Child's name",
       "birthDate": "Birth date (YYYY-MM-DD)",
       "add": "Add child",
       "color": "Colour",
-      "inviteCode": "Invite code",
-      "inviteHint": "Enter this code or scan the QR on {{name}}'s phone. Valid 24 h, single use.",
-      "regenerate": "New code",
       "finish": "Finish",
       "labelFirst": "Older son",
       "labelNext": "Younger son",
@@ -78,25 +78,23 @@
         "invalid": "Date does not exist",
         "future": "Date is in the future",
         "tooOld": "Too old"
-      },
-      "shareLink": "Share link",
-      "linkCopied": "Link copied",
-      "linkLabel": "Invite link"
+      }
     },
-    "join": {
-      "title": "Join with an invite code",
-      "codeLabel": "6-character code",
-      "codePlaceholder": "ABC234",
-      "submit": "Join",
-      "scan": "Scan QR code",
-      "scanning": "Point the camera at the QR code",
-      "cameraDenied": "Camera access is needed to scan the QR code",
-      "invalid": "Invalid or expired code",
-      "tooMany": "Too many attempts. Try again in 15 minutes.",
-      "alreadyMember": "This account is already linked.",
-      "confirmTitle": "Are you {{name}}?",
-      "confirmBody": "The app is now linked to {{name}}'s profile on this phone.",
-      "confirmYes": "Yes, open the app"
+    "childLogin": {
+      "title": "Child sign-in",
+      "subtitle": "Enter the username and password your parent gave you.",
+      "loginId": "Username",
+      "password": "Password",
+      "submit": "Sign in",
+      "errors": {
+        "invalidCredentials": "Wrong username or password.",
+        "alreadyExists": "Something went wrong. Try again.",
+        "weakPassword": "Something went wrong. Try again.",
+        "confirmEmailOn": "Something went wrong. Try again.",
+        "rateLimited": "Too many tries. Try again in a few minutes.",
+        "network": "No connection. Try again.",
+        "unknown": "Something went wrong. Try again."
+      }
     }
   },
   "today": {
@@ -356,11 +354,8 @@
     "roleParent": "Parent",
     "revoke": "Revoke",
     "revokeTitle": "Revoke device",
-    "revokeBody": "{{name}}'s device will be signed out and must scan a new invite code.",
+    "revokeBody": "{{name}}'s device will be signed out and must sign in again with their username.",
     "deviceRevoked": "Device revoked",
-    "coParent": "Invite a co-parent",
-    "coParentInvite": "Create co-parent code",
-    "coParentHint": "Enter it at the “Join with a co-parent code” step. Valid 24 h.",
     "timezone": "Family time zone",
     "timezoneInvalid": "Invalid time zone (e.g. Asia/Ho_Chi_Minh)",
     "privacy": "Privacy policy",
@@ -417,8 +412,7 @@
       "connection": "Supabase connection",
       "frontUrl": "App's Supabase address",
       "webUrl": "App's public address",
-      "anonymous": "Anonymous sign-ins",
-      "email": "Email sign-in (OTP code)",
+      "email": "Email and password sign-in",
       "migrations": "Migrations",
       "tables": "Tables",
       "rpc": "SQL functions (RPC)",
@@ -426,10 +420,13 @@
       "publication": "Realtime: published tables",
       "cron": "Scheduled jobs (pg_cron)",
       "realtime": "Realtime: connection",
-      "fn-redeem-invite": "Edge Function redeem-invite",
+      "fn-create-child": "Edge Function create-child",
+      "fn-reset-child-password": "Edge Function reset-child-password",
+      "fn-delete-child": "Edge Function delete-child",
       "fn-delete-account": "Edge Function delete-account",
       "fn-send-push": "Edge Function send-push",
-      "vapid": "Web Push key (VAPID)"
+      "vapid": "Web Push key (VAPID)",
+      "confirmEmail": "Email confirmation turned off"
     },
     "connection": {
       "ok": "The server answers ({{url}}).",
@@ -439,16 +436,11 @@
       "local": "The app still points to a local server ({{url}}). In Vercel, set EXPO_PUBLIC_SUPABASE_URL to the Supabase project URL, then redeploy."
     },
     "webUrl": {
-      "missing": "EXPO_PUBLIC_WEB_URL is empty: invite links will use the browser address. Set the app URL in Vercel.",
-      "ok": "Invite links are generated on {{url}}."
-    },
-    "anonymous": {
-      "ok": "Anonymous sign-ins are enabled (children need them).",
-      "disabled": "Anonymous sign-ins are DISABLED: children cannot join. Supabase → Authentication → Sign In / Providers → “Allow anonymous sign-ins” → turn on → Save.",
-      "unknown": "Cannot read the authentication settings (invalid public key or network). Check EXPO_PUBLIC_SUPABASE_ANON_KEY."
+      "missing": "EXPO_PUBLIC_WEB_URL is empty: set the app URL in Vercel (notification links).",
+      "ok": "Public app address: {{url}}."
     },
     "email": {
-      "ok": "Email sign-in is enabled.",
+      "ok": "Email and password sign-in is enabled.",
       "disabled": "Email sign-in is disabled: parents cannot sign in. Supabase → Authentication → Sign In / Providers → Email → turn on."
     },
     "migrations": {
@@ -498,6 +490,43 @@
       "privateLabel": "Private key → Supabase only (secret VAPID_PRIVATE_KEY)",
       "copy": "Copy",
       "copied": "Copied"
+    },
+    "confirmEmail": {
+      "ok": "“Confirm email” is off: parent sign-up sends no email.",
+      "enabled": "“Confirm email” is ON: parents cannot sign up without an email. Supabase → Authentication → Sign In / Providers → Email → turn off “Confirm email” → Save.",
+      "unknown": "Cannot read the authentication settings (invalid public key or network). Check EXPO_PUBLIC_SUPABASE_ANON_KEY."
+    }
+  },
+  "childAccount": {
+    "title": "Sign-in account",
+    "hint": "Create the username and password {{name}} will use on their phone.",
+    "loginId": "Username (letters, digits, . _ -)",
+    "password": "Password (at least 6 characters)",
+    "create": "Create account",
+    "created": "Account created",
+    "loginIdIs": "Username: {{id}}",
+    "newPassword": "New password",
+    "changePassword": "Change password",
+    "passwordChanged": "Password changed",
+    "delete": "Delete account",
+    "deleteBody": "Delete {{name}}'s account? They will no longer be able to sign in; their profile and points are kept.",
+    "deleted": "Account deleted",
+    "loginIdErrors": {
+      "required": "Required",
+      "tooShort": "At least 3 characters",
+      "tooLong": "At most 30 characters",
+      "invalidChars": "Letters, digits, dot, dash and underscore only",
+      "invalidStart": "Must start with a letter or a digit"
+    },
+    "errors": {
+      "identifier_taken": "This username is already taken. Pick another one.",
+      "invalid_identifier": "Invalid username.",
+      "weak_password": "Password: at least {{min}} characters.",
+      "account_exists": "This child already has an account.",
+      "no_account": "This child has no account.",
+      "forbidden": "Only the family's parents can do this.",
+      "not_authenticated": "Session expired. Sign in again.",
+      "server_error": "Something went wrong. Try again."
     }
   }
 }

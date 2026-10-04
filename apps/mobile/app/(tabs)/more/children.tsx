@@ -2,19 +2,19 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { confirmDialog } from '@/components/confirm';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { InviteCard } from '@/components/InviteCard';
+import { ChildAccountSection } from '@/components/ChildAccountSection';
 import { Button, Card, Field, Screen, Title } from '@/components/ui';
 import { ageFromBirthDate } from '@/domain/age';
 import { validateBirthDate } from '@/domain/birth-date';
 import { todayInTz } from '@/domain/family-time';
-import { useCreateInvite, useDeleteChild, useUpdateChild } from '@/hooks/useFamilyAdmin';
+import { useDeleteChild, useUpdateChild } from '@/hooks/useFamilyAdmin';
 import { useMe } from '@/hooks/useMe';
 import { colors, MIN_TARGET, typography } from '@/theme/tokens';
 import type { ChildRow } from '@/types/models';
 
 const PALETTE = [colors.primary, colors.mint, '#8B5CF6', '#F5A623', '#E5484D'] as const;
 
-/** Gestion des enfants (parent) : modifier, supprimer, codes d'invitation / QR (SPEC §3.9). */
+/** Gestion des enfants (parent) : modifier, supprimer, comptes de connexion (SPEC §3.9). */
 export default function ChildrenAdminScreen() {
   const { t } = useTranslation();
   const me = useMe().data;
@@ -34,11 +34,9 @@ function ChildCard({ child, today }: { child: ChildRow; today: string }) {
   const { t } = useTranslation();
   const update = useUpdateChild();
   const remove = useDeleteChild();
-  const invite = useCreateInvite();
   const [name, setName] = useState(child.name);
   const [birth, setBirth] = useState(child.birth_date);
   const [color, setColor] = useState(child.color ?? colors.primary);
-  const [code, setCode] = useState<string | null>(null);
   const birthError = validateBirthDate(birth, today);
   const dirty = name.trim() !== child.name || birth !== child.birth_date || color !== child.color;
   const valid = name.trim() !== '' && birthError === null;
@@ -55,13 +53,7 @@ function ChildCard({ child, today }: { child: ChildRow; today: string }) {
         ))}
       </View>
       <Button label={t('common.save')} disabled={!dirty || !valid} loading={update.isPending} onPress={() => update.mutate({ id: child.id, patch: { name: name.trim(), birth_date: birth, color } })} />
-      <InviteCard
-        code={code}
-        hint={t('onboarding.children.inviteHint', { name: child.name })}
-        actionLabel={code ? t('onboarding.children.regenerate') : t('onboarding.children.inviteCode')}
-        loading={invite.isPending}
-        onGenerate={() => invite.mutate(child.id, { onSuccess: setCode })}
-      />
+      <ChildAccountSection childId={child.id} childName={child.name} />
       <Button
         variant="secondary"
         label={`${t('settings.deleteChild')} ${child.name}`}

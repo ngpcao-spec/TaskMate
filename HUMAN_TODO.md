@@ -6,10 +6,12 @@ Vous n'avez jamais besoin de me donner la clé `service_role` ni le mot de passe
 Pourquoi : l'intégration GitHub de l'étape 4 doit être active **avant la première fusion sur `main`**, sinon les migrations ne se déclenchent pas ; et les variables Vercel de l'étape 5 doivent exister avant le premier déploiement de `main`.
 Chaque étape dit où cliquer, quoi saisir, comment vérifier. Les liens directs ouvrent le bon projet si vous êtes connecté à Supabase.
 
-## 1. Activer les connexions anonymes (les enfants en ont besoin)
-- **Où** : https://supabase.com/dashboard/project/olftkozksanvnzlsvwrp/auth/providers → *Authentication → Sign In / Providers* → section **User Signups**.
-- **Faire** : activer **Allow anonymous sign-ins** → **Save**. Vérifier aussi que **Allow new users to sign up** et le fournisseur **Email** sont activés.
-- **Vérifier** : app → Réglages → Diagnostic → « Connexions anonymes : OK ».
+## 1. Désactiver « Confirm email » (inscription des parents sans e-mail)
+- **Où** : https://supabase.com/dashboard/project/olftkozksanvnzlsvwrp/auth/providers → *Authentication → Sign In / Providers* → **Email**.
+- **Faire** : fournisseur **Email** activé ; **Confirm email** désactivé (OFF) ; **Allow new users to sign up** activé → **Save**. Ne touchez pas à *Minimum password length* (6 convient : les mots de passe des enfants ont 6 caractères minimum, les parents 8 contrôlés par l'app).
+- **Pourquoi** : le parent crée son compte avec e-mail + mot de passe, **aucun e-mail n'est envoyé** ni attendu (pas de code, pas de lien). Si « Confirm email » reste activé, l'inscription échoue avec un message explicite.
+- **Les connexions anonymes ne sont plus nécessaires** : laissez **Allow anonymous sign-ins** désactivé (c'est la valeur par défaut). Les enfants se connectent avec identifiant + mot de passe créés par le parent dans l'app.
+- **Vérifier** : app → Réglages → Diagnostic → « Confirmation d'e-mail désactivée : OK » et « Connexion par e-mail et mot de passe : OK ».
 
 ## 2. Site URL et Redirect URLs
 - **Où** : https://supabase.com/dashboard/project/olftkozksanvnzlsvwrp/auth/url-configuration → *Authentication → URL Configuration*.
@@ -17,21 +19,14 @@ Chaque étape dit où cliquer, quoi saisir, comment vérifier. Les liens directs
 - **Redirect URLs** (bouton *Add URL*, une ligne chacune) : `https://taskmate-rho-nine.vercel.app/**` · `http://localhost:8081/**` (développement local) · *(facultatif, aperçus Vercel)* `https://taskmate-*.vercel.app/**` → **Save changes**.
 - **Vérifier** : les 3 lignes apparaissent dans la liste après rechargement de la page.
 
-## 3. Gabarit d'e-mail : afficher le code à 6 chiffres
-- **Où** : https://supabase.com/dashboard/project/olftkozksanvnzlsvwrp/auth/templates → *Authentication → Email Templates*.
-- **Faire**, pour les **deux** onglets **Magic Link** *et* **Confirm signup** : remplacer le corps du message par
-  ```html
-  <h2>Code de connexion TaskMate</h2>
-  <p>Votre code : <strong>{{ .Token }}</strong></p>
-  ```
-  puis **Save** (le code seul compte ; le sujet peut rester). `{{ .Token }}` est le code à 6 chiffres.
-- **Vérifier** : sur le site, « Je suis parent » → saisir votre e-mail → vous recevez un e-mail avec 6 chiffres (regardez les courriers indésirables). Si l'envoi échoue avec « rate limit », le service d'e-mail intégré est très limité : configurez un SMTP personnalisé (*Authentication → Emails → SMTP Settings*).
+## 3. Rien à configurer pour les e-mails
+Plus de gabarit d'e-mail, plus de code à 6 chiffres, plus de SMTP : l'application n'envoie aucun e-mail. (Étape conservée pour garder la numérotation.)
 
 ## 4. Intégration GitHub : migrations et fonctions automatiques
 - **Où** : https://supabase.com/dashboard/project/olftkozksanvnzlsvwrp/settings/integrations → *Project Settings → Integrations → GitHub Integration*.
 - **Saisir** : dépôt `ngpcao-spec/TaskMate` · **Working directory** : `.` (point) · branche de production `main` · **Deploy to production** : **ON** · **Automatic branching** : OFF → **Enable integration** (ou **Save** si déjà activée).
 - **Ce que ça fait** (doc officielle) : à chaque fusion sur `main`, applique les nouvelles migrations de `supabase/migrations` dans l'ordre (sans le `seed.sql`) et déploie les Edge Functions déclarées dans `supabase/config.toml`. Ne règle **pas** Auth (étapes 1 à 3) ni les secrets (étape 6).
-- **Vérifier maintenant** : la page *Integrations → GitHub* affiche le dépôt `ngpcao-spec/TaskMate` connecté, **Deploy to production** sur ON, branche `main`. Rien ne s'applique tant que vous n'avez pas fusionné (section suivante) ; le résultat se vérifie après la fusion : *Database → Migrations* liste **10** migrations (de `…core_schema_rls` à `…diagnostics`) et *Edge Functions* liste `redeem-invite`, `delete-account`, `send-push`.
+- **Vérifier maintenant** : la page *Integrations → GitHub* affiche le dépôt `ngpcao-spec/TaskMate` connecté, **Deploy to production** sur ON, branche `main`. Rien ne s'applique tant que vous n'avez pas fusionné (section suivante) ; le résultat se vérifie après la fusion : *Database → Migrations* liste **11** migrations (de `…core_schema_rls` à `…child_accounts`) et *Edge Functions* liste `create-child`, `reset-child-password`, `delete-child`, `delete-account`, `send-push`.
 - **Si une migration échoue** : le message est dans la coche/croix à côté du commit de fusion sur GitHub (clic → *Details*). Envoyez-le moi.
 
 ## 5. Variables d'environnement Vercel
@@ -66,7 +61,7 @@ Les 5 PR sont **empilées** : #1 cible `main`, #2 cible la branche de #1, #3 cel
 Sans aucune clé secrète. Essayer dans l'ordre :
 1. **Comprendre** : GitHub → `main` → page du dernier commit (clic sur le message) → l'icône à côté du titre (coche/croix/rond) → **Details** → ligne « Supabase » : le message dit pourquoi (intégration non activée, mauvais *Working directory*, erreur SQL…). Corriger l'étape 4 si besoin (**Working directory** = `.`, **Deploy to production** = ON, branche = `main`).
 2. **Re-déclencher sans outil** (un commit « vide » n'existe pas dans l'interface web ; un commit qui touche `supabase/` fait la même chose) : GitHub → dépôt → dossier `supabase` → **Add file → Create new file** → nom `redeploy.txt` (dans `supabase/`), contenu `redeploy` → **Commit changes… → Commit directly to the `main` branch** → **Commit changes**. Attendre 1 à 2 minutes puis recharger *Database → Migrations*. (Vous pouvez supprimer ce fichier ensuite : même procédure, corbeille.)
-3. **Appliquer à la main** (dernier recours, toujours sans clé) : Supabase → *SQL Editor* → *New query*. Pour **chaque** fichier de `supabase/migrations`, **dans l'ordre des noms** (…0001 puis …0002 … jusqu'à …0010) : ouvrir le fichier sur GitHub → **Copy raw file** → coller dans l'éditeur → **Run** → attendre « Success ». S'arrêter à la première erreur et me l'envoyer. Ensuite, **une seule fois**, enregistrer les migrations comme appliquées (sinon l'intégration tentera de les rejouer) : nouvelle requête →
+3. **Appliquer à la main** (dernier recours, toujours sans clé) : Supabase → *SQL Editor* → *New query*. Pour **chaque** fichier de `supabase/migrations`, **dans l'ordre des noms** (…0001 puis …0002 … jusqu'à …0011) : ouvrir le fichier sur GitHub → **Copy raw file** → coller dans l'éditeur → **Run** → attendre « Success ». S'arrêter à la première erreur et me l'envoyer. Ensuite, **une seule fois**, enregistrer les migrations comme appliquées (sinon l'intégration tentera de les rejouer) : nouvelle requête →
    ```sql
    create schema if not exists supabase_migrations;
    create table if not exists supabase_migrations.schema_migrations (version text primary key, statements text[], name text);
@@ -74,7 +69,7 @@ Sans aucune clé secrète. Essayer dans l'ordre :
      ('20260702000001','core_schema_rls'), ('20260702000002','rpc_points_invites'), ('20260702000003','redeem_rate_limit'),
      ('20260702000004','realtime'), ('20260702000005','notification_prefs'), ('20260702000006','recurrence'),
      ('20260702000007','delete_family'), ('20260702000008','task_validation'), ('20260702000009','web_push'),
-     ('20260702000010','diagnostics')
+     ('20260702000010','diagnostics'), ('20260702000011','child_accounts')
    on conflict (version) do nothing;
    ```
    → **Run**. Les Edge Functions se déploient alors par la méthode de repli de l'étape 6.
@@ -105,5 +100,5 @@ App → **Réglages → Diagnostic** → « Relancer » : objectif **0 à corrig
 Si **pg_cron** est signalé : Supabase → *Database → Extensions* → activer **pg_cron**, puis *SQL Editor* : `select public.schedule_cron_jobs();` → Run. Diagnostic → « Tâches planifiées : OK ».
 
 ## À valider sur de vrais appareils (non automatisable)
-Installer la PWA (iPhone : Safari → Partager → « Sur l'écran d'accueil » ; Android/Chrome : « Installer l'application »), scanner un QR avec la caméra, recevoir une notification Web Push (iOS ≥ 16.4 et PWA installée uniquement ; l'autorisation se demande depuis le bouton des réglages), latence Realtime (< 5 s).
+Installer la PWA (iPhone : Safari → Partager → « Sur l'écran d'accueil » ; Android/Chrome : « Installer l'application »), connecter un enfant sur son propre téléphone (identifiant + mot de passe créés par le parent), recevoir une notification Web Push (iOS ≥ 16.4 et PWA installée uniquement ; l'autorisation se demande depuis le bouton des réglages), latence Realtime (< 5 s).
 Limites connues : pas de rappels planifiés « avant l'heure » sur le web (D-035) ; pas de boutons Duyệt/Từ chối dans une notification web (D-034).
