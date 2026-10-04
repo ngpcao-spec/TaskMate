@@ -151,6 +151,9 @@ test.describe('comptes e-mail / identifiant (aucune invitation)', () => {
     const parentCtx = await browser.newContext();
     const parent = await parentCtx.newPage();
     trace(parent, 'parent');
+    parent.on('response', (res) => {
+      if (res.url().includes('/rest/v1/rpc/')) console.log(`[parent] rpc ${res.status()} ${res.url().replace(/^.*\/rpc\//, '')}`);
+    });
     await open(parent);
     await parent.getByRole('button', { name: 'Bắt đầu' }).click();
     await parent.getByRole('button', { name: 'Tôi là phụ huynh' }).click();
@@ -159,8 +162,10 @@ test.describe('comptes e-mail / identifiant (aucune invitation)', () => {
     await parent.getByRole('button', { name: 'Tạo tài khoản' }).click();
     await parent.getByLabel('Tên gia đình').fill(`Gia đình ${tag}`);
     await parent.getByLabel('Tên của bạn').fill('Ba');
+    await expect(parent.getByRole('button', { name: 'Tiếp tục' })).toBeEnabled();
     await parent.getByRole('button', { name: 'Tiếp tục' }).click();
     await expectVisibleOrDump(parent, parent.getByLabel('Tên của con'), 'parent');
+    // (diagnostic) valeurs des champs si l'écran famille est resté affiché
     await parent.getByLabel('Tên của con').fill('Bin');
     await parent.getByLabel('Ngày sinh (YYYY-MM-DD)').fill('2012-05-01');
     await parent.getByRole('button', { name: 'Thêm con' }).click();
