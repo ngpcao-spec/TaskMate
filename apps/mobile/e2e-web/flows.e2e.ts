@@ -14,6 +14,16 @@ function trace(page: Page, who: string) {
   page.on('pageerror', (e) => console.log(`[${who}] pageerror ${e.message.slice(0, 300)}`));
 }
 
+/** Diagnostic CI : si l'attente échoue, journalise l'URL et le texte de la page avant de relancer l'erreur. */
+async function expectVisibleOrDump(page: Page, locator: ReturnType<Page['getByLabel']>, who: string, timeout = 20_000) {
+  try {
+    await expect(locator).toBeVisible({ timeout });
+  } catch (e) {
+    console.log(`[${who}] introuvable — url=${page.url()} texte=${(await page.locator('body').innerText().catch(() => '')).replace(/\s+/g, ' ').slice(0, 600)}`);
+    throw e;
+  }
+}
+
 async function open(page: Page, path = '/') {
   await page.goto(path);
 }
@@ -53,6 +63,8 @@ test.describe('validation parentale (spec v4)', () => {
     await expect(child.getByText('+10 điểm chờ duyệt')).toBeVisible();
 
     // 3. parent : la bannière « 1 việc chờ duyệt » apparaît (Realtime, sans recharger) puis valide depuis la file « Cần duyệt »
+    trace(parent, 'parent');
+    await expectVisibleOrDump(parent, parent.getByRole('button', { name: '1 việc chờ duyệt' }), 'parent', 15_000);
     await parent.getByRole('button', { name: '1 việc chờ duyệt' }).click({ timeout: 15_000 });
     await expect(parent).toHaveURL(/\/approvals/);
     await parent.getByRole('button', { name: `Duyệt ${taskTitle}` }).click();
@@ -148,6 +160,7 @@ test.describe('comptes e-mail / identifiant (aucune invitation)', () => {
     await parent.getByLabel('Tên gia đình').fill(`Gia đình ${tag}`);
     await parent.getByLabel('Tên của bạn').fill('Ba');
     await parent.getByRole('button', { name: 'Tiếp tục' }).click();
+    await expectVisibleOrDump(parent, parent.getByLabel('Tên của con'), 'parent');
     await parent.getByLabel('Tên của con').fill('Bin');
     await parent.getByLabel('Ngày sinh (YYYY-MM-DD)').fill('2012-05-01');
     await parent.getByRole('button', { name: 'Thêm con' }).click();
