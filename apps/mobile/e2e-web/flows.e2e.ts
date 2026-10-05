@@ -132,6 +132,45 @@ test.describe('validation parentale (spec v4)', () => {
   });
 });
 
+test.describe('formulaire de tâche sur le web', () => {
+  test('le parent modifie la date, l\'heure de début et l\'heure de fin (champs natifs du navigateur)', async ({ browser }) => {
+    const family = await createFamily();
+    const taskTitle = title('Piano');
+    const ctx = await browser.newContext();
+    await signInContext(ctx, family.parent);
+    const page = await ctx.newPage();
+    trace(page, 'parent-heures');
+    await open(page);
+    await page.getByRole('button', { name: 'Thêm việc' }).click();
+    await page.getByLabel('Tên công việc').fill(taskTitle);
+    await page.getByRole('button', { name: /^Thời gian/ }).click();
+    await page.getByRole('radio', { name: 'Khoảng giờ' }).click();
+
+    const date = page.getByLabel('Ngày', { exact: true });
+    const from = page.getByLabel('Từ', { exact: true });
+    const to = page.getByLabel('Đến', { exact: true });
+    await expect(to).toHaveAttribute('type', 'time');
+    await date.fill('2031-08-15');
+    await from.fill('09:00');
+    await to.fill('10:30');
+    await expect(to).toHaveValue('10:30');
+
+    // fin avant le début : erreur affichée, enregistrement bloqué
+    await to.fill('08:00');
+    await expect(page.getByText('Giờ kết thúc phải sau giờ bắt đầu')).toBeVisible();
+    await to.fill('10:30');
+    await expect(page.getByText('Giờ kết thúc phải sau giờ bắt đầu')).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Lưu' }).click();
+    await expect
+      .poll(async () => {
+        const { data } = await serviceClient().from('tasks').select('date, start_time, end_time').eq('family_id', family.familyId).eq('title', taskTitle).maybeSingle();
+        return data ? `${data.date} ${String(data.start_time).slice(0, 5)}-${String(data.end_time).slice(0, 5)}` : null;
+      })
+      .toBe('2031-08-15 09:00-10:30');
+  });
+});
+
 test.describe('droits de l\'enfant', () => {
   test('l\'enfant ne voit que ses données (D-052) et ne peut pas créer de tâche', async ({ browser }) => {
     const family = await createFamily();
