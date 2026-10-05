@@ -76,7 +76,7 @@ select is((select auth_email from public.child_accounts where id = tests.u(503))
 -- le mot de passe GoTrue est devenu inconnu : l'ancien mot de passe ne l'ouvre plus (connexion directe impossible)
 select ok((select crypt('abc123', encrypted_password) <> encrypted_password from auth.users where id = tests.u(41)), 'après: le mot de passe de l''enfant n''ouvre PLUS le compte GoTrue (connexion directe impossible)');
 select ok((select crypt('secret9', encrypted_password) <> encrypted_password from auth.users where id = tests.u(42)), 'après: idem pour le second compte');
-select isnt((select encrypted_password from auth.users where id = tests.u(41)), (select password_hash from public.child_accounts where id = tests.u(501)), 'après: le haché GoTrue n''est pas celui de l''enfant');
+select isnt((select encrypted_password::text from auth.users where id = tests.u(41)), (select password_hash from public.child_accounts where id = tests.u(501)), 'après: le haché GoTrue n''est pas celui de l''enfant');
 
 -- ═══ child-login : le MÊME mot de passe fonctionne, via le haché ═══
 set local role service_role;
