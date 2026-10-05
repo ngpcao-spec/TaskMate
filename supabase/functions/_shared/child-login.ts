@@ -2,7 +2,9 @@
 // Formulaire : e-mail d'un parent de la famille + identifiant de l'enfant + mot de passe.
 // Garanties : (1) réponse d'échec IDENTIQUE quel que soit le champ faux (aucune énumération d'e-mails ni d'identifiants) ;
 // (2) verrouillage temporaire par IP et par famille, décidé AVANT toute vérification de mot de passe ;
-// (3) la clé service n'est utilisée que par les RPC de journalisation/résolution, jamais pour émettre une session.
+// (3) le mot de passe de l'enfant n'est connu QUE de la base (haché bcrypt, RPC service_role) : GoTrue, lui, a un mot de passe
+// aléatoire inconnu de tous et une adresse UUID ; la session est émise par GoTrue pour l'adresse interne seulement APRÈS cette
+// vérification. Il n'existe donc aucune autre porte d'entrée (D-051).
 
 export const INVALID_CREDENTIALS = 'invalid_credentials';
 export const TOO_MANY_ATTEMPTS = 'too_many_attempts';
@@ -17,8 +19,10 @@ export type ChildLoginDeps = {
   prepare: (ip: string, parentEmail: string, loginId: string) => Promise<{ data: LoginPlan | null; error: boolean }>;
   /** RPC `child_login_record_failure` (service_role). */
   recordFailure: (ipKey: string, familyKey: string) => Promise<void>;
-  /** Connexion GoTrue par mot de passe (clé anonyme) : la session n'est jamais fabriquée par la fonction. */
-  signIn: (authEmail: string, password: string) => Promise<{ session: Session | null }>;
+  /** RPC `child_login_check_password` (service_role) : le mot de passe correspond-il au haché de ce compte ? (coût constant) */
+  checkPassword: (authEmail: string, password: string) => Promise<{ ok: boolean; error: boolean }>;
+  /** Émet une session GoTrue pour l'adresse interne (lien magique généré côté serveur puis échangé) : réservé à ce flux. */
+  mintSession: (authEmail: string) => Promise<{ session: Session | null }>;
 };
 
 const fail = (status: number, error: string): Outcome => ({ status, body: { error } });
@@ -51,11 +55,15 @@ export async function childLogin(deps: ChildLoginDeps, ip: string, rawBody: unkn
     await deps.recordFailure(plan.ip_key, plan.family_key);
     return invalid();
   }
-  const { session } = await deps.signIn(plan.auth_email, password);
-  if (!session) {
+  const checked = await deps.checkPassword(plan.auth_email, password);
+  if (checked.error) return fail(500, 'server_error');
+  if (!checked.ok) {
     await deps.recordFailure(plan.ip_key, plan.family_key);
     return invalid();
   }
+  // identifiants corrects : l'émission de la session ne dépend plus d'aucun mot de passe GoTrue
+  const { session } = await deps.mintSession(plan.auth_email);
+  if (!session) return fail(500, 'server_error');
   return {
     status: 200,
     body: { session: { access_token: session.access_token, refresh_token: session.refresh_token, expires_in: session.expires_in, token_type: session.token_type } },

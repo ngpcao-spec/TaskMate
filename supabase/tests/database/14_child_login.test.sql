@@ -31,10 +31,10 @@ select * from no_plan();
 -- ═══ comptes de deux familles avec le MÊME identifiant ═══
 reset role;
 set local role service_role;
-select lives_ok($$select public.register_child_account(tests.u(201), tests.u(41), 'minh', 'minh@child.taskmate.invalid')$$, 'register: « minh » dans la famille A (ancien format d''adresse conservé)');
-select lives_ok($$select public.register_child_account(tests.u(221), tests.u(42), 'minh', 'minh.fam2@child.taskmate.invalid')$$, 'register: le MÊME identifiant « minh » dans la famille B (unique par famille)');
-select throws_ok($$select public.register_child_account(tests.u(202), tests.u(43), 'minh', 'khang.fam1@child.taskmate.invalid')$$, 'P0001', 'identifier_taken', 'register: déjà pris DANS la famille A');
-select lives_ok($$select public.register_child_account(tests.u(202), tests.u(43), 'khang', 'khang.fam1@child.taskmate.invalid')$$, 'register: autre identifiant dans la famille A');
+select lives_ok($$select public.register_child_account(tests.u(201), tests.u(41), 'minh', 'minh@child.taskmate.invalid', 'secret1')$$, 'register: « minh » dans la famille A (ancien format d''adresse conservé)');
+select lives_ok($$select public.register_child_account(tests.u(221), tests.u(42), 'minh', 'minh.fam2@child.taskmate.invalid', 'secret1')$$, 'register: le MÊME identifiant « minh » dans la famille B (unique par famille)');
+select throws_ok($$select public.register_child_account(tests.u(202), tests.u(43), 'minh', 'khang.fam1@child.taskmate.invalid', 'secret1')$$, 'P0001', 'identifier_taken', 'register: déjà pris DANS la famille A');
+select lives_ok($$select public.register_child_account(tests.u(202), tests.u(43), 'khang', 'khang.fam1@child.taskmate.invalid', 'secret1')$$, 'register: autre identifiant dans la famille A');
 select throws_ok($$insert into public.child_accounts (family_id, child_id, member_id, login_id, auth_email) values (tests.u(1), tests.u(201), (select id from public.members where user_id = tests.u(43)), 'autre', 'minh@child.taskmate.invalid')$$, '23505', null, 'auth_email: unique');
 
 -- ═══ résolution ═══

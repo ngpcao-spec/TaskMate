@@ -9,7 +9,8 @@ function deps(over: Partial<ChildLoginDeps> = {}) {
   const d: ChildLoginDeps = {
     prepare: async (ip, email, id) => (calls.push(`prepare:${ip}:${email}:${id}`), { data: PLAN, error: false }),
     recordFailure: async (ipKey, familyKey) => void calls.push(`fail:${ipKey}:${familyKey}`),
-    signIn: async (email, pw) => (calls.push(`signIn:${email}:${pw}`), { session: SESSION }),
+    checkPassword: async (email, pw) => (calls.push(`check:${email}:${pw}`), { ok: pw === 'secret1', error: false }),
+    mintSession: async (email) => (calls.push(`mint:${email}`), { session: SESSION }),
     ...over,
   };
   return Object.assign(d, { calls });
@@ -22,7 +23,8 @@ describe('child-login', () => {
     const r = await childLogin(d, '1.2.3.4', body);
     expect(r.status).toBe(200);
     expect(r.body).toEqual({ session: { access_token: 'at', refresh_token: 'rt', expires_in: 3600, token_type: 'bearer' } });
-    expect(d.calls).toEqual(['prepare:1.2.3.4:parent@test:minh', 'signIn:minh@child.taskmate.invalid:secret1']);
+    // le mot de passe est vérifié contre le haché AVANT toute émission de session ; GoTrue ne reçoit jamais ce mot de passe
+    expect(d.calls).toEqual(['prepare:1.2.3.4:parent@test:minh', 'check:minh@child.taskmate.invalid:secret1', 'mint:minh@child.taskmate.invalid']);
   });
 
   it('identifiant normalisé comme le client (minuscules, sans accents)', () => {
@@ -30,7 +32,7 @@ describe('child-login', () => {
   });
 
   it('TOUT échec d\'identification renvoie exactement la même réponse (e-mail faux, identifiant faux, mot de passe faux, champ manquant)', async () => {
-    const wrongPassword = await childLogin(deps({ signIn: async () => ({ session: null }) }), '1.1.1.1', body);
+    const wrongPassword = await childLogin(deps({ checkPassword: async () => ({ ok: false, error: false }) }), '1.1.1.1', body);
     const unknownAccount = await childLogin(deps({ prepare: async () => ({ data: { ...PLAN, auth_email: null }, error: false }) }), '1.1.1.1', body);
     const missing = [
       await childLogin(deps(), '1.1.1.1', { ...body, parentEmail: '' }),
@@ -42,13 +44,14 @@ describe('child-login', () => {
     for (const r of [wrongPassword, unknownAccount, ...missing]) expect(r).toEqual({ status: 401, body: { error: INVALID_CREDENTIALS } });
   });
 
-  it('chaque échec est journalisé (IP + famille) ; le mot de passe n\'est jamais vérifié pour un compte introuvable', async () => {
+  it('chaque échec est journalisé (IP + famille) et AUCUNE session n\'est émise sans mot de passe correct', async () => {
     const d = deps({ prepare: async () => ({ data: { ...PLAN, auth_email: null }, error: false }) });
     await childLogin(d, '1.1.1.1', body);
-    expect(d.calls).toEqual(['fail:i:abc:f:1']); // pas de signIn
-    const e = deps({ signIn: async () => ({ session: null }) });
-    await childLogin(e, '1.1.1.1', body);
+    expect(d.calls).toEqual(['fail:i:abc:f:1']); // ni vérification de mot de passe, ni session
+    const e = deps();
+    await childLogin(e, '1.1.1.1', { ...body, password: 'faux-mot-de-passe' });
     expect(e.calls.at(-1)).toBe('fail:i:abc:f:1');
+    expect(e.calls.some((c) => c.startsWith('mint'))).toBe(false);
     const ok = deps();
     await childLogin(ok, '1.1.1.1', body);
     expect(ok.calls.some((c) => c.startsWith('fail'))).toBe(false);
@@ -57,11 +60,16 @@ describe('child-login', () => {
   it('verrouillé (IP ou famille) : 429 AVANT toute vérification de mot de passe, même avec les bons identifiants', async () => {
     const d = deps({ prepare: async () => ({ data: { ...PLAN, locked: true, auth_email: null }, error: false }) });
     expect(await childLogin(d, '1.1.1.1', body)).toEqual({ status: 429, body: { error: TOO_MANY_ATTEMPTS } });
-    expect(d.calls).toEqual([]); // aucun signIn, aucun nouvel échec journalisé
+    expect(d.calls).toEqual([]); // aucune vérification, aucune session, aucun nouvel échec journalisé
   });
 
-  it('erreur de la base : 500, jamais une session', async () => {
+  it('erreur de la base ou d\'émission de session : 500, jamais une session ni un échec d\'identification', async () => {
     expect((await childLogin(deps({ prepare: async () => ({ data: null, error: true }) }), '1.1.1.1', body)).status).toBe(500);
+    const checkFails = deps({ checkPassword: async () => ({ ok: false, error: true }) });
+    expect((await childLogin(checkFails, '1.1.1.1', body)).status).toBe(500);
+    expect(checkFails.calls.some((c) => c.startsWith('fail'))).toBe(false);
+    const mintFails = deps({ mintSession: async () => ({ session: null }) });
+    expect(await childLogin(mintFails, '1.1.1.1', body)).toEqual({ status: 500, body: { error: 'server_error' } });
   });
 
   it('entrées démesurées tronquées (pas de coût disproportionné)', async () => {

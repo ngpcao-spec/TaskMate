@@ -139,3 +139,19 @@ export async function signInContext(context: BrowserContext, person: Person): Pr
   const session = await sessionOf(person);
   await context.addInitScript(([key, value]) => window.localStorage.setItem(key as string, value as string), [sessionStorageKey(), JSON.stringify(session)]);
 }
+
+/** Client service local (clé de service du Supabase LOCAL de test) : lecture/écriture directe pour préparer ou vérifier l'état serveur. */
+export const serviceClient = () => admin();
+
+/** Connexion DIRECTE à l'authentification (signInWithPassword) : renvoie le message d'erreur, ou null si la session s'ouvre. */
+export async function directSignIn(email: string, password: string): Promise<string | null> {
+  const { error } = await createClient(supabaseUrl(), anonKey(), { auth: { persistSession: false } }).auth.signInWithPassword({ email, password });
+  return error ? error.message : null;
+}
+
+/** Adresse interne d'un compte enfant (lue côté serveur ; jamais exposée au client). */
+export async function internalEmailOf(family: FamilyFixture, loginId: string): Promise<string> {
+  const { data, error } = await admin().from('child_accounts').select('auth_email').eq('family_id', family.familyId).eq('login_id', loginId).single();
+  if (error || !data) throw new Error(`child_accounts: ${error?.message}`);
+  return data.auth_email;
+}

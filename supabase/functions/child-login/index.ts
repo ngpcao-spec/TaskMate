@@ -1,7 +1,8 @@
 // Edge Function `child-login` : connexion d'un enfant (e-mail d'un parent de la famille + identifiant + mot de passe).
 // Publique (verify_jwt = false : l'enfant n'a pas encore de session) ; protégée par verrouillage par IP et par famille et par une
 // réponse d'échec unique. La clé service_role vient UNIQUEMENT de l'environnement Supabase des fonctions (jamais dans le code,
-// git ou le client) et ne sert qu'aux RPC `child_login_prepare` / `child_login_record_failure`.
+// git ou le client) ; elle sert aux RPC de verrou/vérification et à émettre la session de l'enfant après vérification du mot de
+// passe contre le haché (le mot de passe GoTrue des comptes enfants est aléatoire et inconnu : pas de connexion directe).
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import { jsonResponse, preflight } from '../_shared/cors.ts';
 import { childLogin, clientIp, type ChildLoginDeps, type LoginPlan } from '../_shared/child-login.ts';
@@ -23,9 +24,17 @@ Deno.serve(async (req) => {
     recordFailure: async (ipKey, familyKey) => {
       await admin.rpc('child_login_record_failure', { p_ip_key: ipKey, p_family_key: familyKey });
     },
-    signIn: async (authEmail, password) => {
-      const { data, error } = await anon.auth.signInWithPassword({ email: authEmail, password });
-      return { session: error || !data.session ? null : data.session };
+    checkPassword: async (authEmail, password) => {
+      const { data, error } = await admin.rpc('child_login_check_password', { p_auth_email: authEmail, p_password: password });
+      return { ok: data === true, error: error !== null };
+    },
+    mintSession: async (authEmail) => {
+      // lien magique généré côté serveur (aucun e-mail envoyé), échangé immédiatement contre une session
+      const { data: link, error } = await admin.auth.admin.generateLink({ type: 'magiclink', email: authEmail });
+      const tokenHash = link?.properties?.hashed_token;
+      if (error || !tokenHash) return { session: null };
+      const { data, error: verifyError } = await anon.auth.verifyOtp({ token_hash: tokenHash, type: 'magiclink' });
+      return { session: verifyError || !data.session ? null : data.session };
     },
   };
 

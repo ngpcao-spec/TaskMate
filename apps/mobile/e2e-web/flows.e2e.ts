@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { accessTokenOf, createFamily, createGoogleParent, resetAttempts, revokeChildMembers, seedTask, taskChildId, serverState, signInContext, supabaseUrl } from './support/seed';
+import { accessTokenOf, createFamily, createGoogleParent, directSignIn, internalEmailOf, resetAttempts, revokeChildMembers, serviceClient, seedTask, taskChildId, serverState, signInContext, supabaseUrl } from './support/seed';
 
 const title = (label: string) => `${label} ${Math.random().toString(36).slice(2, 7)}`;
 
@@ -344,6 +344,95 @@ test.describe('parents Google, famille partagée, enfants rattachés à la famil
     expect(error).toBeNull();
     expect((await client.rpc('create_family', { p_name: 'X', p_display_name: 'Y' })).error?.message).toBe('google_required');
     expect((await client.rpc('join_family_with_code', { p_code: 'ABCD2345', p_display_name: 'Y' })).error?.message).toBe('google_required');
+  });
+});
+
+test.describe('comptes enfants : aucune connexion directe, child-login seul', () => {
+  const UUID_EMAIL = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}@child\.taskmate\.invalid$/;
+  const childLoginRequest = async (parentEmail: string, loginId: string, password: string) => {
+    const res = await fetch(`${supabaseUrl()}/functions/v1/child-login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: process.env.E2E_ANON_KEY as string, 'x-forwarded-for': `198.51.100.${Math.floor(Math.random() * 200) + 1}` },
+      body: JSON.stringify({ parentEmail, loginId, password }),
+    });
+    return { status: res.status, body: (await res.json()) as { session?: { access_token: string; refresh_token: string }; error?: string } };
+  };
+
+  test('un ancien compte (adresse devinable) est migré : connexion directe impossible, child-login fonctionne avec le même mot de passe', async ({ browser }) => {
+    test.setTimeout(120_000);
+    const family = await createFamily();
+    await revokeChildMembers(family);
+    const db = serviceClient();
+    const tag = Math.random().toString(36).slice(2, 8);
+    const loginId = `ancien.${tag}`;
+    const guessable = `${loginId}@child.taskmate.invalid`;
+
+    // état « avant migration » : adresse devinable ET mot de passe connu de GoTrue ; pas de haché
+    const created = await db.auth.admin.createUser({ email: guessable, password: 'abc123', email_confirm: true, app_metadata: { account_type: 'child' } });
+    expect(created.error).toBeNull();
+    const userId = created.data.user?.id as string;
+    const member = await db.from('members').insert({ family_id: family.familyId, user_id: userId, role: 'child', child_id: family.minh.childId, display_name: 'Minh' }).select('id').single();
+    expect(member.error).toBeNull();
+    const account = await db.from('child_accounts').insert({ family_id: family.familyId, child_id: family.minh.childId as string, member_id: member.data?.id as string, login_id: loginId, auth_email: guessable });
+    expect(account.error).toBeNull();
+    // la faille : la connexion directe avec l'adresse devinable ET le mot de passe de l'enfant fonctionnait (hors verrou)
+    expect(await directSignIn(guessable, 'abc123')).toBeNull();
+
+    // migration (exécutée une fois au déploiement ; ici rejouée sur ce compte)
+    const migrated = await db.rpc('migrate_legacy_child_accounts');
+    expect(migrated.error).toBeNull();
+    expect(migrated.data).toBeGreaterThanOrEqual(1);
+
+    // après : la connexion directe échoue, avec l'ancienne adresse comme avec la nouvelle (adresse UUID, mot de passe GoTrue inconnu)
+    expect(await directSignIn(guessable, 'abc123')).not.toBeNull();
+    const internal = await internalEmailOf(family, loginId);
+    expect(internal).toMatch(UUID_EMAIL);
+    expect(internal).not.toBe(guessable);
+    expect(await directSignIn(internal, 'abc123')).not.toBeNull();
+
+    // child-login : MÊME e-mail parent, MÊME identifiant, MÊME mot de passe ; le même compte (même utilisateur, mêmes données)
+    const ok = await childLoginRequest(family.parent.email, loginId, 'abc123');
+    expect(ok.status).toBe(200);
+    expect(ok.body.session?.access_token).toBeTruthy();
+    const { createClient } = await import('@supabase/supabase-js');
+    const client = createClient(supabaseUrl(), process.env.E2E_ANON_KEY as string, { auth: { persistSession: false } });
+    await client.auth.setSession({ access_token: ok.body.session?.access_token as string, refresh_token: ok.body.session?.refresh_token as string });
+    const { data: me } = await client.auth.getUser();
+    expect(me.user?.id).toBe(userId);
+    expect(me.user?.app_metadata?.account_type).toBe('child');
+    // le verrou anti-essais protège toujours : mauvais mot de passe → échec unique
+    expect(await childLoginRequest(family.parent.email, loginId, 'faux-mdp')).toEqual({ status: 401, body: { error: 'invalid_credentials' } });
+    // et l'interface fonctionne de bout en bout
+    const page = await childSignIn(browser, family.parent.email, loginId, 'abc123');
+    await expect(page.getByText('Chào Minh!')).toBeVisible({ timeout: 20_000 });
+  });
+
+  test('un compte créé par create-child : adresse UUID, jamais de connexion directe, mot de passe changé via la base', async () => {
+    test.setTimeout(120_000);
+    const family = await createFamily();
+    await revokeChildMembers(family);
+    const token = await accessTokenOf(family.parent);
+    const headers = { 'Content-Type': 'application/json', apikey: process.env.E2E_ANON_KEY as string, Authorization: `Bearer ${token}` };
+    const loginId = `neuf.${Math.random().toString(36).slice(2, 7)}`;
+    const create = await fetch(`${supabaseUrl()}/functions/v1/create-child`, { method: 'POST', headers, body: JSON.stringify({ childId: family.minh.childId, loginId, password: 'abc123' }) });
+    expect(create.status).toBe(200);
+    const internal = await internalEmailOf(family, loginId);
+    expect(internal).toMatch(UUID_EMAIL);
+    expect(internal).not.toContain(loginId);
+    // aucune connexion directe, ni avec le vrai mot de passe, ni avec l'adresse « logique » devinable
+    expect(await directSignIn(internal, 'abc123')).not.toBeNull();
+    expect(await directSignIn(`${loginId}@child.taskmate.invalid`, 'abc123')).not.toBeNull();
+    expect((await childLoginRequest(family.parent.email, loginId, 'abc123')).status).toBe(200);
+    // le parent change le mot de passe : l'ancien ne marche plus dans child-login, le nouveau oui ; GoTrue reste fermé
+    const reset = await fetch(`${supabaseUrl()}/functions/v1/reset-child-password`, { method: 'POST', headers, body: JSON.stringify({ childId: family.minh.childId, password: 'nouveau1' }) });
+    expect(reset.status).toBe(200);
+    expect((await childLoginRequest(family.parent.email, loginId, 'abc123')).status).toBe(401);
+    expect((await childLoginRequest(family.parent.email, loginId, 'nouveau1')).status).toBe(200);
+    expect(await directSignIn(internal, 'nouveau1')).not.toBeNull();
+    // suppression du compte : child-login ne délivre plus rien
+    const del = await fetch(`${supabaseUrl()}/functions/v1/delete-child`, { method: 'POST', headers, body: JSON.stringify({ childId: family.minh.childId }) });
+    expect(del.status).toBe(200);
+    expect((await childLoginRequest(family.parent.email, loginId, 'nouveau1')).status).toBe(401);
   });
 });
 

@@ -77,28 +77,28 @@ select throws_ok($$select public.child_account_target(tests.u(203))$$, '42501', 
 
 -- ═══ register_child_account : service_role uniquement ═══
 select tests.login(11);
-select throws_ok($$select public.register_child_account(tests.u(203), tests.u(41), 'lan.nguyen', 'lan.nguyen@child.taskmate.invalid')$$, '42501', null, 'register: un parent ne l''appelle pas directement');
+select throws_ok($$select public.register_child_account(tests.u(203), tests.u(41), 'lan.nguyen', 'lan.nguyen@child.taskmate.invalid', 'secret1')$$, '42501', null, 'register: un parent ne l''appelle pas directement');
 select tests.login(13);
-select throws_ok($$select public.register_child_account(tests.u(203), tests.u(41), 'lan.nguyen', 'lan.nguyen@child.taskmate.invalid')$$, '42501', null, 'register: un enfant ne crée aucun compte');
+select throws_ok($$select public.register_child_account(tests.u(203), tests.u(41), 'lan.nguyen', 'lan.nguyen@child.taskmate.invalid', 'secret1')$$, '42501', null, 'register: un enfant ne crée aucun compte');
 select throws_ok($$select public.remove_child_account(tests.u(201))$$, '42501', null, 'remove: un enfant ne supprime aucun compte');
 reset role;
 set local role anon;
-select throws_ok($$select public.register_child_account(tests.u(203), tests.u(41), 'lan.nguyen', 'lan.nguyen@child.taskmate.invalid')$$, '42501', null, 'register: anon refusé');
+select throws_ok($$select public.register_child_account(tests.u(203), tests.u(41), 'lan.nguyen', 'lan.nguyen@child.taskmate.invalid', 'secret1')$$, '42501', null, 'register: anon refusé');
 
 reset role;
 set local role service_role;
-select lives_ok($$select public.register_child_account(tests.u(203), tests.u(41), 'lan.nguyen', 'lan.nguyen@child.taskmate.invalid')$$, 'register: le service crée le compte de Lan');
+select lives_ok($$select public.register_child_account(tests.u(203), tests.u(41), 'lan.nguyen', 'lan.nguyen@child.taskmate.invalid', 'secret1')$$, 'register: le service crée le compte de Lan');
 select is((select role::text from public.members where user_id = tests.u(41)), 'child', 'register: membre de rôle child');
 select is((select child_id from public.members where user_id = tests.u(41)), tests.u(203), 'register: lié au bon profil');
 select is((select display_name from public.members where user_id = tests.u(41)), 'Lan', 'register: prénom du profil');
 select is((select login_id from public.child_accounts where child_id = tests.u(203)), 'lan.nguyen', 'register: identifiant enregistré');
-select throws_ok($$select public.register_child_account(tests.u(203), tests.u(42), 'lan.autre', 'lan.autre@child.taskmate.invalid')$$, 'P0001', 'account_exists', 'register: un seul compte par enfant');
-select throws_ok($$select public.register_child_account(tests.u(204), tests.u(42), 'lan.nguyen', 'lan.nguyen@child.taskmate.invalid')$$, 'P0001', 'identifier_taken', 'register: identifiant déjà pris');
-select throws_ok($$select public.register_child_account(tests.u(204), tests.u(41), 'bao.nguyen', 'bao.nguyen@child.taskmate.invalid')$$, 'P0001', 'already_member', 'register: un utilisateur déjà membre est refusé');
-select throws_ok($$select public.register_child_account(tests.u(999), tests.u(42), 'bao.nguyen', 'bao.nguyen@child.taskmate.invalid')$$, 'P0002', 'child_not_found', 'register: profil inconnu');
-select throws_ok($$select public.register_child_account(tests.u(204), tests.u(42), 'Bao Nguyen', 'Bao Nguyen@child.taskmate.invalid')$$, '23514', null, 'register: format d''identifiant invalide (majuscule, espace)');
-select throws_ok($$select public.register_child_account(tests.u(204), tests.u(42), 'ab', 'ab@child.taskmate.invalid')$$, '23514', null, 'register: identifiant trop court');
-select lives_ok($$select public.register_child_account(tests.u(204), tests.u(42), 'bao.nguyen', 'bao.nguyen@child.taskmate.invalid')$$, 'register: second enfant, autre identifiant');
+select throws_ok($$select public.register_child_account(tests.u(203), tests.u(42), 'lan.autre', 'lan.autre@child.taskmate.invalid', 'secret1')$$, 'P0001', 'account_exists', 'register: un seul compte par enfant');
+select throws_ok($$select public.register_child_account(tests.u(204), tests.u(42), 'lan.nguyen', 'lan.nguyen@child.taskmate.invalid', 'secret1')$$, 'P0001', 'identifier_taken', 'register: identifiant déjà pris');
+select throws_ok($$select public.register_child_account(tests.u(204), tests.u(41), 'bao.nguyen', 'bao.nguyen@child.taskmate.invalid', 'secret1')$$, 'P0001', 'already_member', 'register: un utilisateur déjà membre est refusé');
+select throws_ok($$select public.register_child_account(tests.u(999), tests.u(42), 'bao.nguyen', 'bao.nguyen@child.taskmate.invalid', 'secret1')$$, 'P0002', 'child_not_found', 'register: profil inconnu');
+select throws_ok($$select public.register_child_account(tests.u(204), tests.u(42), 'Bao Nguyen', 'Bao Nguyen@child.taskmate.invalid', 'secret1')$$, '23514', null, 'register: format d''identifiant invalide (majuscule, espace)');
+select throws_ok($$select public.register_child_account(tests.u(204), tests.u(42), 'ab', 'ab@child.taskmate.invalid', 'secret1')$$, '23514', null, 'register: identifiant trop court');
+select lives_ok($$select public.register_child_account(tests.u(204), tests.u(42), 'bao.nguyen', 'bao.nguyen@child.taskmate.invalid', 'secret1')$$, 'register: second enfant, autre identifiant');
 
 -- l'enfant connecté voit son profil et rien de plus qu'avant (droits spec v4 inchangés)
 select tests.login(41);
@@ -122,7 +122,7 @@ select isnt((select revoked_at from public.members where user_id = tests.u(41)),
 select is((select count(*)::int from public.devices where member_id = (select id from public.members where user_id = tests.u(41)) and revoked_at is null), 0, 'remove: appareils révoqués');
 select is((select count(*)::int from public.child_accounts where child_id = tests.u(203)), 0, 'remove: compte supprimé');
 select is((select public.remove_child_account(tests.u(203))), null, 'remove: idempotent (aucun compte → null)');
-select lives_ok($$select public.register_child_account(tests.u(203), tests.u(43), 'lan.nguyen', 'lan.nguyen@child.taskmate.invalid')$$, 'remove: l''identifiant est libéré et réutilisable');
+select lives_ok($$select public.register_child_account(tests.u(203), tests.u(43), 'lan.nguyen', 'lan.nguyen@child.taskmate.invalid', 'secret1')$$, 'remove: l''identifiant est libéré et réutilisable');
 select tests.login(41);
 select is(tests.n('select 1 from public.children'), 0::bigint, 'remove: l''ancien compte perd tout accès');
 select tests.login(11);

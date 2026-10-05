@@ -14,6 +14,8 @@ Chaque étape dit où cliquer, quoi saisir, comment vérifier. Les liens directs
 - **Connexions anonymes — à COUPER après le déploiement de cette PR** : *Authentication → Sign In / Providers → User Signups* → **Allow anonymous sign-ins** → désactiver → **Save**. Plus aucun compte anonyme n'existe (les enfants ont un compte identifiant + mot de passe) : rien ne casse.
 - **Vérifier** : app → Réglages → Diagnostic → « Connexion Google : OK » et « Connexion e-mail (parents existants) : OK ».
 
+> **Comptes enfants (D-051)** — rien à faire de votre côté : la migration `…0013_child_auth_hardening` convertit seule les comptes existants (même identifiant, même mot de passe). Juste après la fusion, vérifiez que *Edge Functions* affiche bien `child-login` **mise à jour** (l'ancienne version ne sait plus connecter les comptes migrés) ; sinon relancez le déploiement (Plan B ci-dessous).
+
 ## 2. Site URL et Redirect URLs
 - **Où** : https://supabase.com/dashboard/project/olftkozksanvnzlsvwrp/auth/url-configuration → *Authentication → URL Configuration*.
 - **Site URL** : `https://taskmate-rho-nine.vercel.app`
@@ -27,7 +29,7 @@ Plus de gabarit d'e-mail, plus de code à 6 chiffres, plus de SMTP : l'applicati
 - **Où** : https://supabase.com/dashboard/project/olftkozksanvnzlsvwrp/settings/integrations → *Project Settings → Integrations → GitHub Integration*.
 - **Saisir** : dépôt `ngpcao-spec/TaskMate` · **Working directory** : `.` (point) · branche de production `main` · **Deploy to production** : **ON** · **Automatic branching** : OFF → **Enable integration** (ou **Save** si déjà activée).
 - **Ce que ça fait** (doc officielle) : à chaque fusion sur `main`, applique les nouvelles migrations de `supabase/migrations` dans l'ordre (sans le `seed.sql`) et déploie les Edge Functions déclarées dans `supabase/config.toml`. Ne règle **pas** Auth (étapes 1 à 3) ni les secrets (étape 6).
-- **Vérifier maintenant** : la page *Integrations → GitHub* affiche le dépôt `ngpcao-spec/TaskMate` connecté, **Deploy to production** sur ON, branche `main`. Rien ne s'applique tant que vous n'avez pas fusionné (section suivante) ; le résultat se vérifie après la fusion : *Database → Migrations* liste **12** migrations (de `…core_schema_rls` à `…google_parents_family_child_login`) et *Edge Functions* liste `child-login`, `create-child`, `reset-child-password`, `delete-child`, `delete-account`, `send-push`.
+- **Vérifier maintenant** : la page *Integrations → GitHub* affiche le dépôt `ngpcao-spec/TaskMate` connecté, **Deploy to production** sur ON, branche `main`. Rien ne s'applique tant que vous n'avez pas fusionné (section suivante) ; le résultat se vérifie après la fusion : *Database → Migrations* liste **13** migrations (de `…core_schema_rls` à `…child_auth_hardening`) et *Edge Functions* liste `child-login`, `create-child`, `reset-child-password`, `delete-child`, `delete-account`, `send-push`.
 - **Si une migration échoue** : le message est dans la coche/croix à côté du commit de fusion sur GitHub (clic → *Details*). Envoyez-le moi.
 
 ## 5. Variables d'environnement Vercel
@@ -62,7 +64,7 @@ Les 5 PR sont **empilées** : #1 cible `main`, #2 cible la branche de #1, #3 cel
 Sans aucune clé secrète. Essayer dans l'ordre :
 1. **Comprendre** : GitHub → `main` → page du dernier commit (clic sur le message) → l'icône à côté du titre (coche/croix/rond) → **Details** → ligne « Supabase » : le message dit pourquoi (intégration non activée, mauvais *Working directory*, erreur SQL…). Corriger l'étape 4 si besoin (**Working directory** = `.`, **Deploy to production** = ON, branche = `main`).
 2. **Re-déclencher sans outil** (un commit « vide » n'existe pas dans l'interface web ; un commit qui touche `supabase/` fait la même chose) : GitHub → dépôt → dossier `supabase` → **Add file → Create new file** → nom `redeploy.txt` (dans `supabase/`), contenu `redeploy` → **Commit changes… → Commit directly to the `main` branch** → **Commit changes**. Attendre 1 à 2 minutes puis recharger *Database → Migrations*. (Vous pouvez supprimer ce fichier ensuite : même procédure, corbeille.)
-3. **Appliquer à la main** (dernier recours, toujours sans clé) : Supabase → *SQL Editor* → *New query*. Pour **chaque** fichier de `supabase/migrations`, **dans l'ordre des noms** (…0001 puis …0002 … jusqu'à …0012) : ouvrir le fichier sur GitHub → **Copy raw file** → coller dans l'éditeur → **Run** → attendre « Success ». S'arrêter à la première erreur et me l'envoyer. Ensuite, **une seule fois**, enregistrer les migrations comme appliquées (sinon l'intégration tentera de les rejouer) : nouvelle requête →
+3. **Appliquer à la main** (dernier recours, toujours sans clé) : Supabase → *SQL Editor* → *New query*. Pour **chaque** fichier de `supabase/migrations`, **dans l'ordre des noms** (…0001 puis …0002 … jusqu'à …0013) : ouvrir le fichier sur GitHub → **Copy raw file** → coller dans l'éditeur → **Run** → attendre « Success ». S'arrêter à la première erreur et me l'envoyer. Ensuite, **une seule fois**, enregistrer les migrations comme appliquées (sinon l'intégration tentera de les rejouer) : nouvelle requête →
    ```sql
    create schema if not exists supabase_migrations;
    create table if not exists supabase_migrations.schema_migrations (version text primary key, statements text[], name text);
@@ -70,7 +72,7 @@ Sans aucune clé secrète. Essayer dans l'ordre :
      ('20260702000001','core_schema_rls'), ('20260702000002','rpc_points_invites'), ('20260702000003','redeem_rate_limit'),
      ('20260702000004','realtime'), ('20260702000005','notification_prefs'), ('20260702000006','recurrence'),
      ('20260702000007','delete_family'), ('20260702000008','task_validation'), ('20260702000009','web_push'),
-     ('20260702000010','diagnostics'), ('20260702000011','child_accounts'), ('20260702000012','google_parents_family_child_login')
+     ('20260702000010','diagnostics'), ('20260702000011','child_accounts'), ('20260702000012','google_parents_family_child_login'), ('20260702000013','child_auth_hardening')
    on conflict (version) do nothing;
    ```
    → **Run**. Les Edge Functions se déploient alors par la méthode de repli de l'étape 6.

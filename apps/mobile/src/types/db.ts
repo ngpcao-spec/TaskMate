@@ -63,13 +63,13 @@ isOneToOne: false
                   ]
                 },"child_accounts": {
                   Row: {
-                    "auth_email": string,"child_id": string,"created_at": string,"family_id": string,"id": string,"login_id": string,"member_id": string
+                    "auth_email": string,"child_id": string,"created_at": string,"family_id": string,"id": string,"login_id": string,"member_id": string,"password_hash": string | null
                   }
                   Insert: {
-                    "auth_email": string,"child_id": string,"created_at"?: string,"family_id": string,"id"?: string,"login_id": string,"member_id": string
+                    "auth_email": string,"child_id": string,"created_at"?: string,"family_id": string,"id"?: string,"login_id": string,"member_id": string,"password_hash"?: string | null
                   }
                   Update: {
-                    "auth_email"?: string,"child_id"?: string,"created_at"?: string,"family_id"?: string,"id"?: string,"login_id"?: string,"member_id"?: string
+                    "auth_email"?: string,"child_id"?: string,"created_at"?: string,"family_id"?: string,"id"?: string,"login_id"?: string,"member_id"?: string,"password_hash"?: string | null
                   }
                   Relationships: [
                     {
@@ -516,6 +516,9 @@ isOneToOne: false
 "child_balance":
 { Args: { "p_child": string }; Returns: number
                            },
+"child_login_check_password":
+{ Args: { "p_auth_email": string,"p_password": string }; Returns: boolean
+                           },
 "child_login_prepare":
 { Args: { "p_ip": string,"p_login_id": string,"p_parent_email": string }; Returns: Json
                            },
@@ -570,6 +573,9 @@ isOneToOne: false
 "log_activity":
 { Args: { "p_actor": string,"p_child": string,"p_family": string,"p_payload": Json,"p_type": string }; Returns: undefined
                            },
+"migrate_legacy_child_accounts":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
 "my_child_id":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
@@ -586,7 +592,7 @@ isOneToOne: false
 { Args: { "p_day": string,"r": Database["public"]['Tables']["recurrences"]['Row'] }; Returns: boolean
                            },
 "register_child_account":
-{ Args: { "p_auth_email": string,"p_child_id": string,"p_login_id": string,"p_user_id": string }; Returns: string
+{ Args: { "p_auth_email": string,"p_child_id": string,"p_login_id": string,"p_password": string,"p_user_id": string }; Returns: string
                            },
 "register_device":
 { Args: { "p_platform": string,"p_token": string }; Returns: string
@@ -633,6 +639,9 @@ isOneToOne: false
                            },
 "schedule_cron_jobs":
 { Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"set_child_password":
+{ Args: { "p_child_id": string,"p_password": string }; Returns: undefined
                            },
 "sync_recurrence":
 { Args: { "p_now"?: string,"p_recurrence": string }; Returns: undefined
