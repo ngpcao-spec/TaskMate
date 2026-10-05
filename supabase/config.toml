@@ -219,8 +219,9 @@ web3 = 30
 
 [auth.email]
 # Allow/disallow new user signups via email to your project.
-# Inscription d'un NOUVEAU parent = Google uniquement (D-050) ; les comptes e-mail existants se connectent toujours.
-enable_signup = false
+# Doit rester true : GoTrue désactive TOUT le fournisseur e-mail (connexions comprises, « Email logins are disabled ») quand c'est false.
+# L'inscription d'un NOUVEAU parent = Google uniquement est appliquée côté base (google_required, D-050), pas ici.
+enable_signup = true
 # If enabled, a user will be required to confirm any email change on both the old, and new email
 # addresses. If disabled, only the new email is required to confirm.
 double_confirm_changes = true
