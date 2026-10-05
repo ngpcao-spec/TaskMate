@@ -353,6 +353,14 @@ test.describe('ajouter un enfant après l\'onboarding', () => {
     const tag = Math.random().toString(36).slice(2, 7);
     const loginId = `cam.${tag}`;
     const family = await createFamily();
+    // l'identifiant n'est unique que DANS la famille : « dup » est déjà pris par Minh (compte créé par la fonction create-child)
+    await revokeChildMembers(family);
+    const created = await fetch(`${supabaseUrl()}/functions/v1/create-child`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: process.env.E2E_ANON_KEY as string, Authorization: `Bearer ${await accessTokenOf(family.parent)}` },
+      body: JSON.stringify({ childId: family.minh.childId, loginId: `dup.${tag}`, password: 'abc123' }),
+    });
+    expect(created.status).toBe(200);
     const parentCtx = await browser.newContext();
     await signInContext(parentCtx, family.parent);
     const parent = await parentCtx.newPage();
@@ -364,14 +372,11 @@ test.describe('ajouter un enfant après l\'onboarding', () => {
     await expect(parent.getByRole('radio', { name: /^Khang,/ })).toBeVisible();
     await parent.getByRole('button', { name: 'Thêm con' }).click();
 
-    // identifiant déjà pris : l'erreur s'affiche et aucun profil fantôme n'est conservé
+    // identifiant déjà pris dans la famille : l'erreur s'affiche et aucun profil fantôme n'est conservé
     await parent.getByLabel('Tên của con').fill('Cam');
     await parent.getByLabel('Ngày sinh (YYYY-MM-DD)').fill('2016-02-01');
     await parent.getByLabel('Tên đăng nhập (chữ, số, . _ -)').fill(`dup.${tag}`);
     await parent.getByLabel('Mật khẩu (tối thiểu 6 ký tự)').fill('secret1');
-    const { createClient } = await import('@supabase/supabase-js');
-    const admin = createClient(supabaseUrl(), process.env.E2E_SERVICE_ROLE_KEY as string, { auth: { persistSession: false } });
-    await admin.auth.admin.createUser({ email: `dup.${tag}@child.taskmate.invalid`, password: 'secret1', email_confirm: true });
     await parent.getByRole('button', { name: 'Tạo hồ sơ và tài khoản cho con' }).click();
     await expect(parent.getByText('Tên đăng nhập này đã có người dùng. Hãy chọn tên khác.')).toBeVisible({ timeout: 20_000 });
 
