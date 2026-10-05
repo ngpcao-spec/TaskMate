@@ -146,7 +146,7 @@ test.describe('droits de l\'enfant', () => {
     await expect(page.getByRole('button', { name: 'Thêm việc' })).toHaveCount(0);
 
     // aucun sélecteur d'enfant, aucune trace du frère ni de sa tâche
-    await expect(page.getByRole('tab')).toHaveCount(0);
+    await expect(page.getByRole('tab', { name: /tuổi/ })).toHaveCount(0); // (la barre d'onglets de l'app n'est pas un sélecteur d'enfant)
     await expect(page.getByText(/Khang/)).toHaveCount(0);
     await expect(page.getByRole('checkbox', { name: khangTask })).toHaveCount(0);
 
@@ -526,7 +526,8 @@ test.describe('ajouter un enfant après l\'onboarding', () => {
     await signInContext(ctx, family.minh);
     const page = await ctx.newPage();
     await open(page, '/more');
-    await expect(page.getByRole('radio', { name: /^Minh,/ })).toBeVisible();
+    await expect(page.getByLabel(/^Minh,/).first()).toBeVisible();
+    await expect(page.getByRole('radio', { name: /^Minh,/ })).toHaveCount(0); // carte simple, pas de sélection (D-052)
     await expect(page.getByRole('button', { name: 'Thêm con' })).toHaveCount(0);
     await open(page, '/more/add-child');
     await expect(page.getByLabel('Tên của con')).toHaveCount(0);

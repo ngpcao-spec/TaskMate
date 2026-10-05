@@ -84,11 +84,11 @@ select is(tests.n('select 1 from public.activity_log'), 0::bigint, 'A: aucun jou
 select is(tests.n('select 1 from public.devices'), 1::bigint, 'A: ne voit que son appareil');
 select is(tests.n('select 1 from public.notification_prefs'), 1::bigint, 'A: ne voit que ses préférences');
 -- catalogue de la famille : lisible ; récompense dédiée à A : lisible ; dédiée à B : invisible
-select is((select array_agg(title order by title) from public.rewards), array['Catalogue famille', 'Pour Minh'], 'A: voit le catalogue de la famille et SA récompense, pas celle de B');
+select is((select array_agg(title order by title collate "C") from public.rewards), array['Catalogue famille', 'Pour Minh'], 'A: voit le catalogue de la famille et SA récompense, pas celle de B');
 select is(tests.n('select 1 from public.rewards where id = tests.u(403)'), 0::bigint, 'A: la récompense réservée à B est invisible');
 select is((select name from public.families), 'Famille A', 'A: le nom de la famille reste lisible');
 -- members : sa ligne + celles des parents ; jamais celle de B
-select is((select array_agg(display_name order by display_name) from public.members), array['Ba', 'Minh', 'Mẹ'], 'A: members = sa ligne + les parents');
+select is((select array_agg(display_name order by display_name collate "C") from public.members), array['Ba', 'Minh', 'Mẹ'], 'A: members = sa ligne + les parents');
 select is(tests.n('select 1 from public.members where id = tests.u(114)'), 0::bigint, 'A: la ligne members de B (nom, enfant lié) est invisible');
 select is(tests.n('select 1 from public.members where child_id = tests.u(202)'), 0::bigint, 'A: aucun membre lié au profil de B');
 -- soldes : vue et fonctions bornées
