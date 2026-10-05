@@ -219,6 +219,8 @@ web3 = 30
 
 [auth.email]
 # Allow/disallow new user signups via email to your project.
+# Doit rester true : GoTrue désactive TOUT le fournisseur e-mail (connexions comprises, « Email logins are disabled ») quand c'est false.
+# L'inscription d'un NOUVEAU parent = Google uniquement est appliquée côté base (google_required, D-050), pas ici.
 enable_signup = true
 # If enabled, a user will be required to confirm any email change on both the old, and new email
 # addresses. If disabled, only the new email is required to confirm.
@@ -423,6 +425,9 @@ verify_jwt = true    # parent connecté
 
 [functions.delete-child]
 verify_jwt = true    # parent connecté
+
+[functions.child-login]
+verify_jwt = false   # publique : l'enfant n'a pas encore de session ; protégée par verrouillage IP/famille et réponse d'échec unique
 
 [functions.delete-account]
 verify_jwt = true    # parent connecté

@@ -6,6 +6,8 @@ import { confirmDialog } from '@/components/confirm';
 import { Linking, StyleSheet, Text, View } from 'react-native';
 import { signOut } from '@/api/auth';
 import { Chip } from '@/components/Chip';
+import { ParentInviteCard } from '@/components/ParentInviteCard';
+import { ParentsCard } from '@/components/ParentsCard';
 import { Button, Card, Field, Screen, Title } from '@/components/ui';
 import { config } from '@/config';
 import { isValidTimeZone } from '@/domain/timezone';
@@ -15,7 +17,7 @@ import { SUPPORTED_LANGUAGES } from '@/i18n';
 import { setLanguage } from '@/i18n/language';
 import { colors, typography } from '@/theme/tokens';
 
-/** Cài đặt chung (SPEC §3.9) : langue, déconnexion ; parent : enfants, appareils, fuseau, suppression. */
+/** Cài đặt chung (SPEC §3.9) : langue, déconnexion ; parent : enfants, appareils, invitation et liste des parents, fuseau, suppression. */
 export default function SettingsScreen() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
@@ -69,6 +71,9 @@ export default function SettingsScreen() {
           <Button variant="secondary" label={t('settings.manageChildren')} onPress={() => router.push('/more/children')} />
           <Button variant="secondary" label={t('settings.devices')} onPress={() => router.push('/more/devices')} />
           <Button variant="secondary" label={t('settings.diagnostics')} onPress={() => router.push('/more/diagnostics')} />
+
+          <ParentInviteCard />
+          <ParentsCard myMemberId={me.member.id} />
 
           <Card>
             <Field label={t('settings.timezone')} value={tz} onChangeText={setTz} autoCapitalize="none" autoCorrect={false} error={tzValid ? null : t('settings.timezoneInvalid')} />

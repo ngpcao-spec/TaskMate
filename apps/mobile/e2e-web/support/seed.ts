@@ -19,6 +19,8 @@ export const todayVn = (): string => new Intl.DateTimeFormat('en-CA', { timeZone
 export type Person = { email: string; password: string; userId: string; memberId: string; childId: string | null };
 export type FamilyFixture = { familyId: string; parent: Person; minh: Person; khang: Person };
 
+/** Fournisseur Google tel que Supabase Auth l'écrit dans app_metadata (condition de create_family / join_family_with_code). */
+const GOOGLE = { provider: 'google', providers: ['google'] } as const;
 const uid = () => Math.random().toString(36).slice(2, 10);
 const birth = (years: number) => new Date(Date.now() - years * 365.25 * 86_400_000).toISOString().slice(0, 10);
 
@@ -27,12 +29,14 @@ export async function createFamily(): Promise<FamilyFixture> {
   const db = admin();
   const tag = uid();
   const password = `Pw-${tag}-1!`;
-  const user = async (email: string) => {
-    const { data, error } = await db.auth.admin.createUser({ email, password, email_confirm: true });
+  // Connexion Google SIMULÉE : un parent « Google » est un compte dont app_metadata porte le fournisseur google (posé par Supabase Auth
+  // en vrai). La session s'ouvre ensuite par mot de passe : l'écran OAuth de Google n'est pas automatisable.
+  const user = async (email: string, google = false) => {
+    const { data, error } = await db.auth.admin.createUser({ email, password, email_confirm: true, ...(google ? { app_metadata: GOOGLE } : {}) });
     if (error || !data.user) throw new Error(`createUser ${email}: ${error?.message}`);
     return data.user.id;
   };
-  const [parentUser, minhUser, khangUser] = await Promise.all([user(`ba-${tag}@e2e.test`), user(`minh-${tag}@e2e.test`), user(`khang-${tag}@e2e.test`)]);
+  const [parentUser, minhUser, khangUser] = await Promise.all([user(`ba-${tag}@e2e.test`, true), user(`minh-${tag}@e2e.test`), user(`khang-${tag}@e2e.test`)]);
 
   const { data: family, error: fe } = await db.from('families').insert({ name: `Gia đình ${tag}` }).select('id').single();
   if (fe || !family) throw new Error(`families: ${fe?.message}`);
@@ -67,6 +71,27 @@ export async function createFamily(): Promise<FamilyFixture> {
     minh: { email: `minh-${tag}@e2e.test`, password, userId: minhUser, memberId: memberId(minhUser), childId: childId('Minh') },
     khang: { email: `khang-${tag}@e2e.test`, password, userId: khangUser, memberId: memberId(khangUser), childId: childId('Khang') },
   };
+}
+
+/** Parent « connecté avec Google » (simulé) sans famille : il arrive sur l'écran créer / rejoindre. */
+export async function createGoogleParent(label = 'g'): Promise<Person> {
+  const tag = uid();
+  const email = `${label}-${tag}@gmail.e2e.test`;
+  const password = `Pw-${tag}-1!`;
+  const { data, error } = await admin().auth.admin.createUser({ email, password, email_confirm: true, app_metadata: GOOGLE });
+  if (error || !data.user) throw new Error(`createUser ${email}: ${error?.message}`);
+  return { email, password, userId: data.user.id, memberId: '', childId: null };
+}
+
+/** Efface le journal des essais (verrouillages) : un test de verrouillage ne doit pas empoisonner les suivants. */
+export async function resetAttempts(): Promise<void> {
+  const { error } = await admin().from('auth_attempts').delete().gte('id', 0);
+  if (error) throw new Error(`auth_attempts: ${error.message}`);
+}
+
+/** Jeton d'accès d'une personne (pour appeler directement les Edge Functions). */
+export async function accessTokenOf(person: Person): Promise<string> {
+  return (await sessionOf(person)).access_token;
 }
 
 /** Tâche du jour créée par le parent (via le service local). */
@@ -113,4 +138,20 @@ async function sessionOf(person: Person): Promise<Session> {
 export async function signInContext(context: BrowserContext, person: Person): Promise<void> {
   const session = await sessionOf(person);
   await context.addInitScript(([key, value]) => window.localStorage.setItem(key as string, value as string), [sessionStorageKey(), JSON.stringify(session)]);
+}
+
+/** Client service local (clé de service du Supabase LOCAL de test) : lecture/écriture directe pour préparer ou vérifier l'état serveur. */
+export const serviceClient = () => admin();
+
+/** Connexion DIRECTE à l'authentification (signInWithPassword) : renvoie le message d'erreur, ou null si la session s'ouvre. */
+export async function directSignIn(email: string, password: string): Promise<string | null> {
+  const { error } = await createClient(supabaseUrl(), anonKey(), { auth: { persistSession: false } }).auth.signInWithPassword({ email, password });
+  return error ? error.message : null;
+}
+
+/** Adresse interne d'un compte enfant (lue côté serveur ; jamais exposée au client). */
+export async function internalEmailOf(family: FamilyFixture, loginId: string): Promise<string> {
+  const { data, error } = await admin().from('child_accounts').select('auth_email').eq('family_id', family.familyId).eq('login_id', loginId).single();
+  if (error || !data) throw new Error(`child_accounts: ${error?.message}`);
+  return data.auth_email;
 }

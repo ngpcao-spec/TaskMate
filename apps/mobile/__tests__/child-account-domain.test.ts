@@ -1,6 +1,5 @@
 import {
   LOGIN_ID_REGEX,
-  loginEmail,
   normalizeLoginId,
   toChildAccountError,
   validateChildPassword,
@@ -26,10 +25,6 @@ describe('identifiant enfant', () => {
     expect(validateLoginId('minh@mail')).toBe('invalidChars');
     expect(validateLoginId('.minh')).toBe('invalidStart');
     expect(validateLoginId('-minh')).toBe('invalidStart');
-  });
-  it('dérive une adresse fictive sur un domaine réservé, sans jamais exposer d\'identifiant brut', () => {
-    expect(loginEmail('Minh')).toBe('minh@child.taskmate.invalid');
-    expect(loginEmail('minh.nguyễn')).toBe('minh.nguyen@child.taskmate.invalid');
   });
 });
 
@@ -62,7 +57,6 @@ describe('parité client ↔ Edge Functions ↔ SQL', () => {
   });
   it('mêmes constantes', () => {
     expect(server.LOGIN_ID_REGEX.source).toBe(LOGIN_ID_REGEX.source);
-    expect(server.loginEmail('minh')).toBe(loginEmail('minh'));
     expect(server.CHILD_PASSWORD_MIN).toBe(6);
     expect(server.PASSWORD_MAX).toBe(72);
   });

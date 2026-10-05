@@ -36,19 +36,19 @@
     },
     "auth": {
       "title": "Parent area",
-      "subtitle": "Create your account or sign in with your email and a password.",
+      "subtitle": "Sign in with your Google account to create your family or find yours again.",
+      "google": "Continue with Google",
+      "existingToggle": "I already have an email and password account",
+      "existingHint": "For existing parent accounts only. A new parent signs in with Google.",
       "email": "Email",
       "emailPlaceholder": "you@example.com",
       "password": "Password",
-      "signUp": "Create an account",
       "signIn": "Sign in",
       "invalidEmail": "Invalid email",
-      "passwordTooShort": "Password: at least {{min}} characters.",
       "errors": {
         "invalidCredentials": "Wrong email or password.",
-        "alreadyExists": "An account already exists with this email: use “Sign in”.",
-        "weakPassword": "Password too weak (at least {{min}} characters).",
-        "confirmEmailOn": "The service still requires email confirmation. Contact the administrator.",
+        "tooManyAttempts": "Too many attempts. Try again in a few minutes.",
+        "googleUnavailable": "Google sign-in is available on the web version of TaskMate.",
         "rateLimited": "Too many attempts. Try again in a few minutes.",
         "network": "No connection. Try again.",
         "unknown": "Something went wrong. Try again."
@@ -56,12 +56,26 @@
     },
     "family": {
       "title": "Your family",
-      "create": "Create a new family",
+      "create": "Create the family",
       "familyName": "Family name",
       "familyNamePlaceholder": "The Nguyen family",
       "yourName": "Your name",
       "yourNamePlaceholder": "Dad / Mom",
-      "required": "Required"
+      "required": "Required",
+      "join": "Join the family",
+      "switchToJoin": "Join a family",
+      "switchToCreate": "Create a new family",
+      "code": "Invitation code",
+      "codePlaceholder": "ABCD-EFGH",
+      "codeHint": "Ask the other parent to generate a code in More → Settings → Invite a parent.",
+      "errors": {
+        "invalidCode": "Invalid, expired or already used code.",
+        "tooManyAttempts": "Too many attempts. Try again in 15 minutes.",
+        "googleRequired": "Sign in with Google to create or join a family.",
+        "alreadyMember": "This account already belongs to a family.",
+        "lastParent": "You are the last parent.",
+        "unknown": "Something went wrong. Try again."
+      }
     },
     "children": {
       "title": "Children profiles",
@@ -82,15 +96,15 @@
     },
     "childLogin": {
       "title": "Child sign-in",
-      "subtitle": "Enter the username and password your parent gave you.",
+      "subtitle": "Enter the email of a parent in your family, your username and your password.",
+      "parentEmail": "Email of a parent in the family",
       "loginId": "Username",
       "password": "Password",
       "submit": "Sign in",
       "errors": {
-        "invalidCredentials": "Wrong username or password.",
-        "alreadyExists": "Something went wrong. Try again.",
-        "weakPassword": "Something went wrong. Try again.",
-        "confirmEmailOn": "Something went wrong. Try again.",
+        "invalidCredentials": "Cannot sign in: check the parent's email, your username and your password.",
+        "tooManyAttempts": "Too many tries. Try again in a few minutes.",
+        "googleUnavailable": "Something went wrong. Try again.",
         "rateLimited": "Too many tries. Try again in a few minutes.",
         "network": "No connection. Try again.",
         "unknown": "Something went wrong. Try again."
@@ -354,7 +368,7 @@
     "roleParent": "Parent",
     "revoke": "Revoke",
     "revokeTitle": "Revoke device",
-    "revokeBody": "{{name}}'s device will be signed out and must sign in again with their username.",
+    "revokeBody": "{{name}}'s device will be signed out and must sign in again.",
     "deviceRevoked": "Device revoked",
     "timezone": "Family time zone",
     "timezoneInvalid": "Invalid time zone (e.g. Asia/Ho_Chi_Minh)",
@@ -412,7 +426,8 @@
       "connection": "Supabase connection",
       "frontUrl": "App's Supabase address",
       "webUrl": "App's public address",
-      "email": "Email and password sign-in",
+      "google": "Google sign-in",
+      "email": "Email sign-in (existing parents)",
       "migrations": "Migrations",
       "tables": "Tables",
       "rpc": "SQL functions (RPC)",
@@ -420,13 +435,13 @@
       "publication": "Realtime: published tables",
       "cron": "Scheduled jobs (pg_cron)",
       "realtime": "Realtime: connection",
+      "fn-child-login": "Edge Function child-login",
       "fn-create-child": "Edge Function create-child",
       "fn-reset-child-password": "Edge Function reset-child-password",
       "fn-delete-child": "Edge Function delete-child",
       "fn-delete-account": "Edge Function delete-account",
       "fn-send-push": "Edge Function send-push",
-      "vapid": "Web Push key (VAPID)",
-      "confirmEmail": "Email confirmation turned off"
+      "vapid": "Web Push key (VAPID)"
     },
     "connection": {
       "ok": "The server answers ({{url}}).",
@@ -440,8 +455,8 @@
       "ok": "Public app address: {{url}}."
     },
     "email": {
-      "ok": "Email and password sign-in is enabled.",
-      "disabled": "Email sign-in is disabled: parents cannot sign in. Supabase → Authentication → Sign In / Providers → Email → turn on."
+      "ok": "Email and password sign-in is enabled (existing parents).",
+      "disabled": "Email sign-in is disabled: existing parents cannot sign in. Supabase → Authentication → Sign In / Providers → Email → turn on."
     },
     "migrations": {
       "missingRpc": "Migrations are not (all) applied: the “diagnostics” function is missing. Supabase → Database → Migrations: check the list; otherwise Project Settings → Integrations → GitHub → “Deploy to production”, then merge to main again.",
@@ -491,9 +506,9 @@
       "copy": "Copy",
       "copied": "Copied"
     },
-    "confirmEmail": {
-      "ok": "“Confirm email” is off: parent sign-up sends no email.",
-      "enabled": "“Confirm email” is ON: parents cannot sign up without an email. Supabase → Authentication → Sign In / Providers → Email → turn off “Confirm email” → Save.",
+    "google": {
+      "ok": "The Google provider is enabled: parents can sign up and sign in.",
+      "disabled": "The Google provider is DISABLED: no new parent can sign up. Supabase → Authentication → Sign In / Providers → Google → turn on, enter the Google client ID and secret → Save.",
       "unknown": "Cannot read the authentication settings (invalid public key or network). Check EXPO_PUBLIC_SUPABASE_ANON_KEY."
     }
   },
@@ -542,5 +557,29 @@
     "copyText": "TaskMate sign-in for {{name}} — username: {{loginId}} — password: {{password}}",
     "copied": "Copied to the clipboard",
     "copyFailed": "Copy failed: write them down"
+  },
+  "parentInvite": {
+    "title": "Invite a parent",
+    "hint": "Generate a single-use code valid for 24 h. The other parent signs in with Google, picks “Join a family” and enters this code.",
+    "generate": "Generate a code",
+    "regenerate": "New code (cancels the previous one)",
+    "revoke": "Cancel the invitation",
+    "revoked": "Invitation cancelled",
+    "codeIs": "Invitation code: {{code}}",
+    "shownOnce": "Write down or copy this code now: it will not be shown again. Valid until {{date}}.",
+    "copy": "Copy the code",
+    "copied": "Code copied",
+    "copyFailed": "Copy failed: write it down",
+    "active": "An invitation is active until {{date}}. Its code can no longer be displayed: generate a new one if needed.",
+    "none": "No active invitation."
+  },
+  "parents": {
+    "title": "Parents in the family",
+    "you": "(you)",
+    "leave": "Leave the family",
+    "leaveTitle": "Leave the family?",
+    "leaveBody": "You will lose access to this family's children, tasks and rewards. You can join again with a new code.",
+    "left": "You left the family",
+    "lastParent": "You are the only parent: to leave, delete the family (at the bottom of this page)."
   }
 }

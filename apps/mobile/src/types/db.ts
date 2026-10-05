@@ -48,15 +48,28 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"child_accounts": {
+                },"auth_attempts": {
                   Row: {
-                    "child_id": string,"created_at": string,"family_id": string,"id": string,"login_id": string,"member_id": string
+                    "created_at": string,"id": number,"key": string
                   }
                   Insert: {
-                    "child_id": string,"created_at"?: string,"family_id": string,"id"?: string,"login_id": string,"member_id": string
+                    "created_at"?: string,"id"?: never,"key": string
                   }
                   Update: {
-                    "child_id"?: string,"created_at"?: string,"family_id"?: string,"id"?: string,"login_id"?: string,"member_id"?: string
+                    "created_at"?: string,"id"?: never,"key"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"child_accounts": {
+                  Row: {
+                    "auth_email": string,"child_id": string,"created_at": string,"family_id": string,"id": string,"login_id": string,"member_id": string,"password_hash": string | null
+                  }
+                  Insert: {
+                    "auth_email": string,"child_id": string,"created_at"?: string,"family_id": string,"id"?: string,"login_id": string,"member_id": string,"password_hash"?: string | null
+                  }
+                  Update: {
+                    "auth_email"?: string,"child_id"?: string,"created_at"?: string,"family_id"?: string,"id"?: string,"login_id"?: string,"member_id"?: string,"password_hash"?: string | null
                   }
                   Relationships: [
                     {
@@ -219,6 +232,37 @@ isOneToOne: false
       foreignKeyName: "notification_prefs_member_id_fkey"
       columns: ["member_id"]
 isOneToOne: true
+      referencedRelation: "members"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"parent_invites": {
+                  Row: {
+                    "code_hash": string,"created_at": string,"created_by": string,"expires_at": string,"family_id": string,"id": string,"revoked_at": string | null,"used_at": string | null,"used_by": string | null
+                  }
+                  Insert: {
+                    "code_hash": string,"created_at"?: string,"created_by": string,"expires_at": string,"family_id": string,"id"?: string,"revoked_at"?: string | null,"used_at"?: string | null,"used_by"?: string | null
+                  }
+                  Update: {
+                    "code_hash"?: string,"created_at"?: string,"created_by"?: string,"expires_at"?: string,"family_id"?: string,"id"?: string,"revoked_at"?: string | null,"used_at"?: string | null,"used_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "parent_invites_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "members"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "parent_invites_family_id_fkey"
+      columns: ["family_id"]
+isOneToOne: false
+      referencedRelation: "families"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "parent_invites_used_by_fkey"
+      columns: ["used_by"]
+isOneToOne: false
       referencedRelation: "members"
       referencedColumns: ["id"]
     }
@@ -472,6 +516,15 @@ isOneToOne: false
 "child_balance":
 { Args: { "p_child": string }; Returns: number
                            },
+"child_login_check_password":
+{ Args: { "p_auth_email": string,"p_password": string }; Returns: boolean
+                           },
+"child_login_prepare":
+{ Args: { "p_ip": string,"p_login_id": string,"p_parent_email": string }; Returns: Json
+                           },
+"child_login_record_failure":
+{ Args: { "p_family_key": string,"p_ip_key": string }; Returns: undefined
+                           },
 "child_pending_task_points":
 { Args: { "p_child": string }; Returns: number
                            },
@@ -483,6 +536,9 @@ isOneToOne: false
                            },
 "create_family":
 { Args: { "p_display_name": string,"p_name": string,"p_timezone"?: string }; Returns: string
+                           },
+"create_parent_invite":
+{ Args: Record<PropertyKey, never>; Returns: string
                            },
 "delete_family":
 { Args: Record<PropertyKey, never>; Returns: (string)[]
@@ -502,11 +558,23 @@ isOneToOne: false
 "generate_recurrence":
 { Args: { "p_now"?: string,"p_recurrence": string }; Returns: number
                            },
+"is_google_account":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
 "is_parent":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"join_family_with_code":
+{ Args: { "p_code": string,"p_display_name": string }; Returns: string
+                           },
+"leave_family":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
 "log_activity":
 { Args: { "p_actor": string,"p_child": string,"p_family": string,"p_payload": Json,"p_type": string }; Returns: undefined
+                           },
+"migrate_legacy_child_accounts":
+{ Args: Record<PropertyKey, never>; Returns: number
                            },
 "my_child_id":
 { Args: Record<PropertyKey, never>; Returns: string
@@ -524,7 +592,7 @@ isOneToOne: false
 { Args: { "p_day": string,"r": Database["public"]['Tables']["recurrences"]['Row'] }; Returns: boolean
                            },
 "register_child_account":
-{ Args: { "p_child_id": string,"p_login_id": string,"p_user_id": string }; Returns: string
+{ Args: { "p_auth_email": string,"p_child_id": string,"p_login_id": string,"p_password": string,"p_user_id": string }; Returns: string
                            },
 "register_device":
 { Args: { "p_platform": string,"p_token": string }; Returns: string
@@ -566,8 +634,14 @@ isOneToOne: false
 "revoke_device":
 { Args: { "p_device_id": string }; Returns: undefined
                            },
+"revoke_parent_invite":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
 "schedule_cron_jobs":
 { Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"set_child_password":
+{ Args: { "p_child_id": string,"p_password": string }; Returns: undefined
                            },
 "sync_recurrence":
 { Args: { "p_now"?: string,"p_recurrence": string }; Returns: undefined

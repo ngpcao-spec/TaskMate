@@ -26,6 +26,11 @@ jest.mock('@/hooks/useFamilyAdmin', () => ({
   useDevices: () => ({ data: mockDevices }),
   useRevokeDevice: () => ({ mutate: mockRevoke, isPending: false }),
   useChildAccounts: () => ({ data: [] }),
+  useActiveParentInvite: () => ({ data: null }),
+  useCreateParentInvite: () => ({ mutate: jest.fn(), isPending: false }),
+  useRevokeParentInvite: () => ({ mutate: jest.fn(), isPending: false }),
+  useParents: () => ({ data: [{ id: 'm-p', display_name: 'Ba' }, { id: 'm-p2', display_name: 'Mẹ' }] }),
+  useLeaveFamily: () => ({ mutate: jest.fn(), isPending: false }),
   useDeleteAccount: () => ({ mutate: (...a: unknown[]) => mockDeleteAccount(...a), isPending: false }),
   useUpdateTimezone: () => ({ mutate: jest.fn(), isPending: false }),
 }));
@@ -44,18 +49,22 @@ describe('SettingsScreen', () => {
     expect(screen.getByText('Réglages généraux')).toBeTruthy();
   });
 
-  it('parent : enfants, appareils, fuseau, suppression ; plus aucun code d\'invitation', async () => {
+  it('parent : enfants, appareils, invitation d\'un parent, parents, fuseau, suppression', async () => {
     await renderWithClient(<SettingsScreen />);
     expect(screen.getByRole('button', { name: 'Quản lý hồ sơ của các con' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Thiết bị đã liên kết' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Xóa tài khoản và dữ liệu' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Tạo mã mời phụ huynh' })).toBeNull();
+    // invitation d'un parent (code haché, 24 h) et liste des parents
+    expect(screen.getByRole('button', { name: 'Tạo mã' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Rời gia đình' })).toBeTruthy();
   });
 
   it('enfant : seulement langue et déconnexion (pas de gestion du foyer ni de suppression)', async () => {
     mockRole = 'child';
     await renderWithClient(<SettingsScreen />);
     expect(screen.queryByRole('button', { name: 'Thiết bị đã liên kết' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Tạo mã' })).toBeNull(); // un enfant ne peut pas inviter
+    expect(screen.queryByRole('button', { name: 'Rời gia đình' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Xóa tài khoản và dữ liệu' })).toBeNull();
     expect(screen.getByRole('button', { name: 'Đăng xuất' })).toBeTruthy();
   });

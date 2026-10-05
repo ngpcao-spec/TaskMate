@@ -1,4 +1,5 @@
 import {
+  childAuthEmail,
   createChildAccount,
   deleteChildAccount,
   resetChildPassword,
@@ -9,20 +10,23 @@ import {
 const CHILD = '11111111-1111-4111-8111-111111111111';
 const USER = '22222222-2222-4222-8222-222222222222';
 const NEW_USER = '33333333-3333-4333-8333-333333333333';
-const target = (over: Partial<Target> = {}): Target => ({ family_id: 'f', child_id: CHILD, child_name: 'Lan', member_id: null, login_id: null, user_id: null, ...over });
+const FAMILY = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
+const RANDOM_ID = 'cccccccc-1111-4222-8333-444444444444';
+const target = (over: Partial<Target> = {}): Target => ({ family_id: FAMILY, child_id: CHILD, child_name: 'Lan', member_id: null, login_id: null, user_id: null, ...over });
 
 function deps(over: Partial<ChildAccountDeps> = {}) {
   const calls: string[] = [];
   const d: ChildAccountDeps = {
     target: async () => ({ data: target(), error: null }),
-    createUser: async (email) => (calls.push(`createUser:${email}`), { userId: NEW_USER, error: null }),
+    createUser: async (email, pw) => (calls.push(`createUser:${email}:${pw}`), { userId: NEW_USER, error: null }),
     deleteUser: async (id) => void calls.push(`deleteUser:${id}`),
-    register: async (c, u, l) => (calls.push(`register:${c}:${u}:${l}`), { error: null }),
+    register: async (c, u, l, e, pw) => (calls.push(`register:${c}:${u}:${l}:${e}:${pw}`), { error: null }),
     remove: async (c) => (calls.push(`remove:${c}`), { userId: USER, error: null }),
-    setPassword: async (u) => (calls.push(`setPassword:${u}`), { error: false }),
+    setPassword: async (c, pw) => (calls.push(`setPassword:${c}:${pw}`), { error: false }),
     lockUser: async (u, t) => (calls.push(`lock:${u}:${t}`), { error: false }),
     softDeleteProfile: async (c) => (calls.push(`softDelete:${c}`), { error: false }),
     randomPassword: () => 'random-pw',
+    randomId: () => RANDOM_ID,
     ...over,
   };
   return Object.assign(d, { calls });
@@ -30,11 +34,19 @@ function deps(over: Partial<ChildAccountDeps> = {}) {
 const forbidden = { data: null, error: { code: '42501', message: 'forbidden' } };
 
 describe('create-child', () => {
+  it('adresse interne : UUID, domaine réservé, indépendante de l\'identifiant et de la famille', () => {
+    expect(childAuthEmail(RANDOM_ID)).toBe(`${RANDOM_ID}@child.taskmate.invalid`);
+    expect(childAuthEmail(RANDOM_ID)).not.toContain('minh');
+  });
+
   it('crée le compte : e-mail fictif dérivé, puis enregistrement du lien', async () => {
     const d = deps();
     const r = await createChildAccount(d, { childId: CHILD, loginId: '  Lan.Hà ', password: 'secret1' });
     expect(r).toEqual({ status: 200, body: { loginId: 'lan.ha' } });
-    expect(d.calls).toEqual(['createUser:lan.ha@child.taskmate.invalid', `register:${CHILD}:${NEW_USER}:lan.ha`]);
+    // adresse interne = UUID aléatoire (rien de dérivable de l'identifiant) ; GoTrue reçoit un mot de passe ALÉATOIRE, jamais le vrai
+    const email = `${RANDOM_ID}@child.taskmate.invalid`;
+    expect(d.calls).toEqual([`createUser:${email}:random-pw`, `register:${CHILD}:${NEW_USER}:lan.ha:${email}:secret1`]);
+    expect(d.calls.join('|')).not.toMatch(/lan\.ha@/);
   });
 
   it('un enfant (ou tout non-parent) est refusé AVANT toute création de compte', async () => {
@@ -85,7 +97,7 @@ describe('reset-child-password', () => {
   it('change le mot de passe du compte de l\'enfant', async () => {
     const d = deps(withAccount);
     expect(await resetChildPassword(d, { childId: CHILD, password: 'nouveau1' })).toEqual({ status: 200, body: { ok: true } });
-    expect(d.calls).toEqual([`setPassword:${USER}`]);
+    expect(d.calls).toEqual([`setPassword:${CHILD}:nouveau1`]); // le haché de la base change ; GoTrue n’est pas touché
   });
   it('refuse un non-parent, un enfant sans compte et un mot de passe trop court', async () => {
     const f = deps({ target: async () => forbidden });

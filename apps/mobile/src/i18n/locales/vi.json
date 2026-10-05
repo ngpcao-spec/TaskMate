@@ -36,19 +36,19 @@
     },
     "auth": {
       "title": "Khu vực phụ huynh",
-      "subtitle": "Tạo tài khoản hoặc đăng nhập bằng email và mật khẩu.",
+      "subtitle": "Đăng nhập bằng tài khoản Google để tạo gia đình hoặc vào lại gia đình của bạn.",
+      "google": "Tiếp tục với Google",
+      "existingToggle": "Tôi đã có tài khoản email và mật khẩu",
+      "existingHint": "Chỉ dành cho tài khoản phụ huynh hiện có. Phụ huynh mới đăng nhập bằng Google.",
       "email": "Email",
       "emailPlaceholder": "ban@example.com",
       "password": "Mật khẩu",
-      "signUp": "Tạo tài khoản",
       "signIn": "Đăng nhập",
       "invalidEmail": "Email không hợp lệ",
-      "passwordTooShort": "Mật khẩu tối thiểu {{min}} ký tự.",
       "errors": {
         "invalidCredentials": "Email hoặc mật khẩu không đúng.",
-        "alreadyExists": "Email này đã có tài khoản: hãy chọn « Đăng nhập ».",
-        "weakPassword": "Mật khẩu quá yếu (tối thiểu {{min}} ký tự).",
-        "confirmEmailOn": "Hệ thống vẫn yêu cầu xác nhận email. Hãy liên hệ quản trị viên.",
+        "tooManyAttempts": "Thử quá nhiều lần. Hãy thử lại sau ít phút.",
+        "googleUnavailable": "Đăng nhập Google có trên phiên bản web của TaskMate.",
         "rateLimited": "Thử quá nhiều lần. Hãy thử lại sau ít phút.",
         "network": "Không có kết nối. Hãy thử lại.",
         "unknown": "Đã xảy ra lỗi. Hãy thử lại."
@@ -56,12 +56,26 @@
     },
     "family": {
       "title": "Gia đình của bạn",
-      "create": "Tạo gia đình mới",
+      "create": "Tạo gia đình",
       "familyName": "Tên gia đình",
       "familyNamePlaceholder": "Gia đình Nguyễn",
       "yourName": "Tên của bạn",
       "yourNamePlaceholder": "Ba / Mẹ",
-      "required": "Vui lòng nhập thông tin này"
+      "required": "Vui lòng nhập thông tin này",
+      "join": "Tham gia gia đình",
+      "switchToJoin": "Tham gia một gia đình",
+      "switchToCreate": "Tạo gia đình mới",
+      "code": "Mã mời",
+      "codePlaceholder": "ABCD-EFGH",
+      "codeHint": "Nhờ phụ huynh còn lại tạo mã trong Thêm → Cài đặt chung → Mời phụ huynh.",
+      "errors": {
+        "invalidCode": "Mã không hợp lệ, đã hết hạn hoặc đã được dùng.",
+        "tooManyAttempts": "Thử quá nhiều lần. Hãy thử lại sau 15 phút.",
+        "googleRequired": "Hãy đăng nhập bằng Google để tạo hoặc tham gia gia đình.",
+        "alreadyMember": "Tài khoản này đã thuộc một gia đình.",
+        "lastParent": "Bạn là phụ huynh cuối cùng.",
+        "unknown": "Đã xảy ra lỗi. Hãy thử lại."
+      }
     },
     "children": {
       "title": "Thêm hồ sơ cho con",
@@ -82,15 +96,15 @@
     },
     "childLogin": {
       "title": "Con đăng nhập",
-      "subtitle": "Nhập tên đăng nhập và mật khẩu do bố mẹ cung cấp.",
+      "subtitle": "Nhập email của một phụ huynh trong gia đình, tên đăng nhập và mật khẩu của con.",
+      "parentEmail": "Email của một phụ huynh trong gia đình",
       "loginId": "Tên đăng nhập",
       "password": "Mật khẩu",
       "submit": "Đăng nhập",
       "errors": {
-        "invalidCredentials": "Tên đăng nhập hoặc mật khẩu không đúng.",
-        "alreadyExists": "Đã xảy ra lỗi. Con hãy thử lại.",
-        "weakPassword": "Đã xảy ra lỗi. Con hãy thử lại.",
-        "confirmEmailOn": "Đã xảy ra lỗi. Con hãy thử lại.",
+        "invalidCredentials": "Không đăng nhập được: hãy kiểm tra email của phụ huynh, tên đăng nhập và mật khẩu.",
+        "tooManyAttempts": "Thử quá nhiều lần. Con hãy thử lại sau ít phút.",
+        "googleUnavailable": "Đã xảy ra lỗi. Con hãy thử lại.",
         "rateLimited": "Thử quá nhiều lần. Con hãy thử lại sau ít phút.",
         "network": "Không có kết nối. Con hãy thử lại.",
         "unknown": "Đã xảy ra lỗi. Con hãy thử lại."
@@ -354,7 +368,7 @@
     "roleParent": "Phụ huynh",
     "revoke": "Thu hồi",
     "revokeTitle": "Thu hồi thiết bị",
-    "revokeBody": "Thiết bị của {{name}} sẽ bị đăng xuất và phải đăng nhập lại bằng tên đăng nhập.",
+    "revokeBody": "Thiết bị của {{name}} sẽ bị đăng xuất và phải đăng nhập lại.",
     "deviceRevoked": "Đã thu hồi thiết bị",
     "timezone": "Múi giờ của gia đình",
     "timezoneInvalid": "Múi giờ không hợp lệ (ví dụ Asia/Ho_Chi_Minh)",
@@ -412,7 +426,8 @@
       "connection": "Kết nối Supabase",
       "frontUrl": "Địa chỉ Supabase của ứng dụng",
       "webUrl": "Địa chỉ công khai của ứng dụng",
-      "email": "Đăng nhập bằng email và mật khẩu",
+      "google": "Đăng nhập Google",
+      "email": "Đăng nhập email (phụ huynh hiện có)",
       "migrations": "Migration",
       "tables": "Bảng",
       "rpc": "Hàm SQL (RPC)",
@@ -420,13 +435,13 @@
       "publication": "Realtime: bảng được phát",
       "cron": "Tác vụ định kỳ (pg_cron)",
       "realtime": "Realtime: kết nối",
+      "fn-child-login": "Edge Function child-login",
       "fn-create-child": "Edge Function create-child",
       "fn-reset-child-password": "Edge Function reset-child-password",
       "fn-delete-child": "Edge Function delete-child",
       "fn-delete-account": "Edge Function delete-account",
       "fn-send-push": "Edge Function send-push",
-      "vapid": "Khóa Web Push (VAPID)",
-      "confirmEmail": "Đã tắt xác nhận email"
+      "vapid": "Khóa Web Push (VAPID)"
     },
     "connection": {
       "ok": "Máy chủ phản hồi ({{url}}).",
@@ -440,8 +455,8 @@
       "ok": "Địa chỉ công khai của ứng dụng: {{url}}."
     },
     "email": {
-      "ok": "Đăng nhập bằng email và mật khẩu đã bật.",
-      "disabled": "Đăng nhập bằng email đang tắt: phụ huynh không thể đăng nhập. Supabase → Authentication → Sign In / Providers → Email → bật."
+      "ok": "Đăng nhập bằng email và mật khẩu đã bật (phụ huynh hiện có).",
+      "disabled": "Đăng nhập bằng email đang tắt: phụ huynh hiện có không đăng nhập được. Supabase → Authentication → Sign In / Providers → Email → bật."
     },
     "migrations": {
       "missingRpc": "Migration chưa được áp dụng đầy đủ: thiếu hàm “diagnostics”. Supabase → Database → Migrations để kiểm tra; nếu không, Project Settings → Integrations → GitHub → “Deploy to production” rồi merge lại vào main.",
@@ -491,9 +506,9 @@
       "copy": "Sao chép",
       "copied": "Đã sao chép"
     },
-    "confirmEmail": {
-      "ok": "“Confirm email” đang tắt: đăng ký của phụ huynh không gửi email.",
-      "enabled": "“Confirm email” đang BẬT: phụ huynh không đăng ký được nếu không có email. Supabase → Authentication → Sign In / Providers → Email → tắt “Confirm email” → Save.",
+    "google": {
+      "ok": "Nhà cung cấp Google đã bật: phụ huynh có thể đăng ký và đăng nhập.",
+      "disabled": "Nhà cung cấp Google đang TẮT: phụ huynh mới không đăng ký được. Supabase → Authentication → Sign In / Providers → Google → bật, nhập Client ID và Secret của Google → Save.",
       "unknown": "Không đọc được cài đặt xác thực (khóa công khai sai hoặc mất mạng). Kiểm tra EXPO_PUBLIC_SUPABASE_ANON_KEY."
     }
   },
@@ -542,5 +557,29 @@
     "copyText": "Đăng nhập TaskMate của {{name}} — tên đăng nhập: {{loginId}} — mật khẩu: {{password}}",
     "copied": "Đã sao chép",
     "copyFailed": "Không sao chép được: hãy ghi lại"
+  },
+  "parentInvite": {
+    "title": "Mời phụ huynh",
+    "hint": "Tạo mã dùng một lần, hiệu lực 24 giờ. Phụ huynh còn lại đăng nhập bằng Google, chọn « Tham gia một gia đình » rồi nhập mã này.",
+    "generate": "Tạo mã",
+    "regenerate": "Mã mới (hủy mã trước)",
+    "revoke": "Hủy lời mời",
+    "revoked": "Đã hủy lời mời",
+    "codeIs": "Mã mời: {{code}}",
+    "shownOnce": "Hãy ghi lại hoặc sao chép mã ngay: mã sẽ không hiển thị lại. Hiệu lực đến {{date}}.",
+    "copy": "Sao chép mã",
+    "copied": "Đã sao chép mã",
+    "copyFailed": "Không sao chép được: hãy ghi lại",
+    "active": "Có một lời mời đang hiệu lực đến {{date}}. Không thể hiện lại mã: hãy tạo mã mới nếu cần.",
+    "none": "Chưa có lời mời nào."
+  },
+  "parents": {
+    "title": "Phụ huynh trong gia đình",
+    "you": "(bạn)",
+    "leave": "Rời gia đình",
+    "leaveTitle": "Rời gia đình?",
+    "leaveBody": "Bạn sẽ không còn truy cập được con, công việc và phần thưởng của gia đình này. Bạn có thể tham gia lại bằng mã mới.",
+    "left": "Bạn đã rời gia đình",
+    "lastParent": "Bạn là phụ huynh duy nhất: muốn rời đi, hãy xóa gia đình (ở cuối trang này)."
   }
 }

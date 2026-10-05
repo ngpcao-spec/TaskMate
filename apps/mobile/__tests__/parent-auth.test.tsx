@@ -7,8 +7,8 @@ jest.mock('expo-router', () => ({ useRouter: () => ({ replace: mockReplace, push
 jest.mock('react-native-safe-area-context', () => ({
   SafeAreaView: ({ children }: { children: React.ReactNode }) => children,
 }));
-const mockSignUp = jest.fn().mockResolvedValue(undefined);
 const mockSignIn = jest.fn().mockResolvedValue(undefined);
+const mockGoogle = jest.fn().mockResolvedValue(undefined);
 jest.mock('@/api/auth', () => {
   class MockAuthFlowError extends Error {
     kind: string;
@@ -17,68 +17,61 @@ jest.mock('@/api/auth', () => {
       this.kind = kind;
     }
   }
-  return {
-    AuthFlowError: MockAuthFlowError,
-    signUpParent: (...a: unknown[]) => mockSignUp(...a),
-    signInParent: (...a: unknown[]) => mockSignIn(...a),
-  };
+  return { AuthFlowError: MockAuthFlowError, signInParent: (...a: unknown[]) => mockSignIn(...a) };
 });
+jest.mock('@/api/googleAuth', () => ({ startGoogleSignIn: () => mockGoogle() }));
 
-describe('ParentAuthScreen (e-mail + mot de passe, sans OTP)', () => {
+describe('ParentAuthScreen (Google d\'abord)', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
     await i18n.changeLanguage('fr');
   });
 
-  const fill = async (email: string, password: string) => {
-    await fireEvent.changeText(screen.getByLabelText('Email'), email);
-    await fireEvent.changeText(screen.getByLabelText('Mot de passe'), password);
-  };
-
-  it('ne propose ni code ni connexion sociale', async () => {
+  it('bouton principal « Continuer avec Google » ; aucune inscription par e-mail ni OTP', async () => {
     await render(<ParentAuthScreen />);
+    expect(screen.getByRole('button', { name: 'Continuer avec Google' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Créer un compte' })).toBeNull();
     expect(screen.queryByText(/code/i)).toBeNull();
-    expect(screen.queryByText(/Apple|Google/)).toBeNull();
+    expect(screen.queryByLabelText('Email')).toBeNull(); // formulaire e-mail replié par défaut
   });
 
-  it('refuse un email invalide sans appeler le serveur', async () => {
+  it('« Continuer avec Google » lance la connexion Google', async () => {
     await render(<ParentAuthScreen />);
-    await fill('pas-un-email', 'motdepasse1');
-    await fireEvent.press(screen.getByRole('button', { name: 'Créer un compte' }));
-    expect(screen.getByText('Email invalide')).toBeTruthy();
-    expect(mockSignUp).not.toHaveBeenCalled();
-  });
-
-  it('refuse un mot de passe de moins de 8 caractères', async () => {
-    await render(<ParentAuthScreen />);
-    await fill('ba@example.com', '1234567');
-    expect(screen.getByText('Mot de passe : 8 caractères minimum.')).toBeTruthy();
-    await fireEvent.press(screen.getByRole('button', { name: 'Se connecter' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Continuer avec Google' }));
+    await waitFor(() => expect(mockGoogle).toHaveBeenCalledTimes(1));
     expect(mockSignIn).not.toHaveBeenCalled();
   });
 
-  it('« Créer un compte » inscrit puis route vers l’accueil', async () => {
+  it('Google indisponible (natif) : message clair', async () => {
+    const { AuthFlowError } = jest.requireMock('@/api/auth');
+    mockGoogle.mockRejectedValueOnce(new AuthFlowError('googleUnavailable'));
     await render(<ParentAuthScreen />);
-    await fill('ba@example.com', 'motdepasse1');
-    await fireEvent.press(screen.getByRole('button', { name: 'Créer un compte' }));
-    await waitFor(() => expect(mockSignUp).toHaveBeenCalledWith('ba@example.com', 'motdepasse1'));
-    expect(mockReplace).toHaveBeenCalledWith('/');
+    await fireEvent.press(screen.getByRole('button', { name: 'Continuer avec Google' }));
+    expect(await screen.findByText('La connexion Google est disponible sur la version web de TaskMate.')).toBeTruthy();
   });
 
-  it('« Se connecter » connecte puis route vers l’accueil', async () => {
+  it('parents existants : connexion e-mail + mot de passe, seulement connexion (pas d\'inscription)', async () => {
     await render(<ParentAuthScreen />);
-    await fill('ba@example.com', 'motdepasse1');
+    await fireEvent.press(screen.getByRole('button', { name: 'J\'ai déjà un compte avec e-mail et mot de passe' }));
+    expect(screen.queryByRole('button', { name: 'Créer un compte' })).toBeNull();
+    await fireEvent.changeText(screen.getByLabelText('Email'), 'ba@example.com');
+    await fireEvent.changeText(screen.getByLabelText('Mot de passe'), 'motdepasse1');
     await fireEvent.press(screen.getByRole('button', { name: 'Se connecter' }));
     await waitFor(() => expect(mockSignIn).toHaveBeenCalledWith('ba@example.com', 'motdepasse1'));
-    expect(mockSignUp).not.toHaveBeenCalled();
     expect(mockReplace).toHaveBeenCalledWith('/');
   });
 
-  it('affiche le message adapté quand les identifiants sont refusés', async () => {
+  it('email invalide : message, aucun appel ; identifiants refusés : message adapté', async () => {
     const { AuthFlowError } = jest.requireMock('@/api/auth');
-    mockSignIn.mockRejectedValueOnce(new AuthFlowError('invalidCredentials'));
     await render(<ParentAuthScreen />);
-    await fill('ba@example.com', 'motdepasse1');
+    await fireEvent.press(screen.getByRole('button', { name: 'J\'ai déjà un compte avec e-mail et mot de passe' }));
+    await fireEvent.changeText(screen.getByLabelText('Email'), 'pas-un-email');
+    await fireEvent.changeText(screen.getByLabelText('Mot de passe'), 'x');
+    await fireEvent.press(screen.getByRole('button', { name: 'Se connecter' }));
+    expect(screen.getByText('Email invalide')).toBeTruthy();
+    expect(mockSignIn).not.toHaveBeenCalled();
+    mockSignIn.mockRejectedValueOnce(new AuthFlowError('invalidCredentials'));
+    await fireEvent.changeText(screen.getByLabelText('Email'), 'ba@example.com');
     await fireEvent.press(screen.getByRole('button', { name: 'Se connecter' }));
     expect(await screen.findByText('Email ou mot de passe incorrect.')).toBeTruthy();
     expect(mockReplace).not.toHaveBeenCalled();

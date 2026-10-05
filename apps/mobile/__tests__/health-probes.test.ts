@@ -12,7 +12,7 @@ function deps(overrides: Partial<ProbeDeps> = {}, routes: Record<string, () => R
       const key = Object.keys(routes).find((k) => url.endsWith(k));
       const handler = key ? routes[key] : undefined;
       if (handler) return handler();
-      if (url.endsWith('/auth/v1/settings')) return json({ mailer_autoconfirm: true, external: { email: true } });
+      if (url.endsWith('/auth/v1/settings')) return json({ external: { email: true, google: true } });
       return json({ error: 'method_not_allowed' }, 405);
     }) as typeof fetch,
     supabaseUrl: 'https://x.supabase.co',
@@ -29,8 +29,8 @@ describe('sondes de diagnostic', () => {
   it('lit Auth sans créer d\'utilisateur et détecte les fonctions déployées (réponse ≠ 404)', async () => {
     const d = deps();
     const p = await runProbes(d);
-    expect(p).toMatchObject({ reachable: true, auth: { autoconfirm: true, email: true }, realtime: 'SUBSCRIBED' });
-    expect(p.functions).toEqual({ 'create-child': true, 'reset-child-password': true, 'delete-child': true, 'delete-account': true, 'send-push': true });
+    expect(p).toMatchObject({ reachable: true, auth: { google: true, email: true }, realtime: 'SUBSCRIBED' });
+    expect(p.functions).toEqual({ 'child-login': true, 'create-child': true, 'reset-child-password': true, 'delete-child': true, 'delete-account': true, 'send-push': true });
     // jamais de POST : delete-account supprime la famille, signup créerait un utilisateur
     expect(d.calls.every((c) => c.method === 'GET')).toBe(true);
     expect(d.calls.filter((c) => c.url.includes('/functions/v1/')).every((c) => c.auth === 'Bearer jwt-parent')).toBe(true);
@@ -45,9 +45,9 @@ describe('sondes de diagnostic', () => {
     expect(down.functions['create-child']).toBeNull();
   });
 
-  it('mailer_autoconfirm absent ou faux = « Confirm email » activé', async () => {
-    const p = await runProbes(deps({}, { '/auth/v1/settings': () => json({ external: { email: true }, mailer_autoconfirm: false }) }));
-    expect(p.auth).toEqual({ autoconfirm: false, email: true });
+  it('external.google absent ou faux = Google désactivé', async () => {
+    const p = await runProbes(deps({}, { '/auth/v1/settings': () => json({ external: { email: true } }) }));
+    expect(p.auth).toEqual({ google: false, email: true });
   });
 
   it('classe les erreurs de la RPC diagnostics', async () => {

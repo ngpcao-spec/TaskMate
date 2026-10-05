@@ -56,16 +56,16 @@ export function serveChildAccountFunction(operation: Operation): void {
       deleteUser: async (userId) => {
         await admin.auth.admin.deleteUser(userId);
       },
-      register: async (childId, userId, loginId) => {
-        const { error } = await admin.rpc('register_child_account', { p_child_id: childId, p_user_id: userId, p_login_id: loginId });
+      register: async (childId, userId, loginId, authEmail, password) => {
+        const { error } = await admin.rpc('register_child_account', { p_child_id: childId, p_user_id: userId, p_login_id: loginId, p_auth_email: authEmail, p_password: password });
         return { error };
       },
       remove: async (childId) => {
         const { data, error } = await admin.rpc('remove_child_account', { p_child_id: childId });
         return { userId: (data as string | null) ?? null, error };
       },
-      setPassword: async (userId, password) => {
-        const { error } = await admin.auth.admin.updateUserById(userId, { password });
+      setPassword: async (childId, password) => {
+        const { error } = await admin.rpc('set_child_password', { p_child_id: childId, p_password: password });
         return { error: error !== null };
       },
       lockUser: async (userId, tombstone, password) => {
@@ -77,6 +77,7 @@ export function serveChildAccountFunction(operation: Operation): void {
         return { error: error !== null };
       },
       randomPassword,
+      randomId: () => crypto.randomUUID(),
     };
 
     const body = await req.json().catch(() => ({}));

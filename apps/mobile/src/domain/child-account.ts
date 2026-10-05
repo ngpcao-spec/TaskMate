@@ -9,8 +9,6 @@ export const LOGIN_ID_MIN = 3;
 export const LOGIN_ID_MAX = 30;
 /** Miroir exact de `supabase/functions/_shared/child-accounts.ts` et de la contrainte SQL de `child_accounts.login_id` (test de parité). */
 export const LOGIN_ID_REGEX = /^[a-z0-9][a-z0-9._-]{2,29}$/;
-/** Domaine réservé (RFC 2606) : l'adresse fictive ne reçoit jamais de courrier et n'est jamais affichée. */
-export const CHILD_EMAIL_DOMAIN = 'child.taskmate.invalid';
 
 /** Identifiant saisi → forme canonique : minuscules, sans accents (« Nguyễn Đức » → « nguyen duc » avant filtrage), sans espaces autour. */
 export function normalizeLoginId(raw: string): string {
@@ -33,9 +31,6 @@ export function validateLoginId(raw: string): LoginIdError | null {
   if (!/^[a-z0-9]/.test(id)) return 'invalidStart';
   return null;
 }
-
-/** Adresse fictive dérivée de l'identifiant (déterministe : la connexion se fait côté client sans appel serveur). */
-export const loginEmail = (loginId: string): string => `${normalizeLoginId(loginId)}@${CHILD_EMAIL_DOMAIN}`;
 
 export type PasswordError = 'required' | 'tooShort' | 'tooLong';
 

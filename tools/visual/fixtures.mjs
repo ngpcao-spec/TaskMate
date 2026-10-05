@@ -79,6 +79,6 @@ export function build() {
       { child_id: ids.minh, family_id: ids.fam, balance: 320, reserved: 0, available: 320, pending_task_points: 20 },
       { child_id: ids.khang, family_id: ids.fam, balance: 80, reserved: 0, available: 80, pending_task_points: 0 },
     ],
-    reward_requests: [], point_transactions: [], activity_log: [], notification_prefs: [], devices: [], recurrences: [], child_accounts: [],
+    reward_requests: [], point_transactions: [], activity_log: [], notification_prefs: [], devices: [], recurrences: [], child_accounts: [], parent_invites: [],
   };
 }

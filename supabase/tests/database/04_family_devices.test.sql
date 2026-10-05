@@ -58,6 +58,7 @@ select * from no_plan();
 
 -- ═══ create_family ═══
 select tests.login(31);
+select set_config('request.jwt.claims', '{"app_metadata":{"provider":"google","providers":["google"]}}', true); -- inscription = Google uniquement (D-050)
 select lives_ok($$select public.create_family('Famille C', 'Ba C')$$, 'create_family: un parent crée sa famille');
 select is((select role::text from public.members where user_id = tests.u(31)), 'parent', 'create_family: le créateur est parent');
 select is((select count(*)::int from public.rewards), 4, 'create_family: 4 récompenses par défaut');
