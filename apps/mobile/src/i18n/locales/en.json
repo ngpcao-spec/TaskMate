@@ -117,7 +117,6 @@
     "progress": "Today {{done}}/{{total}} tasks done",
     "listTitle": "Today's tasks",
     "empty": "No tasks today",
-    "readOnlyBanner": "Viewing {{name}}'s schedule",
     "addTask": "Add task",
     "overdue": "Overdue",
     "taskGone": "This task was deleted",

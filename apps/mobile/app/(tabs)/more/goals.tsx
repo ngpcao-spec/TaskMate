@@ -26,12 +26,7 @@ export default function GoalsScreen() {
   return (
     <Screen>
       <ScreenHeader title={t('goals.title')} />
-      {d.children.length > 1 ? <ProfilePills profiles={d.children} selectedId={d.child.id} onSelect={d.select} today={today} showName /> : null}
-      {d.readOnly ? (
-        <View accessible style={styles.banner}>
-          <Text style={styles.bannerText}>{t('today.readOnlyBanner', { name: d.child.name })}</Text>
-        </View>
-      ) : null}
+      {d.viewer.role === 'parent' && d.children.length > 1 ? <ProfilePills profiles={d.children} selectedId={d.child.id} onSelect={d.select} today={today} /> : null}
       {list.length === 0 ? <Text style={[typography.secondary, styles.empty]}>{t('goals.empty')}</Text> : null}
       {list.map((g) => {
         const achieved = isGoalAchieved(g.progress, g.target);
@@ -41,7 +36,6 @@ export default function GoalsScreen() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={`${g.title}, ${label}${achieved ? `, ${t('goals.achieved')}` : ''}`}
-              disabled={d.readOnly}
               onPress={() => router.push({ pathname: '/goal/[id]', params: { id: g.id } })}
               style={styles.head}
             >
@@ -59,25 +53,21 @@ export default function GoalsScreen() {
               </View>
               {achieved ? <Text style={styles.badge}>{t('goals.achieved')}</Text> : null}
             </Pressable>
-            {d.readOnly ? null : (
-              <View style={styles.steppers}>
-                <Pressable accessibilityRole="button" accessibilityLabel={`${t('goals.decrease')} ${g.title}`} disabled={g.progress <= 0} onPress={() => setProgress.mutate({ goal: g, progress: g.progress - 1 })} style={[styles.step, g.progress <= 0 && styles.stepOff]}>
-                  <Minus color={colors.primary} size={20} />
-                </Pressable>
-                <Pressable accessibilityRole="button" accessibilityLabel={`${t('goals.increase')} ${g.title}`} onPress={() => setProgress.mutate({ goal: g, progress: g.progress + 1 })} style={styles.step}>
-                  <Plus color={colors.primary} size={20} />
-                </Pressable>
-              </View>
-            )}
+            <View style={styles.steppers}>
+              <Pressable accessibilityRole="button" accessibilityLabel={`${t('goals.decrease')} ${g.title}`} disabled={g.progress <= 0} onPress={() => setProgress.mutate({ goal: g, progress: g.progress - 1 })} style={[styles.step, g.progress <= 0 && styles.stepOff]}>
+                <Minus color={colors.primary} size={20} />
+              </Pressable>
+              <Pressable accessibilityRole="button" accessibilityLabel={`${t('goals.increase')} ${g.title}`} onPress={() => setProgress.mutate({ goal: g, progress: g.progress + 1 })} style={styles.step}>
+                <Plus color={colors.primary} size={20} />
+              </Pressable>
+            </View>
           </View>
         );
       })}
-      {d.readOnly ? null : (
-        <Pressable accessibilityRole="button" accessibilityLabel={t('goals.add')} onPress={() => router.push('/goal/new')} style={styles.addButton}>
-          <Plus color={colors.primary} size={20} />
-          <Text style={styles.addText}>{t('goals.add')}</Text>
-        </Pressable>
-      )}
+      <Pressable accessibilityRole="button" accessibilityLabel={t('goals.add')} onPress={() => router.push('/goal/new')} style={styles.addButton}>
+        <Plus color={colors.primary} size={20} />
+        <Text style={styles.addText}>{t('goals.add')}</Text>
+      </Pressable>
     </Screen>
   );
 }

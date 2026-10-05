@@ -74,7 +74,7 @@ export default function CalendarScreen() {
         key={task.id}
         task={task}
         overdue={isOverdue(task, today, nowTime)}
-        onPress={perms.canEdit && !d.readOnly ? () => router.push({ pathname: '/task/[id]', params: { id: task.id } }) : undefined}
+        onPress={perms.canEdit ? () => router.push({ pathname: '/task/[id]', params: { id: task.id } }) : undefined}
       />
     );
   };
@@ -114,7 +114,7 @@ export default function CalendarScreen() {
             </Pressable>
           </View>
 
-          {d.readOnly || d.viewer.role === 'parent' ? <Text style={typography.secondary}>{d.child.name}</Text> : null}
+          {d.viewer.role === 'parent' ? <Text style={typography.secondary}>{d.child.name}</Text> : null}
 
           <WeekStrip days={days} selected={selected} today={today} lang={lang} onSelect={setPicked} />
 

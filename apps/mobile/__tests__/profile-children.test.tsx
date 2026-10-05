@@ -17,8 +17,13 @@ const kids = [
 ];
 let mockRole: 'parent' | 'child' = 'parent';
 const mockMe = () => ({ member: { id: 'm1', role: mockRole, child_id: mockRole === 'child' ? 'c1' : null }, family: { id: 'f1', timezone: 'Asia/Ho_Chi_Minh' }, children: kids });
+// même résolution que le vrai hook : un enfant ne reçoit QUE son profil, même si la liste fournie contient tous les enfants
 jest.mock('@/hooks/useDisplayedChild', () => ({
-  useDisplayedChild: () => ({ me: mockMe(), viewer: { role: mockRole, memberId: 'm1', childId: null }, children: kids, child: kids[0], readOnly: false, select: mockSelect }),
+  useDisplayedChild: () => {
+    const { resolveDisplayedChild } = jest.requireActual('@/domain/displayed-child');
+    const r = resolveDisplayedChild({ role: mockRole, memberChildId: mockRole === 'child' ? 'c1' : null, children: kids, selectedId: null });
+    return { me: mockMe(), viewer: { role: mockRole, memberId: 'm1', childId: mockRole === 'child' ? 'c1' : null }, children: r.children, child: r.child, select: mockSelect };
+  },
 }));
 jest.mock('@/hooks/useMe', () => ({ useMe: () => ({ data: mockMe() }) }));
 jest.mock('@/hooks/useFamilyAdmin', () => ({
@@ -53,10 +58,13 @@ describe('Hồ sơ : cartes enfants + « Ajouter un enfant »', () => {
     expect(mockPush).toHaveBeenCalledWith('/more/add-child');
   });
 
-  it('enfant : voit les cartes mais jamais « Ajouter un enfant »', async () => {
+  it('enfant (D-052) : voit uniquement SA carte, non sélectionnable, et jamais « Ajouter un enfant »', async () => {
     mockRole = 'child';
     await wrap(<ProfileScreen />);
-    expect(screen.getByRole('radio', { name: /^Minh,/ })).toBeTruthy();
+    expect(screen.getByLabelText(/^Minh,/)).toBeTruthy();
+    expect(screen.queryByRole('radio')).toBeNull(); // aucune sélection possible
+    expect(screen.queryByText('Khang')).toBeNull();
+    expect(screen.queryByText('Cam')).toBeNull();
     expect(screen.queryByRole('button', { name: 'Ajouter un enfant' })).toBeNull();
   });
 });

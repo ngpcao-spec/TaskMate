@@ -17,7 +17,6 @@ const task = (over: Partial<TaskRow>): TaskRow =>
   }) as TaskRow;
 
 let mockRole: 'child' | 'parent' = 'child';
-let mockReadOnly = false;
 let mockTasks: TaskRow[] = [];
 let mockCounts = { tasks: 0, requests: 0, total: 0 };
 const mockToggle = jest.fn();
@@ -27,7 +26,8 @@ jest.mock('@/hooks/useDisplayedChild', () => ({
   useDisplayedChild: () => ({
     me: { family: { timezone: 'Asia/Ho_Chi_Minh' } },
     viewer: { role: mockRole, memberId: 'm', childId: mockRole === 'child' ? 'c-minh' : null },
-    children: [minh, khang], child: mockReadOnly ? khang : minh, readOnly: mockReadOnly, select: jest.fn(),
+    // liste VOLONTAIREMENT polluée (les deux enfants) : un enfant ne doit en voir aucun autre, quelle que soit la source des données
+    children: [minh, khang], child: minh, select: jest.fn(),
   }),
 }));
 let mockUnread = 0;
@@ -45,7 +45,7 @@ jest.mock('@/hooks/useTasks', () => ({
 }));
 
 describe('TodayScreen (SPEC v4)', () => {
-  beforeEach(() => { jest.clearAllMocks(); mockRole = 'child'; mockReadOnly = false; mockCounts = { tasks: 0, requests: 0, total: 0 }; mockTasks = [task({})]; });
+  beforeEach(() => { jest.clearAllMocks(); mockRole = 'child'; mockCounts = { tasks: 0, requests: 0, total: 0 }; mockTasks = [task({})]; });
 
   it('enfant : pas de bouton +, coche → demande de coche en tant qu’enfant (asParent=false)', async () => {
     await render(<TodayScreen />);
@@ -127,16 +127,29 @@ describe('TodayScreen (SPEC v4)', () => {
     expect(screen.getAllByLabelText('Hôm nay 2/3 việc đã hoàn thành').length).toBeGreaterThan(0);
   });
 
-  it('profil du frère : lecture seule — bandeau, pas de +, cases désactivées', async () => {
-    mockReadOnly = true;
-    mockTasks = [task({ child_id: 'c-khang' })];
+  it('enfant (D-052) : aucun sélecteur d\'enfant ni aucune trace d\'un autre enfant, même avec une liste d\'enfants polluée', async () => {
+    mockRole = 'child';
+    mockTasks = [task({})];
     await render(<TodayScreen />);
-    expect(screen.getByText('Đang xem lịch của Khang')).toBeTruthy();
+    expect(screen.queryByRole('tab')).toBeNull();
+    expect(screen.queryByText(/Khang/)).toBeNull();
+    expect(screen.queryByText(/13 tuổi/)).toBeNull();
+    expect(screen.queryByText(/Đang xem lịch/)).toBeNull();
     expect(screen.queryByRole('button', { name: 'Thêm việc' })).toBeNull();
-    const box = screen.getByRole('checkbox', { name: 'Làm bài tập Toán' });
-    expect(box.props.accessibilityState).toMatchObject({ disabled: true });
-    await fireEvent.press(box);
-    expect(mockToggle).not.toHaveBeenCalled();
+    expect(screen.getByText(/Minh/)).toBeTruthy();
+  });
+
+  it('parent : sélecteur avec le PRÉNOM de chaque enfant (âge en second texte), aucun classement', async () => {
+    mockRole = 'parent';
+    mockTasks = [task({})];
+    await render(<TodayScreen />);
+    const tabs = screen.getAllByRole('tab');
+    expect(tabs).toHaveLength(2);
+    expect(screen.getByRole('tab', { name: 'Minh, 17 tuổi' })).toBeTruthy();
+    expect(screen.getByRole('tab', { name: 'Khang, 13 tuổi' })).toBeTruthy();
+    expect(screen.getByText('Minh')).toBeTruthy();
+    expect(screen.getByText('Khang')).toBeTruthy();
+    expect(screen.queryByText(/hạng|rank|classement/i)).toBeNull();
   });
 
   it('cloche : compteur de notifications non lues dans le libellé et le badge', async () => {

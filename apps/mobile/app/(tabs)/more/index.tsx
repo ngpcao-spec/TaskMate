@@ -30,20 +30,13 @@ export default function ProfileScreen() {
       <ScreenHeader title={t('profile.title')} hideBack />
       <View style={styles.cards}>
         {d.children.map((c) => {
+          const isParent = d.viewer.role === 'parent';
           const active = c.id === d.child?.id;
           const age = t('common.yearsOld', { age: ageFromBirthDate(c.birth_date, today) });
           const color = c.color ?? colors.primary;
-          return (
-            <Pressable
-              key={c.id}
-              accessibilityRole="radio"
-              accessibilityLabel={`${c.name}, ${age}`}
-              accessibilityState={{ selected: active }}
-              aria-checked={active}
-              onPress={() => d.select(c.id)}
-              style={[styles.childCard, { backgroundColor: `${color}1A` }, active && { borderColor: color }]}
-            >
-              {active ? (
+          const content = (
+            <>
+              {isParent && active ? (
                 <View style={[styles.checkBadge, { backgroundColor: color }]}>
                   <Check size={14} color="#fff" strokeWidth={3} />
                 </View>
@@ -53,7 +46,25 @@ export default function ProfileScreen() {
               </View>
               <Text style={styles.childName}>{c.name}</Text>
               <Text style={typography.secondary}>{age}</Text>
+            </>
+          );
+          // Enfant (D-052) : sa seule carte, sans sélection possible. Parent : une carte sélectionnable par enfant.
+          return isParent ? (
+            <Pressable
+              key={c.id}
+              accessibilityRole="radio"
+              accessibilityLabel={`${c.name}, ${age}`}
+              accessibilityState={{ selected: active }}
+              aria-checked={active}
+              onPress={() => d.select(c.id)}
+              style={[styles.childCard, { backgroundColor: `${color}1A` }, active && { borderColor: color }]}
+            >
+              {content}
             </Pressable>
+          ) : (
+            <View key={c.id} accessible accessibilityLabel={`${c.name}, ${age}`} style={[styles.childCard, { backgroundColor: `${color}1A` }]}>
+              {content}
+            </View>
           );
         })}
         {d.viewer.role === 'parent' ? (

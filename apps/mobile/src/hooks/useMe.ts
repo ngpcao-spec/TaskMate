@@ -23,6 +23,7 @@ export function useAuthListener(): void {
         queryClient.getMutationCache().clear();
         queryClient.clear();
         void persister.removeClient();
+        useSessionStore.getState().setDisplayedChildId(null); // la sélection d'un parent ne doit jamais survivre à son compte
       }
       if (session) kvStorage.setItem(LAST_USER_KEY, session.user.id);
       else kvStorage.removeItem(LAST_USER_KEY);

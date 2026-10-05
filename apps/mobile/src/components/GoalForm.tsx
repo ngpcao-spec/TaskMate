@@ -23,7 +23,7 @@ export function GoalForm({ goal }: { goal?: GoalRow }) {
     mode: 'onChange',
     defaultValues: { title: goal?.title ?? '', icon: (goal?.icon as GoalFormValues['icon']) ?? 'target', target: goal?.target ?? 5, unit: goal?.unit ?? '' },
   });
-  if (!d || !d.child || d.readOnly) return null;
+  if (!d || !d.child) return null;
   const child = d.child;
   const err = (key?: string) => (key ? t(`goals.errors.${key}`) : null);
 

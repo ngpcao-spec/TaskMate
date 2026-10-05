@@ -57,7 +57,7 @@ export default function TaskListScreen() {
             <CalendarCard
               task={task}
               overdue={isOverdue(task, today, nowTime)}
-              onPress={perms.canEdit && !d.readOnly ? () => router.push({ pathname: '/task/[id]', params: { id: task.id } }) : undefined}
+              onPress={perms.canEdit ? () => router.push({ pathname: '/task/[id]', params: { id: task.id } }) : undefined}
             />
           </View>
         );

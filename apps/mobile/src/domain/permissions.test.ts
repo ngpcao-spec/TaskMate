@@ -1,4 +1,4 @@
-import { isReadOnlyProfile, taskPermissions, type Viewer } from './permissions';
+import { taskPermissions, type Viewer } from './permissions';
 
 const minh: Viewer = { role: 'child', memberId: 'm-minh', childId: 'c-minh' };
 const parent: Viewer = { role: 'parent', memberId: 'm-p', childId: null };
@@ -27,13 +27,5 @@ describe('taskPermissions (SPEC v4)', () => {
   });
   it('enfant : aucun droit sur son frère', () => {
     expect(taskPermissions(minh, { ...todo, child_id: 'c-khang' })).toEqual({ canToggle: false, canEdit: false, canDelete: false, canValidate: false });
-  });
-});
-
-describe('isReadOnlyProfile', () => {
-  it('lecture seule pour le profil du frère uniquement', () => {
-    expect(isReadOnlyProfile(minh, 'c-khang')).toBe(true);
-    expect(isReadOnlyProfile(minh, 'c-minh')).toBe(false);
-    expect(isReadOnlyProfile(parent, 'c-khang')).toBe(false);
   });
 });

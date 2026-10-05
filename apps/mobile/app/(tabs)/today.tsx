@@ -79,7 +79,7 @@ export default function TodayScreen() {
           </Pressable>
         </View>
 
-        {d.children.length > 1 ? <ProfilePills profiles={d.children} selectedId={child.id} onSelect={d.select} today={today} /> : null}
+        {isParent && d.children.length > 1 ? <ProfilePills profiles={d.children} selectedId={child.id} onSelect={d.select} today={today} /> : null}
 
         {isParent && counts.tasks > 0 ? (
           <Pressable accessibilityRole="button" accessibilityLabel={t('home.tasksToValidate', { count: counts.tasks })} onPress={() => router.push('/approvals')} style={styles.bannerPending}>
@@ -90,12 +90,6 @@ export default function TodayScreen() {
           <Pressable accessibilityRole="button" accessibilityLabel={t('home.toApprove', { count: counts.requests })} onPress={() => router.push('/approvals')} style={styles.banner}>
             <Text style={styles.bannerText}>{t('home.toApprove', { count: counts.requests })}</Text>
           </Pressable>
-        ) : null}
-
-        {d.readOnly ? (
-          <View accessible accessibilityRole="text" style={styles.banner}>
-            <Text style={styles.bannerText}>{t('today.readOnlyBanner', { name: child.name })}</Text>
-          </View>
         ) : null}
 
         <Pressable accessibilityRole="button" accessibilityLabel={t('today.progress', { done: progress.done, total: progress.total })} onPress={() => router.push('/(tabs)/stats')}>
@@ -130,9 +124,9 @@ export default function TodayScreen() {
                 <TaskRow
                   task={task}
                   overdue={isOverdue(task, today, nowTime)}
-                  canToggle={perms.canToggle && !d.readOnly}
+                  canToggle={perms.canToggle}
                   canOpen
-                  canValidate={perms.canValidate && !d.readOnly}
+                  canValidate={perms.canValidate}
                   pending={pendingIds.has(task.id)}
                   onToggle={() => toggle.mutate(toggleVars(task, task.completed_at === null, isParent))}
                   onOpen={() => router.push({ pathname: '/task/[id]', params: { id: task.id } })}
@@ -141,7 +135,7 @@ export default function TodayScreen() {
                 />
               );
               const separated = index > 0 ? styles.separated : null;
-              return perms.canDelete && !d.readOnly ? (
+              return perms.canDelete ? (
                 <ReanimatedSwipeable
                   key={task.id}
                   overshootRight={false}
@@ -162,7 +156,7 @@ export default function TodayScreen() {
           </View>
         )}
       </ScrollView>
-      {d.readOnly || !isParent ? null : <Fab label={t('today.addTask')} onPress={() => router.push('/task/new')} />}
+      {!isParent ? null : <Fab label={t('today.addTask')} onPress={() => router.push('/task/new')} />}
     </SafeAreaView>
   );
 }
