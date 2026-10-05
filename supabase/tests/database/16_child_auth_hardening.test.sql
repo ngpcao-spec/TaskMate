@@ -65,7 +65,7 @@ reset role;
 select matches((select auth_email from public.child_accounts where login_id = 'minh'), '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}@child\.taskmate\.invalid$', 'après: adresse = UUID aléatoire');
 select isnt((select auth_email from public.child_accounts where login_id = 'minh'), 'minh@child.taskmate.invalid', 'après: l''adresse devinable a disparu');
 select isnt((select auth_email from public.child_accounts where login_id = 'minh'), (select auth_email from public.child_accounts where login_id = 'khang'), 'après: deux comptes, deux UUID distincts');
-select is((select email from auth.users where id = tests.u(41)), (select auth_email from public.child_accounts where login_id = 'minh'), 'après: auth.users porte la nouvelle adresse');
+select is((select email::text from auth.users where id = tests.u(41)), (select auth_email from public.child_accounts where login_id = 'minh'), 'après: auth.users porte la nouvelle adresse');
 select is((select identity_data ->> 'email' from auth.identities where user_id = tests.u(41)), (select auth_email from public.child_accounts where login_id = 'minh'), 'après: l''identité e-mail est alignée');
 select is((select provider_id from auth.identities where user_id = tests.u(41)), tests.u(41)::text, 'après: provider_id (id utilisateur) inchangé');
 select is((select count(*)::int from auth.users where email in ('minh@child.taskmate.invalid', 'khang@child.taskmate.invalid')), 0, 'après: plus aucun compte joignable par l''ancienne adresse');
