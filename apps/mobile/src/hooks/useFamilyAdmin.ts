@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { deleteAccount, fetchDevices, revokeDevice, updateChild, updateFamilyTimezone } from '@/api/account';
 import { deleteChildAccount, fetchChildAccounts } from '@/api/childAccounts';
+import { createParentInvite, fetchActiveParentInvite, fetchParents, leaveFamily, revokeParentInvite } from '@/api/family';
 import { queryKeys } from '@/api/keys';
 import i18n from '@/i18n';
 import { useToastStore } from '@/store/toast';
@@ -32,3 +33,10 @@ export const useChildAccounts = (enabled: boolean) => useQuery({ queryKey: ['chi
 export const useUpdateTimezone = () =>
   useAdminMutation(({ familyId, timezone }: { familyId: string; timezone: string }) => updateFamilyTimezone(familyId, timezone), [queryKeys.me], 'taskForm.saved');
 export const useDeleteAccount = () => useAdminMutation<void>(() => deleteAccount(), []);
+
+// ───────────── plusieurs parents par famille ─────────────
+export const useActiveParentInvite = (enabled: boolean) => useQuery({ queryKey: ['parent-invite'], queryFn: fetchActiveParentInvite, enabled });
+export const useParents = (enabled: boolean) => useQuery({ queryKey: ['parents'], queryFn: fetchParents, enabled });
+export const useCreateParentInvite = () => useAdminMutation<void, string>(() => createParentInvite(), [['parent-invite']]);
+export const useRevokeParentInvite = () => useAdminMutation<void>(() => revokeParentInvite(), [['parent-invite']], 'parentInvite.revoked');
+export const useLeaveFamily = () => useAdminMutation<void>(() => leaveFamily(), []);

@@ -1,3 +1,4 @@
+import { getISODay, parseISO } from 'date-fns';
 import {
   categoryTint,
   formatDayNumber,
@@ -61,5 +62,19 @@ describe('cartes et regroupement', () => {
     expect(grouped['2026-07-02']?.map((t) => t.id)).toEqual(['a', 'b']);
     expect(grouped['2026-06-29']).toEqual([]);
     expect(Object.keys(grouped)).toHaveLength(7);
+  });
+});
+
+describe('choix du jour d\'une récurrence (TaskForm)', () => {
+  it('la puce « T5 » enregistre le jeudi : ISO 4, et chaque puce correspond à son vrai jour ISO', () => {
+    // même construction que TaskForm : puces = weekDays('2024-01-01') (un lundi), valeur = index + 1
+    const chips = weekDays('2024-01-01').map((day, i) => ({ iso: i + 1, label: formatWeekdayLabel(day, 'vi'), real: getISODay(parseISO(day)) }));
+    expect(chips.map((c) => c.label)).toEqual(['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']);
+    for (const c of chips) expect(c.iso).toBe(c.real);
+    expect(chips.find((c) => c.label === 'T5')).toMatchObject({ iso: 4 });
+  });
+  it('T5 → jeudi quel que soit le fuseau du test (Asia/Ho_Chi_Minh) : 2 juillet 2026 = jeudi = ISO 4', () => {
+    expect(getISODay(parseISO('2026-07-02'))).toBe(4);
+    expect(formatDayTitle('2026-07-02', 'vi').startsWith('Thứ Năm')).toBe(true);
   });
 });

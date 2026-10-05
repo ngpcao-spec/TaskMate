@@ -36,19 +36,19 @@
     },
     "auth": {
       "title": "Espace parent",
-      "subtitle": "Créez votre compte ou connectez-vous avec votre e-mail et un mot de passe.",
+      "subtitle": "Connectez-vous avec votre compte Google pour créer votre famille ou retrouver la vôtre.",
+      "google": "Continuer avec Google",
+      "existingToggle": "J'ai déjà un compte avec e-mail et mot de passe",
+      "existingHint": "Réservé aux comptes parents déjà existants. Un nouveau parent se connecte avec Google.",
       "email": "Email",
       "emailPlaceholder": "vous@example.com",
       "password": "Mot de passe",
-      "signUp": "Créer un compte",
       "signIn": "Se connecter",
       "invalidEmail": "Email invalide",
-      "passwordTooShort": "Mot de passe : {{min}} caractères minimum.",
       "errors": {
         "invalidCredentials": "Email ou mot de passe incorrect.",
-        "alreadyExists": "Un compte existe déjà avec cet email : utilisez « Se connecter ».",
-        "weakPassword": "Mot de passe trop faible ({{min}} caractères minimum).",
-        "confirmEmailOn": "Le service exige encore une confirmation par e-mail. Contactez l'administrateur.",
+        "tooManyAttempts": "Trop de tentatives. Réessayez dans quelques minutes.",
+        "googleUnavailable": "La connexion Google est disponible sur la version web de TaskMate.",
         "rateLimited": "Trop de tentatives. Réessayez dans quelques minutes.",
         "network": "Pas de connexion. Réessayez.",
         "unknown": "Une erreur est survenue. Réessayez."
@@ -56,12 +56,26 @@
     },
     "family": {
       "title": "Votre famille",
-      "create": "Créer une nouvelle famille",
+      "create": "Créer la famille",
       "familyName": "Nom de la famille",
       "familyNamePlaceholder": "Famille Nguyễn",
       "yourName": "Votre prénom",
       "yourNamePlaceholder": "Papa / Maman",
-      "required": "Champ obligatoire"
+      "required": "Champ obligatoire",
+      "join": "Rejoindre la famille",
+      "switchToJoin": "Rejoindre une famille",
+      "switchToCreate": "Créer une nouvelle famille",
+      "code": "Code d'invitation",
+      "codePlaceholder": "ABCD-EFGH",
+      "codeHint": "Demandez à l'autre parent de générer un code dans Plus → Réglages → Inviter un parent.",
+      "errors": {
+        "invalidCode": "Code invalide, expiré ou déjà utilisé.",
+        "tooManyAttempts": "Trop d'essais. Réessayez dans 15 minutes.",
+        "googleRequired": "Connectez-vous avec Google pour créer ou rejoindre une famille.",
+        "alreadyMember": "Ce compte appartient déjà à une famille.",
+        "lastParent": "Vous êtes le dernier parent.",
+        "unknown": "Une erreur est survenue. Réessayez."
+      }
     },
     "children": {
       "title": "Profils des enfants",
@@ -82,15 +96,15 @@
     },
     "childLogin": {
       "title": "Connexion de l'enfant",
-      "subtitle": "Saisis l'identifiant et le mot de passe donnés par ton parent.",
+      "subtitle": "Saisis l'e-mail d'un parent de ta famille, ton identifiant et ton mot de passe.",
+      "parentEmail": "E-mail d'un parent de la famille",
       "loginId": "Identifiant",
       "password": "Mot de passe",
       "submit": "Se connecter",
       "errors": {
-        "invalidCredentials": "Identifiant ou mot de passe incorrect.",
-        "alreadyExists": "Une erreur est survenue. Réessaie.",
-        "weakPassword": "Une erreur est survenue. Réessaie.",
-        "confirmEmailOn": "Une erreur est survenue. Réessaie.",
+        "invalidCredentials": "Connexion impossible : vérifie l'e-mail du parent, ton identifiant et ton mot de passe.",
+        "tooManyAttempts": "Trop d'essais. Réessaie dans quelques minutes.",
+        "googleUnavailable": "Une erreur est survenue. Réessaie.",
         "rateLimited": "Trop d'essais. Réessaie dans quelques minutes.",
         "network": "Pas de connexion. Réessaie.",
         "unknown": "Une erreur est survenue. Réessaie."
@@ -354,7 +368,7 @@
     "roleParent": "Parent",
     "revoke": "Révoquer",
     "revokeTitle": "Révoquer l'appareil",
-    "revokeBody": "L'appareil de {{name}} sera déconnecté et devra se reconnecter avec son identifiant.",
+    "revokeBody": "L'appareil de {{name}} sera déconnecté et devra se reconnecter.",
     "deviceRevoked": "Appareil révoqué",
     "timezone": "Fuseau horaire de la famille",
     "timezoneInvalid": "Fuseau invalide (ex. Asia/Ho_Chi_Minh)",
@@ -412,7 +426,8 @@
       "connection": "Connexion à Supabase",
       "frontUrl": "Adresse Supabase de l'application",
       "webUrl": "Adresse publique de l'application",
-      "email": "Connexion par e-mail et mot de passe",
+      "google": "Connexion Google",
+      "email": "Connexion e-mail (parents existants)",
       "migrations": "Migrations",
       "tables": "Tables",
       "rpc": "Fonctions SQL (RPC)",
@@ -420,13 +435,13 @@
       "publication": "Realtime : tables publiées",
       "cron": "Tâches planifiées (pg_cron)",
       "realtime": "Realtime : connexion",
+      "fn-child-login": "Edge Function child-login",
       "fn-create-child": "Edge Function create-child",
       "fn-reset-child-password": "Edge Function reset-child-password",
       "fn-delete-child": "Edge Function delete-child",
       "fn-delete-account": "Edge Function delete-account",
       "fn-send-push": "Edge Function send-push",
-      "vapid": "Clé Web Push (VAPID)",
-      "confirmEmail": "Confirmation d'e-mail désactivée"
+      "vapid": "Clé Web Push (VAPID)"
     },
     "connection": {
       "ok": "Le serveur répond ({{url}}).",
@@ -440,8 +455,8 @@
       "ok": "Adresse publique de l'application : {{url}}."
     },
     "email": {
-      "ok": "La connexion par e-mail et mot de passe est activée.",
-      "disabled": "La connexion par e-mail est désactivée : les parents ne pourront pas se connecter. Supabase → Authentication → Sign In / Providers → Email → activer."
+      "ok": "La connexion e-mail et mot de passe est activée (parents existants).",
+      "disabled": "La connexion par e-mail est désactivée : les parents historiques ne pourront pas se connecter. Supabase → Authentication → Sign In / Providers → Email → activer."
     },
     "migrations": {
       "missingRpc": "Les migrations ne sont pas (toutes) appliquées : la fonction « diagnostics » est absente. Supabase → Database → Migrations : vérifiez la liste ; sinon Project Settings → Integrations → GitHub → « Deploy to production » puis refusionnez sur main.",
@@ -491,9 +506,9 @@
       "copy": "Copier",
       "copied": "Copié"
     },
-    "confirmEmail": {
-      "ok": "« Confirm email » est désactivé : l'inscription d'un parent n'envoie aucun e-mail.",
-      "enabled": "« Confirm email » est ACTIVÉ : les parents ne pourront pas s'inscrire sans e-mail. Supabase → Authentication → Sign In / Providers → Email → désactiver « Confirm email » → Save.",
+    "google": {
+      "ok": "Le fournisseur Google est activé : les parents peuvent s'inscrire et se connecter.",
+      "disabled": "Le fournisseur Google est DÉSACTIVÉ : aucun nouveau parent ne peut s'inscrire. Supabase → Authentication → Sign In / Providers → Google → activer, saisir l'ID client et le secret Google → Save.",
       "unknown": "Impossible de lire les réglages d'authentification (clé publique invalide ou réseau). Vérifiez EXPO_PUBLIC_SUPABASE_ANON_KEY."
     }
   },
@@ -542,5 +557,29 @@
     "copyText": "Accès TaskMate de {{name}} — identifiant : {{loginId}} — mot de passe : {{password}}",
     "copied": "Copié dans le presse-papiers",
     "copyFailed": "Copie impossible : notez-les à la main"
+  },
+  "parentInvite": {
+    "title": "Inviter un parent",
+    "hint": "Génère un code à usage unique, valable 24 h. L'autre parent se connecte avec Google, choisit « Rejoindre une famille » et saisit ce code.",
+    "generate": "Générer un code",
+    "regenerate": "Nouveau code (annule le précédent)",
+    "revoke": "Annuler l'invitation",
+    "revoked": "Invitation annulée",
+    "codeIs": "Code d'invitation : {{code}}",
+    "shownOnce": "Notez ou copiez ce code maintenant : il ne sera plus affiché. Valable jusqu'au {{date}}.",
+    "copy": "Copier le code",
+    "copied": "Code copié",
+    "copyFailed": "Copie impossible : notez-le à la main",
+    "active": "Une invitation est active jusqu'au {{date}}. Son code n'est plus affichable : générez-en un nouveau si besoin.",
+    "none": "Aucune invitation active."
+  },
+  "parents": {
+    "title": "Parents de la famille",
+    "you": "(vous)",
+    "leave": "Quitter la famille",
+    "leaveTitle": "Quitter la famille ?",
+    "leaveBody": "Vous n'aurez plus accès aux enfants, tâches et récompenses de cette famille. Vous pourrez la rejoindre de nouveau avec un nouveau code.",
+    "left": "Vous avez quitté la famille",
+    "lastParent": "Vous êtes le seul parent : pour partir, supprimez la famille (en bas de cette page)."
   }
 }

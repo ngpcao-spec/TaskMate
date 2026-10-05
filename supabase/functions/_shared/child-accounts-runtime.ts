@@ -56,8 +56,8 @@ export function serveChildAccountFunction(operation: Operation): void {
       deleteUser: async (userId) => {
         await admin.auth.admin.deleteUser(userId);
       },
-      register: async (childId, userId, loginId) => {
-        const { error } = await admin.rpc('register_child_account', { p_child_id: childId, p_user_id: userId, p_login_id: loginId });
+      register: async (childId, userId, loginId, authEmail) => {
+        const { error } = await admin.rpc('register_child_account', { p_child_id: childId, p_user_id: userId, p_login_id: loginId, p_auth_email: authEmail });
         return { error };
       },
       remove: async (childId) => {

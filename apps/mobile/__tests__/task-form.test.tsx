@@ -91,6 +91,19 @@ describe('TaskForm', () => {
     expect(screen.queryByText('Cho ai?')).toBeNull();
   });
 
+  it('répétition « jours choisis » : la puce T5 est enregistrée comme le jeudi (ISO 4)', async () => {
+    await render(<TaskForm />);
+    await fireEvent.changeText(screen.getByLabelText('Tên công việc'), 'Thể dục');
+    await fireEvent.press(screen.getByRole('button', { name: 'Thêm tùy chọn' }));
+    await fireEvent.press(screen.getByRole('radio', { name: 'Các ngày chọn' }));
+    await fireEvent.press(screen.getByRole('checkbox', { name: 'T5' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Lưu' }).props.accessibilityState).toMatchObject({ disabled: false }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Lưu' }));
+    await waitFor(() => expect(mockSeries).toHaveBeenCalledTimes(1));
+    const { rows } = mockSeries.mock.calls[0]?.[0] as { rows: { weekdays: number[] }[] };
+    expect(rows[0]?.weekdays).toEqual([4]);
+  });
+
   it('« jours choisis » sans jour : enregistrement impossible', async () => {
     await render(<TaskForm />);
     await fireEvent.changeText(screen.getByLabelText('Tên công việc'), 'X');

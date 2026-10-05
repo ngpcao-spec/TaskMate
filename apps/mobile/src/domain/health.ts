@@ -8,6 +8,7 @@ type DbFunction = keyof Database['public']['Functions'];
 
 export const EXPECTED_TABLES = [
   'activity_log',
+  'auth_attempts',
   'child_accounts',
   'children',
   'devices',
@@ -15,6 +16,7 @@ export const EXPECTED_TABLES = [
   'goals',
   'members',
   'notification_prefs',
+  'parent_invites',
   'point_transactions',
   'recurrences',
   'reward_requests',
@@ -28,17 +30,23 @@ export const EXPECTED_FUNCTIONS = [
   'cancel_reward_request',
   'child_account_target',
   'child_balance',
+  'child_login_prepare',
+  'child_login_record_failure',
   'child_pending_task_points',
   'child_reserved',
   'complete_task',
   'create_family',
+  'create_parent_invite',
   'delete_family',
   'diagnostics',
   'expire_reward_requests',
   'family_today',
   'generate_all_recurrences',
   'generate_recurrence',
+  'is_google_account',
   'is_parent',
+  'join_family_with_code',
+  'leave_family',
   'log_activity',
   'my_child_id',
   'my_family_id',
@@ -54,6 +62,7 @@ export const EXPECTED_FUNCTIONS = [
   'request_reward',
   'require_member',
   'revoke_device',
+  'revoke_parent_invite',
   'schedule_cron_jobs',
   'sync_recurrence',
   'uncomplete_task',
@@ -67,7 +76,7 @@ type NotListedFunction = Exclude<DbFunction, (typeof EXPECTED_FUNCTIONS)[number]
 export const COMPLETENESS: [NotListedTable, NotListedFunction] extends [never, never] ? true : never = true;
 
 export const EXPECTED_CRON_JOBS = ['expire-reward-requests', 'generate-recurrences'] as const;
-export const EDGE_FUNCTIONS = ['create-child', 'reset-child-password', 'delete-child', 'delete-account', 'send-push'] as const;
+export const EDGE_FUNCTIONS = ['child-login', 'create-child', 'reset-child-password', 'delete-child', 'delete-account', 'send-push'] as const;
 export type EdgeFunctionName = (typeof EDGE_FUNCTIONS)[number];
 
 export type DiagnosticsData = {
@@ -96,8 +105,8 @@ export type Probes = {
   /** L'API répond (GET /auth/v1/settings). */
   reachable: boolean;
   /** Réglages publics d'Auth ; null si illisibles. */
-  /** `autoconfirm` = « Confirm email » désactivé (aucun e-mail n'est envoyé à l'inscription). */
-  auth: { autoconfirm: boolean; email: boolean } | null;
+  /** `google` = fournisseur Google activé (inscription des parents) ; `email` = connexion e-mail/mot de passe (parents existants). */
+  auth: { google: boolean; email: boolean } | null;
   /** Résultat de la RPC `diagnostics`. */
   diagnostics: { ok: true; data: DiagnosticsData } | { ok: false; reason: 'missing_rpc' | 'forbidden' | 'error' };
   realtime: RealtimeStatus;
@@ -126,9 +135,9 @@ export function evaluateHealth(p: Probes, env: Env): HealthItem[] {
   else add('webUrl', 'ok', 'health.webUrl.ok', { url: env.webUrl });
 
   // 2. Auth
-  if (!p.auth) add('confirmEmail', 'warn', 'health.confirmEmail.unknown');
-  else if (!p.auth.autoconfirm) add('confirmEmail', 'fail', 'health.confirmEmail.enabled');
-  else add('confirmEmail', 'ok', 'health.confirmEmail.ok');
+  if (!p.auth) add('google', 'warn', 'health.google.unknown');
+  else if (!p.auth.google) add('google', 'fail', 'health.google.disabled');
+  else add('google', 'ok', 'health.google.ok');
   if (p.auth && !p.auth.email) add('email', 'fail', 'health.email.disabled');
   else if (p.auth) add('email', 'ok', 'health.email.ok');
 

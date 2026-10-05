@@ -19,7 +19,12 @@ export function normalizeLoginId(raw: string): string {
     .replace(/đ/g, 'd');
 }
 export const isValidLoginId = (loginId: string): boolean => LOGIN_ID_REGEX.test(loginId);
-export const loginEmail = (loginId: string): string => `${loginId}@${CHILD_EMAIL_DOMAIN}`;
+/**
+ * Adresse d'authentification d'un NOUVEAU compte enfant : globalement unique grâce à la famille (l'identifiant, lui, n'est
+ * unique que dans la famille). 30 + 1 + 32 = 63 caractères avant le @ (limite 64). Jamais affichée ni utilisée pour écrire.
+ * Les comptes antérieurs gardent leur adresse (`<identifiant>@child.taskmate.invalid`, colonne child_accounts.auth_email).
+ */
+export const loginEmail = (familyId: string, loginId: string): string => `${loginId}.${familyId.replace(/-/g, '')}@${CHILD_EMAIL_DOMAIN}`;
 export const tombstoneEmail = (userId: string): string => `deleted-${userId}@${CHILD_EMAIL_DOMAIN}`;
 export const isValidPassword = (password: unknown): password is string =>
   typeof password === 'string' && password.length >= CHILD_PASSWORD_MIN && new TextEncoder().encode(password).length <= PASSWORD_MAX;
@@ -45,7 +50,7 @@ export type ChildAccountDeps = {
   /** Supprime un compte tout juste créé (annulation). */
   deleteUser: (userId: string) => Promise<void>;
   /** RPC `register_child_account` (service_role). */
-  register: (childId: string, userId: string, loginId: string) => Promise<{ error: DbError }>;
+  register: (childId: string, userId: string, loginId: string, authEmail: string) => Promise<{ error: DbError }>;
   /** RPC `remove_child_account` (service_role) : renvoie le user_id auth. */
   remove: (childId: string) => Promise<{ userId: string | null; error: DbError }>;
   setPassword: (userId: string, password: string) => Promise<{ error: boolean }>;
@@ -86,12 +91,13 @@ export async function createChildAccount(deps: ChildAccountDeps, rawBody: unknow
   if (!isValidPassword(body.password)) return fail(422, 'weak_password');
   if (auth.target.login_id !== null) return fail(409, 'account_exists');
 
-  const created = await deps.createUser(loginEmail(loginId), body.password);
+  const authEmail = loginEmail(auth.target.family_id, loginId);
+  const created = await deps.createUser(authEmail, body.password);
   if (created.error === 'email_exists') return fail(409, 'identifier_taken');
   if (created.error === 'weak_password') return fail(422, 'weak_password');
   if (created.error || !created.userId) return fail(500, 'server_error');
 
-  const registered = await deps.register(auth.target.child_id, created.userId, loginId);
+  const registered = await deps.register(auth.target.child_id, created.userId, loginId, authEmail);
   if (registered.error) {
     await deps.deleteUser(created.userId); // pas de compte orphelin
     const message = registered.error.message ?? '';

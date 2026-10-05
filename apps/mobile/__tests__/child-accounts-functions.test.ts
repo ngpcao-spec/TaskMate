@@ -1,4 +1,5 @@
 import {
+  loginEmail,
   createChildAccount,
   deleteChildAccount,
   resetChildPassword,
@@ -9,7 +10,9 @@ import {
 const CHILD = '11111111-1111-4111-8111-111111111111';
 const USER = '22222222-2222-4222-8222-222222222222';
 const NEW_USER = '33333333-3333-4333-8333-333333333333';
-const target = (over: Partial<Target> = {}): Target => ({ family_id: 'f', child_id: CHILD, child_name: 'Lan', member_id: null, login_id: null, user_id: null, ...over });
+const FAMILY = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
+const FAMILY_32 = 'aaaaaaaabbbb4ccc8ddd' + 'eeeeeeeeeeee';
+const target = (over: Partial<Target> = {}): Target => ({ family_id: FAMILY, child_id: CHILD, child_name: 'Lan', member_id: null, login_id: null, user_id: null, ...over });
 
 function deps(over: Partial<ChildAccountDeps> = {}) {
   const calls: string[] = [];
@@ -17,7 +20,7 @@ function deps(over: Partial<ChildAccountDeps> = {}) {
     target: async () => ({ data: target(), error: null }),
     createUser: async (email) => (calls.push(`createUser:${email}`), { userId: NEW_USER, error: null }),
     deleteUser: async (id) => void calls.push(`deleteUser:${id}`),
-    register: async (c, u, l) => (calls.push(`register:${c}:${u}:${l}`), { error: null }),
+    register: async (c, u, l, e) => (calls.push(`register:${c}:${u}:${l}:${e}`), { error: null }),
     remove: async (c) => (calls.push(`remove:${c}`), { userId: USER, error: null }),
     setPassword: async (u) => (calls.push(`setPassword:${u}`), { error: false }),
     lockUser: async (u, t) => (calls.push(`lock:${u}:${t}`), { error: false }),
@@ -30,11 +33,19 @@ function deps(over: Partial<ChildAccountDeps> = {}) {
 const forbidden = { data: null, error: { code: '42501', message: 'forbidden' } };
 
 describe('create-child', () => {
+  it('deux familles, même identifiant : deux adresses d\'authentification distinctes, longueur maximale respectée', () => {
+    const other = '99999999-bbbb-4ccc-8ddd-eeeeeeeeeeee';
+    expect(loginEmail(FAMILY, 'minh')).not.toBe(loginEmail(other, 'minh'));
+    expect(loginEmail(FAMILY, 'a'.repeat(30)).split('@')[0]?.length).toBeLessThanOrEqual(64);
+  });
+
   it('crée le compte : e-mail fictif dérivé, puis enregistrement du lien', async () => {
     const d = deps();
     const r = await createChildAccount(d, { childId: CHILD, loginId: '  Lan.Hà ', password: 'secret1' });
     expect(r).toEqual({ status: 200, body: { loginId: 'lan.ha' } });
-    expect(d.calls).toEqual(['createUser:lan.ha@child.taskmate.invalid', `register:${CHILD}:${NEW_USER}:lan.ha`]);
+    // l'adresse d'authentification est propre à la famille : le même identifiant peut exister dans deux familles
+    const email = `lan.ha.${FAMILY_32}@child.taskmate.invalid`;
+    expect(d.calls).toEqual([`createUser:${email}`, `register:${CHILD}:${NEW_USER}:lan.ha:${email}`]);
   });
 
   it('un enfant (ou tout non-parent) est refusé AVANT toute création de compte', async () => {

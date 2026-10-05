@@ -1,33 +1,46 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AuthFlowError, signInParent, signUpParent, type AuthFailure } from '@/api/auth';
+import { AuthFlowError, signInParent } from '@/api/auth';
+import { startGoogleSignIn } from '@/api/googleAuth';
 import { Button, ErrorText, Field, Screen, Subtitle, Title } from '@/components/ui';
-import { isValidEmail, PARENT_PASSWORD_MIN, validateParentPassword } from '@/domain/child-account';
+import { isValidEmail } from '@/domain/child-account';
 
-/** Parent : un seul écran e-mail + mot de passe ; aucun e-mail n'est envoyé (« Confirm email » désactivé côté Supabase). */
+/**
+ * Parent : « Continuer avec Google » (l'e-mail est vérifié par Google ; seule voie d'inscription d'un nouveau parent).
+ * La connexion e-mail + mot de passe reste réservée aux comptes parents déjà existants (aucun bouton d'inscription).
+ */
 export default function ParentAuthScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const [showEmail, setShowEmail] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const passwordError = password === '' ? null : validateParentPassword(password);
-  const ready = email.trim() !== '' && password !== '';
+  const fail = (e: unknown) => setError(t(`onboarding.auth.errors.${e instanceof AuthFlowError ? e.kind : 'unknown'}`));
 
-  const run = async (action: 'signUp' | 'signIn') => {
-    if (!isValidEmail(email)) return setError(t('onboarding.auth.invalidEmail'));
-    if (validateParentPassword(password)) return setError(t('onboarding.auth.passwordTooShort', { min: PARENT_PASSWORD_MIN }));
+  const google = async () => {
     setBusy(true);
     setError(null);
     try {
-      await (action === 'signUp' ? signUpParent(email, password) : signInParent(email, password));
+      await startGoogleSignIn(); // redirige vers Google ; la session est lue au retour sur le site
+    } catch (e) {
+      fail(e);
+      setBusy(false);
+    }
+  };
+
+  const signIn = async () => {
+    if (!isValidEmail(email)) return setError(t('onboarding.auth.invalidEmail'));
+    setBusy(true);
+    setError(null);
+    try {
+      await signInParent(email, password);
       router.replace('/');
     } catch (e) {
-      const kind: AuthFailure = e instanceof AuthFlowError ? e.kind : 'unknown';
-      setError(t(`onboarding.auth.errors.${kind}`, { min: PARENT_PASSWORD_MIN }));
+      fail(e);
     } finally {
       setBusy(false);
     }
@@ -37,29 +50,35 @@ export default function ParentAuthScreen() {
     <Screen>
       <Title>{t('onboarding.auth.title')}</Title>
       <Subtitle>{t('onboarding.auth.subtitle')}</Subtitle>
-      <Field
-        label={t('onboarding.auth.email')}
-        placeholder={t('onboarding.auth.emailPlaceholder')}
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoCorrect={false}
-        autoComplete="email"
-      />
-      <Field
-        label={t('onboarding.auth.password')}
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        autoCapitalize="none"
-        autoCorrect={false}
-        autoComplete="current-password"
-        error={passwordError ? t('onboarding.auth.passwordTooShort', { min: PARENT_PASSWORD_MIN }) : null}
-      />
+      <Button label={t('onboarding.auth.google')} onPress={() => void google()} loading={busy && !showEmail} />
+      {showEmail ? (
+        <>
+          <Subtitle>{t('onboarding.auth.existingHint')}</Subtitle>
+          <Field
+            label={t('onboarding.auth.email')}
+            placeholder={t('onboarding.auth.emailPlaceholder')}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="email"
+          />
+          <Field
+            label={t('onboarding.auth.password')}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="current-password"
+          />
+          <Button variant="secondary" label={t('onboarding.auth.signIn')} onPress={() => void signIn()} loading={busy} disabled={email.trim() === '' || password === ''} />
+        </>
+      ) : (
+        <Button variant="ghost" label={t('onboarding.auth.existingToggle')} onPress={() => setShowEmail(true)} />
+      )}
       <ErrorText>{error}</ErrorText>
-      <Button label={t('onboarding.auth.signUp')} onPress={() => void run('signUp')} loading={busy} disabled={!ready} />
-      <Button variant="secondary" label={t('onboarding.auth.signIn')} onPress={() => void run('signIn')} loading={busy} disabled={!ready} />
     </Screen>
   );
 }

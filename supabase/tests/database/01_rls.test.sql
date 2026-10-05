@@ -52,8 +52,8 @@ insert into public.tasks (id, family_id, child_id, title, note, date, created_by
   (tests.u(303), tests.u(1), tests.u(201), 'Tâche Minh (perso)', null, '2026-07-02', tests.u(113)),
   (tests.u(321), tests.u(2), tests.u(221), 'Tâche B', null, '2026-07-02', tests.u(121));
 -- Compte enfant, appareil, solde, demande, activité pour les tests de lecture
-insert into public.child_accounts (family_id, child_id, member_id, login_id)
-  values (tests.u(1), tests.u(201), tests.u(113), 'minh.test');
+insert into public.child_accounts (family_id, child_id, member_id, login_id, auth_email)
+  values (tests.u(1), tests.u(201), tests.u(113), 'minh.test', 'minh.test@child.taskmate.invalid');
 insert into public.devices (id, member_id, expo_push_token) values
   (tests.u(601), tests.u(113), 'tok-minh'), (tests.u(602), tests.u(114), 'tok-khang'), (tests.u(621), tests.u(121), 'tok-b');
 insert into public.point_transactions (id, family_id, child_id, delta, reason, created_by) values
@@ -101,6 +101,7 @@ select is(tests.n('select 1 from public.members'), 1::bigint, 'members: autre fa
 -- ═══ child_accounts (identifiants de connexion des enfants) ═══
 select tests.login(11);
 select is(tests.n('select 1 from public.child_accounts'), 1::bigint, 'child_accounts: le parent voit les identifiants de sa famille');
+select throws_ok($$select auth_email from public.child_accounts$$, '42501', null, 'child_accounts: l''adresse interne d''authentification n''est jamais lisible (même par un parent)');
 select tests.login(13);
 select is(tests.n('select 1 from public.child_accounts'), 0::bigint, 'child_accounts: invisibles pour l''enfant (même le sien)');
 select tests.login(14);
