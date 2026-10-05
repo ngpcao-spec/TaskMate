@@ -35,10 +35,10 @@ jest.mock('@/hooks/usePoints', () => ({
   useRejectRequest: () => ({ mutate: mockReject }),
 }));
 
-const displayed = (role: 'child' | 'parent', readOnly = false, child = minh) => ({
+const displayed = (role: 'child' | 'parent', child = minh) => ({
   me: { family: { timezone: 'Asia/Ho_Chi_Minh', id: 'f1' } },
   viewer: { role, memberId: 'm', childId: role === 'child' ? 'c-minh' : null },
-  children: [minh, khang], child, readOnly, select: jest.fn(),
+  children: [minh, khang], child, select: jest.fn(),
 });
 
 describe('PointsScreen', () => {
@@ -100,15 +100,17 @@ describe('PointsScreen', () => {
     expect(screen.getByRole('button', { name: 'Chơi game 1 tiếng, 100 điểm' }).props.accessibilityState).toMatchObject({ disabled: true });
   });
 
-  it('profil du frère : solde visible, aucune demande possible', async () => {
-    mockDisplayed = displayed('child', true, khang);
-    jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+  it('enfant (D-052) : aucun sélecteur ni nom d\'un autre enfant, même avec une liste polluée', async () => {
     await render(<PointsScreen />);
-    expect(screen.getByText(/320/)).toBeTruthy();
-    const btn = screen.getByRole('button', { name: 'Chơi game 1 tiếng, 100 điểm' });
-    expect(btn.props.accessibilityState).toMatchObject({ disabled: true });
-    await fireEvent.press(btn);
-    expect(mockRequest).not.toHaveBeenCalled();
+    expect(screen.queryByRole('tab')).toBeNull();
+    expect(screen.queryByText(/Khang/)).toBeNull();
+  });
+
+  it('parent : sélecteur avec les prénoms des enfants', async () => {
+    mockDisplayed = displayed('parent');
+    await render(<PointsScreen />);
+    expect(screen.getByRole('tab', { name: 'Minh, 17 tuổi' })).toBeTruthy();
+    expect(screen.getByRole('tab', { name: 'Khang, 13 tuổi' })).toBeTruthy();
   });
 
   it('parent : file « Cần duyệt », approuve et refuse avec motif', async () => {

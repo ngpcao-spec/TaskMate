@@ -11,7 +11,6 @@ const minh = { id: 'c-minh', name: 'Minh', birth_date: '2009-03-01', color: '#1E
 const khang = { id: 'c-khang', name: 'Khang', birth_date: '2013-05-01', color: '#2EC4A6' } as ChildRow;
 const g = (over: Partial<GoalRow>) => ({ id: 'g1', child_id: 'c-minh', title: 'Đọc 5 cuốn sách', icon: 'book-open', target: 5, progress: 3, unit: null, ...over }) as GoalRow;
 
-let mockReadOnly = false;
 let mockGoals: GoalRow[] = [];
 const mockSet = jest.fn();
 jest.mock('@/hooks/useDisplayedChild', () => ({
@@ -19,15 +18,14 @@ jest.mock('@/hooks/useDisplayedChild', () => ({
     me: { family: { timezone: 'Asia/Ho_Chi_Minh', id: 'f' }, member: { id: 'm' } },
     viewer: { role: 'child', memberId: 'm', childId: 'c-minh' },
     children: [minh, khang],
-    child: mockReadOnly ? khang : minh,
-    readOnly: mockReadOnly,
+    child: minh,
     select: jest.fn(),
   }),
 }));
 jest.mock('@/hooks/useGoals', () => ({ useGoals: () => ({ data: mockGoals }), useSetGoalProgress: () => ({ mutate: mockSet }) }));
 
 describe('GoalsScreen', () => {
-  beforeEach(() => { jest.clearAllMocks(); mockReadOnly = false; mockGoals = [g({}), g({ id: 'g2', title: 'Chạy 12 km', unit: 'km', target: 12, progress: 12 })]; });
+  beforeEach(() => { jest.clearAllMocks(); mockGoals = [g({}), g({ id: 'g2', title: 'Chạy 12 km', unit: 'km', target: 12, progress: 12 })]; });
 
   it('affiche « 3/5 », « 12/12 km » et le badge Đã đạt', async () => {
     await render(<GoalsScreen />);
@@ -44,12 +42,11 @@ describe('GoalsScreen', () => {
     expect(mockSet).toHaveBeenCalledWith({ goal: mockGoals[0], progress: 1 });
   });
 
-  it('profil du frère : lecture seule (ni −/+, ni ajout)', async () => {
-    mockReadOnly = true;
+  it('enfant (D-052) : aucun sélecteur ni aucune trace d\'un autre enfant, même avec une liste polluée', async () => {
     await render(<GoalsScreen />);
-    expect(screen.queryByRole('button', { name: /Tăng/ })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Thêm mục tiêu' })).toBeNull();
-    expect(screen.getByText('Đang xem lịch của Khang')).toBeTruthy();
+    expect(screen.queryByRole('tab')).toBeNull();
+    expect(screen.queryByText(/Khang/)).toBeNull();
+    expect(screen.queryByText(/Đang xem lịch/)).toBeNull();
   });
 
   it('état vide', async () => {

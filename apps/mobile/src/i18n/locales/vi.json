@@ -117,7 +117,6 @@
     "progress": "Hôm nay {{done}}/{{total}} việc đã hoàn thành",
     "listTitle": "Việc cần làm hôm nay",
     "empty": "Hôm nay chưa có việc nào",
-    "readOnlyBanner": "Đang xem lịch của {{name}}",
     "addTask": "Thêm việc",
     "overdue": "Quá hạn",
     "taskGone": "Việc này đã bị xóa",

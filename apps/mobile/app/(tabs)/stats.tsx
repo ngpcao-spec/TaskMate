@@ -39,12 +39,7 @@ export default function StatsScreen() {
   return (
     <Screen>
       <ScreenHeader title={t('stats.title')} />
-      {d.readOnly || d.viewer.role === 'parent' ? <Text style={typography.secondary}>{d.child.name}</Text> : null}
-      {d.readOnly ? (
-        <View accessible style={styles.banner}>
-          <Text style={styles.bannerText}>{t('today.readOnlyBanner', { name: d.child.name })}</Text>
-        </View>
-      ) : null}
+      {d.viewer.role === 'parent' ? <Text style={typography.secondary}>{d.child.name}</Text> : null}
 
       <View style={styles.segment} accessibilityRole="tablist">
         {(['week', 'month'] as const).map((p) => (

@@ -117,7 +117,6 @@
     "progress": "Aujourd'hui {{done}}/{{total}} tâches terminées",
     "listTitle": "Tâches du jour",
     "empty": "Aucune tâche aujourd'hui",
-    "readOnlyBanner": "Vous consultez le planning de {{name}}",
     "addTask": "Ajouter une tâche",
     "overdue": "En retard",
     "taskGone": "Cette tâche a été supprimée",

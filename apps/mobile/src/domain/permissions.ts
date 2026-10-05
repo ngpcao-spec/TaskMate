@@ -14,7 +14,8 @@ export type TaskPermissions = {
 
 /**
  * Droits côté UI (SPEC v4 §5.7) — la sécurité réelle reste la RLS/RPC.
- * Enfant : coche les siennes ; décoche seulement tant qu'elles ne sont pas validées ; ne crée/modifie/supprime rien ; frère = lecture seule.
+ * Enfant : coche les siennes ; décoche seulement tant qu'elles ne sont pas validées ; ne crée/modifie/supprime rien ; il ne voit
+ * aucune tâche d'un autre enfant (D-052).
  * Parent : tout, et seul à valider/refuser.
  */
 export function taskPermissions(viewer: Viewer, task: TaskOwnership): TaskPermissions {
@@ -22,9 +23,4 @@ export function taskPermissions(viewer: Viewer, task: TaskOwnership): TaskPermis
   const own = viewer.childId === task.child_id;
   const locked = task.validated_at != null; // validée : plus décochable par l'enfant
   return { canToggle: own && !locked, canEdit: false, canDelete: false, canValidate: false };
-}
-
-/** Un enfant ne peut agir que sur son propre profil ; le profil du frère est en lecture seule. */
-export function isReadOnlyProfile(viewer: Viewer, displayedChildId: string | null): boolean {
-  return viewer.role === 'child' && displayedChildId !== viewer.childId;
 }

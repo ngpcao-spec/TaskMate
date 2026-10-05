@@ -100,9 +100,9 @@ select throws_ok($$select public.register_child_account(tests.u(204), tests.u(42
 select throws_ok($$select public.register_child_account(tests.u(204), tests.u(42), 'ab', 'ab@child.taskmate.invalid', 'secret1')$$, '23514', null, 'register: identifiant trop court');
 select lives_ok($$select public.register_child_account(tests.u(204), tests.u(42), 'bao.nguyen', 'bao.nguyen@child.taskmate.invalid', 'secret1')$$, 'register: second enfant, autre identifiant');
 
--- l'enfant connecté voit son profil et rien de plus qu'avant (droits spec v4 inchangés)
+-- l'enfant connecté ne voit que son profil (D-052)
 select tests.login(41);
-select is(tests.n('select 1 from public.children'), 4::bigint, 'compte enfant: voit les profils de la famille (lecture)');
+select is(tests.n('select 1 from public.children'), 1::bigint, 'compte enfant: ne voit que son propre profil (D-052)');
 select is(tests.n('select 1 from public.child_accounts'), 0::bigint, 'compte enfant: ne voit aucun identifiant');
 select throws_ok($$insert into public.tasks (family_id, child_id, title, date, created_by) values (tests.u(1), tests.u(203), 'Tâche bidon', '2026-07-02', (select id from public.members where user_id = tests.u(41)))$$, '42501', null, 'compte enfant: ne crée toujours aucune tâche (spec v4)');
 

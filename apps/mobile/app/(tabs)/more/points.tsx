@@ -64,7 +64,7 @@ export default function PointsScreen() {
   return (
     <Screen>
       <ScreenHeader title={t('points.title')} />
-      {d.children.length > 1 ? <ProfilePills profiles={d.children} selectedId={d.child.id} onSelect={d.select} today={today} showName /> : null}
+      {isParent && d.children.length > 1 ? <ProfilePills profiles={d.children} selectedId={d.child.id} onSelect={d.select} today={today} /> : null}
 
       <Pressable accessibilityRole="button" accessibilityLabel={t('points.history')} onPress={() => router.push('/more/points-history')}>
         <Card>
@@ -106,11 +106,11 @@ export default function PointsScreen() {
       <Text accessibilityRole="header" style={styles.sectionTitle}>
         {t('points.rewardsTitle')}
       </Text>
-      {!online && !isParent && !d.readOnly ? <Text style={styles.offline}>{t('points.needsNetwork')}</Text> : null}
+      {!online && !isParent ? <Text style={styles.offline}>{t('points.needsNetwork')}</Text> : null}
       <View style={styles.rewardsCard}>
         {visibleRewards.map((r, index) => {
           const affordable = balance ? canAfford(balance.available, r.cost) : false;
-          const canRequest = !isParent && !d.readOnly && affordable && online;
+          const canRequest = !isParent && affordable && online;
           const tint = REWARD_TINTS[r.icon] ?? colors.primary;
           return (
             <Pressable
@@ -140,7 +140,7 @@ export default function PointsScreen() {
         <Text style={styles.bannerText}>{t('points.banner')}</Text>
       </View>
 
-      {!d.readOnly && myRequests.length > 0 ? (
+      {myRequests.length > 0 ? (
         <View style={styles.section}>
           <Text accessibilityRole="header" style={styles.sectionTitle}>
             {t('points.requestsTitle')}

@@ -9,18 +9,17 @@ const khang = { id: 'c-khang', name: 'Khang', birth_date: '2013-05-01', color: '
 const task = (id: string, category: string, done: boolean): TaskRow => ({ id, child_id: 'c-minh', category, date: '2026-07-02', completed_at: done ? 'x' : null, deleted_at: null }) as TaskRow;
 
 let mockTasks: TaskRow[] = [];
-let mockReadOnly = false;
 const mockUseTasks = jest.fn();
 jest.mock('@/hooks/useTasks', () => ({ useTasks: (...a: unknown[]) => mockUseTasks(...a) }));
 jest.mock('@/hooks/useDisplayedChild', () => ({
   useDisplayedChild: () => ({
     me: { family: { timezone: 'Asia/Ho_Chi_Minh' } }, viewer: { role: 'child', memberId: 'm', childId: 'c-minh' },
-    children: [minh, khang], child: mockReadOnly ? khang : minh, readOnly: mockReadOnly, select: jest.fn(),
+    children: [minh, khang], child: minh, select: jest.fn(),
   }),
 }));
 
 describe('StatsScreen', () => {
-  beforeEach(() => { jest.clearAllMocks(); mockReadOnly = false; mockTasks = []; // les tâches tombent toujours dans la période demandée, quelle que soit la date réelle
+  beforeEach(() => { jest.clearAllMocks(); mockTasks = []; // les tâches tombent toujours dans la période demandée, quelle que soit la date réelle
     mockUseTasks.mockImplementation((_id: string, from: string) => ({ data: mockTasks.map((t) => ({ ...t, date: from })) })); });
 
   it('période vide : « — » et aucune carte d’encouragement, jamais NaN', async () => {
@@ -61,10 +60,12 @@ describe('StatsScreen', () => {
     expect(Number(monthTo.slice(8))).toBeGreaterThanOrEqual(28); // dernier jour du mois
   });
 
-  it('frère : consultation en lecture seule et un seul profil affiché (pas de comparatif)', async () => {
-    mockReadOnly = true;
+  it('enfant (D-052) : statistiques de SON profil uniquement, aucun autre enfant ni comparatif', async () => {
     await render(<StatsScreen />);
-    expect(screen.getByText('Đang xem lịch của Khang')).toBeTruthy();
+    expect(screen.queryByText(/Khang/)).toBeNull();
+    expect(screen.queryByText(/Đang xem lịch/)).toBeNull();
+    expect(screen.queryByRole('tab')).toBeNull();
     expect(screen.getAllByLabelText(/^Hoàn thành: /)).toHaveLength(1); // une seule légende = un seul profil
+    expect(mockUseTasks.mock.calls.every(([id]) => id === 'c-minh')).toBe(true); // jamais de requête pour un autre enfant
   });
 });

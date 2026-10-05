@@ -78,7 +78,7 @@ select is(tests.n('update public.families set name = ''X'' where id = tests.u(1)
 
 -- ═══ children ═══
 select tests.login(13);
-select is(tests.n('select 1 from public.children'), 2::bigint, 'children: un enfant voit ses deux frères/soeurs (lecture)');
+select is(tests.n('select 1 from public.children'), 1::bigint, 'children: un enfant ne voit QUE sa propre fiche (D-052)');
 select throws_ok($$insert into public.children (family_id, name, birth_date) values (tests.u(1), 'Z', '2015-01-01')$$, '42501', null, 'children: un enfant ne peut pas créer d''enfant');
 select is(tests.n('update public.children set name = ''Hack'' where id = tests.u(202)'), 0::bigint, 'children: un enfant ne peut pas modifier son frère');
 select is(tests.n('update public.children set name = ''Hack'' where id = tests.u(201)'), 0::bigint, 'children: un enfant ne peut pas se modifier');
@@ -92,7 +92,7 @@ select is(tests.n('update public.children set name = ''Hack'' where id = tests.u
 
 -- ═══ members ═══
 select tests.login(13);
-select is(tests.n('select 1 from public.members'), 4::bigint, 'members: lecture limitée à la famille');
+select is(tests.n('select 1 from public.members'), 3::bigint, 'members: un enfant lit sa ligne et celles des parents, pas celle de son frère (D-052)');
 select throws_ok($$insert into public.members (family_id, user_id, role, display_name) values (tests.u(1), tests.u(21), 'parent', 'Pirate')$$, '42501', null, 'members: aucun insert direct (RPC uniquement)');
 select throws_ok($$update public.members set role = 'parent' where id = tests.u(113)$$, '42501', null, 'members: aucun update direct (auto-promotion impossible)');
 select tests.login(21);
@@ -132,8 +132,8 @@ select is(tests.n('select 1 from public.devices'), 1::bigint, 'devices: B ne voi
 
 -- ═══ tasks ═══
 select tests.login(13);
-select is(tests.n('select 1 from public.tasks'), 3::bigint, 'tasks: Minh lit les tâches de la famille (frère inclus)');
-select is(tests.n('select 1 from public.tasks where id = tests.u(302) and note = ''secret?'''), 1::bigint, 'tasks: Minh lit les notes de son frère');
+select is(tests.n('select 1 from public.tasks'), 2::bigint, 'tasks: Minh ne lit que SES tâches (D-052)');
+select is(tests.n('select 1 from public.tasks where id = tests.u(302)'), 0::bigint, 'tasks: Minh ne lit ni la tâche ni la note de son frère (D-052)');
 select is(tests.n('select 1 from public.tasks where id = tests.u(321)'), 0::bigint, 'tasks: autre famille invisible');
 -- SPEC v4 : un enfant ne crée, ne modifie ni ne supprime AUCUNE tâche
 select throws_ok($$insert into public.tasks (id, family_id, child_id, title, date, created_by) values (tests.u(331), tests.u(1), tests.u(201), 'Nouvelle', '2026-07-03', tests.u(113))$$, '42501', null, 'tasks: Minh ne peut plus créer de tâche pour lui');
@@ -179,7 +179,7 @@ select throws_ok($$update public.goals set achieved_at = now() where id = tests.
 select is(tests.n('update public.goals set progress = 5 where id = tests.u(901)'), 1::bigint, 'goals: Minh met à jour sa progression');
 select isnt((select achieved_at from public.goals where id = tests.u(901)), null, 'goals: objectif atteint → achieved_at posé par trigger');
 select tests.login(14);
-select is(tests.n('select 1 from public.goals'), 1::bigint, 'goals: Khang lit les objectifs de son frère');
+select is(tests.n('select 1 from public.goals'), 0::bigint, 'goals: Khang ne lit pas les objectifs de son frère (D-052)');
 select is(tests.n('update public.goals set progress = 0 where id = tests.u(901)'), 0::bigint, 'goals: Khang ne modifie pas ceux de son frère');
 select tests.login(11);
 select lives_ok($$insert into public.goals (family_id, child_id, title, target, created_by) values (tests.u(1), tests.u(202), 'Parent', 3, tests.u(111))$$, 'goals: le parent crée pour tout enfant');
@@ -200,7 +200,7 @@ select is(tests.n('update public.rewards set cost = 1 where id = tests.u(401)'),
 
 -- ═══ point_transactions ═══
 select tests.login(13);
-select is(tests.n('select 1 from public.point_transactions'), 2::bigint, 'point_transactions: le solde du frère est lisible');
+select is(tests.n('select 1 from public.point_transactions'), 1::bigint, 'point_transactions: seulement les siennes (D-052)');
 select throws_ok($$insert into public.point_transactions (id, family_id, child_id, delta, reason, created_by) values (gen_random_uuid(), tests.u(1), tests.u(201), 1000, 'manual_adjust', tests.u(113))$$, '42501', null, 'point_transactions: un enfant ne s''attribue pas de points');
 select tests.login(11);
 select throws_ok($$insert into public.point_transactions (id, family_id, child_id, delta, reason, created_by) values (gen_random_uuid(), tests.u(1), tests.u(201), 1, 'manual_adjust', tests.u(111))$$, '42501', null, 'point_transactions: même le parent passe par adjust_points');
@@ -231,7 +231,7 @@ select throws_ok($$insert into public.activity_log (family_id, type) values (tes
 
 -- ═══ child_balances (vue) ═══
 select tests.login(13);
-select is((select balance from public.child_balances where child_id = tests.u(202)), 80, 'child_balances: solde du frère visible');
+select is((select balance from public.child_balances where child_id = tests.u(202)), null, 'child_balances: le solde du frère n''est PAS visible (D-052)');
 select is((select available from public.child_balances where child_id = tests.u(201)), 200, 'child_balances: disponible = solde − réservé');
 select tests.login(21);
 select is(tests.n('select 1 from public.child_balances where family_id = tests.u(1)'), 0::bigint, 'child_balances: autre famille invisible');

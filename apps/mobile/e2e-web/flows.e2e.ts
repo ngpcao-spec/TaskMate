@@ -172,7 +172,7 @@ test.describe('formulaire de tâche sur le web', () => {
 });
 
 test.describe('droits de l\'enfant', () => {
-  test('le frère est consultable en lecture seule ; l\'enfant ne peut pas créer de tâche', async ({ browser }) => {
+  test('l\'enfant ne voit que ses données (D-052) et ne peut pas créer de tâche', async ({ browser }) => {
     const family = await createFamily();
     const khangTask = title('Tập đàn');
     await seedTask(family, 'khang', khangTask);
@@ -184,11 +184,10 @@ test.describe('droits de l\'enfant', () => {
     await expect(page.getByText('Chào Minh!')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Thêm việc' })).toHaveCount(0);
 
-    await page.getByRole('tab', { name: /Khang/ }).click();
-    await expect(page.getByText('Đang xem lịch của Khang')).toBeVisible();
-    const box = page.getByRole('checkbox', { name: khangTask });
-    await expect(box).toBeVisible();
-    await expect(box).toBeDisabled();
+    // aucun sélecteur d'enfant, aucune trace du frère ni de sa tâche
+    await expect(page.getByRole('tab', { name: /tuổi/ })).toHaveCount(0); // (la barre d'onglets de l'app n'est pas un sélecteur d'enfant)
+    await expect(page.getByText(/Khang/)).toHaveCount(0);
+    await expect(page.getByRole('checkbox', { name: khangTask })).toHaveCount(0);
 
     // route de création protégée
     await open(page, '/task/new');
@@ -566,7 +565,8 @@ test.describe('ajouter un enfant après l\'onboarding', () => {
     await signInContext(ctx, family.minh);
     const page = await ctx.newPage();
     await open(page, '/more');
-    await expect(page.getByRole('radio', { name: /^Minh,/ })).toBeVisible();
+    await expect(page.getByLabel(/^Minh,/).first()).toBeVisible();
+    await expect(page.getByRole('radio', { name: /^Minh,/ })).toHaveCount(0); // carte simple, pas de sélection (D-052)
     await expect(page.getByRole('button', { name: 'Thêm con' })).toHaveCount(0);
     await open(page, '/more/add-child');
     await expect(page.getByLabel('Tên của con')).toHaveCount(0);
