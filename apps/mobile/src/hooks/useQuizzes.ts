@@ -12,18 +12,19 @@ import { mutationKeys, type CreateQuizSetVars, type StartEvaluationVars, type Su
 import { useToastStore } from '@/store/toast';
 
 // ───────────── lectures ─────────────
-export const useQuizSets = (childId: string | null, enabled = true) => useQuery({ queryKey: quizKeys.sets(childId), queryFn: () => fetchQuizSets(childId), enabled });
-export const useQuizSet = (id: string) => useQuery({ queryKey: quizKeys.set(id), queryFn: () => fetchQuizSet(id), enabled: !!id });
-export const useParentQuestions = (setId: string) => useQuery({ queryKey: quizKeys.questions(setId), queryFn: () => fetchParentQuestions(setId), enabled: !!setId });
-export const useSetAttempts = (setId: string) => useQuery({ queryKey: quizKeys.attempts(setId), queryFn: () => fetchSetAttempts(setId), enabled: !!setId });
-export const useChildAttempts = (childId: string | null) => useQuery({ queryKey: quizKeys.childAttempts(childId ?? 'none'), queryFn: () => fetchChildAttempts(childId as string), enabled: childId !== null });
-export const usePendingQuizAttempts = (enabled: boolean) => useQuery({ queryKey: quizKeys.pending, queryFn: fetchPendingQuizAttempts, enabled });
-export const useAttemptDetail = (id: string) => useQuery({ queryKey: quizKeys.detail(id), queryFn: () => fetchAttemptDetail(id), enabled: !!id });
+// staleTime 0 : un résultat soumis ou validé doit apparaître dès l'ouverture de l'écran (le cache persisté ne doit pas masquer l'état courant).
+export const useQuizSets = (childId: string | null, enabled = true) => useQuery({ queryKey: quizKeys.sets(childId), queryFn: () => fetchQuizSets(childId), enabled, staleTime: 0 });
+export const useQuizSet = (id: string) => useQuery({ queryKey: quizKeys.set(id), queryFn: () => fetchQuizSet(id), enabled: !!id, staleTime: 0 });
+export const useParentQuestions = (setId: string) => useQuery({ queryKey: quizKeys.questions(setId), queryFn: () => fetchParentQuestions(setId), enabled: !!setId, staleTime: 0 });
+export const useSetAttempts = (setId: string) => useQuery({ queryKey: quizKeys.attempts(setId), queryFn: () => fetchSetAttempts(setId), enabled: !!setId, staleTime: 0 });
+export const useChildAttempts = (childId: string | null) => useQuery({ queryKey: quizKeys.childAttempts(childId ?? 'none'), queryFn: () => fetchChildAttempts(childId as string), enabled: childId !== null, staleTime: 0 });
+export const usePendingQuizAttempts = (enabled: boolean) => useQuery({ queryKey: quizKeys.pending, queryFn: fetchPendingQuizAttempts, enabled, staleTime: 0 });
+export const useAttemptDetail = (id: string) => useQuery({ queryKey: quizKeys.detail(id), queryFn: () => fetchAttemptDetail(id), enabled: !!id, staleTime: 0 });
 
-export const useChildQuizSets = (enabled = true) => useQuery({ queryKey: quizKeys.mine, queryFn: fetchChildQuizSets, enabled });
+export const useChildQuizSets = (enabled = true) => useQuery({ queryKey: quizKeys.mine, queryFn: fetchChildQuizSets, enabled, staleTime: 0 });
 export const useChildQuestions = (setId: string) => useQuery({ queryKey: quizKeys.play(setId), queryFn: () => fetchChildQuestions(setId), enabled: !!setId, staleTime: Infinity });
-export const useChildResult = (attemptId: string) => useQuery({ queryKey: quizKeys.result(attemptId), queryFn: () => fetchChildResult(attemptId), enabled: !!attemptId });
-export const useChildHistory = (setId: string) => useQuery({ queryKey: quizKeys.history(setId), queryFn: () => fetchChildHistory(setId), enabled: !!setId });
+export const useChildResult = (attemptId: string) => useQuery({ queryKey: quizKeys.result(attemptId), queryFn: () => fetchChildResult(attemptId), enabled: !!attemptId, staleTime: 0 });
+export const useChildHistory = (setId: string) => useQuery({ queryKey: quizKeys.history(setId), queryFn: () => fetchChildHistory(setId), enabled: !!setId, staleTime: 0 });
 
 // ───────────── écritures mises en file (sync/mutations.ts : scope `writes`, rejeu idempotent) ─────────────
 export const useCreateQuizSet = () => useMutation<void, unknown, CreateQuizSetVars>({ mutationKey: mutationKeys.createQuizSet });
