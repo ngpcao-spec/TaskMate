@@ -177,6 +177,55 @@
     "notePlaceholder": "Thêm ghi chú…",
     "todayWord": "Hôm nay"
   },
+  "renew": {
+    "entry": "Nhân bản / Lặp lại",
+    "title": "Lặp lại công việc",
+    "source": "Việc gốc: {{title}}",
+    "mode": {
+      "days": "Ngày khác",
+      "weekly": "Hằng tuần"
+    },
+    "days": {
+      "hint": "Chọn một hoặc nhiều ngày",
+      "taken": "đã có việc này",
+      "pickMonth": "Tháng",
+      "legendTaken": "Chấm: đã có việc này trong ngày"
+    },
+    "weekly": {
+      "weekdays": "Các thứ trong tuần",
+      "start": "Bắt đầu từ",
+      "every": "Hằng tuần…",
+      "end": {
+        "weeks": "Trong số tuần",
+        "date": "Đến ngày",
+        "never": "Không kết thúc"
+      },
+      "weeksValue": "{{count}} tuần",
+      "weeksLess": "Bớt một tuần",
+      "weeksMore": "Thêm một tuần",
+      "endDate": "Ngày kết thúc"
+    },
+    "summary": {
+      "none": "Chọn ít nhất một ngày.",
+      "oneOff": "Sẽ tạo {{count}} việc, từ {{from}} đến {{to}}.",
+      "skipped": "{{count}} việc giống hệt đã có, sẽ không tạo lại.",
+      "series": "Chuỗi hằng tuần: {{count}} việc, từ {{from}} đến {{to}}.",
+      "seriesNever": "Chuỗi không kết thúc: việc được tạo trước 14 ngày ({{count}} việc trong 14 ngày tới).",
+      "conflict": "{{count}} việc giống hệt đã có trong 14 ngày tới và sẽ bị trùng.",
+      "conflictConfirm": "Vẫn tạo dù bị trùng",
+      "tooMany": "Quá nhiều việc cùng lúc (tối đa {{max}}). Hãy giảm số ngày, số tuần hoặc số bạn."
+    },
+    "errors": {
+      "weekdaysRequired": "Chọn ít nhất một thứ trong tuần",
+      "startPast": "Ngày bắt đầu không được ở quá khứ",
+      "endBeforeStart": "Ngày kết thúc phải sau ngày bắt đầu",
+      "endTooFar": "Kết thúc quá xa (tối đa 52 tuần)",
+      "weeksInvalid": "Số tuần từ 1 đến 52"
+    },
+    "confirm": "Tạo",
+    "created": "Đã tạo {{count}} việc",
+    "seriesCreated": "Đã tạo chuỗi hằng tuần"
+  },
   "sync": {
     "offline": "Đang offline — thay đổi sẽ được đồng bộ khi có mạng",
     "pending": "Đang đồng bộ {{count}} thay đổi…",

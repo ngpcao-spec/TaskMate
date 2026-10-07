@@ -171,6 +171,90 @@ test.describe('formulaire de tâche sur le web', () => {
   });
 });
 
+test.describe('renouveler une tâche (D-054)', () => {
+  const taskDates = async (family: Awaited<ReturnType<typeof createFamily>>, taskTitle: string) => {
+    const { data } = await serviceClient().from('tasks').select('date, child_id, completed_at, recurrence_id').eq('family_id', family.familyId).eq('title', taskTitle).is('deleted_at', null).order('date');
+    return data ?? [];
+  };
+  const openRenew = async (page: Page, taskTitle: string) => {
+    await open(page);
+    await page.getByRole('button', { name: new RegExp(taskTitle) }).first().click();
+    await page.getByRole('button', { name: 'Nhân bản / Lặp lại' }).click();
+    await expect(page.getByText('Lặp lại công việc')).toBeVisible();
+  };
+
+  test('dupliquer sur deux jours précis : deux tâches ponctuelles « à faire », la source intacte', async ({ browser }) => {
+    test.setTimeout(120_000);
+    const family = await createFamily();
+    const taskTitle = title('Rửa bát');
+    await seedTask(family, 'minh', taskTitle);
+    const ctx = await browser.newContext();
+    await signInContext(ctx, family.parent);
+    const page = await ctx.newPage();
+    trace(page, 'parent-dupliquer');
+    await openRenew(page, taskTitle);
+
+    // jours cochables du calendrier (les jours passés sont désactivés) : aujourd'hui = la source (déjà occupé), puis les deux suivants
+    const days = page.locator('[role="checkbox"]:not([aria-disabled="true"])').filter({ hasText: /^\d{1,2}$/ });
+    await days.nth(1).click();
+    await days.nth(2).click();
+    await expect(page.getByText(/^Sẽ tạo 2 việc/)).toBeVisible();
+    await page.getByRole('button', { name: 'Tạo' }).click();
+
+    await expect.poll(async () => (await taskDates(family, taskTitle)).length).toBe(3);
+    const rows = await taskDates(family, taskTitle);
+    expect(new Set(rows.map((r) => r.date)).size).toBe(3);
+    expect(rows.every((r) => r.child_id === family.minh.childId && r.recurrence_id === null)).toBe(true);
+    expect(rows.filter((r) => r.completed_at !== null)).toHaveLength(0);
+  });
+
+  test('série hebdomadaire sur 4 semaines : une récurrence au bon jour ISO avec fin, occurrences générées', async ({ browser }) => {
+    test.setTimeout(120_000);
+    const family = await createFamily();
+    const taskTitle = title('Tập đàn');
+    await seedTask(family, 'minh', taskTitle);
+    const ctx = await browser.newContext();
+    await signInContext(ctx, family.parent);
+    const page = await ctx.newPage();
+    trace(page, 'parent-serie');
+    await openRenew(page, taskTitle);
+
+    await page.getByRole('radio', { name: 'Hằng tuần' }).click();
+    await expect(page.getByText('4 tuần')).toBeVisible(); // valeur par défaut claire : 4 semaines
+    await page.getByRole('button', { name: 'Tạo' }).click();
+
+    await expect
+      .poll(async () => {
+        const { data } = await serviceClient().from('recurrences').select('weekdays, starts_on, ends_on').eq('family_id', family.familyId).eq('title', taskTitle);
+        return data?.length ?? 0;
+      })
+      .toBe(1);
+    const { data: rec } = await serviceClient().from('recurrences').select('id, weekdays, starts_on, ends_on').eq('family_id', family.familyId).eq('title', taskTitle).single();
+    const { data: seed } = await serviceClient().from('tasks').select('date').eq('family_id', family.familyId).eq('title', taskTitle).is('recurrence_id', null).single();
+    const isoOf = (date: string) => { const js = new Date(`${date}T00:00:00Z`).getUTCDay(); return js === 0 ? 7 : js; };
+    expect(rec?.weekdays).toEqual([isoOf(seed?.date as string)]); // le jour de la source, jamais décalé d'un jour
+    expect(Math.round((Date.parse(`${rec?.ends_on}T00:00:00Z`) - Date.parse(`${rec?.starts_on}T00:00:00Z`)) / 86_400_000)).toBe(27); // 4 semaines complètes
+    const generated = (await taskDates(family, taskTitle)).filter((r) => r.recurrence_id === rec?.id);
+    expect(generated.length).toBeGreaterThanOrEqual(1);
+    expect(generated.every((r) => isoOf(r.date) === (rec?.weekdays as number[])[0])).toBe(true);
+  });
+
+  test('l\'enfant n\'a ni le bouton ni l\'écran « Renouveler »', async ({ browser }) => {
+    const family = await createFamily();
+    const taskTitle = title('Đọc sách');
+    const id = await seedTask(family, 'minh', taskTitle);
+    const ctx = await browser.newContext();
+    await signInContext(ctx, family.minh);
+    const page = await ctx.newPage();
+    await open(page);
+    await page.getByRole('button', { name: new RegExp(taskTitle) }).first().click();
+    await expect(page).toHaveURL(/\/task\//); // le détail en lecture seule est ouvert
+    await expect(page.getByRole('button', { name: 'Nhân bản / Lặp lại' })).toHaveCount(0);
+    await open(page, `/task/renew?id=${id}`);
+    await expect(page.getByText('Lặp lại công việc')).toHaveCount(0);
+  });
+});
+
 test.describe('droits de l\'enfant', () => {
   test('l\'enfant ne voit que ses données (D-052) et ne peut pas créer de tâche', async ({ browser }) => {
     const family = await createFamily();

@@ -2,6 +2,7 @@ import { getISODay, parseISO } from 'date-fns';
 import {
   categoryTint,
   formatDayNumber,
+  formatShortDate,
   formatDayTitle,
   formatMonthTitle,
   formatWeekdayLabel,
@@ -49,6 +50,7 @@ describe('libellés calculés (jamais en dur)', () => {
     expect(formatMonthTitle('2026-07-02', 'en')).toBe('July 2026');
     expect(formatWeekdayLabel('2026-07-02', 'en')).toBe('Th');
     expect(formatDayNumber('2026-07-02')).toBe('2');
+    expect(formatShortDate('2026-07-02')).toBe('02/07/2026');
   });
 });
 

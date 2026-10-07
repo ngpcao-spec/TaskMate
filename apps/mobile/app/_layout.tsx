@@ -25,6 +25,7 @@ function Root() {
         <StatusBar style="dark" />
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="task/new" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="task/renew" options={{ presentation: 'modal' }} />
           <Stack.Screen name="task/[id]" options={{ presentation: 'modal' }} />
           <Stack.Screen name="reward/new" options={{ presentation: 'modal' }} />
           <Stack.Screen name="reward/[id]" options={{ presentation: 'modal' }} />

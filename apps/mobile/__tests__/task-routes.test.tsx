@@ -47,11 +47,13 @@ describe('routes de tâche protégées (SPEC v4 §3.4)', () => {
     expect(screen.getByText('Cần làm')).toBeTruthy();
     expect(screen.queryByLabelText('Tên công việc')).toBeNull();
     expect(screen.queryByRole('button', { name: 'Lưu' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Nhân bản/ })).toBeNull(); // « Dupliquer / Lặp lại » : parent uniquement (D-054)
   });
 
   it('task/[id] : le parent obtient le formulaire d’édition', async () => {
     mockRole = 'parent';
     await render(<TaskScreen />);
     expect(screen.getByLabelText('Tên công việc').props.value).toBe('Làm bài tập Toán');
+    expect(screen.getByRole('button', { name: 'Nhân bản / Lặp lại' })).toBeTruthy();
   });
 });
