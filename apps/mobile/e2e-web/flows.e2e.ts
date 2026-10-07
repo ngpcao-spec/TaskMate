@@ -307,7 +307,7 @@ test.describe('révisions (D-055)', () => {
     await expect(child.getByText('Chưa đúng')).toBeVisible();
     await expect(child.getByText('Đáp án đúng: 4')).toBeVisible();
     await child.getByRole('button', { name: 'Xong' }).click();
-    await expect(child.getByText('Điểm: 1/2')).toBeVisible();
+    await expect(child.getByRole('heading', { name: 'Điểm: 1/2' })).toBeVisible();
 
     // 4. évaluation : aucune correction, aucun score, « chờ phụ huynh duyệt »
     await open(child, '/more/revisions');
@@ -338,8 +338,8 @@ test.describe('révisions (D-055)', () => {
     // 5. parent : relit le détail puis valide
     await open(parent, '/more/revisions');
     await parent.getByRole('button', { name: new RegExp(`${setTitle}, Chờ duyệt`) }).click();
-    await expect(parent.getByText('1/2').first()).toBeVisible();
-    await expect(parent.getByText('Đáp án đúng: 4')).toBeVisible();
+    await expect(parent.getByRole('heading', { name: '1/2' })).toBeVisible();
+    await expect(parent.getByText('Đáp án đúng: 4').filter({ visible: true })).toHaveCount(1);
     await parent.getByRole('button', { name: 'Duyệt kết quả' }).click();
     await expect.poll(async () => (await serviceClient().from('quiz_attempts').select('status').eq('id', attempt?.id as string).single()).data?.status).toBe('validated');
 
@@ -347,8 +347,8 @@ test.describe('révisions (D-055)', () => {
     await open(child, '/more/revisions');
     await child.getByRole('button', { name: new RegExp(setTitle) }).click();
     await child.getByRole('button', { name: 'Xem kết quả' }).click();
-    await expect(child.getByText('Điểm: 1/2')).toBeVisible();
-    await expect(child.getByText('Đáp án đúng: 4')).toBeVisible();
+    await expect(child.getByRole('heading', { name: 'Điểm: 1/2' })).toBeVisible();
+    await expect(child.getByText('Đáp án đúng: 4').filter({ visible: true })).toHaveCount(1);
   });
 
   test('un enfant n\'a aucun accès aux écrans parent des révisions', async ({ browser }) => {
