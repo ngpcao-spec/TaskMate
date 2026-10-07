@@ -348,9 +348,11 @@ test.describe('révisions (D-055)', () => {
     await parent.getByRole('button', { name: 'Cho làm lại bài kiểm tra' }).click();
     await open(child, '/more/revisions');
     await child.getByRole('button', { name: new RegExp(setTitle) }).click();
-    await child.getByRole('button', { name: 'Làm bài kiểm tra' }).click();
+    // la relance crée une tentative ouverte côté serveur : l'enfant la REPREND (il ne peut pas en démarrer une lui-même)
+    await expect(child.getByRole('button', { name: 'Làm bài kiểm tra', exact: true })).toHaveCount(0);
+    await child.getByRole('button', { name: 'Làm tiếp bài kiểm tra' }).click();
     await child.getByRole('radio', { name: '2', exact: true }).click();
-    await child.getByRole('radio', { name: '3', exact: true }).click(); // faux
+    await child.getByRole('radio', { name: '5', exact: true }).click(); // faux (« 3 » existe dans les deux questions : sélecteur ambigu)
     await child.getByRole('button', { name: 'Nộp bài' }).click();
     await expect(child.getByText('Đã nộp, chờ phụ huynh duyệt')).toBeVisible();
     await expect.poll(async () => (await serviceClient().from('quiz_attempts').select('status').eq('family_id', family.familyId).eq('status', 'submitted')).data?.length).toBe(1);
@@ -361,9 +363,9 @@ test.describe('révisions (D-055)', () => {
     await expect.poll(async () => (await serviceClient().from('quiz_attempts').select('show_correction').eq('id', second?.id as string).single()).data?.show_correction).toBe(true);
     await open(child, '/more/revisions');
     await child.getByRole('button', { name: new RegExp(setTitle) }).click();
+    await expect(child.getByRole('heading', { name: 'Tiến triển' })).toBeVisible(); // SA progression (accueil du jeu), résultats validés seulement
     await child.getByRole('button', { name: 'Xem kết quả' }).click();
     await expect(child.getByText('Đáp án đúng: 4').filter({ visible: true })).toHaveCount(1);
-    await expect(child.getByText('Tiến triển')).toBeVisible();
   });
 
   // La fonction `generate-questions` est SIMULÉE (aucun appel IA réel) : la requête du navigateur est interceptée, on vérifie ce qu'elle envoie,

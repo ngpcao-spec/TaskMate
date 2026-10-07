@@ -387,15 +387,29 @@ isOneToOne: false
                   ]
                 },"quiz_attempt_layouts": {
                   Row: {
-                    "attempt_id": string,"family_id": string,"layout": Json
+                    "attempt_id": string,"family_id": string,"layout": NonNullable<Json>
                   }
                   Insert: {
-                    "attempt_id": string,"family_id": string,"layout": Json
+                    "attempt_id": string,"family_id": string,"layout": NonNullable<Json>
                   }
                   Update: {
-                    "attempt_id"?: string,"family_id"?: string,"layout"?: Json
+                    "attempt_id"?: string,"family_id"?: string,"layout"?: NonNullable<Json>
                   }
-                  Relationships: []
+                  Relationships: [
+                    {
+      foreignKeyName: "quiz_attempt_layouts_attempt_id_fkey"
+      columns: ["attempt_id"]
+isOneToOne: true
+      referencedRelation: "quiz_attempts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quiz_attempt_layouts_family_id_fkey"
+      columns: ["family_id"]
+isOneToOne: false
+      referencedRelation: "families"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"quiz_attempts": {
                   Row: {
                     "child_id": string,"created_at": string,"family_id": string,"id": string,"relaunched_by": string | null,"set_id": string,"show_correction": boolean,"started_at": string,"status": Database["public"]['Enums']["quiz_attempt_status"],"submitted_at": string | null,"updated_at": string,"validated_at": string | null,"validated_by": string | null
@@ -877,7 +891,7 @@ isOneToOne: false
 { Args: { "p_set": string }; Returns: Json
                            },
 "quiz_new_attempt":
-{ Args: { "p_attempt": string,"p_relaunched_by": string,"p_set": Json }; Returns: undefined
+{ Args: { "p_attempt": string,"p_relaunched_by": string,"p_set": Database["public"]['Tables']["quiz_sets"]['Row'] }; Returns: undefined
                            },
 "quiz_require_child":
 { Args: Record<PropertyKey, never>; Returns: {
