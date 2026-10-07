@@ -363,9 +363,9 @@ test.describe('révisions (D-055)', () => {
     await expect.poll(async () => (await serviceClient().from('quiz_attempts').select('show_correction').eq('id', second?.id as string).single()).data?.show_correction).toBe(true);
     await open(child, '/more/revisions');
     await child.getByRole('button', { name: new RegExp(setTitle) }).click();
+    await expect(child.getByRole('heading', { name: 'Tiến triển' })).toBeVisible(); // SA progression (accueil du jeu), résultats validés seulement
     await child.getByRole('button', { name: 'Xem kết quả' }).click();
     await expect(child.getByText('Đáp án đúng: 4').filter({ visible: true })).toHaveCount(1);
-    await expect(child.getByText('Tiến triển')).toBeVisible();
   });
 
   test('un enfant n\'a aucun accès aux écrans parent des révisions', async ({ browser }) => {
