@@ -11,6 +11,11 @@ describe('invalidationsFor', () => {
     expect(invalidationsFor('point_transactions', { child_id: 'c1' })).toContainEqual(['balance']);
     expect(invalidationsFor('reward_requests', { child_id: 'c1' })).toEqual([['requests'], ['balance'], ['activity']]);
   });
+  it('révisions : jeux et tentatives invalident le préfixe [quiz]', () => {
+    expect(invalidationsFor('quiz_sets', { id: 's1' })).toEqual([['quiz']]);
+    expect(invalidationsFor('quiz_attempts', { child_id: 'c1' })).toEqual([['quiz']]);
+    expect(REALTIME_TABLES).toEqual(expect.arrayContaining(['quiz_sets', 'quiz_attempts']));
+  });
   it('couvre toutes les tables publiées', () => {
     for (const table of REALTIME_TABLES) expect(invalidationsFor(table, { child_id: 'c1' }).length).toBeGreaterThan(0);
   });
