@@ -48,6 +48,31 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"ai_usage": {
+                  Row: {
+                    "created_at": string,"day": string,"failure": string | null,"family_id": string,"finished_at": string | null,"id": string,"input_tokens": number | null,"member_id": string,"model": string | null,"output_tokens": number | null,"status": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"day": string,"failure"?: string | null,"family_id": string,"finished_at"?: string | null,"id"?: string,"input_tokens"?: number | null,"member_id": string,"model"?: string | null,"output_tokens"?: number | null,"status"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"day"?: string,"failure"?: string | null,"family_id"?: string,"finished_at"?: string | null,"id"?: string,"input_tokens"?: number | null,"member_id"?: string,"model"?: string | null,"output_tokens"?: number | null,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "ai_usage_family_id_fkey"
+      columns: ["family_id"]
+isOneToOne: false
+      referencedRelation: "families"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ai_usage_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "members"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"auth_attempts": {
                   Row: {
                     "created_at": string,"id": number,"key": string
@@ -690,6 +715,20 @@ isOneToOne: false
             "adjust_points":
 { Args: { "p_child_id": string,"p_delta": number,"p_note": string,"p_tx_id": string }; Returns: undefined
                            },
+"ai_finish":
+{ Args: { "p_failure": string,"p_id": string,"p_input": number,"p_model": string,"p_output": number,"p_status": string }; Returns: undefined
+                           },
+"ai_reserve":
+{ Args: { "p_family": string,"p_limit": number,"p_member": string,"p_now"?: string }; Returns: {
+              "allowed": boolean,"usage_id": string,"used": number
+            }[]
+                           },
+"ai_target":
+{ Args: { "p_child"?: string }; Returns: Json
+                           },
+"ai_usage_today":
+{ Args: { "p_family": string,"p_now"?: string }; Returns: number
+                           },
 "approve_reward_request":
 { Args: { "p_request_id": string,"p_tx_id": string }; Returns: undefined
                            },
@@ -751,6 +790,9 @@ isOneToOne: false
                            },
 "create_parent_invite":
 { Args: Record<PropertyKey, never>; Returns: string
+                           },
+"create_quiz_draft":
+{ Args: { "p_child": string,"p_questions": Json,"p_set": string,"p_subject": string,"p_title": string }; Returns: undefined
                            },
 "delete_family":
 { Args: Record<PropertyKey, never>; Returns: (string)[]

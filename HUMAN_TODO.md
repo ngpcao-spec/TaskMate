@@ -92,6 +92,14 @@ Sans aucune clé secrète. Essayer dans l'ordre :
   `SUPABASE_URL` et la clé de service sont injectées automatiquement dans les fonctions : ne les saisissez pas.
 - **Vérifier** : Diagnostic → les 3 « Edge Function … : OK » (sans `WEBHOOK_SECRET`, `send-push` répond 401 : normal, la fonction existe).
 
+## 6 bis. IA des révisions — clé Anthropic (facultatif, D-057)
+Sans cette clé, l'app fonctionne normalement : « Créer à partir d'un document » affiche « IA non configurée » et la saisie manuelle des questions reste possible. **Je ne fais jamais ces étapes à votre place** (clé = secret de production).
+1. **Créer la clé d'API** : https://platform.claude.com/ → *Settings → API keys* → **Create key** (nom `taskmate-revisions`) → copier la clé (elle ne s'affiche qu'une fois).
+2. **Fixer une limite de dépense** : https://platform.claude.com/ → *Settings → Limits* → **Spend limit** (par exemple 10 $ par mois ; ordre de grandeur : ≈ 0,05 $ par document de quelques pages, voir D-057) et, si disponible, une alerte e-mail.
+3. **Ajouter le secret dans Supabase** : Supabase → *Edge Functions → Secrets* (https://supabase.com/dashboard/project/olftkozksanvnzlsvwrp/functions/secrets) → **Add new secrets** → clé `ANTHROPIC_API_KEY`, valeur = la clé copiée → **Save**. (Facultatifs : `ANTHROPIC_MODEL` pour changer de modèle — défaut `claude-sonnet-5-5` ; `GENERATE_DAILY_LIMIT` pour le nombre de générations par famille et par jour — défaut 20.)
+4. **Vérifier** : app → Réglages → **Diagnostic** → « IA des révisions : OK » (avec l'usage du jour). Puis, côté parent : Plus → Révisions → « Créer à partir d'un document » avec une photo de test.
+La fonction `generate-questions` est déployée automatiquement par l'intégration GitHub au merge (étape 4). Les documents ne sont ni conservés ni journalisés ; seul le nombre de jetons et le succès/échec sont enregistrés.
+
 ## 7. Database Webhook (notifications)
 - **Où** : https://supabase.com/dashboard/project/olftkozksanvnzlsvwrp/integrations/webhooks/overview → *Integrations → Database Webhooks → Create a new hook*.
 - **Saisir** : Name `activity-log-push` · Table `public.activity_log` · Events **Insert** · Type **Supabase Edge Functions** · Edge Function `send-push` · Method `POST` · Timeout `5000` · **HTTP Headers** → *Add a new header* : nom `x-webhook-secret`, valeur = **le même** `WEBHOOK_SECRET` → **Create webhook**.

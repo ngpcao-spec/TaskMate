@@ -17,7 +17,8 @@ const probes = (over: Partial<Probes> = {}): Probes => ({
   auth: { google: false, email: true },
   diagnostics: { ok: true, data: { tables: [...EXPECTED_TABLES], tables_without_rls: [], functions: EXPECTED_FUNCTIONS.filter((f) => f !== 'validate_task'), realtime_tables: ['tasks'], extensions: [], cron_jobs: null } },
   realtime: 'SUBSCRIBED',
-  functions: { 'child-login': true, 'create-child': true, 'reset-child-password': true, 'delete-child': true, 'delete-account': false, 'send-push': null },
+  functions: { 'child-login': true, 'create-child': true, 'reset-child-password': true, 'delete-child': true, 'delete-account': false, 'send-push': null, 'generate-questions': true },
+  ai: { configured: false, usedToday: 0, dailyLimit: 20 },
   ...over,
 });
 const build = (p: Probes) => {
@@ -58,7 +59,7 @@ describe('Réglages → Diagnostic', () => {
       probes({
         auth: { google: true, email: true },
         diagnostics: { ok: true, data: { tables: [...EXPECTED_TABLES], tables_without_rls: [], functions: [...EXPECTED_FUNCTIONS], realtime_tables: ['tasks', 'goals', 'rewards', 'reward_requests', 'point_transactions', 'children'], extensions: [], cron_jobs: ['expire-reward-requests', 'generate-recurrences'] } },
-        functions: { 'child-login': true, 'create-child': true, 'reset-child-password': true, 'delete-child': true, 'delete-account': true, 'send-push': true },
+        functions: { 'child-login': true, 'create-child': true, 'reset-child-password': true, 'delete-child': true, 'delete-account': true, 'send-push': true, 'generate-questions': true }, ai: { configured: true, usedToday: 0, dailyLimit: 20 },
       }),
     );
     mockData = { ...mockData, items: mockData.items.filter((i) => i.status === 'ok'), summary: { ok: mockData.items.length, warn: 0, fail: 0 } };

@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { ChevronRight, Plus } from 'lucide-react-native';
+import { ChevronRight, FileUp, Plus } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ProfilePills } from '@/components/ProfilePills';
@@ -65,6 +65,10 @@ export function ParentRevisions() {
       <Pressable accessibilityRole="button" accessibilityLabel={t('revisions.new')} onPress={() => router.push('/quiz/new')} style={styles.add}>
         <Plus color={colors.primary} size={20} />
         <Text style={styles.addText}>{t('revisions.new')}</Text>
+      </Pressable>
+      <Pressable accessibilityRole="button" accessibilityLabel={t('revisions.import.entry')} onPress={() => router.push('/quiz/import')} style={styles.add}>
+        <FileUp color={colors.primary} size={20} />
+        <Text style={styles.addText}>{t('revisions.import.entry')}</Text>
       </Pressable>
 
       <ScoreHistory points={history} timezone={d.me.family.timezone} />

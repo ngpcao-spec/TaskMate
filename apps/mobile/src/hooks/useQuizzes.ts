@@ -5,6 +5,7 @@ import {
   fetchChildResult, fetchParentQuestions, fetchPendingQuizAttempts, fetchQuizSet, fetchQuizSets, fetchSetAttempts, finishQuizPractice, relaunchQuizEvaluation,
   reorderQuestions, setQuizStatus, startQuizPractice, updateQuizSet, upsertQuestion, type QuestionInput,
 } from '@/api/quizzes';
+import { generateQuestions, type GenerateInput } from '@/api/generate';
 import { serverErrorCode } from '@/api/tasks';
 import { quizErrorKey } from '@/domain/quiz';
 import i18n from '@/i18n';
@@ -59,3 +60,14 @@ export const useDeleteQuizSet = () => useOnlineQuizMutation<string>(deleteQuizSe
 export const useStartPractice = () => useOnlineQuizMutation<{ setId: string; attemptId: string }>(({ setId, attemptId }) => startQuizPractice(setId, attemptId), false);
 export const useCheckAnswer = () => useOnlineQuizMutation<{ attemptId: string; questionId: string; choice: number }, Awaited<ReturnType<typeof checkQuizAnswer>>>(({ attemptId, questionId, choice }) => checkQuizAnswer(attemptId, questionId, choice), false);
 export const useFinishPractice = () => useOnlineQuizMutation<string, Awaited<ReturnType<typeof finishQuizPractice>>>(finishQuizPractice);
+
+/** Génération par IA depuis un document : en ligne uniquement, jamais rejouée automatiquement (chaque appel consomme le quota du jour). */
+export function useGenerateQuestions() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    networkMode: 'always',
+    retry: false,
+    mutationFn: (input: GenerateInput) => generateQuestions(input),
+    onSettled: () => void queryClient.invalidateQueries({ queryKey: quizKeys.all }),
+  });
+}

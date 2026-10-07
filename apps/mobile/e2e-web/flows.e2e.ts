@@ -351,6 +351,104 @@ test.describe('révisions (D-055)', () => {
     await expect(child.getByText('Đáp án đúng: 4').filter({ visible: true })).toHaveCount(1);
   });
 
+  // La fonction `generate-questions` est SIMULÉE (aucun appel IA réel) : la requête du navigateur est interceptée, on vérifie ce qu'elle envoie,
+  // et la réponse enregistre un brouillon comme le ferait le serveur (clé service du Supabase local).
+  const PNG_1X1 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+  async function seedDraft(familyId: string, childId: string, memberId: string, setId: string, setTitle: string) {
+    const db = serviceClient();
+    await db.from('quiz_sets').insert({ id: setId, family_id: familyId, child_id: childId, title: setTitle, status: 'draft', created_by: memberId });
+    const rows = [
+      { prompt: 'La photosynthèse a lieu dans ?', choices: ['les feuilles', 'les racines', 'le sol'], correct: 0 },
+      { prompt: 'Que produit la plante ?', choices: ['du dioxygène', 'du fer', 'du sel'], correct: 0 },
+    ];
+    for (const [i, r] of rows.entries()) {
+      const { data } = await db.from('quiz_questions').insert({ set_id: setId, family_id: familyId, position: i, prompt: r.prompt, choices: r.choices }).select('id').single();
+      await db.from('quiz_answer_keys').insert({ question_id: data?.id as string, family_id: familyId, correct_index: r.correct });
+    }
+  }
+
+  test('le parent charge un document : requête vérifiée, questions en BROUILLON, relecture puis publication (IA simulée)', async ({ browser }) => {
+    test.setTimeout(180_000);
+    const family = await createFamily();
+    const ctx = await browser.newContext();
+    await signInContext(ctx, family.parent);
+    const page = await ctx.newPage();
+    trace(page, 'parent-import');
+    let sent: { childId: string; setId: string; count: number; language: string; subject?: string; files: { mediaType: string; data: string }[] } | null = null;
+    await page.route('**/functions/v1/generate-questions', async (route) => {
+      const request = route.request();
+      if (request.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': '*' } });
+      sent = request.postDataJSON();
+      await seedDraft(family.familyId, sent!.childId, family.parent.memberId as string, sent!.setId, 'La photosynthèse');
+      await route.fulfill({ status: 200, headers: { 'access-control-allow-origin': '*' }, contentType: 'application/json', body: JSON.stringify({ set_id: sent!.setId, title: 'La photosynthèse', count: 2, truncated: false }) });
+    });
+
+    await open(page, '/more/revisions');
+    await page.getByRole('button', { name: 'Tạo từ tài liệu' }).click();
+    await expect(page.getByText(/KHÔNG được lưu giữ/)).toBeVisible();
+
+    // une photo (PNG) est redimensionnée / recompressée en JPEG avant l'envoi
+    const [chooser] = await Promise.all([page.waitForEvent('filechooser'), page.getByRole('button', { name: 'Chọn ảnh' }).click()]);
+    await chooser.setFiles({ name: 'trang1.png', mimeType: 'image/png', buffer: Buffer.from(PNG_1X1, 'base64') });
+    await expect(page.getByText('trang1.jpg')).toBeVisible();
+    await page.getByLabel('Môn học (không bắt buộc)').fill('Sinh học');
+    await page.getByRole('button', { name: 'Thêm một câu' }).click();
+    await page.getByRole('button', { name: 'Tạo câu hỏi' }).click();
+
+    // arrivée dans l'éditeur de relecture : brouillon, 2 questions, rien n'est publié
+    await expect(page.getByText('1. La photosynthèse a lieu dans ?')).toBeVisible();
+    await expect(page.getByText('2. Que produit la plante ?')).toBeVisible();
+    expect(sent).toMatchObject({ childId: family.minh.childId, count: 11, language: 'vi', subject: 'Sinh học' });
+    expect(sent!.files).toHaveLength(1);
+    expect(sent!.files[0]!.mediaType).toBe('image/jpeg');
+    expect(sent!.files[0]!.data.startsWith('/9j/')).toBe(true); // JPEG
+    const { data: draft } = await serviceClient().from('quiz_sets').select('status').eq('id', sent!.setId).single();
+    expect(draft?.status).toBe('draft');
+
+    // l'enfant ne voit rien tant que le parent n'a pas publié ; ensuite il voit le jeu
+    const childCtx = await browser.newContext();
+    await signInContext(childCtx, family.minh);
+    const child = await childCtx.newPage();
+    await open(child, '/more/revisions');
+    await expect(child.getByText('Chưa có bộ câu hỏi nào để ôn tập.')).toBeVisible();
+    await page.getByRole('button', { name: 'Đăng cho bạn ấy' }).click();
+    await expect(page.getByRole('button', { name: 'Gỡ xuống' })).toBeVisible();
+    await open(child, '/more/revisions');
+    await expect(child.getByRole('button', { name: /La photosynthèse/ })).toBeVisible();
+  });
+
+  test('IA non configurée, quota atteint, document refusé : messages clairs, aucun jeu créé', async ({ browser }) => {
+    test.setTimeout(120_000);
+    const family = await createFamily();
+    const ctx = await browser.newContext();
+    await signInContext(ctx, family.parent);
+    const page = await ctx.newPage();
+    let reply: { status: number; body: Record<string, unknown> } = { status: 503, body: { error: 'ai_not_configured' } };
+    await page.route('**/functions/v1/generate-questions', async (route) => {
+      if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': '*' } });
+      await route.fulfill({ status: reply.status, headers: { 'access-control-allow-origin': '*' }, contentType: 'application/json', body: JSON.stringify(reply.body) });
+    });
+    await open(page, '/quiz/import');
+    const [chooser] = await Promise.all([page.waitForEvent('filechooser'), page.getByRole('button', { name: 'Chọn PDF hoặc Word' }).click()]);
+    await chooser.setFiles({ name: 'cours.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\n1 0 obj << /Type /Pages /Count 2 >> endobj') });
+    await expect(page.getByText('cours.pdf')).toBeVisible();
+    await page.getByRole('button', { name: 'Tạo câu hỏi' }).click();
+    await expect(page.getByText(/AI chưa được cấu hình/)).toBeVisible();
+    reply = { status: 429, body: { error: 'quota_exceeded', limit: 20, used: 20 } };
+    await page.getByRole('button', { name: 'Tạo câu hỏi' }).click();
+    await expect(page.getByText('Đã hết lượt tạo hôm nay (20/20). Thử lại vào ngày mai.')).toBeVisible();
+    reply = { status: 422, body: { error: 'no_usable_content' } };
+    await page.getByRole('button', { name: 'Tạo câu hỏi' }).click();
+    await expect(page.getByText('Không tìm thấy nội dung học tập trong tài liệu.')).toBeVisible();
+    const { data } = await serviceClient().from('quiz_sets').select('id').eq('family_id', family.familyId);
+    expect(data ?? []).toHaveLength(0);
+
+    // un fichier d'un type non pris en charge est refusé côté navigateur, sans appel
+    const [chooser2] = await Promise.all([page.waitForEvent('filechooser'), page.getByRole('button', { name: 'Chọn PDF hoặc Word' }).click()]);
+    await chooser2.setFiles({ name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('bonjour') });
+    await expect(page.getByText(/Loại tệp không được hỗ trợ/)).toBeVisible();
+  });
+
   test('un enfant n\'a aucun accès aux écrans parent des révisions', async ({ browser }) => {
     const family = await createFamily();
     const ctx = await browser.newContext();

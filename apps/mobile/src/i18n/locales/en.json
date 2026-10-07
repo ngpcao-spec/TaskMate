@@ -332,6 +332,50 @@
       "setNotFound": "Question set not found",
       "attemptClosed": "This session is over",
       "notSubmitted": "The test hasn't been sent yet"
+    },
+    "import": {
+      "entry": "Create from a document",
+      "title": "Questions from a document",
+      "intro": "Pick photos, a PDF or a Word file. The document is sent to an AI service to write multiple-choice questions and is NOT stored. Questions arrive as a draft: you review them, edit them, then publish.",
+      "child": "For",
+      "subject": "Subject (optional)",
+      "titleField": "Title (optional)",
+      "count": "Number of questions",
+      "countValue": "{{count}} questions",
+      "less": "One question less",
+      "more": "One question more",
+      "takePhoto": "Take a photo",
+      "pickPhotos": "Choose photos",
+      "pickFile": "Choose a PDF or Word file",
+      "remove": "Remove {{name}}",
+      "selected": "Selection",
+      "none": "No document chosen.",
+      "generate": "Generate questions",
+      "generating": "Generating… this can take up to a minute.",
+      "needNetwork": "A connection is needed to generate questions.",
+      "unsupported": "This feature is only available in the web app (PWA).",
+      "done": "{{count}} questions generated (draft). Review them before publishing.",
+      "truncated": "Long document: only the beginning was used.",
+      "errors": {
+        "generic": "Couldn't generate the questions. Try again.",
+        "notConfigured": "AI is not configured. Ask for the ANTHROPIC_API_KEY secret to be added (see HUMAN_TODO).",
+        "quota": "Today's limit reached ({{used}}/{{limit}}). Try again tomorrow.",
+        "tooLarge": "File too large.",
+        "totalTooLarge": "The files are too large in total.",
+        "tooMany": "5 files at most.",
+        "tooManyPages": "PDF too long (20 pages max).",
+        "unsupportedType": "Unsupported file type (JPEG, PNG, WebP images; PDF; Word .docx).",
+        "unsupportedMix": "Pick images, OR one PDF, OR one Word file — no mixing.",
+        "unreadable": "This file can't be read.",
+        "noText": "The Word file doesn't contain enough text.",
+        "noFile": "Pick at least one document.",
+        "noContent": "No study content was found in this document.",
+        "aiFailed": "The AI didn't return valid questions. Try again or use a clearer document.",
+        "timeout": "Timed out. Try again.",
+        "forbidden": "Only a parent of the family can generate questions.",
+        "invalidCount": "The number of questions is 5 to 20.",
+        "network": "Server unreachable."
+      }
     }
   },
   "sync": {
@@ -598,7 +642,9 @@
       "fn-delete-child": "Edge Function delete-child",
       "fn-delete-account": "Edge Function delete-account",
       "fn-send-push": "Edge Function send-push",
-      "vapid": "Web Push key (VAPID)"
+      "vapid": "Web Push key (VAPID)",
+      "fn-generate-questions": "Edge Function generate-questions",
+      "ai": "Revision AI"
     },
     "connection": {
       "ok": "The server answers ({{url}}).",
@@ -667,6 +713,11 @@
       "ok": "The Google provider is enabled: parents can sign up and sign in.",
       "disabled": "The Google provider is DISABLED: no new parent can sign up. Supabase → Authentication → Sign In / Providers → Google → turn on, enter the Google client ID and secret → Save.",
       "unknown": "Cannot read the authentication settings (invalid public key or network). Check EXPO_PUBLIC_SUPABASE_ANON_KEY."
+    },
+    "ai": {
+      "ok": "AI configured (ANTHROPIC_API_KEY present). Today: {{used}}/{{limit}} generations used.",
+      "notConfigured": "AI NOT configured: ANTHROPIC_API_KEY secret is missing (Supabase → Edge Functions → Secrets). See HUMAN_TODO.",
+      "unknown": "AI status can't be checked (the generate-questions function doesn't answer)."
     }
   },
   "childAccount": {
