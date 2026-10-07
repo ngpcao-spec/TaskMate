@@ -25,7 +25,7 @@ export function ParentRevisions() {
   const list = sets.data ?? [];
   const waiting = (pending.data ?? []).filter((a) => a.child_id === d.child?.id);
   const history = historySeries(
-    (attempts.data ?? []).filter((a) => a.status === 'validated' && a.score !== null && a.total !== null).map((a) => ({ id: a.id, at: a.validated_at ?? a.started_at, kind: a.kind, score: a.score as number, total: a.total as number })),
+    (attempts.data ?? []).filter((a) => a.status === 'validated' && a.score !== null && a.total !== null).map((a) => ({ id: a.id, at: a.validated_at ?? a.started_at, score: a.score as number, total: a.total as number })),
   );
 
   return (

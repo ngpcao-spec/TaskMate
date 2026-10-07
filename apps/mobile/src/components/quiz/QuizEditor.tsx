@@ -52,8 +52,8 @@ export function QuizEditor({ setId }: { setId: string }) {
   const lockMessage = !isDraft ? t('revisions.lockedPublished') : tries.length > 0 ? t('revisions.lockedAttempts') : null;
   const titleErrors = validateSetTitle(title, subject);
   const changed = title.trim() !== s.title || (subject.trim() || null) !== (s.subject ?? null);
-  const openEvaluation = tries.some((a) => a.kind === 'evaluation' && a.status === 'in_progress');
-  const hasEvaluation = tries.some((a) => a.kind === 'evaluation');
+  const openEvaluation = tries.some((a) => a.status === 'in_progress');
+  const hasEvaluation = tries.length > 0;
   const childName = d.children.find((c) => c.id === s.child_id)?.name ?? '';
 
   const move = (from: number, to: number) => {
@@ -121,8 +121,8 @@ export function QuizEditor({ setId }: { setId: string }) {
           const day = formatShortDate(todayInTz(new Date(a.started_at), tz));
           const score = a.score !== null && a.total !== null ? `, ${t('revisions.score', { score: a.score, total: a.total })}` : '';
           return (
-            <Pressable key={a.id} accessibilityRole="button" accessibilityLabel={`${t(`revisions.kind.${a.kind}`)}, ${day}, ${t(`revisions.status.${a.status}`)}${score}`} onPress={() => router.push({ pathname: '/quiz/attempt/[id]', params: { id: a.id } })} style={styles.attempt}>
-              <Text style={styles.attemptMain}>{`${t(`revisions.kind.${a.kind}`)} · ${day}`}</Text>
+            <Pressable key={a.id} accessibilityRole="button" accessibilityLabel={`${day}, ${t(`revisions.status.${a.status}`)}${score}`} onPress={() => router.push({ pathname: '/quiz/attempt/[id]', params: { id: a.id } })} style={styles.attempt}>
+              <Text style={styles.attemptMain}>{day}</Text>
               <Text style={styles.attemptStatus}>{t(`revisions.status.${a.status}`)}{score.replace(',', ' ·')}</Text>
             </Pressable>
           );

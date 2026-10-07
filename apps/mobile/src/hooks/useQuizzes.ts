@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { quizKeys } from '@/api/keys';
 import {
-  checkQuizAnswer, copyQuizSet, deleteQuestion, deleteQuizSet, fetchAttemptDetail, fetchChildAttempts, fetchChildHistory, fetchChildQuestions, fetchChildQuizSets,
-  fetchChildResult, fetchParentQuestions, fetchPendingQuizAttempts, fetchQuizSet, fetchQuizSets, fetchSetAttempts, finishQuizPractice, relaunchQuizEvaluation,
-  reorderQuestions, setQuizStatus, startQuizPractice, updateQuizSet, upsertQuestion, type QuestionInput,
+  copyQuizSet, deleteQuestion, deleteQuizSet, fetchAttemptDetail, fetchChildAttempts, fetchChildHistory, fetchChildQuestions, fetchChildQuizSets,
+  fetchChildResult, fetchParentQuestions, fetchPendingQuizAttempts, fetchQuizSet, fetchQuizSets, fetchSetAttempts, relaunchQuizEvaluation,
+  reorderQuestions, setQuizStatus, updateQuizSet, upsertQuestion, type QuestionInput,
 } from '@/api/quizzes';
 import { serverErrorCode } from '@/api/tasks';
 import { quizErrorKey } from '@/domain/quiz';
@@ -22,7 +22,8 @@ export const usePendingQuizAttempts = (enabled: boolean) => useQuery({ queryKey:
 export const useAttemptDetail = (id: string) => useQuery({ queryKey: quizKeys.detail(id), queryFn: () => fetchAttemptDetail(id), enabled: !!id, staleTime: 0 });
 
 export const useChildQuizSets = (enabled = true) => useQuery({ queryKey: quizKeys.mine, queryFn: fetchChildQuizSets, enabled, staleTime: 0 });
-export const useChildQuestions = (setId: string) => useQuery({ queryKey: quizKeys.play(setId), queryFn: () => fetchChildQuestions(setId), enabled: !!setId, staleTime: Infinity });
+/** Questions d'UNE tentative en cours (ordre et choix déjà mélangés par le serveur, sans clé) ; `enabled` = la tentative existe côté serveur. */
+export const useChildQuestions = (attemptId: string, enabled: boolean) => useQuery({ queryKey: quizKeys.play(attemptId), queryFn: () => fetchChildQuestions(attemptId), enabled: enabled && !!attemptId, staleTime: Infinity, gcTime: 0 });
 export const useChildResult = (attemptId: string) => useQuery({ queryKey: quizKeys.result(attemptId), queryFn: () => fetchChildResult(attemptId), enabled: !!attemptId, staleTime: 0 });
 export const useChildHistory = (setId: string) => useQuery({ queryKey: quizKeys.history(setId), queryFn: () => fetchChildHistory(setId), enabled: !!setId, staleTime: 0 });
 
@@ -54,8 +55,3 @@ export const useCopyQuizSet = () => useOnlineQuizMutation<{ source: string; newS
 export const useRelaunchEvaluation = () => useOnlineQuizMutation<{ setId: string; attemptId: string }>(({ setId, attemptId }) => relaunchQuizEvaluation(setId, attemptId));
 export const useUpdateQuizSet = () => useOnlineQuizMutation<{ id: string; patch: { title?: string; subject?: string | null } }>(({ id, patch }) => updateQuizSet(id, patch));
 export const useDeleteQuizSet = () => useOnlineQuizMutation<string>(deleteQuizSet);
-
-// entraînement : appels en ligne, sans invalidation à chaque réponse
-export const useStartPractice = () => useOnlineQuizMutation<{ setId: string; attemptId: string }>(({ setId, attemptId }) => startQuizPractice(setId, attemptId), false);
-export const useCheckAnswer = () => useOnlineQuizMutation<{ attemptId: string; questionId: string; choice: number }, Awaited<ReturnType<typeof checkQuizAnswer>>>(({ attemptId, questionId, choice }) => checkQuizAnswer(attemptId, questionId, choice), false);
-export const useFinishPractice = () => useOnlineQuizMutation<string, Awaited<ReturnType<typeof finishQuizPractice>>>(finishQuizPractice);

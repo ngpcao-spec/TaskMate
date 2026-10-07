@@ -1,15 +1,16 @@
--- « Révisions » (D-055) : le parent compose (ou fait générer, PR B) des questions à choix multiple, les relit et les publie pour UN enfant ;
--- l'enfant s'entraîne (retour immédiat) puis passe une évaluation ; le résultat va d'abord au parent, qui le valide avant que l'enfant le voie.
--- Les points de l'app ne sont PAS reliés. Les fichiers originaux ne sont jamais conservés.
+-- « Révisions » (D-055, modifiée par D-059) : le parent compose (ou fait générer, PR B) des questions à choix multiple, les relit et les publie
+-- pour UN enfant ; l'enfant répond à TOUTES les questions, envoie ses réponses, puis attend ; le parent valide avant que l'enfant voie son score.
+-- Il n'y a PLUS de mode « entraînement » : aucun retour juste/faux n'est jamais donné pendant les questions (D-059). Points non reliés ; aucun fichier conservé.
 --
 -- Confidentialité (D-052 : un enfant ne voit QUE ses propres données, imposé ici par la RLS) :
 --  * la clé des bonnes réponses et les explications vivent dans une table réservée au parent (`quiz_answer_keys`) ;
---  * un enfant n'a AUCUN accès direct aux questions, réponses, résultats : il passe par des RPC `security definer` qui ne rendent jamais
---    la bonne réponse avant la correction (entraînement : une réponse à la fois ; évaluation : après validation parentale) ;
+--  * un enfant n'a AUCUN accès direct aux questions, réponses, résultats, ordres : il passe par des RPC `security definer` qui ne rendent jamais
+--    la bonne réponse, l'explication ni un « juste/faux » par question avant la validation du parent ; APRÈS validation, la correction n'est
+--    visible que si le parent l'a activée au moment de valider (réglage stocké côté serveur, appliqué par le RPC de résultat) ;
+--  * à chaque tentative, l'ordre des questions et des choix est mélangé CÔTÉ SERVEUR (table `quiz_attempt_layouts`, parent seulement) ;
 --  * tout brouillon est invisible pour l'enfant ; aucune écriture directe pour l'enfant (RPC uniquement).
 
 create type public.quiz_status as enum ('draft', 'published');
-create type public.quiz_attempt_kind as enum ('practice', 'evaluation');
 create type public.quiz_attempt_status as enum ('in_progress', 'submitted', 'validated');
 
 create function public.quiz_choices_valid(c text[]) returns boolean
@@ -62,13 +63,14 @@ create table public.quiz_attempts (
   family_id uuid not null references public.families (id),
   child_id uuid not null,
   set_id uuid not null,
-  kind public.quiz_attempt_kind not null,
   status public.quiz_attempt_status not null default 'in_progress',
   started_at timestamptz not null default clock_timestamp(),
   submitted_at timestamptz,
   validated_at timestamptz,
   validated_by uuid references public.members (id),
   relaunched_by uuid references public.members (id),
+  -- réglage posé par le parent AU MOMENT de valider : l'enfant voit-il la bonne réponse et l'explication ? (désactivé par défaut)
+  show_correction boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   foreign key (set_id, child_id) references public.quiz_sets (id, child_id),
@@ -76,8 +78,8 @@ create table public.quiz_attempts (
   unique (id, family_id)
 );
 create index quiz_attempts_child on public.quiz_attempts (child_id, started_at desc);
--- une seule tentative ouverte par jeu, enfant et type (reprise, pas de doublon)
-create unique index quiz_attempts_one_open on public.quiz_attempts (set_id, child_id, kind) where status = 'in_progress';
+-- une seule tentative ouverte par jeu et enfant (reprise, pas de doublon)
+create unique index quiz_attempts_one_open on public.quiz_attempts (set_id, child_id) where status = 'in_progress';
 
 -- Score : réservé au parent (l'enfant ne le reçoit que par RPC, une fois validé).
 create table public.quiz_results (
@@ -100,6 +102,14 @@ create table public.quiz_answers (
   primary key (attempt_id, question_id)
 );
 
+-- Mélange de CHAQUE tentative, décidé par le serveur : { "order": [question_id…], "choices": { question_id: [indice d'origine du choix affiché en position 0, 1, …] } }.
+-- Illisible pour l'enfant (il ne connaît donc jamais l'ordre d'origine) ; les réponses sont envoyées en positions AFFICHÉES et converties ici.
+create table public.quiz_attempt_layouts (
+  attempt_id uuid primary key references public.quiz_attempts (id) on delete cascade,
+  family_id uuid not null references public.families (id),
+  layout jsonb not null
+);
+
 do $$
 declare t text;
 begin
@@ -112,7 +122,7 @@ end $$;
 do $$
 declare t text;
 begin
-  foreach t in array array['quiz_sets', 'quiz_questions', 'quiz_answer_keys', 'quiz_attempts', 'quiz_results', 'quiz_answers'] loop
+  foreach t in array array['quiz_sets', 'quiz_questions', 'quiz_answer_keys', 'quiz_attempts', 'quiz_results', 'quiz_answers', 'quiz_attempt_layouts'] loop
     execute format('alter table public.%I enable row level security', t);
     execute format('revoke all on public.%I from anon, authenticated', t);
     execute format('grant select on public.%I to authenticated', t);
@@ -140,6 +150,8 @@ create policy quiz_answer_keys_select on public.quiz_answer_keys for select to a
 create policy quiz_results_select on public.quiz_results for select to authenticated
   using (family_id = public.my_family_id() and public.is_parent());
 create policy quiz_answers_select on public.quiz_answers for select to authenticated
+  using (family_id = public.my_family_id() and public.is_parent());
+create policy quiz_attempt_layouts_select on public.quiz_attempt_layouts for select to authenticated
   using (family_id = public.my_family_id() and public.is_parent());
 -- tentatives : état seulement (aucun score) ; le parent voit tout, l'enfant les siennes
 create policy quiz_attempts_select on public.quiz_attempts for select to authenticated
@@ -178,6 +190,25 @@ begin
   return s;
 end $$;
 revoke all on function public.quiz_editable_set(uuid, uuid) from public, anon, authenticated;
+
+-- Mélange d'une nouvelle tentative (ordre des questions ET des choix de chacune).
+create function public.quiz_make_layout(p_set uuid) returns jsonb
+language sql volatile security definer set search_path = public as $$
+  select jsonb_build_object(
+    'order', coalesce(jsonb_agg(q.id order by random()), '[]'::jsonb),
+    'choices', coalesce(jsonb_object_agg(q.id::text, (select jsonb_agg(i - 1 order by random()) from generate_series(1, cardinality(q.choices)) i)), '{}'::jsonb))
+  from public.quiz_questions q where q.set_id = p_set
+$$;
+revoke all on function public.quiz_make_layout(uuid) from public, anon, authenticated;
+
+-- Crée une tentative et son mélange (partagé par le démarrage de l'enfant et la relance du parent).
+create function public.quiz_new_attempt(p_attempt uuid, p_set public.quiz_sets, p_relaunched_by uuid) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  insert into public.quiz_attempts (id, family_id, child_id, set_id, relaunched_by) values (p_attempt, p_set.family_id, p_set.child_id, p_set.id, p_relaunched_by);
+  insert into public.quiz_attempt_layouts (attempt_id, family_id, layout) values (p_attempt, p_set.family_id, public.quiz_make_layout(p_set.id));
+end $$;
+revoke all on function public.quiz_new_attempt(uuid, public.quiz_sets, uuid) from public, anon, authenticated;
 
 -- ───────────────────────── RPC parent ─────────────────────────
 create function public.upsert_quiz_question(p_id uuid, p_set uuid, p_position int, p_prompt text, p_choices text[], p_correct int, p_explanation text)
@@ -269,8 +300,10 @@ begin
   end loop;
 end $$;
 
--- Le parent valide une évaluation soumise : seulement ensuite l'enfant voit score et correction.
-create function public.validate_quiz_attempt(p_attempt uuid) returns void
+-- Le parent valide une évaluation soumise ET choisit s'il montre la correction à l'enfant (réglage posé ICI, désactivé par défaut) :
+-- désactivé → l'enfant voit son score et la liste des questions ratées (énoncé + sa réponse), SANS bonne réponse ni explication ;
+-- activé → il voit en plus la bonne réponse et l'explication. Un second appel (déjà validée) ne change rien.
+create function public.validate_quiz_attempt(p_attempt uuid, p_show_correction boolean default false) returns void
 language plpgsql security definer set search_path = public as $$
 declare me public.members; a public.quiz_attempts;
 begin
@@ -279,7 +312,7 @@ begin
   if not found then raise exception 'attempt_not_found' using errcode = 'P0002'; end if;
   if a.status = 'validated' then return; end if;
   if a.status <> 'submitted' then raise exception 'not_submitted' using errcode = 'P0001'; end if;
-  update public.quiz_attempts set status = 'validated', validated_at = now(), validated_by = me.id where id = a.id;
+  update public.quiz_attempts set status = 'validated', validated_at = now(), validated_by = me.id, show_correction = coalesce(p_show_correction, false) where id = a.id;
 end $$;
 
 -- Nouvelle tentative d'évaluation, décidée par le parent (l'historique est conservé). Impossible tant qu'une tentative est en cours.
@@ -294,10 +327,10 @@ begin
   end if;
   select * into s from public.quiz_sets where id = p_set and family_id = me.family_id and deleted_at is null and status = 'published';
   if not found then raise exception 'set_not_found' using errcode = 'P0002'; end if;
-  if exists (select 1 from public.quiz_attempts where set_id = s.id and kind = 'evaluation' and status = 'in_progress') then
+  if exists (select 1 from public.quiz_attempts where set_id = s.id and status = 'in_progress') then
     raise exception 'attempt_in_progress' using errcode = 'P0001';
   end if;
-  insert into public.quiz_attempts (id, family_id, child_id, set_id, kind, relaunched_by) values (p_attempt, s.family_id, s.child_id, s.id, 'evaluation', me.id);
+  perform public.quiz_new_attempt(p_attempt, s, me.id);
 end $$;
 
 -- ───────────────────────── RPC enfant ─────────────────────────
@@ -313,88 +346,16 @@ begin
   select s.id, s.title, s.subject,
          (select count(*)::int from public.quiz_questions q where q.set_id = s.id),
          ev.id, ev.status,
-         not exists (select 1 from public.quiz_attempts a where a.set_id = s.id and a.child_id = me.child_id and a.kind = 'evaluation')
+         not exists (select 1 from public.quiz_attempts a where a.set_id = s.id and a.child_id = me.child_id)
   from public.quiz_sets s
   left join lateral (select a.id, a.status from public.quiz_attempts a
-                     where a.set_id = s.id and a.child_id = me.child_id and a.kind = 'evaluation' order by a.started_at desc, a.id limit 1) ev on true
+                     where a.set_id = s.id and a.child_id = me.child_id order by a.started_at desc, a.id limit 1) ev on true
   where s.child_id = me.child_id and s.family_id = me.family_id and s.status = 'published' and s.deleted_at is null
     and exists (select 1 from public.quiz_questions q where q.set_id = s.id)
   order by s.created_at desc, s.id;
 end $$;
 
--- Questions d'un jeu publié, SANS la clé ni l'explication.
-create function public.child_quiz_questions(p_set uuid)
-returns table (question_id uuid, "position" int, prompt text, choices text[])
-language plpgsql stable security definer set search_path = public as $$
-#variable_conflict use_column
-declare me public.members;
-begin
-  me := public.quiz_require_child();
-  if not exists (select 1 from public.quiz_sets s where s.id = p_set and s.child_id = me.child_id and s.family_id = me.family_id and s.status = 'published' and s.deleted_at is null) then
-    raise exception 'set_not_found' using errcode = 'P0002';
-  end if;
-  return query select q.id, q.position, q.prompt, q.choices from public.quiz_questions q where q.set_id = p_set order by q.position, q.id;
-end $$;
-
-create function public.start_quiz_practice(p_set uuid, p_attempt uuid) returns void
-language plpgsql security definer set search_path = public as $$
-declare me public.members; s public.quiz_sets; a public.quiz_attempts;
-begin
-  me := public.quiz_require_child();
-  select * into a from public.quiz_attempts where id = p_attempt;
-  if found then
-    if a.child_id = me.child_id and a.set_id = p_set and a.kind = 'practice' then return; end if;
-    raise exception 'forbidden' using errcode = '42501';
-  end if;
-  select * into s from public.quiz_sets where id = p_set and child_id = me.child_id and family_id = me.family_id and status = 'published' and deleted_at is null;
-  if not found then raise exception 'set_not_found' using errcode = 'P0002'; end if;
-  -- une seule séance d'entraînement ouverte par jeu : on abandonne l'ancienne (aucun score, rien à garder)
-  delete from public.quiz_attempts where set_id = s.id and child_id = me.child_id and kind = 'practice' and status = 'in_progress';
-  insert into public.quiz_attempts (id, family_id, child_id, set_id, kind) values (p_attempt, s.family_id, s.child_id, s.id, 'practice');
-end $$;
-
--- Entraînement : vérifie UNE réponse, retour immédiat (juste/faux + bonne réponse + explication).
-create function public.check_quiz_answer(p_attempt uuid, p_question uuid, p_choice int)
-returns table (correct boolean, correct_index int, explanation text)
-language plpgsql security definer set search_path = public as $$
-#variable_conflict use_column
-declare me public.members; a public.quiz_attempts; q public.quiz_questions; k public.quiz_answer_keys; ok boolean;
-begin
-  me := public.quiz_require_child();
-  select * into a from public.quiz_attempts where id = p_attempt and child_id = me.child_id and family_id = me.family_id for update;
-  if not found or a.kind <> 'practice' then raise exception 'forbidden' using errcode = '42501'; end if;
-  if a.status <> 'in_progress' then raise exception 'attempt_closed' using errcode = 'P0001'; end if;
-  select * into q from public.quiz_questions where id = p_question and set_id = a.set_id;
-  if not found then raise exception 'question_not_found' using errcode = 'P0002'; end if;
-  if p_choice is null or p_choice < 0 or p_choice >= cardinality(q.choices) then raise exception 'invalid_answers' using errcode = 'P0001'; end if;
-  select * into k from public.quiz_answer_keys where question_id = q.id;
-  ok := (k.correct_index = p_choice);
-  insert into public.quiz_answers (attempt_id, question_id, family_id, child_id, choice_index, is_correct)
-  values (a.id, q.id, a.family_id, a.child_id, p_choice, ok)
-  on conflict (attempt_id, question_id) do update set choice_index = excluded.choice_index, is_correct = excluded.is_correct, answered_at = now();
-  return query select ok, k.correct_index::int, k.explanation;
-end $$;
-
--- Fin d'un entraînement : pas de validation parentale (retour immédiat déjà donné) ; score calculé par le serveur.
-create function public.finish_quiz_practice(p_attempt uuid)
-returns table (score int, total int)
-language plpgsql security definer set search_path = public as $$
-#variable_conflict use_column
-declare me public.members; a public.quiz_attempts; sc int; tt int;
-begin
-  me := public.quiz_require_child();
-  select * into a from public.quiz_attempts where id = p_attempt and child_id = me.child_id and family_id = me.family_id for update;
-  if not found or a.kind <> 'practice' then raise exception 'forbidden' using errcode = '42501'; end if;
-  if a.status = 'in_progress' then
-    select count(*)::int into tt from public.quiz_questions where set_id = a.set_id;
-    select count(*)::int into sc from public.quiz_answers where attempt_id = a.id and is_correct;
-    insert into public.quiz_results (attempt_id, family_id, child_id, score, total) values (a.id, a.family_id, a.child_id, sc, tt);
-    update public.quiz_attempts set status = 'validated', submitted_at = now(), validated_at = now() where id = a.id;
-  end if;
-  return query select r.score, r.total from public.quiz_results r where r.attempt_id = a.id;
-end $$;
-
--- Première évaluation : l'enfant la démarre ; ensuite seul le parent peut en relancer une (relaunch_quiz_evaluation).
+-- Première évaluation : l'enfant la démarre ; ensuite seul le parent peut en relancer une (relaunch_quiz_evaluation). Le mélange est tiré ICI.
 create function public.start_quiz_evaluation(p_set uuid, p_attempt uuid) returns void
 language plpgsql security definer set search_path = public as $$
 declare me public.members; s public.quiz_sets; a public.quiz_attempts;
@@ -402,27 +363,53 @@ begin
   me := public.quiz_require_child();
   select * into a from public.quiz_attempts where id = p_attempt;
   if found then
-    if a.child_id = me.child_id and a.set_id = p_set and a.kind = 'evaluation' then return; end if;
+    if a.child_id = me.child_id and a.set_id = p_set then return; end if;
     raise exception 'forbidden' using errcode = '42501';
   end if;
   select * into s from public.quiz_sets where id = p_set and child_id = me.child_id and family_id = me.family_id and status = 'published' and deleted_at is null for update;
   if not found then raise exception 'set_not_found' using errcode = 'P0002'; end if;
-  if exists (select 1 from public.quiz_attempts where set_id = s.id and child_id = me.child_id and kind = 'evaluation') then
+  if exists (select 1 from public.quiz_attempts where set_id = s.id and child_id = me.child_id) then
     raise exception 'evaluation_already_taken' using errcode = 'P0001';
   end if;
-  insert into public.quiz_attempts (id, family_id, child_id, set_id, kind) values (p_attempt, s.family_id, s.child_id, s.id, 'evaluation');
+  perform public.quiz_new_attempt(p_attempt, s, null);
 end $$;
 
--- Évaluation : toutes les réponses d'un coup, score calculé ICI, rien n'est renvoyé. Un second envoi est ignoré (idempotent).
+-- Questions d'UNE tentative en cours, dans l'ordre et avec les choix mélangés par le serveur : SANS clé ni explication.
+-- Impossible une fois la tentative envoyée (aucune relecture des questions pour tâtonner).
+create function public.child_quiz_questions(p_attempt uuid)
+returns table (question_id uuid, "position" int, prompt text, choices text[])
+language plpgsql stable security definer set search_path = public as $$
+#variable_conflict use_column
+declare me public.members; a public.quiz_attempts; lay jsonb; qid text; pos int := 0; q public.quiz_questions;
+begin
+  me := public.quiz_require_child();
+  select * into a from public.quiz_attempts where id = p_attempt and child_id = me.child_id and family_id = me.family_id;
+  if not found then raise exception 'attempt_not_found' using errcode = 'P0002'; end if;
+  if a.status <> 'in_progress' then raise exception 'attempt_closed' using errcode = 'P0001'; end if;
+  select l.layout into lay from public.quiz_attempt_layouts l where l.attempt_id = a.id;
+  for qid in select jsonb_array_elements_text(lay->'order') loop
+    select * into q from public.quiz_questions x where x.id = qid::uuid;
+    question_id := q.id;
+    "position" := pos;
+    prompt := q.prompt;
+    choices := array(select q.choices[(e.value)::int + 1] from jsonb_array_elements_text(lay->'choices'->qid) with ordinality e(value, ord) order by e.ord);
+    pos := pos + 1;
+    return next;
+  end loop;
+end $$;
+
+-- Évaluation : toutes les réponses d'un coup (positions AFFICHÉES, converties ici), score calculé ICI, rien n'est renvoyé.
+-- Un second envoi est ignoré (idempotent).
 create function public.submit_quiz_evaluation(p_attempt uuid, p_answers jsonb) returns void
 language plpgsql security definer set search_path = public as $$
-declare me public.members; a public.quiz_attempts; e jsonb; qid uuid; ch int; q public.quiz_questions; k public.quiz_answer_keys; sc int := 0; tt int; ok boolean;
+declare me public.members; a public.quiz_attempts; lay jsonb; e jsonb; qid uuid; ch int; orig int; q public.quiz_questions; k public.quiz_answer_keys; sc int := 0; tt int; ok boolean;
 begin
   me := public.quiz_require_child();
   select * into a from public.quiz_attempts where id = p_attempt and child_id = me.child_id and family_id = me.family_id for update;
-  if not found or a.kind <> 'evaluation' then raise exception 'forbidden' using errcode = '42501'; end if;
+  if not found then raise exception 'forbidden' using errcode = '42501'; end if;
   if a.status <> 'in_progress' then return; end if;  -- double envoi : ignoré
   if p_answers is null or jsonb_typeof(p_answers) <> 'array' then raise exception 'invalid_answers' using errcode = 'P0001'; end if;
+  select l.layout into lay from public.quiz_attempt_layouts l where l.attempt_id = a.id;
   for e in select * from jsonb_array_elements(p_answers) loop
     begin
       qid := (e->>'question_id')::uuid;
@@ -432,11 +419,15 @@ begin
     end;
     select * into q from public.quiz_questions where id = qid and set_id = a.set_id;
     if not found then raise exception 'invalid_answers' using errcode = 'P0001'; end if;
-    if ch is not null and (ch < 0 or ch >= cardinality(q.choices)) then raise exception 'invalid_answers' using errcode = 'P0001'; end if;
+    orig := null;
+    if ch is not null then
+      if ch < 0 or ch >= cardinality(q.choices) then raise exception 'invalid_answers' using errcode = 'P0001'; end if;
+      orig := (lay->'choices'->(qid::text)->>ch)::int;  -- position affichée → indice d'origine
+    end if;
     select * into k from public.quiz_answer_keys where question_id = q.id;
-    ok := ch is not null and k.correct_index = ch;
+    ok := orig is not null and k.correct_index = orig;
     begin
-      insert into public.quiz_answers (attempt_id, question_id, family_id, child_id, choice_index, is_correct) values (a.id, q.id, a.family_id, a.child_id, ch, ok);
+      insert into public.quiz_answers (attempt_id, question_id, family_id, child_id, choice_index, is_correct) values (a.id, q.id, a.family_id, a.child_id, orig, ok);
     exception when unique_violation then
       raise exception 'invalid_answers' using errcode = 'P0001';
     end;
@@ -447,41 +438,56 @@ begin
   update public.quiz_attempts set status = 'submitted', submitted_at = now() where id = a.id;
 end $$;
 
--- Résultat d'UNE tentative de l'enfant : score et correction SEULEMENT une fois validé ; avant, juste l'état.
+-- Résultat d'UNE tentative de l'enfant. Avant validation : l'état seulement. Après : score + (selon le réglage posé par le parent à la validation)
+--  * correction désactivée : liste des questions RATÉES (énoncé + sa réponse), sans bonne réponse, sans explication, sans « juste/faux » par question ;
+--  * correction activée : toutes les questions avec bonne réponse, explication et juste/faux.
+-- Ordre et choix : ceux que l'enfant a vus (mélange de CETTE tentative).
 create function public.child_quiz_result(p_attempt uuid) returns jsonb
 language plpgsql stable security definer set search_path = public as $$
-declare me public.members; a public.quiz_attempts; r public.quiz_results;
+declare me public.members; a public.quiz_attempts; r public.quiz_results; lay jsonb; qid text; q public.quiz_questions; k public.quiz_answer_keys; ans public.quiz_answers;
+        perm jsonb; shown text[]; given int; right_pos int; items jsonb := '[]'::jsonb; pos int := 0;
 begin
   me := public.quiz_require_child();
   select * into a from public.quiz_attempts where id = p_attempt and child_id = me.child_id and family_id = me.family_id;
   if not found then raise exception 'attempt_not_found' using errcode = 'P0002'; end if;
   if a.status <> 'validated' then
-    return jsonb_build_object('status', a.status, 'kind', a.kind, 'set_id', a.set_id);
+    return jsonb_build_object('status', a.status, 'set_id', a.set_id);
   end if;
   select * into r from public.quiz_results where attempt_id = a.id;
-  return jsonb_build_object(
-    'status', a.status, 'kind', a.kind, 'set_id', a.set_id, 'score', r.score, 'total', r.total, 'validated_at', a.validated_at,
-    'questions', coalesce((
-      select jsonb_agg(jsonb_build_object(
-        'question_id', q.id, 'position', q.position, 'prompt', q.prompt, 'choices', to_jsonb(q.choices),
-        'choice_index', ans.choice_index, 'correct_index', k.correct_index, 'explanation', k.explanation, 'is_correct', coalesce(ans.is_correct, false)
-      ) order by q.position, q.id)
-      from public.quiz_questions q
-      join public.quiz_answer_keys k on k.question_id = q.id
-      left join public.quiz_answers ans on ans.attempt_id = a.id and ans.question_id = q.id
-      where q.set_id = a.set_id), '[]'::jsonb));
+  select l.layout into lay from public.quiz_attempt_layouts l where l.attempt_id = a.id;
+  for qid in select jsonb_array_elements_text(lay->'order') loop
+    select * into q from public.quiz_questions x where x.id = qid::uuid;
+    select * into ans from public.quiz_answers x where x.attempt_id = a.id and x.question_id = q.id;
+    perm := lay->'choices'->qid;
+    shown := array(select q.choices[(e.value)::int + 1] from jsonb_array_elements_text(perm) with ordinality e(value, ord) order by e.ord);
+    given := null;
+    if ans.choice_index is not null then
+      select (e.ord - 1)::int into given from jsonb_array_elements_text(perm) with ordinality e(value, ord) where (e.value)::int = ans.choice_index;
+    end if;
+    if a.show_correction then
+      select * into k from public.quiz_answer_keys x where x.question_id = q.id;
+      select (e.ord - 1)::int into right_pos from jsonb_array_elements_text(perm) with ordinality e(value, ord) where (e.value)::int = k.correct_index;
+      items := items || jsonb_build_object('question_id', q.id, 'position', pos, 'prompt', q.prompt, 'choices', to_jsonb(shown), 'choice_index', given,
+                                          'correct_index', right_pos, 'explanation', k.explanation, 'is_correct', coalesce(ans.is_correct, false));
+    elsif not coalesce(ans.is_correct, false) then
+      items := items || jsonb_build_object('question_id', q.id, 'position', pos, 'prompt', q.prompt, 'chosen_text', case when given is null then null else shown[given + 1] end);
+    end if;
+    pos := pos + 1;
+  end loop;
+  return jsonb_build_object('status', a.status, 'set_id', a.set_id, 'score', r.score, 'total', r.total, 'validated_at', a.validated_at,
+                            'show_correction', a.show_correction, case when a.show_correction then 'questions' else 'missed' end, items);
 end $$;
 
 -- Progression de L'enfant sur un jeu : ses tentatives VALIDÉES (jamais un score en attente).
 create function public.child_quiz_history(p_set uuid)
-returns table (attempt_id uuid, kind public.quiz_attempt_kind, validated_at timestamptz, score int, total int)
+returns table (attempt_id uuid, validated_at timestamptz, score int, total int)
 language plpgsql stable security definer set search_path = public as $$
 #variable_conflict use_column
 declare me public.members;
 begin
   me := public.quiz_require_child();
   return query
-  select a.id, a.kind, a.validated_at, r.score, r.total
+  select a.id, a.validated_at, r.score, r.total
   from public.quiz_attempts a join public.quiz_results r on r.attempt_id = a.id
   where a.set_id = p_set and a.child_id = me.child_id and a.family_id = me.family_id and a.status = 'validated'
   order by a.validated_at, a.id;
@@ -492,9 +498,8 @@ declare f text;
 begin
   foreach f in array array[
     'upsert_quiz_question(uuid, uuid, int, text, text[], int, text)', 'delete_quiz_question(uuid)', 'reorder_quiz_questions(uuid, uuid[])',
-    'set_quiz_status(uuid, public.quiz_status)', 'copy_quiz_set(uuid, uuid, uuid)', 'validate_quiz_attempt(uuid)', 'relaunch_quiz_evaluation(uuid, uuid)',
-    'child_quiz_sets()', 'child_quiz_questions(uuid)', 'start_quiz_practice(uuid, uuid)', 'check_quiz_answer(uuid, uuid, int)', 'finish_quiz_practice(uuid)',
-    'start_quiz_evaluation(uuid, uuid)', 'submit_quiz_evaluation(uuid, jsonb)', 'child_quiz_result(uuid)', 'child_quiz_history(uuid)'] loop
+    'set_quiz_status(uuid, public.quiz_status)', 'copy_quiz_set(uuid, uuid, uuid)', 'validate_quiz_attempt(uuid, boolean)', 'relaunch_quiz_evaluation(uuid, uuid)',
+    'child_quiz_sets()', 'child_quiz_questions(uuid)', 'start_quiz_evaluation(uuid, uuid)', 'submit_quiz_evaluation(uuid, jsonb)', 'child_quiz_result(uuid)', 'child_quiz_history(uuid)'] loop
     execute format('revoke all on function public.%s from public, anon', f);
     execute format('grant execute on function public.%s to authenticated', f);
   end loop;
@@ -524,6 +529,7 @@ begin
   select coalesce(array_agg(user_id), '{}') into users from public.members where family_id = fid;
 
   perform set_config('app.deleting_family', 'on', true);
+  delete from public.quiz_attempt_layouts where family_id = fid;
   delete from public.quiz_answers where family_id = fid;
   delete from public.quiz_results where family_id = fid;
   delete from public.quiz_attempts where family_id = fid;

@@ -18,12 +18,12 @@ export function ScoreHistory({ points, timezone }: { points: HistoryPoint[]; tim
       <Text accessibilityRole="header" style={styles.title}>{t('revisions.progress')}</Text>
       {points.map((p) => {
         const day = formatShortDate(todayInTz(new Date(p.at), timezone));
-        const text = `${day}, ${t(`revisions.kind.${p.kind}`)}, ${t('revisions.score', { score: p.score, total: p.total })}`;
+        const text = `${day}, ${t('revisions.score', { score: p.score, total: p.total })}`;
         return (
           <View key={p.id} accessible accessibilityLabel={text} style={styles.row}>
             <Text style={styles.date}>{day}</Text>
             <View style={styles.track}>
-              <View style={[styles.fill, { width: `${p.percent}%`, backgroundColor: p.kind === 'evaluation' ? colors.primary : colors.mint }]} />
+              <View style={[styles.fill, { width: `${p.percent}%`, backgroundColor: colors.primary }]} />
             </View>
             <Text style={styles.score}>{t('revisions.score', { score: p.score, total: p.total })}</Text>
           </View>

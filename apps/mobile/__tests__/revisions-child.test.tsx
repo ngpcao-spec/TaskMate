@@ -3,11 +3,9 @@ import '@/i18n';
 import { ChildRevisions } from '@/components/quiz/ChildRevisions';
 import { ChildSetHome } from '@/components/quiz/ChildSetHome';
 import { EvaluationRun } from '@/components/quiz/EvaluationRun';
-import { PracticeRun } from '@/components/quiz/PracticeRun';
 import { ResultView } from '@/components/quiz/ResultView';
 import RevisionsScreen from '../app/(tabs)/more/revisions';
 import EvaluateScreen from '../app/quiz/evaluate/[id]';
-import PracticeScreen from '../app/quiz/practice/[id]';
 import ResultScreen from '../app/quiz/result/[id]';
 import QuizScreen from '../app/quiz/[id]';
 
@@ -46,21 +44,14 @@ let mockInfos: Info[] = [];
 let mockQuestions = questions;
 let mockResult: unknown = null;
 let mockHistory: unknown[] = [];
-const mockStartPractice = jest.fn();
-const mockCheck = jest.fn();
-const mockFinish = jest.fn();
 const mockStartEval = jest.fn();
 const mockSubmit = jest.fn();
-let mockFeedback = { correct: true, correct_index: 1, explanation: 'parce que' };
-const run = (fn: jest.Mock, result?: () => unknown) => ({ mutate: (v: unknown, o?: { onSuccess?: (r: unknown) => void }) => { fn(v); o?.onSuccess?.(result?.()); }, isPending: false });
+const run = (fn: jest.Mock) => ({ mutate: (v: unknown, o?: { onSuccess?: (r: unknown) => void }) => { fn(v); o?.onSuccess?.(undefined); }, isPending: false });
 jest.mock('@/hooks/useQuizzes', () => ({
   useChildQuizSets: () => ({ data: mockInfos, isPending: false }),
   useChildQuestions: () => ({ data: mockQuestions, isPending: false }),
   useChildResult: () => ({ data: mockResult, isPending: false }),
   useChildHistory: () => ({ data: mockHistory }),
-  useStartPractice: () => run(mockStartPractice),
-  useCheckAnswer: () => run(mockCheck, () => mockFeedback),
-  useFinishPractice: () => run(mockFinish, () => ({ score: 1, total: 2 })),
   useStartQuizEvaluation: () => run(mockStartEval),
   useSubmitQuizEvaluation: () => run(mockSubmit),
 }));
@@ -69,7 +60,6 @@ beforeEach(() => {
   jest.clearAllMocks();
   mockSeq = 0;
   mockRole = 'child'; mockInfos = [info()]; mockQuestions = questions; mockResult = null; mockHistory = [];
-  mockFeedback = { correct: true, correct_index: 1, explanation: 'parce que' };
 });
 
 describe('Ôn tập — liste de l\'enfant', () => {
@@ -90,10 +80,9 @@ describe('Ôn tập — liste de l\'enfant', () => {
 });
 
 describe('Ôn tập — accueil d\'un jeu', () => {
-  it('à faire : entraînement + évaluation', async () => {
+  it('à faire : un seul parcours (l\'évaluation), aucun mode entraînement', async () => {
     await render(<ChildSetHome setId="s1" />);
-    await fireEvent.press(screen.getByRole('button', { name: 'Luyện tập' }));
-    expect(mockPush).toHaveBeenCalledWith({ pathname: '/quiz/practice/[id]', params: { id: 's1' } });
+    expect(screen.queryByRole('button', { name: 'Luyện tập' })).toBeNull();
     await fireEvent.press(screen.getByRole('button', { name: 'Làm bài kiểm tra' }));
     expect(mockPush).toHaveBeenCalledWith({ pathname: '/quiz/evaluate/[id]', params: { id: 's1' } });
   });
@@ -111,7 +100,7 @@ describe('Ôn tập — accueil d\'un jeu', () => {
   });
   it('validée : voir le résultat + progression (résultats validés seulement)', async () => {
     mockInfos = [info({ evaluation_status: 'validated', evaluation_attempt_id: 'a1', can_start_evaluation: false })];
-    mockHistory = [{ attempt_id: 'a1', kind: 'evaluation', validated_at: '2026-07-02T03:00:00Z', score: 2, total: 2 }, { attempt_id: 'p1', kind: 'practice', validated_at: '2026-07-01T03:00:00Z', score: 1, total: 2 }];
+    mockHistory = [{ attempt_id: 'a1', validated_at: '2026-07-02T03:00:00Z', score: 2, total: 2 }, { attempt_id: 'p1', validated_at: '2026-07-01T03:00:00Z', score: 1, total: 2 }];
     await render(<ChildSetHome setId="s1" />);
     await fireEvent.press(screen.getByRole('button', { name: 'Xem kết quả' }));
     expect(mockPush).toHaveBeenCalledWith({ pathname: '/quiz/result/[id]', params: { id: 'a1' } });
@@ -125,47 +114,15 @@ describe('Ôn tập — accueil d\'un jeu', () => {
   });
 });
 
-describe('Ôn tập — entraînement', () => {
-  it('retour immédiat : juste, puis question suivante, puis fin avec score', async () => {
-    await render(<PracticeRun setId="s1" />);
-    expect(mockStartPractice).toHaveBeenCalledWith({ setId: 's1', attemptId: 'id-1' });
-    expect(screen.getByText('Câu 1/2')).toBeTruthy();
-    expect(screen.getByText('Un plus un ?')).toBeTruthy();
-    // le choix touché est renvoyé avec son indice D'ORIGINE (le mélange est défait)
-    const two = screen.getByRole('radio', { name: '2' });
-    await fireEvent.press(two);
-    expect(mockCheck).toHaveBeenCalledWith({ attemptId: 'id-1', questionId: 'q1', choice: 1 });
-    expect(screen.getByText('Đúng rồi!')).toBeTruthy();
-    expect(screen.getByText('parce que')).toBeTruthy();
-    await fireEvent.press(screen.getByRole('button', { name: 'Câu tiếp' }));
-    expect(screen.getByText('Câu 2/2')).toBeTruthy();
-    mockFeedback = { correct: false, correct_index: 1, explanation: '' as unknown as string };
-    await fireEvent.press(screen.getByRole('radio', { name: '5' }));
-    expect(mockCheck).toHaveBeenLastCalledWith({ attemptId: 'id-1', questionId: 'q2', choice: 2 });
-    expect(screen.getByText('Chưa đúng')).toBeTruthy();
-    expect(screen.getByText('Đáp án đúng: 4')).toBeTruthy();
-    await fireEvent.press(screen.getByRole('button', { name: 'Xong' }));
-    expect(mockFinish).toHaveBeenCalledWith('id-1');
-    expect(screen.getByText('Điểm: 1/2')).toBeTruthy();
-    await fireEvent.press(screen.getByRole('button', { name: 'Xem kết quả' }));
-    expect(mockReplace).toHaveBeenCalledWith({ pathname: '/quiz/result/[id]', params: { id: 'id-1' } });
-  });
-  it('un seul retour par question : on ne peut pas re-répondre', async () => {
-    await render(<PracticeRun setId="s1" />);
-    await fireEvent.press(screen.getByRole('radio', { name: '2' }));
-    await fireEvent.press(screen.getByRole('radio', { name: '3' }));
-    expect(mockCheck).toHaveBeenCalledTimes(1);
-  });
-});
-
 describe('Ôn tập — évaluation', () => {
-  it('démarre, ne montre aucun retour, envoie les indices d\'origine, puis « chờ phụ huynh duyệt »', async () => {
+  it('démarre, ne montre aucun retour, envoie les positions affichées, puis « chờ phụ huynh duyệt »', async () => {
     await render(<EvaluationRun setId="s1" />);
     expect(mockStartEval).toHaveBeenCalledWith({ setId: 's1', attemptId: 'id-1' });
     await fireEvent.press(screen.getByRole('radio', { name: '2' }));
     await fireEvent.press(screen.getByRole('radio', { name: '4' }));
     expect(screen.queryByText('Đúng rồi!')).toBeNull();
     expect(screen.queryByText('Chưa đúng')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Kiểm tra' })).toBeNull();
     await fireEvent.press(screen.getByRole('button', { name: 'Nộp bài' }));
     expect(mockSubmit).toHaveBeenCalledWith({ attemptId: 'id-1', answers: [{ question_id: 'q1', choice: 1 }, { question_id: 'q2', choice: 1 }] });
     expect(screen.getByText('Đã nộp, chờ phụ huynh duyệt')).toBeTruthy();
@@ -206,14 +163,32 @@ describe('Ôn tập — évaluation', () => {
 
 describe('Ôn tập — résultat', () => {
   it('avant validation : seulement l\'attente (le serveur n\'envoie aucun score)', async () => {
-    mockResult = { status: 'submitted', kind: 'evaluation', set_id: 's1' };
+    mockResult = { status: 'submitted', set_id: 's1' };
     await render(<ResultView attemptId="a1" />);
     expect(screen.getByText('Đã nộp, chờ phụ huynh duyệt')).toBeTruthy();
     expect(screen.queryByText(/Điểm/)).toBeNull();
   });
-  it('après validation : score et correction', async () => {
+  it('validée, correction désactivée : score + questions ratées (énoncé + sa réponse), ni bonne réponse ni explication', async () => {
     mockResult = {
-      status: 'validated', kind: 'evaluation', set_id: 's1', score: 1, total: 2,
+      status: 'validated', set_id: 's1', score: 1, total: 2, show_correction: false,
+      missed: [{ question_id: 'q2', position: 1, prompt: 'Deux plus deux ?', chosen_text: '5' }],
+    };
+    await render(<ResultView attemptId="a1" />);
+    expect(screen.getByText('Điểm: 1/2')).toBeTruthy();
+    expect(screen.getByText('Deux plus deux ?')).toBeTruthy();
+    expect(screen.getByText('Bạn chọn: 5')).toBeTruthy();
+    expect(screen.queryByText(/Đáp án đúng/)).toBeNull();
+    expect(screen.queryByText('Deux et deux')).toBeNull();
+    expect(screen.getByText('Phụ huynh chưa cho xem đáp án đúng.')).toBeTruthy();
+  });
+  it('validée, tout juste, correction désactivée : message dédié', async () => {
+    mockResult = { status: 'validated', set_id: 's1', score: 2, total: 2, show_correction: false, missed: [] };
+    await render(<ResultView attemptId="a1" />);
+    expect(screen.getByText('Con trả lời đúng tất cả!')).toBeTruthy();
+  });
+  it('validée, correction activée : bonne réponse et explication en plus', async () => {
+    mockResult = {
+      status: 'validated', set_id: 's1', score: 1, total: 2, show_correction: true,
       questions: [
         { question_id: 'q1', position: 0, prompt: 'Un plus un ?', choices: ['1', '2', '3'], choice_index: 1, correct_index: 1, explanation: null, is_correct: true },
         { question_id: 'q2', position: 1, prompt: 'Deux plus deux ?', choices: ['3', '4', '5'], choice_index: 2, correct_index: 1, explanation: 'Deux et deux', is_correct: false },
@@ -228,7 +203,7 @@ describe('Ôn tập — résultat', () => {
 });
 
 describe('routes enfant : un parent est redirigé ; l\'écran d\'un jeu suit le rôle', () => {
-  it.each([['practice', PracticeScreen], ['evaluate', EvaluateScreen], ['result', ResultScreen]])('%s', async (_n, Screen) => {
+  it.each([['evaluate', EvaluateScreen], ['result', ResultScreen]])('%s', async (_n, Screen) => {
     mockRole = 'parent';
     const Component = Screen as () => React.ReactElement | null;
     await render(<Component />);
@@ -236,6 +211,6 @@ describe('routes enfant : un parent est redirigé ; l\'écran d\'un jeu suit le 
   });
   it('quiz/[id] pour un enfant : accueil de SON jeu', async () => {
     await render(<QuizScreen />);
-    expect(screen.getByRole('button', { name: 'Luyện tập' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Làm bài kiểm tra' })).toBeTruthy();
   });
 });

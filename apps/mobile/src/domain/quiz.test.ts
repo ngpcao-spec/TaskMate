@@ -1,6 +1,6 @@
 import {
-  answersPayload, canPublish, evaluationView, historySeries, lastChange, moveItem, nextPosition, normalizeQuestion, originalIndex, scoreAnswers, scorePercent,
-  quizErrorKey, shuffleChoices, shuffledOrder, unansweredCount, validateQuestion, validateSetTitle, type QuestionDraft,
+  answersPayload, canPublish, evaluationView, historySeries, lastChange, moveItem, nextPosition, normalizeQuestion, scoreAnswers, scorePercent,
+  quizErrorKey, unansweredCount, validateQuestion, validateSetTitle, type QuestionDraft,
 } from './quiz';
 
 const ok: QuestionDraft = { prompt: 'Combien font 2 + 2 ?', choices: ['3', '4', '5', ''], correctIndex: 1, explanation: '' };
@@ -73,28 +73,6 @@ describe('score', () => {
   });
 });
 
-describe('mélange des choix', () => {
-  it('permutation valide, stable pour une même graine', () => {
-    const o = shuffledOrder(4, 'att1:q1');
-    expect([...o].sort()).toEqual([0, 1, 2, 3]);
-    expect(shuffledOrder(4, 'att1:q1')).toEqual(o);
-  });
-  it('graines différentes → ordres variés (au moins un diffère sur 20 graines)', () => {
-    const seen = new Set(Array.from({ length: 20 }, (_, i) => shuffledOrder(4, `seed${i}`).join('')));
-    expect(seen.size).toBeGreaterThan(3);
-  });
-  it('shuffleChoices : mêmes choix, indice d\'origine retrouvé', () => {
-    const base = ['a', 'b', 'c', 'd'];
-    const { choices, order } = shuffleChoices(base, 'x');
-    expect([...choices].sort()).toEqual(base);
-    choices.forEach((c, displayed) => expect(base[originalIndex(order, displayed)]).toBe(c));
-  });
-  it('0 et 1 choix ne plantent pas', () => {
-    expect(shuffledOrder(0, 's')).toEqual([]);
-    expect(shuffledOrder(1, 's')).toEqual([0]);
-  });
-});
-
 describe('liste de questions', () => {
   it('moveItem', () => {
     expect(moveItem(['a', 'b', 'c'], 0, 2)).toEqual(['b', 'c', 'a']);
@@ -111,7 +89,7 @@ describe('liste de questions', () => {
 
 describe('envoi de l\'évaluation', () => {
   const qs = [{ question_id: 'q1', choices: ['a', 'b', 'c'] }, { question_id: 'q2', choices: ['a', 'b', 'c'] }];
-  it('charge utile : indices d\'origine, null si sans réponse', () => {
+  it('charge utile : positions affichées, null si sans réponse', () => {
     expect(answersPayload(qs, { q1: 2 })).toEqual([{ question_id: 'q1', choice: 2 }, { question_id: 'q2', choice: null }]);
     expect(answersPayload(qs, { q1: 0, q2: 0 })).toEqual([{ question_id: 'q1', choice: 0 }, { question_id: 'q2', choice: 0 }]);
   });
@@ -131,18 +109,16 @@ describe('états et progression', () => {
     expect(evaluationView('validated')).toBe('validated');
   });
   const entries = [
-    { id: 'b', at: '2026-07-03T10:00:00Z', kind: 'evaluation' as const, score: 4, total: 5 },
-    { id: 'a', at: '2026-07-01T10:00:00Z', kind: 'evaluation' as const, score: 2, total: 5 },
-    { id: 'c', at: '2026-07-02T10:00:00Z', kind: 'practice' as const, score: 3, total: 5 },
-    { id: 'd', at: '2026-07-03T10:00:00Z', kind: 'practice' as const, score: 5, total: 5 },
+    { id: 'b', at: '2026-07-03T10:00:00Z', score: 4, total: 5 },
+    { id: 'a', at: '2026-07-01T10:00:00Z', score: 2, total: 5 },
   ];
-  it('historique : chronologique, pourcentages, filtre par type', () => {
-    expect(historySeries(entries).map((p) => p.id)).toEqual(['a', 'c', 'b', 'd']);
-    expect(historySeries(entries, 'evaluation').map((p) => p.percent)).toEqual([40, 80]);
+  it('historique : chronologique, pourcentages', () => {
+    expect(historySeries(entries).map((p) => p.id)).toEqual(['a', 'b']);
+    expect(historySeries(entries).map((p) => p.percent)).toEqual([40, 80]);
     expect(historySeries([])).toEqual([]);
   });
   it('lastChange : écart entre les deux derniers résultats', () => {
-    expect(lastChange(historySeries(entries, 'evaluation'))).toBe(40);
+    expect(lastChange(historySeries(entries))).toBe(40);
     expect(lastChange(historySeries(entries.slice(0, 1)))).toBeNull();
     expect(lastChange([])).toBeNull();
   });

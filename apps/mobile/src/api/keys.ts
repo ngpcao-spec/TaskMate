@@ -26,7 +26,7 @@ export const quizKeys = {
   detail: (attemptId: string) => ['quiz', 'detail', attemptId] as const,
   // côté enfant
   mine: ['quiz', 'mine'] as const,
-  play: (setId: string) => ['quiz', 'play', setId] as const,
+  play: (attemptId: string) => ['quiz', 'play', attemptId] as const,
   result: (attemptId: string) => ['quiz', 'result', attemptId] as const,
   history: (setId: string) => ['quiz', 'history', setId] as const,
 };

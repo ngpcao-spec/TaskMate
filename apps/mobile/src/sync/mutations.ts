@@ -44,7 +44,7 @@ export type UpdateVars = { task: TaskRow; patch: TaskPatch };
 export type CreateQuizSetVars = NewQuizSet;
 export type StartEvaluationVars = { setId: string; attemptId: string };
 export type SubmitEvaluationVars = { attemptId: string; answers: { question_id: string; choice: number | null }[] };
-export type ValidateAttemptVars = { attemptId: string };
+export type ValidateAttemptVars = { attemptId: string; showCorrection?: boolean };
 type SnapshotCtx = { snapshot?: ReturnType<typeof snapshotTasks> };
 
 /** Variables d'une coche : le `txId` est tiré ici, une seule fois — tout rejeu (retry, file hors ligne) reste idempotent. */
@@ -227,7 +227,7 @@ export function registerMutationDefaults(
   });
   queryClient.setMutationDefaults(mutationKeys.validateQuizAttempt, {
     ...common,
-    mutationFn: ({ attemptId }: ValidateAttemptVars) => validateQuizAttempt(attemptId),
+    mutationFn: ({ attemptId, showCorrection }: ValidateAttemptVars) => validateQuizAttempt(attemptId, showCorrection ?? false),
     onError: () => toast(i18n.t('common.error'), 'error'),
     onSettled: refreshQuiz,
   });

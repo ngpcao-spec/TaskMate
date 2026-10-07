@@ -140,7 +140,7 @@ describe('Révisions — éditeur', () => {
   });
   it('jeu publié : questions verrouillées, dépublier et relancer l\'évaluation', async () => {
     mockSet = set({ status: 'published' });
-    mockAttempts = [{ id: 'a1', kind: 'evaluation', status: 'validated', started_at: '2026-07-02T01:00:00Z', score: 2, total: 3 }];
+    mockAttempts = [{ id: 'a1', status: 'validated', started_at: '2026-07-02T01:00:00Z', score: 2, total: 3 }];
     await render(<QuizEditor setId="s1" />);
     expect(screen.getByText('Bộ câu hỏi đã đăng. Gỡ xuống để sửa.')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Thêm câu hỏi' })).toBeNull();
@@ -149,17 +149,17 @@ describe('Révisions — éditeur', () => {
     expect(mockRelaunch).toHaveBeenCalledWith({ setId: 's1', attemptId: expect.any(String) });
     await fireEvent.press(screen.getByRole('button', { name: 'Gỡ xuống' }));
     expect(mockStatus).toHaveBeenCalledWith({ setId: 's1', status: 'draft' });
-    expect(screen.getByRole('button', { name: 'Kiểm tra, 02/07/2026, Đã duyệt, 2/3' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '02/07/2026, Đã duyệt, 2/3' })).toBeTruthy();
   });
   it('brouillon avec tentatives : verrouillé (copier le jeu)', async () => {
-    mockAttempts = [{ id: 'a1', kind: 'practice', status: 'validated', started_at: '2026-07-02T01:00:00Z', score: 1, total: 2 }];
+    mockAttempts = [{ id: 'a1', status: 'validated', started_at: '2026-07-02T01:00:00Z', score: 1, total: 2 }];
     await render(<QuizEditor setId="s1" />);
     expect(screen.getByText(/Đã có bài làm nên không sửa được/)).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Thêm câu hỏi' })).toBeNull();
   });
   it('pas de relance tant qu\'une évaluation est en cours', async () => {
     mockSet = set({ status: 'published' });
-    mockAttempts = [{ id: 'a1', kind: 'evaluation', status: 'in_progress', started_at: '2026-07-02T01:00:00Z', score: null, total: null }];
+    mockAttempts = [{ id: 'a1', status: 'in_progress', started_at: '2026-07-02T01:00:00Z', score: null, total: null }];
     await render(<QuizEditor setId="s1" />);
     expect(screen.queryByRole('button', { name: 'Cho làm lại bài kiểm tra' })).toBeNull();
   });
@@ -215,7 +215,7 @@ describe('Révisions — édition d\'une question', () => {
 
 describe('Révisions — détail et validation d\'une tentative', () => {
   const detail = (status: string) => ({
-    attempt: { id: 'a1', child_id: 'c-minh', kind: 'evaluation', status, started_at: '2026-07-02T01:00:00Z', score: 1, total: 2 },
+    attempt: { id: 'a1', child_id: 'c-minh', status, started_at: '2026-07-02T01:00:00Z', score: 1, total: 2 },
     set: { title: 'Fractions' },
     questions: [
       { ...question('q1', 0, 'Un plus un ?'), choice_index: 1, is_correct: true },
@@ -229,13 +229,24 @@ describe('Révisions — détail et validation d\'une tentative', () => {
     expect(screen.getByText('Bạn chọn: a')).toBeTruthy();
     expect(screen.getByText('Đáp án đúng: b')).toBeTruthy();
     await fireEvent.press(screen.getByRole('button', { name: 'Duyệt kết quả' }));
-    expect(mockValidate).toHaveBeenCalledWith({ attemptId: 'a1' });
+    expect(mockValidate).toHaveBeenCalledWith({ attemptId: 'a1', showCorrection: false });
     expect(mockBack).toHaveBeenCalled();
+  });
+  it('« Montrer la correction à l\'enfant » : désactivé par défaut, posé AU MOMENT de valider', async () => {
+    mockDetail = detail('submitted');
+    await render(<AttemptDetail attemptId="a1" />);
+    const toggle = screen.getByLabelText('Hiện đáp án đúng cho con');
+    expect(toggle.props.value).toBe(false);
+    await fireEvent(toggle, 'valueChange', true);
+    await fireEvent.press(screen.getByRole('button', { name: 'Duyệt kết quả' }));
+    expect(mockValidate).toHaveBeenCalledWith({ attemptId: 'a1', showCorrection: true });
   });
   it('déjà validée : pas de bouton', async () => {
     mockDetail = detail('validated');
     await render(<AttemptDetail attemptId="a1" />);
     expect(screen.queryByRole('button', { name: 'Duyệt kết quả' })).toBeNull();
+    expect(screen.queryByLabelText('Hiện đáp án đúng cho con')).toBeNull();
+    expect(screen.getByText('Không hiện đáp án đúng cho con.')).toBeTruthy();
   });
 });
 

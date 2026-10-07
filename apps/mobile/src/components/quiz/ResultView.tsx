@@ -6,7 +6,10 @@ import { Button, Card, Screen, ScreenHeader } from '@/components/ui';
 import { useChildResult } from '@/hooks/useQuizzes';
 import { colors, typography } from '@/theme/tokens';
 
-/** Résultat d'UNE tentative (enfant). Score et correction n'arrivent du serveur qu'une fois la tentative validée. */
+/**
+ * Résultat d'UNE tentative (enfant). Score et détail n'arrivent du serveur qu'une fois la tentative validée, et le détail dépend du réglage
+ * posé par le parent à la validation : questions ratées (énoncé + sa réponse) sans correction, ou correction complète.
+ */
 export function ResultView({ attemptId }: { attemptId: string }) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -31,22 +34,38 @@ export function ResultView({ attemptId }: { attemptId: string }) {
 
   return (
     <Screen>
-      <ScreenHeader title={t(`revisions.kind.${r.kind}`)} />
+      <ScreenHeader title={t('revisions.title')} />
       <Card>
         <Text accessibilityRole="header" style={styles.score}>{t('revisions.child.scoreIs', { score: r.score, total: r.total })}</Text>
       </Card>
-      <Text accessibilityRole="header" style={styles.section}>{t('revisions.detail')}</Text>
-      {(r.questions ?? []).map((q, i) => (
-        <Card key={q.question_id}>
-          <View style={styles.head}>
-            {q.is_correct ? <Check color={colors.success} size={20} /> : <X color={colors.danger} size={20} />}
-            <Text style={styles.prompt}>{`${i + 1}. ${q.prompt}`}</Text>
-          </View>
-          <Text style={[styles.line, q.is_correct ? styles.ok : styles.ko]}>{t('revisions.given', { answer: answer(q.choices, q.choice_index) })}</Text>
-          {!q.is_correct ? <Text style={styles.line}>{t('revisions.correctAnswer', { answer: answer(q.choices, q.correct_index) })}</Text> : null}
-          {q.explanation ? <Text style={typography.secondary}>{q.explanation}</Text> : null}
-        </Card>
-      ))}
+      {r.questions ? (
+        <>
+          <Text accessibilityRole="header" style={styles.section}>{t('revisions.detail')}</Text>
+          {r.questions.map((q, i) => (
+            <Card key={q.question_id}>
+              <View style={styles.head}>
+                {q.is_correct ? <Check color={colors.success} size={20} /> : <X color={colors.danger} size={20} />}
+                <Text style={styles.prompt}>{`${i + 1}. ${q.prompt}`}</Text>
+              </View>
+              <Text style={[styles.line, q.is_correct ? styles.ok : styles.ko]}>{t('revisions.given', { answer: answer(q.choices, q.choice_index) })}</Text>
+              {!q.is_correct ? <Text style={styles.line}>{t('revisions.correctAnswer', { answer: answer(q.choices, q.correct_index) })}</Text> : null}
+              {q.explanation ? <Text style={typography.secondary}>{q.explanation}</Text> : null}
+            </Card>
+          ))}
+        </>
+      ) : (
+        <>
+          <Text accessibilityRole="header" style={styles.section}>{t('revisions.child.missedTitle')}</Text>
+          {(r.missed ?? []).length === 0 ? <Text style={typography.secondary}>{t('revisions.child.noneMissed')}</Text> : null}
+          {(r.missed ?? []).map((q) => (
+            <Card key={q.question_id}>
+              <Text style={styles.prompt}>{q.prompt}</Text>
+              <Text style={[styles.line, styles.ko]}>{t('revisions.given', { answer: q.chosen_text ?? t('revisions.noAnswer') })}</Text>
+            </Card>
+          ))}
+          <Text style={typography.secondary}>{t('revisions.child.noCorrection')}</Text>
+        </>
+      )}
       <Button variant="secondary" label={t('revisions.child.back')} onPress={() => router.back()} />
     </Screen>
   );
