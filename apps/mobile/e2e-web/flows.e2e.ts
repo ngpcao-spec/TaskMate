@@ -307,7 +307,7 @@ test.describe('révisions (D-055)', () => {
     await expect(child.getByText('Chưa đúng')).toHaveCount(0);
     await expect(child.getByText(/Đáp án đúng/)).toHaveCount(0);
     await child.getByRole('button', { name: 'Nộp bài' }).click();
-    await expect(child.getByText('Đã nộp, chờ phụ huynh duyệt')).toBeVisible();
+    await expect(child.getByRole('heading', { name: 'Đã nộp, chờ phụ huynh duyệt' }).filter({ visible: true }).first()).toBeVisible();
     await expect(child.getByText(/Điểm:/)).toHaveCount(0);
     await expect
       .poll(async () => {
@@ -354,7 +354,7 @@ test.describe('révisions (D-055)', () => {
     await child.getByRole('radio', { name: '2', exact: true }).click();
     await child.getByRole('radio', { name: '5', exact: true }).click(); // faux (« 3 » existe dans les deux questions : sélecteur ambigu)
     await child.getByRole('button', { name: 'Nộp bài' }).click();
-    await expect(child.getByText('Đã nộp, chờ phụ huynh duyệt')).toBeVisible();
+    await expect(child.getByRole('heading', { name: 'Đã nộp, chờ phụ huynh duyệt' }).filter({ visible: true }).first()).toBeVisible();
     await expect.poll(async () => (await serviceClient().from('quiz_attempts').select('status').eq('family_id', family.familyId).eq('status', 'submitted')).data?.length).toBe(1);
     const { data: second } = await serviceClient().from('quiz_attempts').select('id').eq('family_id', family.familyId).eq('status', 'submitted').single();
     await open(parent, `/quiz/attempt/${second?.id as string}`);
