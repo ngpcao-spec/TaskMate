@@ -352,7 +352,7 @@ test.describe('révisions (D-055)', () => {
     await expect(child.getByRole('button', { name: 'Làm bài kiểm tra', exact: true })).toHaveCount(0);
     await child.getByRole('button', { name: 'Làm tiếp bài kiểm tra' }).click();
     await child.getByRole('radio', { name: '2', exact: true }).click();
-    await child.getByRole('radio', { name: '3', exact: true }).click(); // faux
+    await child.getByRole('radio', { name: '5', exact: true }).click(); // faux (« 3 » existe dans les deux questions : sélecteur ambigu)
     await child.getByRole('button', { name: 'Nộp bài' }).click();
     await expect(child.getByText('Đã nộp, chờ phụ huynh duyệt')).toBeVisible();
     await expect.poll(async () => (await serviceClient().from('quiz_attempts').select('status').eq('family_id', family.familyId).eq('status', 'submitted')).data?.length).toBe(1);
