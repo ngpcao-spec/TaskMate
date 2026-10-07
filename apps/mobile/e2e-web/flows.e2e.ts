@@ -248,7 +248,7 @@ test.describe('renouveler une tâche (D-054)', () => {
     const page = await ctx.newPage();
     await open(page);
     await page.getByRole('button', { name: new RegExp(taskTitle) }).first().click();
-    await expect(page.getByText(taskTitle).first()).toBeVisible();
+    await expect(page).toHaveURL(/\/task\//); // le détail en lecture seule est ouvert
     await expect(page.getByRole('button', { name: 'Nhân bản / Lặp lại' })).toHaveCount(0);
     await open(page, `/task/renew?id=${id}`);
     await expect(page.getByText('Lặp lại công việc')).toHaveCount(0);
