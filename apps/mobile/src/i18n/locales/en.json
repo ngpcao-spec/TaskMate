@@ -327,7 +327,7 @@
     "import": {
       "entry": "Create from a document",
       "title": "Questions from a document",
-      "intro": "Pick photos, a PDF or a Word file. The document is sent to an AI service to write multiple-choice questions and is NOT stored. Questions arrive as a draft: you review them, edit them, then publish.",
+      "intro": "Pick photos, a PDF or a Word file. The document is sent to an external AI service to write multiple-choice questions and is NOT stored. Questions arrive as a draft: you review them, edit them, then publish.",
       "child": "For",
       "subject": "Subject (optional)",
       "titleField": "Title (optional)",
@@ -349,7 +349,7 @@
       "truncated": "Long document: only the beginning was used.",
       "errors": {
         "generic": "Couldn't generate the questions. Try again.",
-        "notConfigured": "AI is not configured. Ask for the ANTHROPIC_API_KEY secret to be added (see HUMAN_TODO).",
+        "notConfigured": "AI is not configured. Ask for the OPENAI_API_KEY secret to be added (see HUMAN_TODO).",
         "quota": "Today's limit reached ({{used}}/{{limit}}). Try again tomorrow.",
         "tooLarge": "File too large.",
         "totalTooLarge": "The files are too large in total.",
@@ -709,8 +709,8 @@
       "unknown": "Cannot read the authentication settings (invalid public key or network). Check EXPO_PUBLIC_SUPABASE_ANON_KEY."
     },
     "ai": {
-      "ok": "AI configured (ANTHROPIC_API_KEY present). Today: {{used}}/{{limit}} generations used.",
-      "notConfigured": "AI NOT configured: ANTHROPIC_API_KEY secret is missing (Supabase → Edge Functions → Secrets). See HUMAN_TODO.",
+      "ok": "AI configured (OPENAI_API_KEY present). Today: {{used}}/{{limit}} generations used.",
+      "notConfigured": "AI NOT configured: OPENAI_API_KEY secret is missing (Supabase → Edge Functions → Secrets). See HUMAN_TODO.",
       "unknown": "AI status can't be checked (the generate-questions function doesn't answer)."
     }
   },

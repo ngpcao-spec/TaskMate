@@ -68,9 +68,9 @@ select is(public.ai_usage_today(tests.u(1), timestamptz '2026-07-01 19:00:00+00'
 select is((select min(day) from public.ai_usage where family_id = tests.u(1)), date '2026-07-02', 'le jour enregistré est le jour LOCAL (2 juillet, pas le 1er UTC)');
 
 -- finish : statut, jetons, aucun contenu
-select lives_ok($$select public.ai_finish((select id from public.ai_usage where family_id = tests.u(1) order by created_at, id limit 1), 'success', null, 'claude-sonnet-5-5', 1200, 800)$$, 'ai_finish: succès');
+select lives_ok($$select public.ai_finish((select id from public.ai_usage where family_id = tests.u(1) order by created_at, id limit 1), 'success', null, 'gpt-5.4-mini', 1200, 800)$$, 'ai_finish: succès');
 select is((select input_tokens from public.ai_usage where family_id = tests.u(1) and status = 'success'), 1200, 'jetons d''entrée enregistrés');
-select lives_ok($$select public.ai_finish((select id from public.ai_usage where family_id = tests.u(1) and status = 'started' order by created_at, id limit 1), 'failed', 'invalid_output', 'claude-sonnet-5-5', 900, 50)$$, 'ai_finish: échec');
+select lives_ok($$select public.ai_finish((select id from public.ai_usage where family_id = tests.u(1) and status = 'started' order by created_at, id limit 1), 'failed', 'invalid_output', 'gpt-5.4-mini', 900, 50)$$, 'ai_finish: échec');
 select is((select failure from public.ai_usage where status = 'failed' and family_id = tests.u(1)), 'invalid_output', 'code d''échec enregistré');
 select throws_ok($$select public.ai_finish(tests.u(900), 'started', null, 'm', 1, 1)$$, 'P0001', 'invalid_status', 'statut invalide refusé');
 

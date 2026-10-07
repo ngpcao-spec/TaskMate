@@ -123,7 +123,7 @@ describe('Créer à partir d\'un document', () => {
   });
 
   it.each([
-    ['ai_not_configured', {}, 'AI chưa được cấu hình. Hãy nhờ người quản trị thêm khóa ANTHROPIC_API_KEY (xem HUMAN_TODO).'],
+    ['ai_not_configured', {}, 'AI chưa được cấu hình. Hãy nhờ người quản trị thêm khóa OPENAI_API_KEY (xem HUMAN_TODO).'],
     ['quota_exceeded', { used: 20, limit: 20 }, 'Đã hết lượt tạo hôm nay (20/20). Thử lại vào ngày mai.'],
     ['file_too_large', {}, 'Tệp quá lớn.'],
     ['invalid_output', {}, 'AI không trả về câu hỏi hợp lệ. Hãy thử lại hoặc dùng tài liệu rõ hơn.'],

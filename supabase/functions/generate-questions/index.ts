@@ -1,46 +1,39 @@
 // Edge Function `generate-questions` (D-057) : le PARENT envoie un document (photo, PDF, Word) ; une IA en tire des questions à choix
 // multiple, enregistrées en BROUILLON pour UN enfant de sa famille. Le fichier n'est jamais conservé ni journalisé.
 //   POST : génération.   GET : { configured, model, usedToday, dailyLimit } (diagnostic).
-// La clé ANTHROPIC_API_KEY vient UNIQUEMENT de l'environnement des fonctions (Supabase → Edge Functions → Secrets) : jamais dans le code ni dans git.
+// La clé OPENAI_API_KEY (et, en option, OPENAI_MODEL / OPENAI_REASONING_EFFORT) vient UNIQUEMENT de l'environnement des fonctions (Supabase → Edge Functions → Secrets) : jamais dans le code ni dans git.
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import { jsonResponse, preflight } from '../_shared/cors.ts';
-import { AiError, DEFAULT_MODEL, handleGenerate, handleStatus, LIMITS, type AiClient, type AiContent, type Deps, type Target } from './logic.ts';
+import { AiError, buildOpenAiRequest, DEFAULT_MODEL, handleGenerate, handleStatus, LIMITS, OPENAI_RESPONSES_URL, parseOpenAiResponse, type AiClient, type Deps, type Target } from './logic.ts';
 
 const MAX_BODY_BYTES = Math.ceil((LIMITS.maxTotalBytes * 4) / 3) + 200_000;
 
-/** Client réel : SDK officiel, importé à la demande (les chemins sans IA — statut, erreurs — ne le chargent jamais). */
+/** Client réel : appel HTTP direct à l'API OpenAI (Responses), côté serveur seulement. Seul le type d'erreur est journalisé, jamais de contenu. */
 function realAiClient(apiKey: string, effort: string | null): AiClient {
   return {
     complete: async (req) => {
-      // deno-lint-ignore no-explicit-any
-      const mod: any = await import('npm:@anthropic-ai/sdk@0.131.0');
-      const Anthropic = mod.default;
-      const client = new Anthropic({ apiKey, timeout: req.timeoutMs, maxRetries: 1 });
-      const content = req.content.map((c: AiContent) =>
-        c.type === 'text'
-          ? { type: 'text', text: c.text }
-          : c.type === 'image'
-            ? { type: 'image', source: { type: 'base64', media_type: c.mediaType, data: c.data } }
-            : { type: 'document', source: { type: 'base64', media_type: c.mediaType, data: c.data } },
-      );
+      let res: Response;
       try {
-        const msg = await client.messages.create({
-          model: req.model,
-          max_tokens: req.maxTokens,
-          system: req.system,
-          messages: [{ role: 'user', content }],
-          // niveau d'effort bas : la tâche est de la lecture et de la rédaction, pas du raisonnement ; ignoré pour les modèles qui ne le gèrent pas
-          ...(effort && /^claude-(sonnet|opus|fable)-5/.test(req.model) ? { output_config: { effort } } : {}),
+        res = await fetch(OPENAI_RESPONSES_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+          body: JSON.stringify(buildOpenAiRequest(req, effort)),
+          signal: AbortSignal.timeout(req.timeoutMs),
         });
-        const text = (msg.content as { type: string; text?: string }[]).filter((b) => b.type === 'text').map((b) => b.text ?? '').join('');
-        return { text, stopReason: msg.stop_reason ?? null, inputTokens: msg.usage?.input_tokens ?? 0, outputTokens: msg.usage?.output_tokens ?? 0 };
       } catch (e) {
-        // jamais de contenu dans les journaux : seulement le type d'erreur
         const name = (e as { name?: string })?.name ?? '';
-        if (name === 'APIConnectionTimeoutError') throw new AiError('timeout');
-        const status = (e as { status?: number })?.status;
-        console.error('generate-questions: erreur IA', name, status ?? '');
-        throw new AiError(typeof status === 'number' ? 'http' : 'other', typeof status === 'number' ? status : null);
+        if (name === 'TimeoutError' || name === 'AbortError') throw new AiError('timeout');
+        console.error('generate-questions: erreur réseau IA', name);
+        throw new AiError('other');
+      }
+      if (!res.ok) {
+        console.error('generate-questions: erreur IA', res.status);
+        throw new AiError('http', res.status);
+      }
+      try {
+        return parseOpenAiResponse(await res.json());
+      } catch {
+        throw new AiError('other');
       }
     },
   };
@@ -57,7 +50,7 @@ Deno.serve(async (req) => {
   const asCaller = createClient(url, Deno.env.get('SUPABASE_ANON_KEY')!, { global: { headers: { Authorization: authorization } }, auth: { persistSession: false } });
   const admin = createClient(url, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
 
-  const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
+  const apiKey = Deno.env.get('OPENAI_API_KEY');
   const limit = Number(Deno.env.get('GENERATE_DAILY_LIMIT'));
   const deps: Deps = {
     target: async (childId) => {
@@ -86,8 +79,8 @@ Deno.serve(async (req) => {
       });
       return { error };
     },
-    ai: apiKey ? realAiClient(apiKey, Deno.env.get('ANTHROPIC_EFFORT') ?? 'low') : null,
-    model: Deno.env.get('ANTHROPIC_MODEL') || DEFAULT_MODEL,
+    ai: apiKey ? realAiClient(apiKey, Deno.env.get('OPENAI_REASONING_EFFORT') ?? 'low') : null,
+    model: Deno.env.get('OPENAI_MODEL') || DEFAULT_MODEL,
     dailyLimit: Number.isInteger(limit) && limit > 0 ? limit : LIMITS.defaultDailyLimit,
   };
 

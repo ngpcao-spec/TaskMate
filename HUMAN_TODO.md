@@ -92,12 +92,13 @@ Sans aucune clé secrète. Essayer dans l'ordre :
   `SUPABASE_URL` et la clé de service sont injectées automatiquement dans les fonctions : ne les saisissez pas.
 - **Vérifier** : Diagnostic → les 3 « Edge Function … : OK » (sans `WEBHOOK_SECRET`, `send-push` répond 401 : normal, la fonction existe).
 
-## 6 bis. IA des révisions — clé Anthropic (facultatif, D-057)
+## 6 bis. IA des révisions — clé OpenAI (facultatif, D-060)
 Sans cette clé, l'app fonctionne normalement : « Créer à partir d'un document » affiche « IA non configurée » et la saisie manuelle des questions reste possible. **Je ne fais jamais ces étapes à votre place** (clé = secret de production).
-1. **Créer la clé d'API** : https://platform.claude.com/ → *Settings → API keys* → **Create key** (nom `taskmate-revisions`) → copier la clé (elle ne s'affiche qu'une fois).
-2. **Fixer une limite de dépense** : https://platform.claude.com/ → *Settings → Limits* → **Spend limit** (par exemple 10 $ par mois ; ordre de grandeur : ≈ 0,05 $ par document de quelques pages, voir D-057) et, si disponible, une alerte e-mail.
-3. **Ajouter le secret dans Supabase** : Supabase → *Edge Functions → Secrets* (https://supabase.com/dashboard/project/olftkozksanvnzlsvwrp/functions/secrets) → **Add new secrets** → clé `ANTHROPIC_API_KEY`, valeur = la clé copiée → **Save**. (Facultatifs : `ANTHROPIC_MODEL` pour changer de modèle — défaut `claude-sonnet-5-5` ; `GENERATE_DAILY_LIMIT` pour le nombre de générations par famille et par jour — défaut 20.)
-4. **Vérifier** : app → Réglages → **Diagnostic** → « IA des révisions : OK » (avec l'usage du jour). Puis, côté parent : Plus → Révisions → « Créer à partir d'un document » avec une photo de test.
+1. **Créer la clé d'API** : https://platform.openai.com/api-keys → **Create new secret key** (nom `taskmate-revisions`, projet de votre choix) → copier la clé (elle ne s'affiche qu'une fois). Un compte avec un moyen de paiement ou des crédits est nécessaire.
+2. **Fixer une limite de dépense mensuelle** : https://platform.openai.com/settings/organization/limits → *Usage limits* → définir un **plafond mensuel** (par exemple 10 $ ; ordre de grandeur : ≈ 0,02 à 0,04 $ par document de quelques pages, voir D-060) et, si disponible, un seuil d'alerte par e-mail. Les libellés exacts peuvent changer : cherchez « Usage limits » / « Budget » dans les réglages de l'organisation.
+3. **Ajouter le secret dans Supabase** : Supabase → *Edge Functions → Secrets* (https://supabase.com/dashboard/project/olftkozksanvnzlsvwrp/functions/secrets) → **Add new secrets** → clé `OPENAI_API_KEY`, valeur = la clé copiée → **Save**. (Facultatifs : `OPENAI_MODEL` pour changer de modèle — défaut `gpt-5.4-mini` ; `OPENAI_REASONING_EFFORT` — défaut `low` ; `GENERATE_DAILY_LIMIT` pour le nombre de générations par famille et par jour — défaut 20.)
+4. **Vérifier** : app → Réglages → **Diagnostic** → « IA des révisions : OK » (avec l'usage du jour).
+5. **Tester** : côté parent, Plus → Révisions → « Créer à partir d'un document », **avec une photo, puis un PDF, puis un Word** ; le PDF est le cas à confirmer (D-060). Vérifier le coût réel dans https://platform.openai.com/usage.
 La fonction `generate-questions` est déployée automatiquement par l'intégration GitHub au merge (étape 4). Les documents ne sont ni conservés ni journalisés ; seul le nombre de jetons et le succès/échec sont enregistrés.
 
 ## 7. Database Webhook (notifications)

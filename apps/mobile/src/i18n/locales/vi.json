@@ -327,7 +327,7 @@
     "import": {
       "entry": "Tạo từ tài liệu",
       "title": "Tạo câu hỏi từ tài liệu",
-      "intro": "Chọn ảnh chụp, PDF hoặc Word. Tài liệu được gửi tới một dịch vụ AI để tạo câu hỏi trắc nghiệm và KHÔNG được lưu giữ. Các câu hỏi chỉ là bản nháp: bạn xem lại, sửa rồi mới đăng.",
+      "intro": "Chọn ảnh chụp, PDF hoặc Word. Tài liệu được gửi tới một dịch vụ AI bên ngoài để tạo câu hỏi trắc nghiệm và KHÔNG được lưu giữ. Các câu hỏi chỉ là bản nháp: bạn xem lại, sửa rồi mới đăng.",
       "child": "Cho bạn",
       "subject": "Môn học (không bắt buộc)",
       "titleField": "Tiêu đề (không bắt buộc)",
@@ -349,7 +349,7 @@
       "truncated": "Tài liệu dài: chỉ phần đầu được dùng.",
       "errors": {
         "generic": "Không tạo được câu hỏi. Hãy thử lại.",
-        "notConfigured": "AI chưa được cấu hình. Hãy nhờ người quản trị thêm khóa ANTHROPIC_API_KEY (xem HUMAN_TODO).",
+        "notConfigured": "AI chưa được cấu hình. Hãy nhờ người quản trị thêm khóa OPENAI_API_KEY (xem HUMAN_TODO).",
         "quota": "Đã hết lượt tạo hôm nay ({{used}}/{{limit}}). Thử lại vào ngày mai.",
         "tooLarge": "Tệp quá lớn.",
         "totalTooLarge": "Tổng dung lượng các tệp quá lớn.",
@@ -709,8 +709,8 @@
       "unknown": "Không đọc được cài đặt xác thực (khóa công khai sai hoặc mất mạng). Kiểm tra EXPO_PUBLIC_SUPABASE_ANON_KEY."
     },
     "ai": {
-      "ok": "AI đã cấu hình (ANTHROPIC_API_KEY có mặt). Hôm nay đã dùng {{used}}/{{limit}} lượt tạo câu hỏi.",
-      "notConfigured": "AI CHƯA cấu hình: thiếu bí mật ANTHROPIC_API_KEY (Supabase → Edge Functions → Secrets). Xem HUMAN_TODO.",
+      "ok": "AI đã cấu hình (OPENAI_API_KEY có mặt). Hôm nay đã dùng {{used}}/{{limit}} lượt tạo câu hỏi.",
+      "notConfigured": "AI CHƯA cấu hình: thiếu bí mật OPENAI_API_KEY (Supabase → Edge Functions → Secrets). Xem HUMAN_TODO.",
       "unknown": "Không kiểm tra được trạng thái AI (hàm generate-questions không trả lời)."
     }
   },

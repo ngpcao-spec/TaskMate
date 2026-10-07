@@ -327,7 +327,7 @@
     "import": {
       "entry": "Créer à partir d'un document",
       "title": "Questions depuis un document",
-      "intro": "Choisissez des photos, un PDF ou un fichier Word. Le document est envoyé à un service d'IA pour générer les questions à choix multiple ; il n'est PAS conservé. Les questions arrivent en brouillon : vous les relisez, les modifiez, puis vous les publiez.",
+      "intro": "Choisissez des photos, un PDF ou un fichier Word. Le document est envoyé à un service d'IA externe pour générer les questions à choix multiple ; il n'est PAS conservé. Les questions arrivent en brouillon : vous les relisez, les modifiez, puis vous les publiez.",
       "child": "Pour",
       "subject": "Matière (facultatif)",
       "titleField": "Titre (facultatif)",
@@ -349,7 +349,7 @@
       "truncated": "Document long : seul le début a été utilisé.",
       "errors": {
         "generic": "Impossible de générer les questions. Réessayez.",
-        "notConfigured": "L'IA n'est pas configurée. Demandez d'ajouter la clé ANTHROPIC_API_KEY (voir HUMAN_TODO).",
+        "notConfigured": "L'IA n'est pas configurée. Demandez d'ajouter la clé OPENAI_API_KEY (voir HUMAN_TODO).",
         "quota": "Limite du jour atteinte ({{used}}/{{limit}}). Réessayez demain.",
         "tooLarge": "Fichier trop volumineux.",
         "totalTooLarge": "Les fichiers sont trop volumineux au total.",
@@ -709,8 +709,8 @@
       "unknown": "Impossible de lire les réglages d'authentification (clé publique invalide ou réseau). Vérifiez EXPO_PUBLIC_SUPABASE_ANON_KEY."
     },
     "ai": {
-      "ok": "IA configurée (ANTHROPIC_API_KEY présente). Aujourd'hui : {{used}}/{{limit}} générations utilisées.",
-      "notConfigured": "IA NON configurée : secret ANTHROPIC_API_KEY absent (Supabase → Edge Functions → Secrets). Voir HUMAN_TODO.",
+      "ok": "IA configurée (OPENAI_API_KEY présente). Aujourd'hui : {{used}}/{{limit}} générations utilisées.",
+      "notConfigured": "IA NON configurée : secret OPENAI_API_KEY absent (Supabase → Edge Functions → Secrets). Voir HUMAN_TODO.",
       "unknown": "État de l'IA non vérifiable (la fonction generate-questions ne répond pas)."
     }
   },
