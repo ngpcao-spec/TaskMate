@@ -141,6 +141,7 @@ begin
   delete from public.ai_usage where family_id = fid;
   delete from public.quiz_answers where family_id = fid;
   delete from public.quiz_results where family_id = fid;
+  delete from public.quiz_attempt_layouts where family_id = fid;
   delete from public.quiz_attempts where family_id = fid;
   delete from public.quiz_answer_keys where family_id = fid;
   delete from public.quiz_questions where family_id = fid;

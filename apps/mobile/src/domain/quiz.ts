@@ -1,6 +1,6 @@
 /**
  * « Révisions » (D-055) : calculs purs. Le serveur reste l'autorité (clé des réponses, score, validation) ; ces fonctions servent
- * à la saisie (validation avant envoi), à l'affichage (mélange des choix, pourcentages, progression d'UN enfant) et aux tests.
+ * à la saisie (validation avant envoi), à l'affichage (pourcentages, progression d'UN enfant). Le mélange des questions et des choix est décidé par le serveur et aux tests.
  */
 
 export const MIN_CHOICES = 3;
@@ -84,44 +84,6 @@ export function scoreAnswers(keys: readonly number[], answers: readonly (number 
 /** Pourcentage entier (arrondi), 0 si aucune question. */
 export const scorePercent = (score: number, total: number): number => (total <= 0 ? 0 : Math.round((score / total) * 100));
 
-// ───────────── mélange des choix ─────────────
-function seedFrom(text: string): () => number {
-  // xmur3 → mulberry32 : déterministe, sans dépendance
-  let h = 1779033703 ^ text.length;
-  for (let i = 0; i < text.length; i++) {
-    h = Math.imul(h ^ text.charCodeAt(i), 3432918353);
-    h = (h << 13) | (h >>> 19);
-  }
-  let state = (Math.imul(h ^ (h >>> 16), 2246822507) ^ Math.imul(h ^ (h >>> 13), 3266489909)) >>> 0;
-  return () => {
-    state = (state + 0x6d2b79f5) >>> 0;
-    let t = state;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-/** Permutation de 0…n−1 stable pour une même graine (ex. id de tentative + id de question) : la question ne bouge pas quand on la rouvre. */
-export function shuffledOrder(n: number, seed: string): number[] {
-  const rand = seedFrom(seed);
-  const order = Array.from({ length: n }, (_, i) => i);
-  for (let i = n - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1));
-    [order[i], order[j]] = [order[j] as number, order[i] as number];
-  }
-  return order;
-}
-
-/** `order[i]` = indice d'origine du choix affiché en position i. */
-export function shuffleChoices(choices: readonly string[], seed: string): { choices: string[]; order: number[] } {
-  const order = shuffledOrder(choices.length, seed);
-  return { choices: order.map((o) => choices[o] as string), order };
-}
-
-/** Indice d'origine (celui que connaît le serveur) du choix touché à l'écran. */
-export const originalIndex = (order: readonly number[], displayed: number): number => order[displayed] as number;
-
 // ───────────── liste de questions ─────────────
 /** Déplace l'élément `from` en position `to` (copie). Hors bornes : liste inchangée. */
 export function moveItem<T>(list: readonly T[], from: number, to: number): T[] {
@@ -137,7 +99,7 @@ export const nextPosition = (positions: readonly number[]): number => (positions
 // ───────────── évaluation : envoi ─────────────
 export type PlayQuestion = { question_id: string; choices: readonly string[] };
 
-/** Charge utile de `submit_quiz_evaluation` : indices D'ORIGINE (le mélange est défait), null si sans réponse. */
+/** Charge utile de `submit_quiz_evaluation` : positions AFFICHÉES (le serveur seul connaît l'ordre d'origine), null si sans réponse. */
 export function answersPayload(questions: readonly PlayQuestion[], chosen: Readonly<Record<string, number | null | undefined>>): { question_id: string; choice: number | null }[] {
   return questions.map((q) => ({ question_id: q.question_id, choice: chosen[q.question_id] ?? null }));
 }
@@ -163,13 +125,12 @@ export function evaluationView(status: AttemptStatus | null | undefined): Evalua
 }
 
 // ───────────── progression d'UN enfant ─────────────
-export type HistoryEntry = { id: string; at: string; kind: 'practice' | 'evaluation'; score: number; total: number };
+export type HistoryEntry = { id: string; at: string; score: number; total: number };
 export type HistoryPoint = HistoryEntry & { percent: number };
 
 /** Historique chronologique (anciens d'abord) d'UN enfant ; jamais de comparaison entre enfants. */
-export function historySeries(entries: readonly HistoryEntry[], kind?: 'practice' | 'evaluation'): HistoryPoint[] {
+export function historySeries(entries: readonly HistoryEntry[]): HistoryPoint[] {
   return entries
-    .filter((e) => (kind ? e.kind === kind : true))
     .map((e) => ({ ...e, percent: scorePercent(e.score, e.total) }))
     .sort((a, b) => (a.at === b.at ? a.id.localeCompare(b.id) : a.at < b.at ? -1 : 1));
 }

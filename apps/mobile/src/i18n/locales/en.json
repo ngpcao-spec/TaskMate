@@ -267,10 +267,6 @@
     "relaunched": "New test opened",
     "results": "Results",
     "noResults": "No attempts yet.",
-    "kind": {
-      "practice": "Practice",
-      "evaluation": "Test"
-    },
     "status": {
       "in_progress": "In progress",
       "submitted": "To validate",
@@ -287,28 +283,23 @@
     "lastChange": "{{delta}} percentage points since last time",
     "pendingTitle": "To validate",
     "child": {
-      "practice": "Practice",
       "evaluate": "Take the test",
       "resume": "Resume the test",
       "seeResult": "See the result",
       "waiting": "Sent, waiting for your parent to validate",
       "waitingBody": "Your result will show once your parent has validated it.",
       "taken": "Test already taken. Your parent can offer you a new one.",
-      "check": "Check",
-      "next": "Next question",
-      "finish": "Finish",
       "submit": "Send the test",
       "submitAnyway": "Send anyway",
       "unanswered": "{{count}} question(s) unanswered.",
-      "right": "Well done, that's right!",
-      "wrong": "Not quite",
       "questionOf": "Question {{n}}/{{total}}",
       "scoreIs": "Score: {{score}}/{{total}}",
-      "practiceDone": "Practice finished!",
       "evalIntro": "Answer every question, then send. You won't see the result right away.",
-      "needNetwork": "A connection is needed to practise.",
       "loading": "Loading…",
-      "back": "Back to the list"
+      "back": "Back to the list",
+      "missedTitle": "Missed questions",
+      "noneMissed": "Every answer was right!",
+      "noCorrection": "Your parent has not turned the correction on."
     },
     "errors": {
       "promptRequired": "Enter the question text",
@@ -376,7 +367,10 @@
         "invalidCount": "The number of questions is 5 to 20.",
         "network": "Server unreachable."
       }
-    }
+    },
+    "correctionShown": "The correct answer and explanation are shown to the child.",
+    "correctionHidden": "The correct answer is not shown to the child.",
+    "showCorrection": "Show the correction to the child"
   },
   "sync": {
     "offline": "Offline — changes will sync when you are back online",

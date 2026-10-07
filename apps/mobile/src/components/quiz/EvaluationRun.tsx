@@ -1,28 +1,27 @@
 import { useRouter } from 'expo-router';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { newId } from '@/api/ids';
 import { ChoiceButton } from '@/components/quiz/ChoiceButton';
 import { Button, Card, Screen, ScreenHeader } from '@/components/ui';
-import { answersPayload, originalIndex, shuffleChoices, unansweredCount } from '@/domain/quiz';
+import { answersPayload, unansweredCount } from '@/domain/quiz';
 import { useChildQuestions, useChildQuizSets, useStartQuizEvaluation, useSubmitQuizEvaluation } from '@/hooks/useQuizzes';
 import { colors, typography } from '@/theme/tokens';
 
 /**
- * Évaluation : toutes les questions, aucun retour. L'envoi (mis en file hors ligne, rejeu idempotent) ne renvoie AUCUN résultat :
- * l'enfant voit « Đã nộp, chờ phụ huynh duyệt » puis, seulement après validation du parent, son score.
+ * Seul parcours de l'enfant : il répond à toutes les questions (ordre et choix mélangés par le serveur, jamais de retour juste/faux),
+ * envoie ses réponses, puis attend la validation. L'envoi (mis en file hors ligne, rejeu idempotent) ne renvoie AUCUN résultat.
  */
 export function EvaluationRun({ setId }: { setId: string }) {
   const { t } = useTranslation();
   const router = useRouter();
   const sets = useChildQuizSets();
-  const questions = useChildQuestions(setId);
   const start = useStartQuizEvaluation();
   const submit = useSubmitQuizEvaluation();
   const [freshId] = useState(newId);
   const startedRef = useRef(false);
-  const [chosen, setChosen] = useState<Record<string, number | null>>({}); // indices D'ORIGINE
+  const [chosen, setChosen] = useState<Record<string, number | null>>({}); // positions AFFICHÉES
   const [warned, setWarned] = useState(false);
   const [sent, setSent] = useState(false);
 
@@ -36,10 +35,11 @@ export function EvaluationRun({ setId }: { setId: string }) {
     start.mutate({ setId, attemptId: freshId });
   }, [info?.set_id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const list = useMemo(() => questions.data ?? [], [questions.data]);
-  const shuffles = useMemo(() => new Map(list.map((q) => [q.question_id, shuffleChoices(q.choices, `${attemptId ?? ''}:${q.question_id}`)])), [list, attemptId]);
+  // les questions ne sont demandées qu'une fois la tentative créée côté serveur (reprise, ou démarrage confirmé)
+  const questions = useChildQuestions(attemptId ?? '', !!resuming || start.isSuccess);
+  const list = questions.data ?? [];
 
-  if (sets.isPending || questions.isPending) return <ActivityIndicator />;
+  if (sets.isPending) return <ActivityIndicator />;
   if (!info) return null;
 
   if (sent || info.evaluation_status === 'submitted') {
@@ -65,6 +65,8 @@ export function EvaluationRun({ setId }: { setId: string }) {
     );
   }
 
+  if (questions.isPending) return <ActivityIndicator />;
+
   const missing = unansweredCount(list, chosen);
   const onSend = () => {
     if (missing > 0 && !warned) {
@@ -80,15 +82,13 @@ export function EvaluationRun({ setId }: { setId: string }) {
       <ScreenHeader title={info.title} />
       <Text style={typography.secondary}>{t('revisions.child.evalIntro')}</Text>
       {list.map((q, i) => {
-        const sh = shuffles.get(q.question_id);
-        if (!sh) return null;
         return (
           <View key={q.question_id} style={styles.q}>
             <Text style={typography.secondary}>{t('revisions.child.questionOf', { n: i + 1, total: list.length })}</Text>
             <Text accessibilityRole="header" style={styles.prompt}>{q.prompt}</Text>
             <View style={styles.choices} accessibilityRole="radiogroup">
-              {sh.choices.map((choice, displayed) => (
-                <ChoiceButton key={displayed} label={choice} selected={chosen[q.question_id] === originalIndex(sh.order, displayed)} onPress={() => { setChosen({ ...chosen, [q.question_id]: originalIndex(sh.order, displayed) }); setWarned(false); }} />
+              {q.choices.map((choice, displayed) => (
+                <ChoiceButton key={displayed} label={choice} selected={chosen[q.question_id] === displayed} onPress={() => { setChosen({ ...chosen, [q.question_id]: displayed }); setWarned(false); }} />
               ))}
             </View>
           </View>

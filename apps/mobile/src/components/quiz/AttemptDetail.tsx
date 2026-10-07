@@ -1,7 +1,8 @@
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import { Check, X } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Switch, Text, View } from 'react-native';
 import { Button, Card, Screen, ScreenHeader } from '@/components/ui';
 import { formatShortDate } from '@/domain/calendar';
 import { todayInTz } from '@/domain/family-time';
@@ -10,7 +11,10 @@ import { useAttemptDetail, useValidateQuizAttempt } from '@/hooks/useQuizzes';
 import { useToastStore } from '@/store/toast';
 import { colors, typography } from '@/theme/tokens';
 
-/** Détail d'une tentative (parent) : réponse par question, score calculé par le serveur ; « Valider » rend le résultat à l'enfant. */
+/**
+ * Détail d'une tentative (parent) : réponse par question, score calculé par le serveur. « Valider » rend le résultat à l'enfant ;
+ * le parent choisit ICI s'il voit aussi la correction (bonne réponse + explication) — désactivé par défaut, réglage conservé par le serveur.
+ */
 export function AttemptDetail({ attemptId }: { attemptId: string }) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -18,6 +22,7 @@ export function AttemptDetail({ attemptId }: { attemptId: string }) {
   const detail = useAttemptDetail(attemptId);
   const validate = useValidateQuizAttempt();
   const show = useToastStore((s) => s.show);
+  const [showCorrection, setShowCorrection] = useState(false);
   if (!d) return null;
   if (detail.isPending) return <ActivityIndicator />;
   const data = detail.data;
@@ -30,7 +35,7 @@ export function AttemptDetail({ attemptId }: { attemptId: string }) {
   return (
     <Screen>
       <ScreenHeader title={set?.title ?? t('revisions.results')} />
-      <Text style={typography.secondary}>{`${childName} · ${t(`revisions.kind.${attempt.kind}`)} · ${day} · ${t(`revisions.status.${attempt.status}`)}`}</Text>
+      <Text style={typography.secondary}>{`${childName} · ${day} · ${t(`revisions.status.${attempt.status}`)}`}</Text>
       {attempt.score !== null && attempt.total !== null ? <Text accessibilityRole="header" style={styles.score}>{t('revisions.score', { score: attempt.score, total: attempt.total })}</Text> : null}
 
       <Text accessibilityRole="header" style={styles.section}>{t('revisions.detail')}</Text>
@@ -45,14 +50,25 @@ export function AttemptDetail({ attemptId }: { attemptId: string }) {
         </Card>
       ))}
 
+      {attempt.status === 'validated' ? (
+        <Text style={typography.secondary}>{t(attempt.show_correction ? 'revisions.correctionShown' : 'revisions.correctionHidden')}</Text>
+      ) : null}
       {attempt.status === 'submitted' ? (
-        <Button label={t('revisions.validate')} loading={validate.isPending} onPress={() => validate.mutate({ attemptId }, { onSuccess: () => { show(t('revisions.validatedDone')); router.back(); } })} />
+        <View style={styles.switchRow}>
+          <Text style={[typography.body, styles.flex]}>{t('revisions.showCorrection')}</Text>
+          <Switch accessibilityLabel={t('revisions.showCorrection')} value={showCorrection} onValueChange={setShowCorrection} />
+        </View>
+      ) : null}
+      {attempt.status === 'submitted' ? (
+        <Button label={t('revisions.validate')} loading={validate.isPending} onPress={() => validate.mutate({ attemptId, showCorrection }, { onSuccess: () => { show(t('revisions.validatedDone')); router.back(); } })} />
       ) : null}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  switchRow: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 44 },
+  flex: { flex: 1 },
   score: { fontSize: 28, fontWeight: '800', color: colors.text },
   section: { fontSize: 16, fontWeight: '700', color: colors.text },
   head: { flexDirection: 'row', gap: 8, alignItems: 'flex-start' },

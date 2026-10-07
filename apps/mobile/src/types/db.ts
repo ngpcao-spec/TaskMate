@@ -385,15 +385,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"quiz_attempts": {
+                },"quiz_attempt_layouts": {
                   Row: {
-                    "child_id": string,"created_at": string,"family_id": string,"id": string,"kind": Database["public"]['Enums']["quiz_attempt_kind"],"relaunched_by": string | null,"set_id": string,"started_at": string,"status": Database["public"]['Enums']["quiz_attempt_status"],"submitted_at": string | null,"updated_at": string,"validated_at": string | null,"validated_by": string | null
+                    "attempt_id": string,"family_id": string,"layout": Json
                   }
                   Insert: {
-                    "child_id": string,"created_at"?: string,"family_id": string,"id"?: string,"kind": Database["public"]['Enums']["quiz_attempt_kind"],"relaunched_by"?: string | null,"set_id": string,"started_at"?: string,"status"?: Database["public"]['Enums']["quiz_attempt_status"],"submitted_at"?: string | null,"updated_at"?: string,"validated_at"?: string | null,"validated_by"?: string | null
+                    "attempt_id": string,"family_id": string,"layout": Json
                   }
                   Update: {
-                    "child_id"?: string,"created_at"?: string,"family_id"?: string,"id"?: string,"kind"?: Database["public"]['Enums']["quiz_attempt_kind"],"relaunched_by"?: string | null,"set_id"?: string,"started_at"?: string,"status"?: Database["public"]['Enums']["quiz_attempt_status"],"submitted_at"?: string | null,"updated_at"?: string,"validated_at"?: string | null,"validated_by"?: string | null
+                    "attempt_id"?: string,"family_id"?: string,"layout"?: Json
+                  }
+                  Relationships: []
+                },"quiz_attempts": {
+                  Row: {
+                    "child_id": string,"created_at": string,"family_id": string,"id": string,"relaunched_by": string | null,"set_id": string,"show_correction": boolean,"started_at": string,"status": Database["public"]['Enums']["quiz_attempt_status"],"submitted_at": string | null,"updated_at": string,"validated_at": string | null,"validated_by": string | null
+                  }
+                  Insert: {
+                    "child_id": string,"created_at"?: string,"family_id": string,"id"?: string,"relaunched_by"?: string | null,"set_id": string,"show_correction"?: boolean,"started_at"?: string,"status"?: Database["public"]['Enums']["quiz_attempt_status"],"submitted_at"?: string | null,"updated_at"?: string,"validated_at"?: string | null,"validated_by"?: string | null
+                  }
+                  Update: {
+                    "child_id"?: string,"created_at"?: string,"family_id"?: string,"id"?: string,"relaunched_by"?: string | null,"set_id"?: string,"show_correction"?: boolean,"started_at"?: string,"status"?: Database["public"]['Enums']["quiz_attempt_status"],"submitted_at"?: string | null,"updated_at"?: string,"validated_at"?: string | null,"validated_by"?: string | null
                   }
                   Relationships: [
                     {
@@ -735,11 +746,6 @@ isOneToOne: false
 "cancel_reward_request":
 { Args: { "p_request_id": string }; Returns: undefined
                            },
-"check_quiz_answer":
-{ Args: { "p_attempt": string,"p_choice": number,"p_question": string }; Returns: {
-              "correct": boolean,"correct_index": number,"explanation": string
-            }[]
-                           },
 "child_account_target":
 { Args: { "p_child_id": string }; Returns: Json
                            },
@@ -760,11 +766,11 @@ isOneToOne: false
                            },
 "child_quiz_history":
 { Args: { "p_set": string }; Returns: {
-              "attempt_id": string,"kind": Database["public"]['Enums']["quiz_attempt_kind"],"score": number,"total": number,"validated_at": string
+              "attempt_id": string,"score": number,"total": number,"validated_at": string
             }[]
                            },
 "child_quiz_questions":
-{ Args: { "p_set": string }; Returns: {
+{ Args: { "p_attempt": string }; Returns: {
               "choices": (string)[],"position": number,"prompt": string,"question_id": string
             }[]
                            },
@@ -808,11 +814,6 @@ isOneToOne: false
                            },
 "family_today":
 { Args: { "p_family": string,"p_now"?: string }; Returns: string
-                           },
-"finish_quiz_practice":
-{ Args: { "p_attempt": string }; Returns: {
-              "score": number,"total": number
-            }[]
                            },
 "generate_all_recurrences":
 { Args: { "p_now"?: string }; Returns: number
@@ -872,6 +873,12 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"quiz_make_layout":
+{ Args: { "p_set": string }; Returns: Json
+                           },
+"quiz_new_attempt":
+{ Args: { "p_attempt": string,"p_relaunched_by": string,"p_set": Json }; Returns: undefined
+                           },
 "quiz_require_child":
 { Args: Record<PropertyKey, never>; Returns: {
               "child_id": string | null,
@@ -977,9 +984,6 @@ isOneToOne: false
 "start_quiz_evaluation":
 { Args: { "p_attempt": string,"p_set": string }; Returns: undefined
                            },
-"start_quiz_practice":
-{ Args: { "p_attempt": string,"p_set": string }; Returns: undefined
-                           },
 "submit_quiz_evaluation":
 { Args: { "p_answers": Json,"p_attempt": string }; Returns: undefined
                            },
@@ -996,14 +1000,14 @@ isOneToOne: false
 { Args: { "p_choices": (string)[],"p_correct": number,"p_explanation": string,"p_id": string,"p_position": number,"p_prompt": string,"p_set": string }; Returns: undefined
                            },
 "validate_quiz_attempt":
-{ Args: { "p_attempt": string }; Returns: undefined
+{ Args: { "p_attempt": string,"p_show_correction"?: boolean }; Returns: undefined
                            },
 "validate_task":
 { Args: { "p_task_id": string,"p_tx_id": string }; Returns: undefined
                            }
           }
           Enums: {
-            "member_role": "parent"|"child","point_reason": "task_validated"|"task_unvalidated"|"reward_redeemed"|"manual_adjust","quiz_attempt_kind": "practice"|"evaluation","quiz_attempt_status": "in_progress"|"submitted"|"validated","quiz_status": "draft"|"published","recurrence_rule": "daily"|"weekdays","request_status": "pending"|"approved"|"rejected"|"cancelled"|"expired","task_category": "study"|"sport"|"chores"|"personal"|"other","time_kind": "range"|"deadline"|"anytime"
+            "member_role": "parent"|"child","point_reason": "task_validated"|"task_unvalidated"|"reward_redeemed"|"manual_adjust","quiz_attempt_status": "in_progress"|"submitted"|"validated","quiz_status": "draft"|"published","recurrence_rule": "daily"|"weekdays","request_status": "pending"|"approved"|"rejected"|"cancelled"|"expired","task_category": "study"|"sport"|"chores"|"personal"|"other","time_kind": "range"|"deadline"|"anytime"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -1123,7 +1127,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "member_role": ["parent", "child"],"point_reason": ["task_validated", "task_unvalidated", "reward_redeemed", "manual_adjust"],"quiz_attempt_kind": ["practice", "evaluation"],"quiz_attempt_status": ["in_progress", "submitted", "validated"],"quiz_status": ["draft", "published"],"recurrence_rule": ["daily", "weekdays"],"request_status": ["pending", "approved", "rejected", "cancelled", "expired"],"task_category": ["study", "sport", "chores", "personal", "other"],"time_kind": ["range", "deadline", "anytime"]
+            "member_role": ["parent", "child"],"point_reason": ["task_validated", "task_unvalidated", "reward_redeemed", "manual_adjust"],"quiz_attempt_status": ["in_progress", "submitted", "validated"],"quiz_status": ["draft", "published"],"recurrence_rule": ["daily", "weekdays"],"request_status": ["pending", "approved", "rejected", "cancelled", "expired"],"task_category": ["study", "sport", "chores", "personal", "other"],"time_kind": ["range", "deadline", "anytime"]
           }
         }
 } as const

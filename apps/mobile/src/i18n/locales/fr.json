@@ -267,10 +267,6 @@
     "relaunched": "Nouvelle évaluation ouverte",
     "results": "Résultats",
     "noResults": "Aucune tentative pour le moment.",
-    "kind": {
-      "practice": "Entraînement",
-      "evaluation": "Évaluation"
-    },
     "status": {
       "in_progress": "En cours",
       "submitted": "À valider",
@@ -287,28 +283,23 @@
     "lastChange": "{{delta}} points de pourcentage depuis la fois précédente",
     "pendingTitle": "À valider",
     "child": {
-      "practice": "S'entraîner",
       "evaluate": "Passer l'évaluation",
       "resume": "Reprendre l'évaluation",
       "seeResult": "Voir le résultat",
       "waiting": "Envoyé, en attente de validation par ton parent",
       "waitingBody": "Le résultat s'affichera quand ton parent l'aura validé.",
       "taken": "Évaluation passée. Ton parent peut t'en proposer une nouvelle.",
-      "check": "Vérifier",
-      "next": "Question suivante",
-      "finish": "Terminer",
       "submit": "Envoyer l'évaluation",
       "submitAnyway": "Envoyer quand même",
       "unanswered": "{{count}} question(s) sans réponse.",
-      "right": "Bravo, c'est juste !",
-      "wrong": "Pas tout à fait",
       "questionOf": "Question {{n}}/{{total}}",
       "scoreIs": "Score : {{score}}/{{total}}",
-      "practiceDone": "Entraînement terminé !",
       "evalIntro": "Réponds à toutes les questions puis envoie. Tu ne verras pas le résultat tout de suite.",
-      "needNetwork": "Une connexion est nécessaire pour s'entraîner.",
       "loading": "Chargement…",
-      "back": "Retour à la liste"
+      "back": "Retour à la liste",
+      "missedTitle": "Questions ratées",
+      "noneMissed": "Toutes les réponses sont justes !",
+      "noCorrection": "Ton parent n'a pas activé la correction."
     },
     "errors": {
       "promptRequired": "Saisissez l'énoncé",
@@ -376,7 +367,10 @@
         "invalidCount": "Le nombre de questions va de 5 à 20.",
         "network": "Serveur injoignable."
       }
-    }
+    },
+    "correctionShown": "La bonne réponse et l'explication sont montrées à l'enfant.",
+    "correctionHidden": "La bonne réponse n'est pas montrée à l'enfant.",
+    "showCorrection": "Montrer la correction à l'enfant"
   },
   "sync": {
     "offline": "Hors ligne — les changements seront synchronisés au retour du réseau",

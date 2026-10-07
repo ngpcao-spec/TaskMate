@@ -267,10 +267,6 @@
     "relaunched": "Đã mở bài kiểm tra mới",
     "results": "Kết quả",
     "noResults": "Chưa có bài làm nào.",
-    "kind": {
-      "practice": "Luyện tập",
-      "evaluation": "Kiểm tra"
-    },
     "status": {
       "in_progress": "Đang làm",
       "submitted": "Chờ duyệt",
@@ -287,28 +283,23 @@
     "lastChange": "{{delta}} điểm % so với lần trước",
     "pendingTitle": "Bài chờ duyệt",
     "child": {
-      "practice": "Luyện tập",
       "evaluate": "Làm bài kiểm tra",
       "resume": "Làm tiếp bài kiểm tra",
       "seeResult": "Xem kết quả",
       "waiting": "Đã nộp, chờ phụ huynh duyệt",
       "waitingBody": "Kết quả sẽ hiện khi phụ huynh duyệt xong.",
       "taken": "Bài kiểm tra đã làm. Phụ huynh có thể cho làm lại.",
-      "check": "Kiểm tra",
-      "next": "Câu tiếp",
-      "finish": "Xong",
       "submit": "Nộp bài",
       "submitAnyway": "Vẫn nộp bài",
       "unanswered": "Còn {{count}} câu chưa trả lời.",
-      "right": "Đúng rồi!",
-      "wrong": "Chưa đúng",
       "questionOf": "Câu {{n}}/{{total}}",
       "scoreIs": "Điểm: {{score}}/{{total}}",
-      "practiceDone": "Luyện tập xong!",
       "evalIntro": "Trả lời tất cả các câu rồi nộp bài. Bạn sẽ không thấy kết quả ngay.",
-      "needNetwork": "Cần có mạng để luyện tập.",
       "loading": "Đang tải…",
-      "back": "Về danh sách"
+      "back": "Về danh sách",
+      "missedTitle": "Các câu chưa đúng",
+      "noneMissed": "Con trả lời đúng tất cả!",
+      "noCorrection": "Phụ huynh chưa cho xem đáp án đúng."
     },
     "errors": {
       "promptRequired": "Nhập nội dung câu hỏi",
@@ -376,7 +367,10 @@
         "invalidCount": "Số câu hỏi từ 5 đến 20.",
         "network": "Không kết nối được máy chủ."
       }
-    }
+    },
+    "correctionShown": "Đã hiện đáp án đúng và giải thích cho con.",
+    "correctionHidden": "Không hiện đáp án đúng cho con.",
+    "showCorrection": "Hiện đáp án đúng cho con"
   },
   "sync": {
     "offline": "Đang offline — thay đổi sẽ được đồng bộ khi có mạng",

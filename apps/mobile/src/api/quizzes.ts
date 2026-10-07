@@ -1,4 +1,4 @@
-import type { QuizAttemptKind, QuizAttemptRow, QuizAttemptStatus, QuizQuestionRow, QuizSetRow } from '@/types/models';
+import type { QuizAttemptRow, QuizAttemptStatus, QuizQuestionRow, QuizSetRow } from '@/types/models';
 import { supabase } from './supabase';
 
 /** Révisions (D-055). Parent : lectures directes (RLS) + RPC ; enfant : RPC uniquement (jamais la clé des réponses). */
@@ -59,7 +59,7 @@ export async function fetchChildAttempts(childId: string): Promise<ChildAttempt[
 
 /** Évaluations soumises, en attente de validation (toute la famille, parent). */
 export async function fetchPendingQuizAttempts(): Promise<ChildAttempt[]> {
-  const { data, error } = await supabase.from('quiz_attempts').select('*, quiz_results(score, total), quiz_sets(title)').eq('status', 'submitted').eq('kind', 'evaluation').order('submitted_at');
+  const { data, error } = await supabase.from('quiz_attempts').select('*, quiz_results(score, total), quiz_sets(title)').eq('status', 'submitted').order('submitted_at');
   fail(error);
   return (data ?? []).map((row) => ({ ...withScore(row), set_title: ((Array.isArray(row.quiz_sets) ? row.quiz_sets[0] : row.quiz_sets) as { title: string } | null)?.title ?? '' }));
 }
@@ -125,8 +125,9 @@ export async function copyQuizSet(source: string, newSet: string, childId: strin
   const { error } = await supabase.rpc('copy_quiz_set', { p_source: source, p_new_set: newSet, p_child: childId });
   fail(error);
 }
-export async function validateQuizAttempt(attemptId: string): Promise<void> {
-  const { error } = await supabase.rpc('validate_quiz_attempt', { p_attempt: attemptId });
+/** `showCorrection` : réglage posé par le parent AU MOMENT de valider (désactivé par défaut), stocké et appliqué côté serveur. */
+export async function validateQuizAttempt(attemptId: string, showCorrection = false): Promise<void> {
+  const { error } = await supabase.rpc('validate_quiz_attempt', { p_attempt: attemptId, p_show_correction: showCorrection });
   fail(error);
 }
 export async function relaunchQuizEvaluation(setId: string, attemptId: string): Promise<void> {
@@ -150,32 +151,14 @@ export async function fetchChildQuizSets(): Promise<ChildQuizSet[]> {
   return (data ?? []) as ChildQuizSet[];
 }
 
+/** Positions et choix déjà mélangés par le serveur pour CETTE tentative ; ni bonne réponse ni explication. */
 export type PlayQuestionRow = { question_id: string; position: number; prompt: string; choices: string[] };
-export async function fetchChildQuestions(setId: string): Promise<PlayQuestionRow[]> {
-  const { data, error } = await supabase.rpc('child_quiz_questions', { p_set: setId });
+export async function fetchChildQuestions(attemptId: string): Promise<PlayQuestionRow[]> {
+  const { data, error } = await supabase.rpc('child_quiz_questions', { p_attempt: attemptId });
   fail(error);
   return (data ?? []) as PlayQuestionRow[];
 }
 
-export async function startQuizPractice(setId: string, attemptId: string): Promise<void> {
-  const { error } = await supabase.rpc('start_quiz_practice', { p_set: setId, p_attempt: attemptId });
-  fail(error);
-}
-export type AnswerFeedback = { correct: boolean; correct_index: number; explanation: string | null };
-export async function checkQuizAnswer(attemptId: string, questionId: string, choice: number): Promise<AnswerFeedback> {
-  const { data, error } = await supabase.rpc('check_quiz_answer', { p_attempt: attemptId, p_question: questionId, p_choice: choice });
-  fail(error);
-  const row = (data ?? [])[0];
-  if (!row) throw new Error('no_feedback');
-  return { correct: row.correct, correct_index: row.correct_index, explanation: row.explanation ?? null };
-}
-export async function finishQuizPractice(attemptId: string): Promise<{ score: number; total: number }> {
-  const { data, error } = await supabase.rpc('finish_quiz_practice', { p_attempt: attemptId });
-  fail(error);
-  const row = (data ?? [])[0];
-  if (!row) throw new Error('no_result');
-  return { score: row.score, total: row.total };
-}
 export async function startQuizEvaluation(setId: string, attemptId: string): Promise<void> {
   const { error } = await supabase.rpc('start_quiz_evaluation', { p_set: setId, p_attempt: attemptId });
   fail(error);
@@ -185,6 +168,9 @@ export async function submitQuizEvaluation(attemptId: string, answers: { questio
   fail(error);
 }
 
+/** Question ratée, telle que l'enfant la voit quand la correction est désactivée : énoncé + SA réponse, rien d'autre. */
+export type MissedItem = { question_id: string; position: number; prompt: string; chosen_text: string | null };
+/** Correction complète (réglage activé par le parent à la validation). Indices = positions affichées à l'enfant. */
 export type CorrectionItem = {
   question_id: string;
   position: number;
@@ -197,12 +183,15 @@ export type CorrectionItem = {
 };
 export type ChildQuizResult = {
   status: QuizAttemptStatus;
-  kind: QuizAttemptKind;
   set_id: string;
   /** Présents UNIQUEMENT une fois la tentative validée. */
   score?: number;
   total?: number;
   validated_at?: string;
+  show_correction?: boolean;
+  /** Correction désactivée : questions ratées seulement. */
+  missed?: MissedItem[];
+  /** Correction activée : toutes les questions avec bonne réponse et explication. */
   questions?: CorrectionItem[];
 };
 export async function fetchChildResult(attemptId: string): Promise<ChildQuizResult> {
@@ -211,7 +200,7 @@ export async function fetchChildResult(attemptId: string): Promise<ChildQuizResu
   return data as unknown as ChildQuizResult;
 }
 
-export type HistoryRow = { attempt_id: string; kind: QuizAttemptKind; validated_at: string; score: number; total: number };
+export type HistoryRow = { attempt_id: string; validated_at: string; score: number; total: number };
 export async function fetchChildHistory(setId: string): Promise<HistoryRow[]> {
   const { data, error } = await supabase.rpc('child_quiz_history', { p_set: setId });
   fail(error);
