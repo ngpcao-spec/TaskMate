@@ -348,7 +348,9 @@ test.describe('révisions (D-055)', () => {
     await parent.getByRole('button', { name: 'Cho làm lại bài kiểm tra' }).click();
     await open(child, '/more/revisions');
     await child.getByRole('button', { name: new RegExp(setTitle) }).click();
-    await child.getByRole('button', { name: 'Làm bài kiểm tra' }).click();
+    // la relance crée une tentative ouverte côté serveur : l'enfant la REPREND (il ne peut pas en démarrer une lui-même)
+    await expect(child.getByRole('button', { name: 'Làm bài kiểm tra', exact: true })).toHaveCount(0);
+    await child.getByRole('button', { name: 'Làm tiếp bài kiểm tra' }).click();
     await child.getByRole('radio', { name: '2', exact: true }).click();
     await child.getByRole('radio', { name: '3', exact: true }).click(); // faux
     await child.getByRole('button', { name: 'Nộp bài' }).click();
