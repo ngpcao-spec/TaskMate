@@ -332,7 +332,7 @@ test.describe('révisions (D-055)', () => {
     // l'enfant ne peut pas relancer seul une évaluation ; il voit toujours l'attente
     await open(child, '/more/revisions');
     await child.getByRole('button', { name: new RegExp(setTitle) }).click();
-    await expect(child.getByText('Đã nộp, chờ phụ huynh duyệt')).toBeVisible();
+    await expect(child.getByRole('heading', { name: 'Đã nộp, chờ phụ huynh duyệt' })).toBeVisible();
     await expect(child.getByRole('button', { name: 'Làm bài kiểm tra' })).toHaveCount(0);
 
     // 5. parent : relit le détail puis valide
