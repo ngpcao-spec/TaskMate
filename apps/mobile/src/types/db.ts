@@ -304,6 +304,192 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"quiz_answer_keys": {
+                  Row: {
+                    "correct_index": number,"explanation": string | null,"family_id": string,"question_id": string
+                  }
+                  Insert: {
+                    "correct_index": number,"explanation"?: string | null,"family_id": string,"question_id": string
+                  }
+                  Update: {
+                    "correct_index"?: number,"explanation"?: string | null,"family_id"?: string,"question_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "quiz_answer_keys_family_id_fkey"
+      columns: ["family_id"]
+isOneToOne: false
+      referencedRelation: "families"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quiz_answer_keys_question_id_fkey"
+      columns: ["question_id"]
+isOneToOne: true
+      referencedRelation: "quiz_questions"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"quiz_answers": {
+                  Row: {
+                    "answered_at": string,"attempt_id": string,"child_id": string,"choice_index": number | null,"family_id": string,"is_correct": boolean,"question_id": string
+                  }
+                  Insert: {
+                    "answered_at"?: string,"attempt_id": string,"child_id": string,"choice_index"?: number | null,"family_id": string,"is_correct": boolean,"question_id": string
+                  }
+                  Update: {
+                    "answered_at"?: string,"attempt_id"?: string,"child_id"?: string,"choice_index"?: number | null,"family_id"?: string,"is_correct"?: boolean,"question_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "quiz_answers_attempt_id_fkey"
+      columns: ["attempt_id"]
+isOneToOne: false
+      referencedRelation: "quiz_attempts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quiz_answers_family_id_fkey"
+      columns: ["family_id"]
+isOneToOne: false
+      referencedRelation: "families"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quiz_answers_question_id_fkey"
+      columns: ["question_id"]
+isOneToOne: false
+      referencedRelation: "quiz_questions"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"quiz_attempts": {
+                  Row: {
+                    "child_id": string,"created_at": string,"family_id": string,"id": string,"kind": Database["public"]['Enums']["quiz_attempt_kind"],"relaunched_by": string | null,"set_id": string,"started_at": string,"status": Database["public"]['Enums']["quiz_attempt_status"],"submitted_at": string | null,"updated_at": string,"validated_at": string | null,"validated_by": string | null
+                  }
+                  Insert: {
+                    "child_id": string,"created_at"?: string,"family_id": string,"id"?: string,"kind": Database["public"]['Enums']["quiz_attempt_kind"],"relaunched_by"?: string | null,"set_id": string,"started_at"?: string,"status"?: Database["public"]['Enums']["quiz_attempt_status"],"submitted_at"?: string | null,"updated_at"?: string,"validated_at"?: string | null,"validated_by"?: string | null
+                  }
+                  Update: {
+                    "child_id"?: string,"created_at"?: string,"family_id"?: string,"id"?: string,"kind"?: Database["public"]['Enums']["quiz_attempt_kind"],"relaunched_by"?: string | null,"set_id"?: string,"started_at"?: string,"status"?: Database["public"]['Enums']["quiz_attempt_status"],"submitted_at"?: string | null,"updated_at"?: string,"validated_at"?: string | null,"validated_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "quiz_attempts_child_id_family_id_fkey"
+      columns: ["child_id","family_id"]
+isOneToOne: false
+      referencedRelation: "child_balances"
+      referencedColumns: ["child_id","family_id"]
+    },{
+      foreignKeyName: "quiz_attempts_child_id_family_id_fkey"
+      columns: ["child_id","family_id"]
+isOneToOne: false
+      referencedRelation: "children"
+      referencedColumns: ["id","family_id"]
+    },{
+      foreignKeyName: "quiz_attempts_family_id_fkey"
+      columns: ["family_id"]
+isOneToOne: false
+      referencedRelation: "families"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quiz_attempts_relaunched_by_fkey"
+      columns: ["relaunched_by"]
+isOneToOne: false
+      referencedRelation: "members"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quiz_attempts_set_id_child_id_fkey"
+      columns: ["set_id","child_id"]
+isOneToOne: false
+      referencedRelation: "quiz_sets"
+      referencedColumns: ["id","child_id"]
+    },{
+      foreignKeyName: "quiz_attempts_validated_by_fkey"
+      columns: ["validated_by"]
+isOneToOne: false
+      referencedRelation: "members"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"quiz_questions": {
+                  Row: {
+                    "choices": (string)[],"created_at": string,"family_id": string,"id": string,"position": number,"prompt": string,"set_id": string,"updated_at": string
+                  }
+                  Insert: {
+                    "choices": (string)[],"created_at"?: string,"family_id": string,"id"?: string,"position": number,"prompt": string,"set_id": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "choices"?: (string)[],"created_at"?: string,"family_id"?: string,"id"?: string,"position"?: number,"prompt"?: string,"set_id"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "quiz_questions_set_id_family_id_fkey"
+      columns: ["set_id","family_id"]
+isOneToOne: false
+      referencedRelation: "quiz_sets"
+      referencedColumns: ["id","family_id"]
+    }
+                  ]
+                },"quiz_results": {
+                  Row: {
+                    "attempt_id": string,"child_id": string,"family_id": string,"score": number,"total": number
+                  }
+                  Insert: {
+                    "attempt_id": string,"child_id": string,"family_id": string,"score": number,"total": number
+                  }
+                  Update: {
+                    "attempt_id"?: string,"child_id"?: string,"family_id"?: string,"score"?: number,"total"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "quiz_results_attempt_id_fkey"
+      columns: ["attempt_id"]
+isOneToOne: true
+      referencedRelation: "quiz_attempts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quiz_results_family_id_fkey"
+      columns: ["family_id"]
+isOneToOne: false
+      referencedRelation: "families"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"quiz_sets": {
+                  Row: {
+                    "child_id": string,"created_at": string,"created_by": string,"deleted_at": string | null,"family_id": string,"id": string,"status": Database["public"]['Enums']["quiz_status"],"subject": string | null,"title": string,"updated_at": string
+                  }
+                  Insert: {
+                    "child_id": string,"created_at"?: string,"created_by": string,"deleted_at"?: string | null,"family_id": string,"id"?: string,"status"?: Database["public"]['Enums']["quiz_status"],"subject"?: string | null,"title": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "child_id"?: string,"created_at"?: string,"created_by"?: string,"deleted_at"?: string | null,"family_id"?: string,"id"?: string,"status"?: Database["public"]['Enums']["quiz_status"],"subject"?: string | null,"title"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "quiz_sets_child_id_family_id_fkey"
+      columns: ["child_id","family_id"]
+isOneToOne: false
+      referencedRelation: "child_balances"
+      referencedColumns: ["child_id","family_id"]
+    },{
+      foreignKeyName: "quiz_sets_child_id_family_id_fkey"
+      columns: ["child_id","family_id"]
+isOneToOne: false
+      referencedRelation: "children"
+      referencedColumns: ["id","family_id"]
+    },{
+      foreignKeyName: "quiz_sets_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "members"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quiz_sets_family_id_fkey"
+      columns: ["family_id"]
+isOneToOne: false
+      referencedRelation: "families"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"recurrences": {
                   Row: {
                     "category": Database["public"]['Enums']["task_category"],"child_id": string,"created_at": string,"created_by": string,"deleted_at": string | null,"end_time": string | null,"ends_on": string | null,"family_id": string,"id": string,"note": string | null,"points": number,"rule": Database["public"]['Enums']["recurrence_rule"],"start_time": string | null,"starts_on": string,"time_kind": Database["public"]['Enums']["time_kind"],"title": string,"updated_at": string,"weekdays": (number)[] | null
@@ -510,6 +696,11 @@ isOneToOne: false
 "cancel_reward_request":
 { Args: { "p_request_id": string }; Returns: undefined
                            },
+"check_quiz_answer":
+{ Args: { "p_attempt": string,"p_choice": number,"p_question": string }; Returns: {
+              "correct": boolean,"correct_index": number,"explanation": string
+            }[]
+                           },
 "child_account_target":
 { Args: { "p_child_id": string }; Returns: Json
                            },
@@ -528,11 +719,32 @@ isOneToOne: false
 "child_pending_task_points":
 { Args: { "p_child": string }; Returns: number
                            },
+"child_quiz_history":
+{ Args: { "p_set": string }; Returns: {
+              "attempt_id": string,"kind": Database["public"]['Enums']["quiz_attempt_kind"],"score": number,"total": number,"validated_at": string
+            }[]
+                           },
+"child_quiz_questions":
+{ Args: { "p_set": string }; Returns: {
+              "choices": (string)[],"position": number,"prompt": string,"question_id": string
+            }[]
+                           },
+"child_quiz_result":
+{ Args: { "p_attempt": string }; Returns: Json
+                           },
+"child_quiz_sets":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "can_start_evaluation": boolean,"evaluation_attempt_id": string,"evaluation_status": Database["public"]['Enums']["quiz_attempt_status"],"question_count": number,"set_id": string,"subject": string,"title": string
+            }[]
+                           },
 "child_reserved":
 { Args: { "p_child": string }; Returns: number
                            },
 "complete_task":
 { Args: { "p_task_id": string,"p_tx_id": string }; Returns: undefined
+                           },
+"copy_quiz_set":
+{ Args: { "p_child": string,"p_new_set": string,"p_source": string }; Returns: undefined
                            },
 "create_family":
 { Args: { "p_display_name": string,"p_name": string,"p_timezone"?: string }; Returns: string
@@ -543,6 +755,9 @@ isOneToOne: false
 "delete_family":
 { Args: Record<PropertyKey, never>; Returns: (string)[]
                            },
+"delete_quiz_question":
+{ Args: { "p_id": string }; Returns: undefined
+                           },
 "diagnostics":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
@@ -551,6 +766,11 @@ isOneToOne: false
                            },
 "family_today":
 { Args: { "p_family": string,"p_now"?: string }; Returns: string
+                           },
+"finish_quiz_practice":
+{ Args: { "p_attempt": string }; Returns: {
+              "score": number,"total": number
+            }[]
                            },
 "generate_all_recurrences":
 { Args: { "p_now"?: string }; Returns: number
@@ -588,6 +808,66 @@ isOneToOne: false
 "my_role":
 { Args: Record<PropertyKey, never>; Returns: Database["public"]['Enums']["member_role"]
                            },
+"quiz_choices_valid":
+{ Args: { "c": (string)[] }; Returns: boolean
+                           },
+"quiz_editable_set":
+{ Args: { "p_family": string,"p_set": string }; Returns: {
+              "child_id": string,
+"created_at": string,
+"created_by": string,
+"deleted_at": string | null,
+"family_id": string,
+"id": string,
+"status": Database["public"]['Enums']["quiz_status"],
+"subject": string | null,
+"title": string,
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "quiz_sets"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"quiz_require_child":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "child_id": string | null,
+"created_at": string,
+"deleted_at": string | null,
+"display_name": string,
+"family_id": string,
+"id": string,
+"revoked_at": string | null,
+"role": Database["public"]['Enums']["member_role"],
+"updated_at": string,
+"user_id": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "members"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"quiz_require_parent":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "child_id": string | null,
+"created_at": string,
+"deleted_at": string | null,
+"display_name": string,
+"family_id": string,
+"id": string,
+"revoked_at": string | null,
+"role": Database["public"]['Enums']["member_role"],
+"updated_at": string,
+"user_id": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "members"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "recurrence_matches":
 { Args: { "p_day": string,"r": Database["public"]['Tables']["recurrences"]['Row'] }; Returns: boolean
                            },
@@ -606,8 +886,14 @@ isOneToOne: false
 "reject_task":
 { Args: { "p_note"?: string,"p_task_id": string }; Returns: undefined
                            },
+"relaunch_quiz_evaluation":
+{ Args: { "p_attempt": string,"p_set": string }; Returns: undefined
+                           },
 "remove_child_account":
 { Args: { "p_child_id": string }; Returns: string
+                           },
+"reorder_quiz_questions":
+{ Args: { "p_ids": (string)[],"p_set": string }; Returns: undefined
                            },
 "request_reward":
 { Args: { "p_request_id": string,"p_reward_id": string }; Returns: undefined
@@ -643,6 +929,18 @@ isOneToOne: false
 "set_child_password":
 { Args: { "p_child_id": string,"p_password": string }; Returns: undefined
                            },
+"set_quiz_status":
+{ Args: { "p_set": string,"p_status": Database["public"]['Enums']["quiz_status"] }; Returns: undefined
+                           },
+"start_quiz_evaluation":
+{ Args: { "p_attempt": string,"p_set": string }; Returns: undefined
+                           },
+"start_quiz_practice":
+{ Args: { "p_attempt": string,"p_set": string }; Returns: undefined
+                           },
+"submit_quiz_evaluation":
+{ Args: { "p_answers": Json,"p_attempt": string }; Returns: undefined
+                           },
 "sync_recurrence":
 { Args: { "p_now"?: string,"p_recurrence": string }; Returns: undefined
                            },
@@ -652,12 +950,18 @@ isOneToOne: false
 "unregister_web_push":
 { Args: { "p_endpoint": string }; Returns: undefined
                            },
+"upsert_quiz_question":
+{ Args: { "p_choices": (string)[],"p_correct": number,"p_explanation": string,"p_id": string,"p_position": number,"p_prompt": string,"p_set": string }; Returns: undefined
+                           },
+"validate_quiz_attempt":
+{ Args: { "p_attempt": string }; Returns: undefined
+                           },
 "validate_task":
 { Args: { "p_task_id": string,"p_tx_id": string }; Returns: undefined
                            }
           }
           Enums: {
-            "member_role": "parent"|"child","point_reason": "task_validated"|"task_unvalidated"|"reward_redeemed"|"manual_adjust","recurrence_rule": "daily"|"weekdays","request_status": "pending"|"approved"|"rejected"|"cancelled"|"expired","task_category": "study"|"sport"|"chores"|"personal"|"other","time_kind": "range"|"deadline"|"anytime"
+            "member_role": "parent"|"child","point_reason": "task_validated"|"task_unvalidated"|"reward_redeemed"|"manual_adjust","quiz_attempt_kind": "practice"|"evaluation","quiz_attempt_status": "in_progress"|"submitted"|"validated","quiz_status": "draft"|"published","recurrence_rule": "daily"|"weekdays","request_status": "pending"|"approved"|"rejected"|"cancelled"|"expired","task_category": "study"|"sport"|"chores"|"personal"|"other","time_kind": "range"|"deadline"|"anytime"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -777,7 +1081,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "member_role": ["parent", "child"],"point_reason": ["task_validated", "task_unvalidated", "reward_redeemed", "manual_adjust"],"recurrence_rule": ["daily", "weekdays"],"request_status": ["pending", "approved", "rejected", "cancelled", "expired"],"task_category": ["study", "sport", "chores", "personal", "other"],"time_kind": ["range", "deadline", "anytime"]
+            "member_role": ["parent", "child"],"point_reason": ["task_validated", "task_unvalidated", "reward_redeemed", "manual_adjust"],"quiz_attempt_kind": ["practice", "evaluation"],"quiz_attempt_status": ["in_progress", "submitted", "validated"],"quiz_status": ["draft", "published"],"recurrence_rule": ["daily", "weekdays"],"request_status": ["pending", "approved", "rejected", "cancelled", "expired"],"task_category": ["study", "sport", "chores", "personal", "other"],"time_kind": ["range", "deadline", "anytime"]
           }
         }
 } as const

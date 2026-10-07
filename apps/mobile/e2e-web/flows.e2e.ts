@@ -255,6 +255,115 @@ test.describe('renouveler une tâche (D-054)', () => {
   });
 });
 
+test.describe('révisions (D-055)', () => {
+  test('le parent crée et publie, l\'enfant s\'entraîne puis passe l\'évaluation, le parent valide, l\'enfant voit son résultat', async ({ browser }) => {
+    test.setTimeout(240_000);
+    const family = await createFamily();
+    const setTitle = title('Phân số');
+
+    // 1. parent : crée un jeu (2 questions) pour Minh et le publie
+    const parentCtx = await browser.newContext();
+    await signInContext(parentCtx, family.parent);
+    const parent = await parentCtx.newPage();
+    trace(parent, 'parent-revisions');
+    await open(parent, '/more/revisions');
+    await parent.getByRole('button', { name: 'Tạo bộ câu hỏi' }).click();
+    await parent.getByLabel('Tiêu đề').fill(setTitle);
+    await parent.getByRole('button', { name: 'Tạo', exact: true }).click();
+    const addQuestion = async (prompt: string, choices: string[], correct: number) => {
+      await parent.getByRole('button', { name: 'Thêm câu hỏi' }).click();
+      await parent.getByLabel('Nội dung câu hỏi').fill(prompt);
+      for (const [i, c] of choices.entries()) await parent.getByLabel(`Lựa chọn ${i + 1}`, { exact: true }).fill(c);
+      await parent.getByRole('radio', { name: `Đáp án đúng: lựa chọn ${correct}` }).click();
+      await parent.getByRole('button', { name: 'Lưu câu hỏi' }).click();
+      await expect(parent.getByText(prompt)).toBeVisible();
+    };
+    await addQuestion('1 + 1 = ?', ['1', '2', '3'], 2);
+    await addQuestion('2 + 2 = ?', ['3', '4', '5'], 2);
+    await parent.getByRole('button', { name: 'Đăng cho bạn ấy' }).click();
+    await expect(parent.getByRole('button', { name: 'Gỡ xuống' })).toBeVisible();
+
+    // 2. Khang (l'autre enfant) ne voit rien ; Minh voit son jeu
+    const khangCtx = await browser.newContext();
+    await signInContext(khangCtx, family.khang);
+    const khang = await khangCtx.newPage();
+    await open(khang, '/more/revisions');
+    await expect(khang.getByText('Chưa có bộ câu hỏi nào để ôn tập.')).toBeVisible();
+    await expect(khang.getByText(setTitle)).toHaveCount(0);
+
+    const childCtx = await browser.newContext();
+    await signInContext(childCtx, family.minh);
+    const child = await childCtx.newPage();
+    trace(child, 'enfant-revisions');
+    await open(child, '/more/revisions');
+    await child.getByRole('button', { name: new RegExp(setTitle) }).click();
+
+    // 3. entraînement : retour immédiat
+    await child.getByRole('button', { name: 'Luyện tập', exact: true }).click();
+    await child.getByRole('radio', { name: '2', exact: true }).click();
+    await expect(child.getByText('Đúng rồi!')).toBeVisible();
+    await child.getByRole('button', { name: 'Câu tiếp' }).click();
+    await child.getByRole('radio', { name: '3', exact: true }).click();
+    await expect(child.getByText('Chưa đúng')).toBeVisible();
+    await expect(child.getByText('Đáp án đúng: 4')).toBeVisible();
+    await child.getByRole('button', { name: 'Xong' }).click();
+    await expect(child.getByText('Điểm: 1/2')).toBeVisible();
+
+    // 4. évaluation : aucune correction, aucun score, « chờ phụ huynh duyệt »
+    await open(child, '/more/revisions');
+    await child.getByRole('button', { name: new RegExp(setTitle) }).click();
+    await child.getByRole('button', { name: 'Làm bài kiểm tra' }).click();
+    await child.getByRole('radio', { name: '2', exact: true }).click(); // juste
+    await child.getByRole('radio', { name: '5', exact: true }).click(); // faux
+    await expect(child.getByText('Đúng rồi!')).toHaveCount(0);
+    await child.getByRole('button', { name: 'Nộp bài' }).click();
+    await expect(child.getByText('Đã nộp, chờ phụ huynh duyệt')).toBeVisible();
+    await expect(child.getByText(/Điểm:/)).toHaveCount(0);
+    await expect
+      .poll(async () => {
+        const { data } = await serviceClient().from('quiz_attempts').select('id, status').eq('family_id', family.familyId).eq('kind', 'evaluation');
+        return data?.map((a) => a.status).join(',');
+      })
+      .toBe('submitted');
+    const { data: attempt } = await serviceClient().from('quiz_attempts').select('id').eq('family_id', family.familyId).eq('kind', 'evaluation').single();
+    const { data: score } = await serviceClient().from('quiz_results').select('score, total').eq('attempt_id', attempt?.id as string).single();
+    expect(score).toMatchObject({ score: 1, total: 2 }); // calculé par le serveur
+
+    // l'enfant ne peut pas relancer seul une évaluation ; il voit toujours l'attente
+    await open(child, '/more/revisions');
+    await child.getByRole('button', { name: new RegExp(setTitle) }).click();
+    await expect(child.getByText('Đã nộp, chờ phụ huynh duyệt')).toBeVisible();
+    await expect(child.getByRole('button', { name: 'Làm bài kiểm tra' })).toHaveCount(0);
+
+    // 5. parent : relit le détail puis valide
+    await open(parent, '/more/revisions');
+    await parent.getByRole('button', { name: new RegExp(`${setTitle}, Chờ duyệt`) }).click();
+    await expect(parent.getByText('1/2').first()).toBeVisible();
+    await expect(parent.getByText('Đáp án đúng: 4')).toBeVisible();
+    await parent.getByRole('button', { name: 'Duyệt kết quả' }).click();
+    await expect.poll(async () => (await serviceClient().from('quiz_attempts').select('status').eq('id', attempt?.id as string).single()).data?.status).toBe('validated');
+
+    // 6. enfant : voit enfin son score et la correction
+    await open(child, '/more/revisions');
+    await child.getByRole('button', { name: new RegExp(setTitle) }).click();
+    await child.getByRole('button', { name: 'Xem kết quả' }).click();
+    await expect(child.getByText('Điểm: 1/2')).toBeVisible();
+    await expect(child.getByText('Đáp án đúng: 4')).toBeVisible();
+  });
+
+  test('un enfant n\'a aucun accès aux écrans parent des révisions', async ({ browser }) => {
+    const family = await createFamily();
+    const ctx = await browser.newContext();
+    await signInContext(ctx, family.minh);
+    const page = await ctx.newPage();
+    await open(page, '/more/revisions');
+    await expect(page.getByRole('button', { name: 'Tạo bộ câu hỏi' })).toHaveCount(0);
+    await expect(page.getByRole('tab', { name: /tuổi/ })).toHaveCount(0);
+    await open(page, '/quiz/new');
+    await expect(page.getByText('Bộ câu hỏi mới')).toHaveCount(0);
+  });
+});
+
 test.describe('droits de l\'enfant', () => {
   test('l\'enfant ne voit que ses données (D-052) et ne peut pas créer de tâche', async ({ browser }) => {
     const family = await createFamily();

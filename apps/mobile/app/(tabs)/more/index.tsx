@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { Bell, Check, ChevronRight, ListChecks, Plus, Settings, Star, Target } from 'lucide-react-native';
+import { Bell, BookOpen, Check, ChevronRight, ListChecks, Plus, Settings, Star, Target } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Card, Screen, ScreenHeader } from '@/components/ui';
@@ -8,7 +8,7 @@ import { todayInTz } from '@/domain/family-time';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { colors, MIN_TARGET, typography } from '@/theme/tokens';
 
-type Href = '/more/tasks' | '/more/goals' | '/more/points' | '/more/notification-settings' | '/more/settings';
+type Href = '/more/tasks' | '/more/goals' | '/more/revisions' | '/more/points' | '/more/notification-settings' | '/more/settings';
 
 /** Hồ sơ : cartes des enfants (parent) / sa carte + celle du frère (enfant) et menu (SPEC §3.5). */
 export default function ProfileScreen() {
@@ -20,6 +20,7 @@ export default function ProfileScreen() {
   const menu: { key: string; label: string; href: Href; icon: typeof Star; tint?: string }[] = [
     { key: 'tasks', label: t('profile.tasks'), href: '/more/tasks', icon: ListChecks },
     { key: 'goals', label: t('profile.goals'), href: '/more/goals', icon: Target },
+    { key: 'revisions', label: t('profile.revisions'), href: '/more/revisions', icon: BookOpen },
     { key: 'points', label: t('profile.points'), href: '/more/points', icon: Star, tint: colors.warning },
     { key: 'notifications', label: t('profile.notifications'), href: '/more/notification-settings', icon: Bell },
     { key: 'settings', label: t('profile.settings'), href: '/more/settings', icon: Settings },

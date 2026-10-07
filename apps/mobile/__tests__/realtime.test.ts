@@ -36,7 +36,7 @@ describe('subscribeFamilyRealtime', () => {
     const filters = mockChannel.on.mock.calls.map((c: unknown[]) => (c[1] as { filter: string }).filter);
     expect(new Set(filters)).toEqual(new Set(['family_id=eq.fam-1']));
     expect(Object.keys(mockHandlers).sort()).toEqual(
-      ['children', 'goals', 'point_transactions', 'reward_requests', 'rewards', 'tasks'],
+      ['children', 'goals', 'point_transactions', 'quiz_attempts', 'quiz_sets', 'reward_requests', 'rewards', 'tasks'],
     );
   });
 

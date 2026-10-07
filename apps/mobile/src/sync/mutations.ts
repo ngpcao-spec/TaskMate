@@ -1,6 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query';
 import { newId } from '@/api/ids';
-import { taskKeys } from '@/api/keys';
+import { quizKeys, taskKeys } from '@/api/keys';
 import {
   createTasks,
   deleteTask,
@@ -12,6 +12,7 @@ import {
   type NewTask,
   type TaskPatch,
 } from '@/api/tasks';
+import { createQuizSet, startQuizEvaluation, submitQuizEvaluation, validateQuizAttempt, type NewQuizSet } from '@/api/quizzes';
 import { isTransientError } from '@/domain/errors';
 import { dateInRange, optimisticTask } from '@/domain/optimistic-task';
 import { optimisticToggle } from '@/domain/task-state';
@@ -27,6 +28,10 @@ export const mutationKeys = {
   deleteTask: ['deleteTask'] as const,
   validateTask: ['validateTask'] as const,
   rejectTask: ['rejectTask'] as const,
+  createQuizSet: ['createQuizSet'] as const,
+  startQuizEvaluation: ['startQuizEvaluation'] as const,
+  submitQuizEvaluation: ['submitQuizEvaluation'] as const,
+  validateQuizAttempt: ['validateQuizAttempt'] as const,
 };
 
 /** `asParent` : un parent qui coche valide d'office ; un enfant ne fait jamais que passer la tâche en attente. */
@@ -35,6 +40,11 @@ export type ValidateVars = { task: TaskRow; txId: string };
 export type RejectVars = { task: TaskRow; note?: string };
 export type CreateVars = { familyId: string; memberId: string; tasks: NewTask[] };
 export type UpdateVars = { task: TaskRow; patch: TaskPatch };
+/** Révisions (D-055) : écritures mises en file hors ligne ; les ids sont fixés à la création → rejeu idempotent côté RPC. */
+export type CreateQuizSetVars = NewQuizSet;
+export type StartEvaluationVars = { setId: string; attemptId: string };
+export type SubmitEvaluationVars = { attemptId: string; answers: { question_id: string; choice: number | null }[] };
+export type ValidateAttemptVars = { attemptId: string };
 type SnapshotCtx = { snapshot?: ReturnType<typeof snapshotTasks> };
 
 /** Variables d'une coche : le `txId` est tiré ici, une seule fois — tout rejeu (retry, file hors ligne) reste idempotent. */
@@ -194,5 +204,31 @@ export function registerMutationDefaults(
     },
     onSettled: (_d: unknown, _e: unknown, task: TaskRow) =>
       void queryClient.invalidateQueries({ queryKey: taskKeys.all(task.child_id) }),
+  });
+
+  const refreshQuiz = () => void queryClient.invalidateQueries({ queryKey: quizKeys.all });
+  queryClient.setMutationDefaults(mutationKeys.createQuizSet, {
+    ...common,
+    mutationFn: (v: CreateQuizSetVars) => createQuizSet(v),
+    onError: () => toast(i18n.t('common.error'), 'error'),
+    onSettled: refreshQuiz,
+  });
+  queryClient.setMutationDefaults(mutationKeys.startQuizEvaluation, {
+    ...common,
+    mutationFn: ({ setId, attemptId }: StartEvaluationVars) => startQuizEvaluation(setId, attemptId),
+    onError: () => toast(i18n.t('common.error'), 'error'),
+    onSettled: refreshQuiz,
+  });
+  queryClient.setMutationDefaults(mutationKeys.submitQuizEvaluation, {
+    ...common,
+    mutationFn: ({ attemptId, answers }: SubmitEvaluationVars) => submitQuizEvaluation(attemptId, answers),
+    onError: () => toast(i18n.t('common.error'), 'error'),
+    onSettled: refreshQuiz,
+  });
+  queryClient.setMutationDefaults(mutationKeys.validateQuizAttempt, {
+    ...common,
+    mutationFn: ({ attemptId }: ValidateAttemptVars) => validateQuizAttempt(attemptId),
+    onError: () => toast(i18n.t('common.error'), 'error'),
+    onSettled: refreshQuiz,
   });
 }

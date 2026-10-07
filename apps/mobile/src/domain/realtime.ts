@@ -1,5 +1,5 @@
 /** Table publiée en Realtime → clés de requêtes TanStack à invalider (SPEC §6 : « invalidation des queries »). */
-export type RealtimeTable = 'tasks' | 'goals' | 'rewards' | 'reward_requests' | 'point_transactions' | 'children';
+export type RealtimeTable = 'tasks' | 'goals' | 'rewards' | 'reward_requests' | 'point_transactions' | 'children' | 'quiz_sets' | 'quiz_attempts';
 
 export const REALTIME_TABLES: readonly RealtimeTable[] = [
   'tasks',
@@ -8,6 +8,8 @@ export const REALTIME_TABLES: readonly RealtimeTable[] = [
   'reward_requests',
   'point_transactions',
   'children',
+  'quiz_sets',
+  'quiz_attempts',
 ];
 
 type Row = { child_id?: string | null; id?: string } | null | undefined;
@@ -30,5 +32,9 @@ export function invalidationsFor(table: RealtimeTable, row: Row): readonly (read
       return [['balance'], ['transactions']];
     case 'children':
       return [['me']];
+    // révisions : jeux publiés/dépubliés, tentatives soumises/validées (le parent voit arriver une évaluation, l'enfant sa validation)
+    case 'quiz_sets':
+    case 'quiz_attempts':
+      return [['quiz']];
   }
 }
