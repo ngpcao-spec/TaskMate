@@ -362,6 +362,9 @@ export function TaskForm({ task }: Props) {
         </Card>
       ) : null}
       <Button label={t('common.save')} onPress={onSubmit} disabled={!formState.isValid || !perms.canEdit} />
+      {task && isParent ? (
+        <Button variant="secondary" label={t('renew.entry')} onPress={() => router.push({ pathname: '/task/renew', params: { id: task.id } })} />
+      ) : null}
       {task?.recurrence_id && isParent ? (
         <Button
           variant="secondary"

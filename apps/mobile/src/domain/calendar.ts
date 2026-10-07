@@ -39,6 +39,9 @@ export function formatWeekdayLabel(date: string, lang: CalendarLanguage): string
   return format(parseISO(date), lang === 'vi' ? 'EEEEE' : 'EEEEEE', { locale: LOCALES[lang] });
 }
 
+/** Date courte neutre « 02/07/2026 » (résumés), identique dans les trois langues. */
+export const formatShortDate = (date: string): string => format(parseISO(date), 'dd/MM/yyyy');
+
 export const formatDayNumber = (date: string): string => format(parseISO(date), 'd');
 
 export function formatMonthTitle(date: string, lang: CalendarLanguage): string {

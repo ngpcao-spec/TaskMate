@@ -76,6 +76,8 @@ export type RecurrenceFields = Omit<TaskInsertFields, 'date'> & {
   rule: 'daily' | 'weekdays';
   weekdays: number[] | null;
   starts_on: string;
+  /** Fin de série (incluse) ; absent/null = sans fin. Posé par « Renouveler » (D-054). */
+  ends_on?: string | null;
 };
 
 /** Récurrence(s) à créer (une par enfant) quand `repeat` ≠ `none` ; `date` du formulaire = `starts_on`. */

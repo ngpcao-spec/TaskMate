@@ -177,6 +177,55 @@
     "notePlaceholder": "Ajouter une note…",
     "todayWord": "Aujourd'hui"
   },
+  "renew": {
+    "entry": "Dupliquer / Renouveler",
+    "title": "Renouveler la tâche",
+    "source": "Tâche d'origine : {{title}}",
+    "mode": {
+      "days": "Autres jours",
+      "weekly": "Chaque semaine"
+    },
+    "days": {
+      "hint": "Choisissez un ou plusieurs jours",
+      "taken": "déjà prévue",
+      "pickMonth": "Mois",
+      "legendTaken": "Point : cette tâche existe déjà ce jour-là"
+    },
+    "weekly": {
+      "weekdays": "Jours de la semaine",
+      "start": "À partir du",
+      "every": "Chaque semaine…",
+      "end": {
+        "weeks": "Pendant N semaines",
+        "date": "Jusqu'au",
+        "never": "Sans fin"
+      },
+      "weeksValue": "{{count}} semaine(s)",
+      "weeksLess": "Une semaine de moins",
+      "weeksMore": "Une semaine de plus",
+      "endDate": "Date de fin"
+    },
+    "summary": {
+      "none": "Choisissez au moins un jour.",
+      "oneOff": "{{count}} tâche(s) seront créées, du {{from}} au {{to}}.",
+      "skipped": "{{count}} tâche(s) identique(s) existent déjà et ne seront pas recréées.",
+      "series": "Série hebdomadaire : {{count}} tâche(s), du {{from}} au {{to}}.",
+      "seriesNever": "Série sans fin : les tâches sont créées 14 jours à l'avance ({{count}} sur les 14 prochains jours).",
+      "conflict": "{{count}} tâche(s) identique(s) existent déjà dans les 14 prochains jours et seront doublées.",
+      "conflictConfirm": "Créer quand même malgré les doublons",
+      "tooMany": "Trop de tâches d'un coup (maximum {{max}}). Réduisez les jours, les semaines ou les enfants."
+    },
+    "errors": {
+      "weekdaysRequired": "Choisissez au moins un jour de la semaine",
+      "startPast": "La date de début ne peut pas être passée",
+      "endBeforeStart": "La date de fin doit suivre la date de début",
+      "endTooFar": "Fin trop lointaine (52 semaines maximum)",
+      "weeksInvalid": "Le nombre de semaines va de 1 à 52"
+    },
+    "confirm": "Créer",
+    "created": "{{count}} tâche(s) créée(s)",
+    "seriesCreated": "Série hebdomadaire créée"
+  },
   "sync": {
     "offline": "Hors ligne — les changements seront synchronisés au retour du réseau",
     "pending": "Synchronisation de {{count}} changement(s)…",

@@ -177,6 +177,55 @@
     "notePlaceholder": "Add a note…",
     "todayWord": "Today"
   },
+  "renew": {
+    "entry": "Duplicate / Renew",
+    "title": "Renew task",
+    "source": "Original task: {{title}}",
+    "mode": {
+      "days": "Other days",
+      "weekly": "Every week"
+    },
+    "days": {
+      "hint": "Pick one or more days",
+      "taken": "already planned",
+      "pickMonth": "Month",
+      "legendTaken": "Dot: this task already exists that day"
+    },
+    "weekly": {
+      "weekdays": "Days of the week",
+      "start": "Starting on",
+      "every": "Every week…",
+      "end": {
+        "weeks": "For N weeks",
+        "date": "Until",
+        "never": "No end"
+      },
+      "weeksValue": "{{count}} week(s)",
+      "weeksLess": "One week less",
+      "weeksMore": "One week more",
+      "endDate": "End date"
+    },
+    "summary": {
+      "none": "Pick at least one day.",
+      "oneOff": "{{count}} task(s) will be created, from {{from}} to {{to}}.",
+      "skipped": "{{count}} identical task(s) already exist and will not be recreated.",
+      "series": "Weekly series: {{count}} task(s), from {{from}} to {{to}}.",
+      "seriesNever": "Open-ended series: tasks are created 14 days ahead ({{count}} in the next 14 days).",
+      "conflict": "{{count}} identical task(s) already exist in the next 14 days and will be doubled.",
+      "conflictConfirm": "Create anyway despite duplicates",
+      "tooMany": "Too many tasks at once (maximum {{max}}). Reduce the days, weeks or children."
+    },
+    "errors": {
+      "weekdaysRequired": "Pick at least one weekday",
+      "startPast": "The start date cannot be in the past",
+      "endBeforeStart": "The end date must be after the start date",
+      "endTooFar": "End too far away (52 weeks maximum)",
+      "weeksInvalid": "The number of weeks is 1 to 52"
+    },
+    "confirm": "Create",
+    "created": "{{count}} task(s) created",
+    "seriesCreated": "Weekly series created"
+  },
   "sync": {
     "offline": "Offline — changes will sync when you are back online",
     "pending": "Syncing {{count}} change(s)…",
