@@ -30,10 +30,24 @@ describe('sondes de diagnostic', () => {
     const d = deps();
     const p = await runProbes(d);
     expect(p).toMatchObject({ reachable: true, auth: { google: true, email: true }, realtime: 'SUBSCRIBED' });
-    expect(p.functions).toEqual({ 'child-login': true, 'create-child': true, 'reset-child-password': true, 'delete-child': true, 'delete-account': true, 'send-push': true });
+    expect(p.functions).toEqual({ 'child-login': true, 'create-child': true, 'reset-child-password': true, 'delete-child': true, 'delete-account': true, 'send-push': true, 'generate-questions': true });
     // jamais de POST : delete-account supprime la famille, signup créerait un utilisateur
     expect(d.calls.every((c) => c.method === 'GET')).toBe(true);
     expect(d.calls.filter((c) => c.url.includes('/functions/v1/')).every((c) => c.auth === 'Bearer jwt-parent')).toBe(true);
+  });
+
+  it('IA : le GET de generate-questions renvoie l\'état (configurée, usage du jour) sans aucun appel IA', async () => {
+    const p = await runProbes(deps({}, { '/functions/v1/generate-questions': () => json({ configured: true, model: 'm', usedToday: 4, dailyLimit: 20 }) }));
+    expect(p.ai).toEqual({ configured: true, usedToday: 4, dailyLimit: 20 });
+    expect(p.functions['generate-questions']).toBe(true);
+    const off = await runProbes(deps({}, { '/functions/v1/generate-questions': () => json({ configured: false, usedToday: null, dailyLimit: 20 }) }));
+    expect(off.ai).toEqual({ configured: false, usedToday: null, dailyLimit: 20 });
+    expect((await runProbes(deps({}, { '/functions/v1/generate-questions': () => json({ configured: 'oui' }) }))).ai).toBeNull();
+    expect((await runProbes(deps({}, { '/functions/v1/generate-questions': () => new Response('pas du json', { status: 200 }) }))).ai).toBeNull();
+    expect((await runProbes(deps({}, { '/functions/v1/generate-questions': () => json({ error: 'forbidden' }, 403) }))).ai).toBeNull();
+    const absent = await runProbes(deps({}, { '/functions/v1/generate-questions': () => json({}, 404) }));
+    expect(absent.functions['generate-questions']).toBe(false);
+    expect(absent.ai).toBeNull();
   });
 
   it('fonction absente = 404 ; réseau coupé = non vérifiable', async () => {

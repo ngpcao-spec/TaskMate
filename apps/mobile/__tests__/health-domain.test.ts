@@ -16,7 +16,8 @@ const healthy: Probes = {
   auth: { google: true, email: true },
   diagnostics: { ok: true, data: healthyData },
   realtime: 'SUBSCRIBED',
-  functions: { 'child-login': true, 'create-child': true, 'reset-child-password': true, 'delete-child': true, 'delete-account': true, 'send-push': true },
+  functions: { 'child-login': true, 'create-child': true, 'reset-child-password': true, 'delete-child': true, 'delete-account': true, 'send-push': true, 'generate-questions': true },
+  ai: { configured: true, usedToday: 2, dailyLimit: 20 },
 };
 const env = { supabaseUrl: 'https://olftkozksanvnzlsvwrp.supabase.co', webUrl: 'https://taskmate-rho-nine.vercel.app', vapidPublicKey: 'KEY' };
 const find = (items: ReturnType<typeof evaluateHealth>, id: string) => items.find((i) => i.id === id);
@@ -30,7 +31,15 @@ describe('diagnostic de production', () => {
 
   it('les listes attendues couvrent exactement les types générés (garde de compilation) et les tables Realtime', () => {
     expect(COMPLETENESS).toBe(true);
-    expect(EDGE_FUNCTIONS).toEqual(['child-login', 'create-child', 'reset-child-password', 'delete-child', 'delete-account', 'send-push']);
+    expect(EDGE_FUNCTIONS).toEqual(['child-login', 'create-child', 'reset-child-password', 'delete-child', 'delete-account', 'send-push', 'generate-questions']);
+  });
+
+  it('IA : configurée (usage du jour), non configurée (secret absent), inconnue', () => {
+    expect(find(evaluateHealth(healthy, env), 'ai')).toMatchObject({ status: 'ok', messageKey: 'health.ai.ok', params: { used: '2', limit: '20' } });
+    expect(find(evaluateHealth({ ...healthy, ai: { configured: false, usedToday: 0, dailyLimit: 20 } }, env), 'ai')).toMatchObject({ status: 'warn', messageKey: 'health.ai.notConfigured' });
+    expect(find(evaluateHealth({ ...healthy, ai: null }, env), 'ai')).toMatchObject({ status: 'warn', messageKey: 'health.ai.unknown' });
+    expect(find(evaluateHealth({ ...healthy, ai: { configured: true, usedToday: null, dailyLimit: null } }, env), 'ai')?.params).toEqual({ used: '?', limit: '?' });
+    expect(find(evaluateHealth({ ...healthy, functions: { ...healthy.functions, 'generate-questions': false } }, env), 'fn-generate-questions')).toMatchObject({ status: 'fail' });
   });
 
   it('fournisseur Google désactivé : échec avec la consigne ; activé : OK', () => {
@@ -74,7 +83,7 @@ describe('diagnostic de production', () => {
 
   it('Realtime, Edge Functions et Web Push', () => {
     const items = evaluateHealth(
-      { ...healthy, realtime: 'TIMED_OUT', functions: { 'child-login': true, 'create-child': false, 'reset-child-password': true, 'delete-child': true, 'delete-account': null, 'send-push': true } },
+      { ...healthy, realtime: 'TIMED_OUT', functions: { 'child-login': true, 'create-child': false, 'reset-child-password': true, 'delete-child': true, 'delete-account': null, 'send-push': true, 'generate-questions': true } },
       { ...env, vapidPublicKey: '', webUrl: '' },
     );
     expect(find(items, 'realtime')).toMatchObject({ status: 'fail', params: { status: 'TIMED_OUT' } });

@@ -324,6 +324,50 @@
       "attemptClosed": "Bài này đã kết thúc",
       "notSubmitted": "Bài chưa được nộp"
     },
+    "import": {
+      "entry": "Tạo từ tài liệu",
+      "title": "Tạo câu hỏi từ tài liệu",
+      "intro": "Chọn ảnh chụp, PDF hoặc Word. Tài liệu được gửi tới một dịch vụ AI bên ngoài để tạo câu hỏi trắc nghiệm và KHÔNG được lưu giữ. Các câu hỏi chỉ là bản nháp: bạn xem lại, sửa rồi mới đăng.",
+      "child": "Cho bạn",
+      "subject": "Môn học (không bắt buộc)",
+      "titleField": "Tiêu đề (không bắt buộc)",
+      "count": "Số câu hỏi",
+      "countValue": "{{count}} câu",
+      "less": "Bớt một câu",
+      "more": "Thêm một câu",
+      "takePhoto": "Chụp ảnh",
+      "pickPhotos": "Chọn ảnh",
+      "pickFile": "Chọn PDF hoặc Word",
+      "remove": "Bỏ {{name}}",
+      "selected": "Đã chọn",
+      "none": "Chưa chọn tài liệu nào.",
+      "generate": "Tạo câu hỏi",
+      "generating": "Đang tạo câu hỏi… có thể mất tới một phút.",
+      "needNetwork": "Cần có mạng để tạo câu hỏi.",
+      "unsupported": "Chức năng này chỉ có trong ứng dụng web (PWA).",
+      "done": "Đã tạo {{count}} câu hỏi (bản nháp). Hãy xem lại trước khi đăng.",
+      "truncated": "Tài liệu dài: chỉ phần đầu được dùng.",
+      "errors": {
+        "generic": "Không tạo được câu hỏi. Hãy thử lại.",
+        "notConfigured": "AI chưa được cấu hình. Hãy nhờ người quản trị thêm khóa OPENAI_API_KEY (xem HUMAN_TODO).",
+        "quota": "Đã hết lượt tạo hôm nay ({{used}}/{{limit}}). Thử lại vào ngày mai.",
+        "tooLarge": "Tệp quá lớn.",
+        "totalTooLarge": "Tổng dung lượng các tệp quá lớn.",
+        "tooMany": "Tối đa 5 tệp.",
+        "tooManyPages": "PDF quá nhiều trang (tối đa 20).",
+        "unsupportedType": "Loại tệp không được hỗ trợ (ảnh JPEG, PNG, WebP; PDF; Word .docx).",
+        "unsupportedMix": "Chọn ảnh, HOẶC một PDF, HOẶC một tệp Word — không trộn lẫn.",
+        "unreadable": "Không đọc được tệp này.",
+        "noText": "Tệp Word không có đủ chữ.",
+        "noFile": "Hãy chọn ít nhất một tài liệu.",
+        "noContent": "Không tìm thấy nội dung học tập trong tài liệu.",
+        "aiFailed": "AI không trả về câu hỏi hợp lệ. Hãy thử lại hoặc dùng tài liệu rõ hơn.",
+        "timeout": "Quá thời gian chờ. Hãy thử lại.",
+        "forbidden": "Chỉ phụ huynh của gia đình mới tạo được câu hỏi.",
+        "invalidCount": "Số câu hỏi từ 5 đến 20.",
+        "network": "Không kết nối được máy chủ."
+      }
+    },
     "correctionShown": "Đã hiện đáp án đúng và giải thích cho con.",
     "correctionHidden": "Không hiện đáp án đúng cho con.",
     "showCorrection": "Hiện đáp án đúng cho con"
@@ -592,7 +636,9 @@
       "fn-delete-child": "Edge Function delete-child",
       "fn-delete-account": "Edge Function delete-account",
       "fn-send-push": "Edge Function send-push",
-      "vapid": "Khóa Web Push (VAPID)"
+      "vapid": "Khóa Web Push (VAPID)",
+      "fn-generate-questions": "Edge Function generate-questions",
+      "ai": "AI tạo câu hỏi (Ôn tập)"
     },
     "connection": {
       "ok": "Máy chủ phản hồi ({{url}}).",
@@ -661,6 +707,11 @@
       "ok": "Nhà cung cấp Google đã bật: phụ huynh có thể đăng ký và đăng nhập.",
       "disabled": "Nhà cung cấp Google đang TẮT: phụ huynh mới không đăng ký được. Supabase → Authentication → Sign In / Providers → Google → bật, nhập Client ID và Secret của Google → Save.",
       "unknown": "Không đọc được cài đặt xác thực (khóa công khai sai hoặc mất mạng). Kiểm tra EXPO_PUBLIC_SUPABASE_ANON_KEY."
+    },
+    "ai": {
+      "ok": "AI đã cấu hình (OPENAI_API_KEY có mặt). Hôm nay đã dùng {{used}}/{{limit}} lượt tạo câu hỏi.",
+      "notConfigured": "AI CHƯA cấu hình: thiếu bí mật OPENAI_API_KEY (Supabase → Edge Functions → Secrets). Xem HUMAN_TODO.",
+      "unknown": "Không kiểm tra được trạng thái AI (hàm generate-questions không trả lời)."
     }
   },
   "childAccount": {

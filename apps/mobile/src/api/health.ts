@@ -79,20 +79,41 @@ async function functionDeployed(deps: ProbeDeps, name: EdgeFunctionName, token: 
   return res.status !== 404;
 }
 
+/** `generate-questions` : le GET (parent) renvoie `{ configured, usedToday, dailyLimit }` — présence ET état de l'IA, sans appel IA ni écriture. */
+async function aiStatus(deps: ProbeDeps, token: string | null): Promise<{ deployed: boolean | null; ai: Probes['ai'] }> {
+  const res = await timedFetch(deps, `${deps.supabaseUrl}/functions/v1/generate-questions`, {
+    method: 'GET',
+    headers: { apikey: deps.anonKey, ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+  });
+  if (!res) return { deployed: null, ai: null };
+  if (res.status === 404) return { deployed: false, ai: null };
+  if (!res.ok) return { deployed: true, ai: null };
+  try {
+    const b = (await res.json()) as { configured?: unknown; usedToday?: unknown; dailyLimit?: unknown };
+    if (typeof b.configured !== 'boolean') return { deployed: true, ai: null };
+    return { deployed: true, ai: { configured: b.configured, usedToday: typeof b.usedToday === 'number' ? b.usedToday : null, dailyLimit: typeof b.dailyLimit === 'number' ? b.dailyLimit : null } };
+  } catch {
+    return { deployed: true, ai: null };
+  }
+}
+
 export async function runProbes(deps: ProbeDeps): Promise<Probes> {
   const token = await deps.getAccessToken();
-  const [settings, diag, realtime, ...fns] = await Promise.all([
+  const plain = EDGE_FUNCTIONS.filter((name) => name !== 'generate-questions');
+  const [settings, diag, realtime, ai, ...fns] = await Promise.all([
     authSettings(deps),
     diagnostics(deps),
     deps.realtime(TIMEOUT_MS),
-    ...EDGE_FUNCTIONS.map((name) => functionDeployed(deps, name, token)),
+    aiStatus(deps, token),
+    ...plain.map((name) => functionDeployed(deps, name, token)),
   ]);
   return {
     reachable: settings.reachable,
     auth: settings.auth,
     diagnostics: diag,
     realtime,
-    functions: Object.fromEntries(EDGE_FUNCTIONS.map((name, i) => [name, fns[i]])) as Probes['functions'],
+    functions: { ...Object.fromEntries(plain.map((name, i) => [name, fns[i]])), 'generate-questions': ai.deployed } as Probes['functions'],
+    ai: ai.ai,
   };
 }
 

@@ -29,6 +29,7 @@ function Root() {
           <Stack.Screen name="task/[id]" options={{ presentation: 'modal' }} />
           <Stack.Screen name="quiz/new" options={{ presentation: 'modal' }} />
           <Stack.Screen name="quiz/[id]" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="quiz/import" options={{ presentation: 'modal' }} />
           <Stack.Screen name="quiz/question" options={{ presentation: 'modal' }} />
           <Stack.Screen name="quiz/attempt/[id]" options={{ presentation: 'modal' }} />
           <Stack.Screen name="quiz/evaluate/[id]" options={{ presentation: 'modal' }} />

@@ -5,6 +5,7 @@ import {
   fetchChildResult, fetchParentQuestions, fetchPendingQuizAttempts, fetchQuizSet, fetchQuizSets, fetchSetAttempts, relaunchQuizEvaluation,
   reorderQuestions, setQuizStatus, updateQuizSet, upsertQuestion, type QuestionInput,
 } from '@/api/quizzes';
+import { generateQuestions, type GenerateInput } from '@/api/generate';
 import { serverErrorCode } from '@/api/tasks';
 import { quizErrorKey } from '@/domain/quiz';
 import i18n from '@/i18n';
@@ -55,3 +56,14 @@ export const useCopyQuizSet = () => useOnlineQuizMutation<{ source: string; newS
 export const useRelaunchEvaluation = () => useOnlineQuizMutation<{ setId: string; attemptId: string }>(({ setId, attemptId }) => relaunchQuizEvaluation(setId, attemptId));
 export const useUpdateQuizSet = () => useOnlineQuizMutation<{ id: string; patch: { title?: string; subject?: string | null } }>(({ id, patch }) => updateQuizSet(id, patch));
 export const useDeleteQuizSet = () => useOnlineQuizMutation<string>(deleteQuizSet);
+
+/** Génération par IA depuis un document : en ligne uniquement, jamais rejouée automatiquement (chaque appel consomme le quota du jour). */
+export function useGenerateQuestions() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    networkMode: 'always',
+    retry: false,
+    mutationFn: (input: GenerateInput) => generateQuestions(input),
+    onSettled: () => void queryClient.invalidateQueries({ queryKey: quizKeys.all }),
+  });
+}

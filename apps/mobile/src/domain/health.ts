@@ -8,6 +8,7 @@ type DbFunction = keyof Database['public']['Functions'];
 
 export const EXPECTED_TABLES = [
   'activity_log',
+  'ai_usage',
   'auth_attempts',
   'child_accounts',
   'children',
@@ -33,6 +34,10 @@ export const EXPECTED_TABLES = [
 
 export const EXPECTED_FUNCTIONS = [
   'adjust_points',
+  'ai_finish',
+  'ai_reserve',
+  'ai_target',
+  'ai_usage_today',
   'approve_reward_request',
   'cancel_reward_request',
   'child_account_target',
@@ -50,6 +55,7 @@ export const EXPECTED_FUNCTIONS = [
   'copy_quiz_set',
   'create_family',
   'create_parent_invite',
+  'create_quiz_draft',
   'delete_family',
   'delete_quiz_question',
   'diagnostics',
@@ -105,7 +111,7 @@ type NotListedFunction = Exclude<DbFunction, (typeof EXPECTED_FUNCTIONS)[number]
 export const COMPLETENESS: [NotListedTable, NotListedFunction] extends [never, never] ? true : never = true;
 
 export const EXPECTED_CRON_JOBS = ['expire-reward-requests', 'generate-recurrences'] as const;
-export const EDGE_FUNCTIONS = ['child-login', 'create-child', 'reset-child-password', 'delete-child', 'delete-account', 'send-push'] as const;
+export const EDGE_FUNCTIONS = ['child-login', 'create-child', 'reset-child-password', 'delete-child', 'delete-account', 'send-push', 'generate-questions'] as const;
 export type EdgeFunctionName = (typeof EDGE_FUNCTIONS)[number];
 
 export type DiagnosticsData = {
@@ -141,6 +147,8 @@ export type Probes = {
   realtime: RealtimeStatus;
   /** true = déployée, false = absente (404), null = non vérifiable depuis le navigateur. */
   functions: Record<EdgeFunctionName, boolean | null>;
+  /** État de l'IA (GET sur `generate-questions`, parents) ; null si non vérifiable. */
+  ai: { configured: boolean; usedToday: number | null; dailyLimit: number | null } | null;
 };
 
 export type Env = { supabaseUrl: string; webUrl: string; vapidPublicKey: string };
@@ -209,7 +217,12 @@ export function evaluateHealth(p: Probes, env: Env): HealthItem[] {
     else add(`fn-${name}`, 'warn', 'health.functions.unknown', { name });
   }
 
-  // 6. Web Push (facultatif)
+  // 6. IA des révisions (facultative : sans clé, le reste de l'app fonctionne)
+  if (!p.ai) add('ai', 'warn', 'health.ai.unknown');
+  else if (!p.ai.configured) add('ai', 'warn', 'health.ai.notConfigured');
+  else add('ai', 'ok', 'health.ai.ok', { used: String(p.ai.usedToday ?? '?'), limit: String(p.ai.dailyLimit ?? '?') });
+
+  // 7. Web Push (facultatif)
   if (!env.vapidPublicKey) add('vapid', 'warn', 'health.vapid.missing');
   else add('vapid', 'ok', 'health.vapid.ok');
 
