@@ -144,13 +144,13 @@ isOneToOne: false
                   ]
                 },"devices": {
                   Row: {
-                    "created_at": string,"expo_push_token": string | null,"id": string,"last_seen_at": string,"member_id": string,"platform": string | null,"revoked_at": string | null,"updated_at": string,"web_push_subscription": Json | null
+                    "created_at": string,"expo_push_token": string | null,"id": string,"last_seen_at": string,"locale": string,"member_id": string,"platform": string | null,"revoked_at": string | null,"updated_at": string,"web_push_subscription": Json | null
                   }
                   Insert: {
-                    "created_at"?: string,"expo_push_token"?: string | null,"id"?: string,"last_seen_at"?: string,"member_id": string,"platform"?: string | null,"revoked_at"?: string | null,"updated_at"?: string,"web_push_subscription"?: Json | null
+                    "created_at"?: string,"expo_push_token"?: string | null,"id"?: string,"last_seen_at"?: string,"locale"?: string,"member_id": string,"platform"?: string | null,"revoked_at"?: string | null,"updated_at"?: string,"web_push_subscription"?: Json | null
                   }
                   Update: {
-                    "created_at"?: string,"expo_push_token"?: string | null,"id"?: string,"last_seen_at"?: string,"member_id"?: string,"platform"?: string | null,"revoked_at"?: string | null,"updated_at"?: string,"web_push_subscription"?: Json | null
+                    "created_at"?: string,"expo_push_token"?: string | null,"id"?: string,"last_seen_at"?: string,"locale"?: string,"member_id"?: string,"platform"?: string | null,"revoked_at"?: string | null,"updated_at"?: string,"web_push_subscription"?: Json | null
                   }
                   Relationships: [
                     {
@@ -998,6 +998,9 @@ isOneToOne: false
                            },
 "set_child_password":
 { Args: { "p_child_id": string,"p_password": string }; Returns: undefined
+                           },
+"set_push_locale":
+{ Args: { "p_locale": string }; Returns: undefined
                            },
 "set_quiz_material_kind":
 { Args: { "p_kind": Database["public"]['Enums']["quiz_material_kind"],"p_set": string }; Returns: undefined

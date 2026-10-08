@@ -1,6 +1,8 @@
 import { DEFAULT_PREFS, normalizePrefs, type NotificationPrefs } from '@/domain/notification-prefs';
 import type { PushSubscriptionJson } from '@/domain/web-push';
 import type { ActivityLogRow, RewardRequestRow } from '@/types/models';
+import { loadLanguage } from '@/i18n/language';
+import type { Language } from '@/i18n';
 import { supabase } from './supabase';
 
 export async function fetchPrefs(memberId: string): Promise<NotificationPrefs> {
@@ -33,15 +35,32 @@ export async function fetchDecidedRequests(limit = 20): Promise<RewardRequestRow
   return data;
 }
 
+/** Langue des notifications push de mes appareils (D-063) : celle choisie dans l'app. RPC, aucune écriture directe sur `devices`. */
+export async function setPushLocale(locale: Language = loadLanguage()): Promise<void> {
+  const { error } = await supabase.rpc('set_push_locale', { p_locale: locale });
+  if (error) throw error;
+}
+
+/** Même chose sans jamais échouer : la langue d'une notification ne doit pas casser l'enregistrement ni un changement de langue. */
+export async function syncPushLocale(): Promise<void> {
+  try {
+    await setPushLocale();
+  } catch {
+    // hors ligne, déconnecté ou appareil non enregistré : la langue sera renvoyée à la prochaine inscription
+  }
+}
+
 export async function registerDevice(token: string, platform: 'ios' | 'android'): Promise<void> {
   const { error } = await supabase.rpc('register_device', { p_token: token, p_platform: platform });
   if (error) throw error;
+  await syncPushLocale();
 }
 
 /** Web Push : enregistre l'abonnement du navigateur (RPC, aucune écriture directe sur `devices`). */
 export async function registerWebPush(subscription: PushSubscriptionJson): Promise<void> {
   const { error } = await supabase.rpc('register_web_push', { p_subscription: subscription });
   if (error) throw error;
+  await syncPushLocale();
 }
 
 export async function unregisterWebPush(endpoint: string): Promise<void> {

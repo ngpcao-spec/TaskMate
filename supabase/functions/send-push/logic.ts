@@ -1,5 +1,91 @@
 // Logique pure de l'Edge Function `send-push` (SPEC §5.6) — sans API Deno, donc testable avec Jest.
 
+// ───────────────────────── Textes (D-063) ─────────────────────────
+
+/** Langue des notifications (D-063) : vietnamien par défaut (SPEC §3.9), français, anglais. Vient de `devices.locale`, réglée par l'app (RPC `set_push_locale`). */
+export type Locale = 'vi' | 'fr' | 'en';
+export const DEFAULT_LOCALE: Locale = 'vi';
+
+/** Toute valeur inconnue ou absente retombe sur le vietnamien (jamais d'erreur pour une notification). */
+export const toLocale = (v: unknown): Locale => (v === 'fr' || v === 'en' || v === 'vi' ? v : DEFAULT_LOCALE);
+
+type TextVars = { child: string; title: string; count: number; points: number; cost: number | string; delta: number; note: string };
+
+type Catalog = {
+  taskDoneMany: (v: TextVars) => string;
+  taskDone: (v: TextVars) => string;
+  taskValidated: (v: TextVars) => string;
+  taskRejected: (v: TextVars) => string;
+  rewardRequested: (v: TextVars) => string;
+  goalAchieved: (v: TextVars) => string;
+  rewardApproved: (v: TextVars) => string;
+  rewardRejected: (v: TextVars) => string;
+  rewardExpired: (v: TextVars) => string;
+  pointsAdjusted: (v: TextVars) => string;
+  taskAssigned: (v: TextVars) => string;
+  recapTitle: string;
+  recapLine: (name: string, done: number, total: number) => string;
+  recapWaiting: (count: number) => string;
+};
+
+const withNote = (note: string) => (note ? ` — ${note}` : '');
+const signed = (n: number) => `${n > 0 ? '+' : ''}${n}`;
+
+const CATALOGS: Record<Locale, Catalog> = {
+  vi: {
+    taskDoneMany: (v) => `${v.child} đã hoàn thành ${v.count} việc — chờ duyệt`,
+    taskDone: (v) => `${v.child} đã hoàn thành: ${v.title} — chờ duyệt`,
+    taskValidated: (v) => `Đã được duyệt 🎉 ${v.title} (+${v.points} điểm)`,
+    taskRejected: (v) => `Việc bị từ chối: ${v.title}${withNote(v.note)}`,
+    rewardRequested: (v) => `${v.child} muốn đổi: ${v.title} (${v.cost} điểm)`,
+    goalAchieved: (v) => `${v.child} đã đạt mục tiêu: ${v.title}`,
+    rewardApproved: (v) => `Đã được duyệt 🎉 ${v.title}`,
+    rewardRejected: (v) => `Yêu cầu bị từ chối: ${v.title}${withNote(v.note)}`,
+    rewardExpired: (v) => `Yêu cầu đã hết hạn: ${v.title}`,
+    pointsAdjusted: (v) => `Điểm của bạn được điều chỉnh ${signed(v.delta)}`,
+    taskAssigned: (v) => `Việc mới: ${v.title}`,
+    recapTitle: 'Tổng kết hôm nay',
+    recapLine: (name, done, total) => `${name}: ${done}/${total} việc`,
+    recapWaiting: (count) => `${count} mục chờ duyệt`,
+  },
+  fr: {
+    taskDoneMany: (v) => `${v.child} a terminé ${v.count} tâches — à valider`,
+    taskDone: (v) => `${v.child} a terminé : ${v.title} — à valider`,
+    taskValidated: (v) => `Validée 🎉 ${v.title} (+${v.points} points)`,
+    taskRejected: (v) => `Tâche refusée : ${v.title}${withNote(v.note)}`,
+    rewardRequested: (v) => `${v.child} veut échanger : ${v.title} (${v.cost} points)`,
+    goalAchieved: (v) => `${v.child} a atteint son objectif : ${v.title}`,
+    rewardApproved: (v) => `Acceptée 🎉 ${v.title}`,
+    rewardRejected: (v) => `Demande refusée : ${v.title}${withNote(v.note)}`,
+    rewardExpired: (v) => `Demande expirée : ${v.title}`,
+    pointsAdjusted: (v) => `Tes points ont été ajustés ${signed(v.delta)}`,
+    taskAssigned: (v) => `Nouvelle tâche : ${v.title}`,
+    recapTitle: "Bilan d'aujourd'hui",
+    recapLine: (name, done, total) => `${name} : ${done}/${total} tâches`,
+    recapWaiting: (count) => `${count} à valider`,
+  },
+  en: {
+    taskDoneMany: (v) => `${v.child} finished ${v.count} tasks — waiting for approval`,
+    taskDone: (v) => `${v.child} finished: ${v.title} — waiting for approval`,
+    taskValidated: (v) => `Approved 🎉 ${v.title} (+${v.points} points)`,
+    taskRejected: (v) => `Task declined: ${v.title}${withNote(v.note)}`,
+    rewardRequested: (v) => `${v.child} wants to redeem: ${v.title} (${v.cost} points)`,
+    goalAchieved: (v) => `${v.child} reached a goal: ${v.title}`,
+    rewardApproved: (v) => `Approved 🎉 ${v.title}`,
+    rewardRejected: (v) => `Request declined: ${v.title}${withNote(v.note)}`,
+    rewardExpired: (v) => `Request expired: ${v.title}`,
+    pointsAdjusted: (v) => `Your points were adjusted ${signed(v.delta)}`,
+    taskAssigned: (v) => `New task: ${v.title}`,
+    recapTitle: "Today's summary",
+    recapLine: (name, done, total) => `${name}: ${done}/${total} tasks`,
+    recapWaiting: (count) => `${count} waiting for approval`,
+  },
+};
+
+const catalogFor = (locale: Locale): Catalog => CATALOGS[locale];
+
+// ───────────────────────── Destinataires et messages ─────────────────────────
+
 export type ActivityRecord = {
   id: string;
   family_id: string;
@@ -16,7 +102,8 @@ export type MemberInfo = {
   prefs: unknown;
 };
 export type WebPushSubscription = { endpoint: string; keys: { p256dh: string; auth: string }; expirationTime?: number | null };
-export type DeviceInfo = { member_id: string; expo_push_token: string | null; web_push_subscription?: WebPushSubscription | null };
+/** `locale` : langue des notifications de l'appareil (D-063) ; absente ou inconnue = vietnamien. */
+export type DeviceInfo = { member_id: string; expo_push_token: string | null; web_push_subscription?: WebPushSubscription | null; locale?: string | null };
 export type PushMessage = {
   to: string;
   title: string;
@@ -62,37 +149,59 @@ export function recipientsFor(activity: ActivityRecord, members: readonly Member
 
 type Text = { title: string; body: string };
 
-/** Textes en vietnamien (langue par défaut de l'app). */
-export function textFor(activity: ActivityRecord, childName: string, groupedCount = 1): Text | null {
+/** Texte d'une activité dans la langue de l'appareil destinataire (vietnamien par défaut, D-063). */
+export function textFor(activity: ActivityRecord, childName: string, groupedCount = 1, locale: Locale = 'vi'): Text | null {
   const p = (activity.payload ?? {}) as { title?: string; cost?: number; delta?: number; note?: string; points?: number };
-  const title = p.title ?? '';
+  const v: TextVars = {
+    child: childName,
+    title: p.title ?? '',
+    count: groupedCount,
+    points: p.points ?? 0,
+    cost: p.cost ?? '',
+    delta: p.delta ?? 0,
+    note: p.note ?? '',
+  };
+  const c = catalogFor(locale);
+  const body = (text: string): Text => ({ title: 'TaskMate', body: text });
   switch (activity.type) {
     case 'task_completed':
       // tâche cochée À VALIDER ; plusieurs coches en moins de 10 min → une seule notification groupée (§5.6)
-      return groupedCount > 1
-        ? { title: 'TaskMate', body: `${childName} đã hoàn thành ${groupedCount} việc — chờ duyệt` }
-        : { title: 'TaskMate', body: `${childName} đã hoàn thành: ${title} — chờ duyệt` };
+      return body(groupedCount > 1 ? c.taskDoneMany(v) : c.taskDone(v));
     case 'task_validated':
-      return { title: 'TaskMate', body: `Đã được duyệt 🎉 ${title} (+${p.points ?? 0} điểm)` };
+      return body(c.taskValidated(v));
     case 'task_rejected':
-      return { title: 'TaskMate', body: `Việc bị từ chối: ${title}${p.note ? ` — ${p.note}` : ''}` };
+      return body(c.taskRejected(v));
     case 'reward_requested':
-      return { title: 'TaskMate', body: `${childName} muốn đổi: ${title} (${p.cost ?? ''} điểm)` };
+      return body(c.rewardRequested(v));
     case 'goal_achieved':
-      return { title: 'TaskMate', body: `${childName} đã đạt mục tiêu: ${title}` };
+      return body(c.goalAchieved(v));
     case 'reward_approved':
-      return { title: 'TaskMate', body: `Đã được duyệt 🎉 ${title}` };
+      return body(c.rewardApproved(v));
     case 'reward_rejected':
-      return { title: 'TaskMate', body: `Yêu cầu bị từ chối: ${title}${p.note ? ` — ${p.note}` : ''}` };
+      return body(c.rewardRejected(v));
     case 'reward_expired':
-      return { title: 'TaskMate', body: `Yêu cầu đã hết hạn: ${title}` };
+      return body(c.rewardExpired(v));
     case 'points_adjusted':
-      return { title: 'TaskMate', body: `Điểm của bạn được điều chỉnh ${(p.delta ?? 0) > 0 ? '+' : ''}${p.delta ?? 0}` };
+      return body(c.pointsAdjusted(v));
     case 'task_assigned':
-      return { title: 'TaskMate', body: `Việc mới: ${title}` };
+      return body(c.taskAssigned(v));
     default:
       return null;
   }
+}
+
+/** Récap du soir : une ligne par enfant + éléments en attente, dans la langue donnée. `null` si rien à dire. */
+export function recapText(
+  summary: readonly { name: string; done: number; total: number }[],
+  pending: { tasks: number; requests: number },
+  locale: Locale = 'vi',
+): Text | null {
+  const c = catalogFor(locale);
+  const lines = summary.filter((s) => s.total > 0).map((s) => c.recapLine(s.name, s.done, s.total));
+  const waiting = pending.tasks + pending.requests;
+  if (waiting > 0) lines.push(c.recapWaiting(waiting));
+  if (lines.length === 0) return null;
+  return { title: c.recapTitle, body: lines.join(' · ') };
 }
 
 /** Fenêtre de regroupement des coches (SPEC §5.6). */
@@ -112,8 +221,7 @@ export function buildMessages(
   childName: string,
   groupedCount = 1,
 ): PushMessage[] {
-  const text = textFor(activity, childName, groupedCount);
-  if (!text) return [];
+  if (!textFor(activity, childName, groupedCount)) return [];
   const p = (activity.payload ?? {}) as { request_id?: string; task_id?: string };
   const data: Record<string, unknown> = {
     type: activity.type,
@@ -128,7 +236,8 @@ export function buildMessages(
       if (d.member_id !== member.id || !d.expo_push_token) continue;
       messages.push({
         to: d.expo_push_token,
-        ...text,
+        // texte dans la langue de CET appareil (D-063)
+        ...(textFor(activity, childName, groupedCount, toLocale(d.locale)) as Text),
         data,
         sound: 'default',
         channelId: 'default',
@@ -143,23 +252,19 @@ export function buildMessages(
   return messages;
 }
 
-/** Récap du soir pour les parents : une ligne par enfant « Minh: 3/5 việc » + éléments en attente de décision (tâches, échanges). */
+/** Récap du soir pour les parents : une ligne par enfant « Minh: 3/5 việc » + éléments en attente de décision (tâches, échanges), dans la langue de chaque appareil. */
 export function buildRecapMessages(
   parents: readonly MemberInfo[],
   devices: readonly DeviceInfo[],
   summary: readonly { name: string; done: number; total: number }[],
   pending: { tasks: number; requests: number } = { tasks: 0, requests: 0 },
 ): PushMessage[] {
-  const lines = summary.filter((s) => s.total > 0).map((s) => `${s.name}: ${s.done}/${s.total} việc`);
-  const waiting = pending.tasks + pending.requests;
-  if (waiting > 0) lines.push(`${waiting} mục chờ duyệt`);
-  if (lines.length === 0) return [];
   const out: PushMessage[] = [];
   for (const parent of parents) {
     for (const d of devices) {
-      if (d.member_id === parent.id && d.expo_push_token) {
-        out.push({ to: d.expo_push_token, title: 'Tổng kết hôm nay', body: lines.join(' · '), data: { type: 'evening_recap' }, sound: 'default', channelId: 'default' });
-      }
+      if (d.member_id !== parent.id || !d.expo_push_token) continue;
+      const text = recapText(summary, pending, toLocale(d.locale));
+      if (text) out.push({ to: d.expo_push_token, ...text, data: { type: 'evening_recap' }, sound: 'default', channelId: 'default' });
     }
   }
   return out;
@@ -217,8 +322,7 @@ export function buildWebMessages(
   childName: string,
   groupedCount = 1,
 ): WebPushMessage[] {
-  const text = textFor(activity, childName, groupedCount);
-  if (!text) return [];
+  if (!textFor(activity, childName, groupedCount)) return [];
   const data = { type: activity.type, childId: activity.child_id };
   const out: WebPushMessage[] = [];
   for (const member of recipientsFor(activity, members)) {
@@ -226,7 +330,7 @@ export function buildWebMessages(
       out.push({
         subscription: d.web_push_subscription as WebPushSubscription,
         payload: {
-          ...text,
+          ...(textFor(activity, childName, groupedCount, toLocale(d.locale)) as Text),
           data,
           url: urlForType(activity.type),
           // les coches groupées d'un enfant se remplacent (même tag)
@@ -244,15 +348,13 @@ export function buildWebRecapMessages(
   summary: readonly { name: string; done: number; total: number }[],
   pending: { tasks: number; requests: number } = { tasks: 0, requests: 0 },
 ): WebPushMessage[] {
-  const lines = summary.filter((s) => s.total > 0).map((s) => `${s.name}: ${s.done}/${s.total} việc`);
   const waiting = pending.tasks + pending.requests;
-  if (waiting > 0) lines.push(`${waiting} mục chờ duyệt`);
-  if (lines.length === 0) return [];
   return parents.flatMap((parent) =>
-    webDevicesOf(devices, parent.id).map((d) => ({
-      subscription: d.web_push_subscription as WebPushSubscription,
-      payload: { title: 'Tổng kết hôm nay', body: lines.join(' · '), data: { type: 'evening_recap' }, url: waiting > 0 ? '/approvals' : '/' },
-    })),
+    webDevicesOf(devices, parent.id).flatMap((d) => {
+      const text = recapText(summary, pending, toLocale(d.locale));
+      if (!text) return [];
+      return [{ subscription: d.web_push_subscription as WebPushSubscription, payload: { ...text, data: { type: 'evening_recap' }, url: waiting > 0 ? '/approvals' : '/' } }];
+    }),
   );
 }
 

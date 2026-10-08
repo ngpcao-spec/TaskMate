@@ -95,6 +95,7 @@ export const EXPECTED_FUNCTIONS = [
   'revoke_parent_invite',
   'schedule_cron_jobs',
   'set_child_password',
+  'set_push_locale',
   'set_quiz_material_kind',
   'set_quiz_paper_support',
   'set_quiz_status',

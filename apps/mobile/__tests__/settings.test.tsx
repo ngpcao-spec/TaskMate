@@ -12,6 +12,8 @@ const mockPush = jest.fn();
 jest.mock('expo-router', () => ({ useRouter: () => ({ replace: mockReplace, push: mockPush }) }));
 jest.mock('react-native-safe-area-context', () => ({ SafeAreaView: ({ children }: { children: React.ReactNode }) => children }));
 jest.mock('@/sync/storage', () => ({ kvStorage: { getItem: jest.fn(() => null), setItem: jest.fn(), removeItem: jest.fn() } }));
+const mockSyncPushLocale = jest.fn().mockResolvedValue(undefined);
+jest.mock('@/api/notifications', () => ({ syncPushLocale: () => mockSyncPushLocale() }));
 const mockSignOut = jest.fn().mockResolvedValue(undefined);
 jest.mock('@/api/auth', () => ({ signOut: () => mockSignOut() }));
 
@@ -47,6 +49,8 @@ describe('SettingsScreen', () => {
     await fireEvent.press(screen.getByRole('radio', { name: 'Français' }));
     await waitFor(() => expect(i18n.language).toBe('fr'));
     expect(screen.getByText('Réglages généraux')).toBeTruthy();
+    // la langue des notifications push suit (D-063)
+    await waitFor(() => expect(mockSyncPushLocale).toHaveBeenCalledTimes(1));
   });
 
   it('parent : enfants, appareils, invitation d\'un parent, parents, fuseau, suppression', async () => {
