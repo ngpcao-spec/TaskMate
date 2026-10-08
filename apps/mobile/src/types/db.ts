@@ -879,6 +879,8 @@ isOneToOne: false
 "deleted_at": string | null,
 "family_id": string,
 "id": string,
+"kind_detected": boolean,
+"material_kind": Database["public"]['Enums']["quiz_material_kind"],
 "status": Database["public"]['Enums']["quiz_status"],
 "subject": string | null,
 "title": string,
