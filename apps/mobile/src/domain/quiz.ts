@@ -188,3 +188,18 @@ export function publishBlockers(kind: string, questions: readonly { to_verify: b
   const unconfirmed = isExamSet(kind) ? questions.filter((q) => !q.confirmed).length : 0;
   return { toVerify, unconfirmed, blocked: toVerify > 0 || unconfirmed > 0 };
 }
+
+// ───────────── support papier et feuille de réponses (D-062) ─────────────
+/** Mode de réponse de l'enfant : à l'écran (parcours habituel), papier avec énoncés, ou feuille de réponses seule (numéros et lettres). */
+export type PaperMode = 'screen' | 'paper' | 'sheet';
+export const PAPER_MODES: readonly PaperMode[] = ['screen', 'paper', 'sheet'];
+
+export const paperModeOf = (s: { paper_support: boolean; answer_sheet_only: boolean }): PaperMode => (!s.paper_support ? 'screen' : s.answer_sheet_only ? 'sheet' : 'paper');
+/** Réglages envoyés au serveur pour un mode (« feuille seule » implique le papier). */
+export const paperFlags = (mode: PaperMode): { paper: boolean; sheetOnly: boolean } => ({ paper: mode !== 'screen', sheetOnly: mode === 'sheet' });
+
+/** Numéro affiché : celui de la feuille, sinon « #rang » (jamais un nombre nu, qui pourrait être pris pour un vrai numéro de la feuille). */
+export const questionTag = (origin: number | null | undefined, index: number): string => (origin === null || origin === undefined ? `#${index + 1}` : String(origin));
+
+/** Questions déjà répondues (positions affichées) : sert à la progression de la feuille. */
+export const answeredCount = (questions: readonly PlayQuestion[], chosen: Readonly<Record<string, number | null | undefined>>): number => questions.length - unansweredCount(questions, chosen);

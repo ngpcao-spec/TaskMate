@@ -3,15 +3,17 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { newId } from '@/api/ids';
+import { AnswerSheet } from '@/components/quiz/AnswerSheet';
 import { ChoiceButton } from '@/components/quiz/ChoiceButton';
 import { Button, Card, Screen, ScreenHeader } from '@/components/ui';
-import { answersPayload, unansweredCount } from '@/domain/quiz';
+import { answeredCount, answersPayload, unansweredCount } from '@/domain/quiz';
 import { useChildQuestions, useChildQuizSets, useStartQuizEvaluation, useSubmitQuizEvaluation } from '@/hooks/useQuizzes';
 import { colors, typography } from '@/theme/tokens';
 
 /**
  * Seul parcours de l'enfant : il répond à toutes les questions (ordre et choix mélangés par le serveur, jamais de retour juste/faux),
  * envoie ses réponses, puis attend la validation. L'envoi (mis en file hors ligne, rejeu idempotent) ne renvoie AUCUN résultat.
+ * Jeu « support papier » (D-062) : même parcours sur la « Phiếu trả lời » (numéros d'origine, lettres A à D, jamais mélangés).
  */
 export function EvaluationRun({ setId }: { setId: string }) {
   const { t } = useTranslation();
@@ -77,23 +79,38 @@ export function EvaluationRun({ setId }: { setId: string }) {
     setSent(true);
   };
 
+  const paper = info.paper_support;
+  const choose = (questionId: string, displayed: number) => {
+    setChosen({ ...chosen, [questionId]: displayed });
+    setWarned(false);
+  };
+
   return (
     <Screen>
       <ScreenHeader title={info.title} />
-      <Text style={typography.secondary}>{t('revisions.child.evalIntro')}</Text>
-      {list.map((q, i) => {
-        return (
-          <View key={q.question_id} style={styles.q}>
-            <Text style={typography.secondary}>{t('revisions.child.questionOf', { n: i + 1, total: list.length })}</Text>
-            <Text accessibilityRole="header" style={styles.prompt}>{q.prompt}</Text>
-            <View style={styles.choices} accessibilityRole="radiogroup">
-              {q.choices.map((choice, displayed) => (
-                <ChoiceButton key={displayed} label={choice} selected={chosen[q.question_id] === displayed} onPress={() => { setChosen({ ...chosen, [q.question_id]: displayed }); setWarned(false); }} />
-              ))}
+      {paper ? (
+        <>
+          <Text accessibilityRole="header" style={styles.sheetTitle}>{t('revisions.sheet.title')}</Text>
+          <Text style={typography.secondary}>{info.answer_sheet_only ? t('revisions.sheet.intro') : t('revisions.sheet.introPaper')}</Text>
+          <Text accessibilityLiveRegion="polite" style={typography.secondary}>{t('revisions.sheet.progress', { done: answeredCount(list, chosen), total: list.length })}</Text>
+          <AnswerSheet questions={list} chosen={chosen} onChoose={choose} sheetOnly={info.answer_sheet_only} />
+        </>
+      ) : (
+        <>
+          <Text style={typography.secondary}>{t('revisions.child.evalIntro')}</Text>
+          {list.map((q, i) => (
+            <View key={q.question_id} style={styles.q}>
+              <Text style={typography.secondary}>{t('revisions.child.questionOf', { n: i + 1, total: list.length })}</Text>
+              <Text accessibilityRole="header" style={styles.prompt}>{q.prompt}</Text>
+              <View style={styles.choices} accessibilityRole="radiogroup">
+                {q.choices.map((choice, displayed) => (
+                  <ChoiceButton key={displayed} label={choice} selected={chosen[q.question_id] === displayed} onPress={() => choose(q.question_id, displayed)} />
+                ))}
+              </View>
             </View>
-          </View>
-        );
-      })}
+          ))}
+        </>
+      )}
       {warned && missing > 0 ? <Text accessibilityRole="alert" style={styles.warn}>{t('revisions.child.unanswered', { count: missing })}</Text> : null}
       <Button label={warned && missing > 0 ? t('revisions.child.submitAnyway') : t('revisions.child.submit')} onPress={onSend} loading={submit.isPending} />
     </Screen>
@@ -106,4 +123,5 @@ const styles = StyleSheet.create({
   choices: { gap: 10 },
   warn: { color: colors.danger, fontSize: 14 },
   waiting: { fontSize: 17, fontWeight: '700', color: colors.warning },
+  sheetTitle: { fontSize: 20, fontWeight: '800', color: colors.text },
 });

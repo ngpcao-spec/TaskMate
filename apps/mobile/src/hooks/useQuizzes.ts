@@ -3,7 +3,7 @@ import { quizKeys } from '@/api/keys';
 import {
   confirmQuizAnswers, copyQuizSet, deleteQuestion, deleteQuizSet, fetchAttemptDetail, fetchChildAttempts, fetchChildHistory, fetchChildQuestions, fetchChildQuizSets,
   fetchChildResult, fetchParentQuestions, fetchPendingQuizAttempts, fetchQuizSet, fetchQuizSets, fetchSetAttempts, relaunchQuizEvaluation,
-  reorderQuestions, setQuizMaterialKind, setQuizStatus, updateQuizSet, upsertQuestion, type QuestionInput,
+  reorderQuestions, setQuizMaterialKind, setQuizPaperSupport, setQuizStatus, updateQuizSet, upsertQuestion, type QuestionInput,
 } from '@/api/quizzes';
 import { generateQuestions, type GenerateInput } from '@/api/generate';
 import { serverErrorCode } from '@/api/tasks';
@@ -59,6 +59,7 @@ export const useUpdateQuizSet = () => useOnlineQuizMutation<{ id: string; patch:
 export const useDeleteQuizSet = () => useOnlineQuizMutation<string>(deleteQuizSet);
 export const useConfirmAnswers = () => useOnlineQuizMutation<{ setId: string; answers: { question_id: string; correct: number }[] }>(({ setId, answers }) => confirmQuizAnswers(setId, answers));
 export const useSetMaterialKind = () => useOnlineQuizMutation<{ setId: string; kind: QuizMaterialKind }>(({ setId, kind }) => setQuizMaterialKind(setId, kind));
+export const useSetPaperSupport = () => useOnlineQuizMutation<{ setId: string; paper: boolean; sheetOnly: boolean }>(({ setId, paper, sheetOnly }) => setQuizPaperSupport(setId, paper, sheetOnly));
 
 /** Génération par IA depuis un document : en ligne uniquement, jamais rejouée automatiquement (chaque appel consomme le quota du jour). */
 export function useGenerateQuestions() {

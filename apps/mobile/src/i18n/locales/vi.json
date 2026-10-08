@@ -472,6 +472,22 @@
     "blockers": {
       "toVerify": "Còn {{count}} đáp án cần kiểm tra",
       "unconfirmed": "Còn {{count}} đáp án chưa xác nhận"
+    },
+    "sheet": {
+      "title": "Phiếu trả lời",
+      "intro": "Xem đề trên giấy, rồi chọn đáp án của con ở đây.",
+      "introPaper": "Đọc câu hỏi (trên giấy hoặc ở đây), rồi chọn đáp án.",
+      "question": "Câu {{n}}",
+      "figure": "Xem hình / bảng trên đề giấy — Câu {{n}}",
+      "choice": "Câu {{n}}: đáp án {{letter}}",
+      "progress": "Đã trả lời {{done}}/{{total}} câu"
+    },
+    "paper": {
+      "title": "Cách con làm bài",
+      "screen": "Trên màn hình",
+      "paper": "Đề giấy, có câu hỏi trên màn hình",
+      "sheet": "Chỉ phiếu trả lời (số câu và A–D)",
+      "hint": "Dùng khi con đọc đề trên giấy: các câu theo số câu của đề, các đáp án giữ nguyên A–D (không đảo thứ tự)."
     }
   },
   "sync": {

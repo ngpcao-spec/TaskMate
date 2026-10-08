@@ -35,7 +35,7 @@ jest.mock('@/hooks/useDisplayedChild', () => ({
   }),
 }));
 
-const set = (over: Record<string, unknown> = {}) => ({ id: 's1', family_id: 'f', child_id: 'c-minh', title: 'Fractions', subject: 'Toán', status: 'draft', created_by: 'm-p', created_at: '2026-07-01T00:00:00Z', updated_at: 'x', deleted_at: null, question_count: 2, material_kind: 'course', kind_detected: false, ...over });
+const set = (over: Record<string, unknown> = {}) => ({ id: 's1', family_id: 'f', child_id: 'c-minh', title: 'Fractions', subject: 'Toán', status: 'draft', created_by: 'm-p', created_at: '2026-07-01T00:00:00Z', updated_at: 'x', deleted_at: null, question_count: 2, material_kind: 'course', kind_detected: false, paper_support: false, answer_sheet_only: false, ...over });
 const question = (id: string, position: number, prompt: string, over: Record<string, unknown> = {}) => ({ id, set_id: 's1', family_id: 'f', position, prompt, choices: ['a', 'b', 'c'], created_at: 'x', updated_at: 'x', correct_index: 1, explanation: 'parce que', origin_number: null, needs_figure: false, to_verify: false, confirmed: true, ...over });
 let mockSets: unknown[] = [];
 let mockPending: unknown[] = [];
@@ -55,6 +55,7 @@ const mockCreate = jest.fn();
 const mockUpdate = jest.fn();
 const mockConfirm = jest.fn();
 const mockKind = jest.fn();
+const mockPaper = jest.fn();
 const ok = (fn: jest.Mock) => ({ mutate: (v: unknown, o?: { onSuccess?: () => void }) => { fn(v); o?.onSuccess?.(); }, isPending: false });
 jest.mock('@/hooks/useQuizzes', () => ({
   useQuizSets: () => ({ data: mockSets }),
@@ -76,6 +77,7 @@ jest.mock('@/hooks/useQuizzes', () => ({
   useUpdateQuizSet: () => ok(mockUpdate),
   useConfirmAnswers: () => ok(mockConfirm),
   useSetMaterialKind: () => ok(mockKind),
+  useSetPaperSupport: () => ok(mockPaper),
 }));
 
 beforeEach(() => {
@@ -313,6 +315,30 @@ describe('Révisions — éditeur : supports multiples (D-061)', () => {
     mockQuestions = [question('q1', 0, 'Q1', { confirmed: false })];
     await render(<QuizEditor setId="s1" />);
     expect(screen.getByRole('button', { name: 'Đăng cho bạn ấy' }).props.accessibilityState).toMatchObject({ disabled: false });
+  });
+  it('mode de réponse de l\'enfant : à l\'écran / papier / feuille seule, enregistré côté serveur', async () => {
+    mockSet = set({ material_kind: 'exam', paper_support: true });
+    await render(<QuizEditor setId="s1" />);
+    expect(screen.getByRole('radio', { name: 'Đề giấy, có câu hỏi trên màn hình' }).props.accessibilityState).toMatchObject({ checked: true });
+    await fireEvent.press(screen.getByRole('radio', { name: 'Chỉ phiếu trả lời (số câu và A–D)' }));
+    expect(mockPaper).toHaveBeenCalledWith({ setId: 's1', paper: true, sheetOnly: true });
+    await fireEvent.press(screen.getByRole('radio', { name: 'Trên màn hình' }));
+    expect(mockPaper).toHaveBeenLastCalledWith({ setId: 's1', paper: false, sheetOnly: false });
+    // le mode déjà actif ne renvoie rien
+    mockPaper.mockClear();
+    await fireEvent.press(screen.getByRole('radio', { name: 'Đề giấy, có câu hỏi trên màn hình' }));
+    expect(mockPaper).not.toHaveBeenCalled();
+  });
+  it('un cours est à l\'écran par défaut', async () => {
+    mockSet = set({ material_kind: 'course' });
+    await render(<QuizEditor setId="s1" />);
+    expect(screen.getByRole('radio', { name: 'Trên màn hình' }).props.accessibilityState).toMatchObject({ checked: true });
+  });
+  it('jeu publié : mode de réponse en lecture seule', async () => {
+    mockSet = set({ material_kind: 'exam', status: 'published', paper_support: true, answer_sheet_only: true });
+    await render(<QuizEditor setId="s1" />);
+    expect(screen.queryByRole('radio', { name: 'Trên màn hình' })).toBeNull();
+    expect(screen.getByText('Chỉ phiếu trả lời (số câu và A–D)')).toBeTruthy();
   });
   it('jeu publié : type affiché en lecture seule (pas de sélecteur)', async () => {
     mockSet = set({ material_kind: 'list', status: 'published' });
