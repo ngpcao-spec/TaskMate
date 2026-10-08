@@ -322,7 +322,9 @@
       "attemptInProgress": "A test is already in progress",
       "setNotFound": "Question set not found",
       "attemptClosed": "This session is over",
-      "notSubmitted": "The test hasn't been sent yet"
+      "notSubmitted": "The test hasn't been sent yet",
+      "answersToVerify": "Some answers need checking: confirm them before publishing",
+      "answersNotConfirmed": "Confirm every answer of the exam before publishing"
     },
     "import": {
       "entry": "Create from a document",
@@ -365,12 +367,112 @@
         "timeout": "Timed out. Try again.",
         "forbidden": "Only a parent of the family can generate questions.",
         "invalidCount": "The number of questions is 5 to 20.",
-        "network": "Server unreachable."
+        "network": "Server unreachable.",
+        "keyRequired": "Add the answer key for \"Exam with answer key\"",
+        "keyNotAllowed": "Only \"Auto\" and \"Exam with answer key\" accept an answer key",
+        "instructionTooLong": "The note is limited to 300 characters",
+        "saveFailed": "The draft could not be saved. Try again."
+      },
+      "kinds": {
+        "label": "Document type",
+        "auto": {
+          "label": "Auto",
+          "help": "The AI recognises the document type: exam, exam with answer key, lesson or list to learn."
+        },
+        "exam": {
+          "label": "Paper exam or homework",
+          "help": "Faithfully copies the multiple-choice questions, keeping their original numbers. The AI only suggests an answer: you confirm each one."
+        },
+        "exam_key": {
+          "label": "Exam with answer key",
+          "help": "Like the exam, but the correct answers are read from the answer key you provide. An answer missing from the key is marked \"to verify\"."
+        },
+        "course": {
+          "label": "Lesson",
+          "help": "Writes revision questions about the lesson content."
+        },
+        "list": {
+          "label": "List to learn",
+          "help": "Vocabulary, formulas, dates, definitions: questions drawn from the list itself, without inventing items that are not in the document."
+        }
+      },
+      "countAuto": "Auto count",
+      "countPrecise": "Exact number",
+      "countAutoHelp": "The AI picks the number of questions from the content (exam: all multiple-choice questions, 30 at most).",
+      "instructionLabel": "Note for the AI (optional)",
+      "instructionPlaceholder": "For example: chapter 2 only",
+      "instructionCounter": "{{count}}/300",
+      "examSection": "Exam / document",
+      "keySection": "Answer key",
+      "keyOptional": "Optional. When provided, the AI reads the correct answers from it.",
+      "keyRequiredHelp": "Required for \"Exam with answer key\".",
+      "takeKeyPhoto": "Photograph the answer key",
+      "pickKeyPhotos": "Choose answer key photos",
+      "pickKeyFile": "Choose an answer key PDF/Word",
+      "roleExam": "Exam",
+      "roleKey": "Answer key",
+      "noneKey": "No answer key chosen.",
+      "result": {
+        "title": "Result",
+        "detected": "Detected: {{kind}}",
+        "chosen": "Document type: {{kind}}",
+        "saved": "{{count}} questions created (draft). Review them before publishing.",
+        "doubt": "The AI is not sure about the type: it chose \"lesson\". You can correct it.",
+        "capped": "{{found}} multiple-choice questions found, {{kept}} kept: run it again for the others.",
+        "ignored": "{{count}} non multiple-choice questions ignored: {{labels}}",
+        "figures": "{{count}} questions depend on a figure or table: check them against the paper sheet.",
+        "toVerify": "{{count}} answers to verify.",
+        "open": "Review the questions",
+        "openGrid": "Open the Đáp án grid",
+        "fix": "Correct the type and run again",
+        "fixHelp": "Pick the right type, then run again. One re-run per set does not use more of the daily quota.",
+        "relaunch": "Run again with this type",
+        "cancelFix": "Don't correct"
       }
     },
     "correctionShown": "The correct answer and explanation are shown to the child.",
     "correctionHidden": "The correct answer is not shown to the child.",
-    "showCorrection": "Show the correction to the child"
+    "showCorrection": "Show the correction to the child",
+    "material": {
+      "title": "Document type",
+      "detectedNote": "Detected by the AI — you can correct it.",
+      "kinds": {
+        "exam": "Paper exam",
+        "exam_key": "Exam with answer key",
+        "course": "Lesson",
+        "list": "List to learn"
+      }
+    },
+    "grid": {
+      "title": "Đáp án",
+      "intro": "Compare each question with the paper sheet, then touch the right answer (A to D) to confirm it. Look more closely at flagged questions.",
+      "question": "Câu {{n}}",
+      "unnumbered": "Câu #{{n}}",
+      "choice": "Câu {{n}}: answer {{letter}}",
+      "confirmedBadge": "Confirmed",
+      "toVerifyBadge": "To verify",
+      "figureBadge": "Figure / table on the paper sheet",
+      "confirmPlain": "Confirm the unflagged answers",
+      "save": "Save confirmations",
+      "remaining": "{{count}} answers still to confirm",
+      "allConfirmed": "All answers are confirmed",
+      "saved": "Confirmations saved",
+      "edit": "Edit question {{n}}",
+      "unsaved": "Unsaved changes",
+      "empty": "This set has no question yet.",
+      "kindLine": "{{kind}}"
+    },
+    "badges": {
+      "toVerify": "To verify",
+      "figure": "Depends on a figure / table",
+      "confirm": "Confirm the answer of question {{n}}",
+      "confirmedShort": "Confirmed",
+      "number": "Câu {{n}}"
+    },
+    "blockers": {
+      "toVerify": "{{count}} answers to verify",
+      "unconfirmed": "{{count}} answers not confirmed"
+    }
   },
   "sync": {
     "offline": "Offline — changes will sync when you are back online",

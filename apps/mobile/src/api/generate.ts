@@ -1,3 +1,4 @@
+import type { FileRole, MaterialKind, RequestKind } from '@/domain/documents';
 import { supabase } from './supabase';
 
 /** Erreur renvoyée par l'Edge Function `generate-questions` : `code` court (ex. `quota_exceeded`) + éventuels détails (limite, usage). */
@@ -12,11 +13,36 @@ export type GenerateInput = {
   childId: string;
   title?: string;
   subject?: string;
-  count: number;
+  /** Type de support : « auto » (par défaut, l'IA détecte) ou un type précis. */
+  kind: RequestKind;
+  /** « auto » (par défaut) ou un nombre précis. */
+  count: 'auto' | number;
+  /** Consigne libre du parent (facultative, 300 caractères au plus), transmise dans un bloc séparé du document. */
+  instruction?: string;
+  /** Relance après correction du type : remplace le MÊME brouillon (une relance par jeu ne consomme pas de quota). */
+  retry?: boolean;
   language: 'auto' | 'vi' | 'fr' | 'en';
-  files: { name: string; mediaType: string; data: string }[];
+  files: { name: string; mediaType: string; data: string; role: FileRole }[];
 };
-export type GenerateResult = { set_id: string; title: string; count: number; truncated: boolean };
+export type GenerateResult = {
+  set_id: string;
+  title: string;
+  /** Questions enregistrées. */
+  count: number;
+  truncated: boolean;
+  kind: MaterialKind;
+  kind_detected: boolean;
+  kind_doubt: boolean;
+  /** QCM trouvées dans le document (examens) ; `capped` si certaines n'ont pas été reprises. */
+  found: number;
+  capped: boolean;
+  cap: number;
+  ignored: string[];
+  ignored_count: number;
+  to_verify_count: number;
+  figure_count: number;
+  free_retry: boolean;
+};
 
 async function parseFailure(error: unknown): Promise<GenerateError> {
   const context = (error as { context?: Response } | null)?.context;

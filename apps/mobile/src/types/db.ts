@@ -50,13 +50,13 @@ isOneToOne: false
                   ]
                 },"ai_usage": {
                   Row: {
-                    "created_at": string,"day": string,"failure": string | null,"family_id": string,"finished_at": string | null,"id": string,"input_tokens": number | null,"member_id": string,"model": string | null,"output_tokens": number | null,"status": string
+                    "counted": boolean,"created_at": string,"day": string,"failure": string | null,"family_id": string,"finished_at": string | null,"id": string,"input_tokens": number | null,"member_id": string,"model": string | null,"output_tokens": number | null,"set_id": string | null,"status": string
                   }
                   Insert: {
-                    "created_at"?: string,"day": string,"failure"?: string | null,"family_id": string,"finished_at"?: string | null,"id"?: string,"input_tokens"?: number | null,"member_id": string,"model"?: string | null,"output_tokens"?: number | null,"status"?: string
+                    "counted"?: boolean,"created_at"?: string,"day": string,"failure"?: string | null,"family_id": string,"finished_at"?: string | null,"id"?: string,"input_tokens"?: number | null,"member_id": string,"model"?: string | null,"output_tokens"?: number | null,"set_id"?: string | null,"status"?: string
                   }
                   Update: {
-                    "created_at"?: string,"day"?: string,"failure"?: string | null,"family_id"?: string,"finished_at"?: string | null,"id"?: string,"input_tokens"?: number | null,"member_id"?: string,"model"?: string | null,"output_tokens"?: number | null,"status"?: string
+                    "counted"?: boolean,"created_at"?: string,"day"?: string,"failure"?: string | null,"family_id"?: string,"finished_at"?: string | null,"id"?: string,"input_tokens"?: number | null,"member_id"?: string,"model"?: string | null,"output_tokens"?: number | null,"set_id"?: string | null,"status"?: string
                   }
                   Relationships: [
                     {
@@ -331,13 +331,13 @@ isOneToOne: false
                   ]
                 },"quiz_answer_keys": {
                   Row: {
-                    "correct_index": number,"explanation": string | null,"family_id": string,"question_id": string
+                    "confirmed": boolean,"correct_index": number,"explanation": string | null,"family_id": string,"question_id": string,"to_verify": boolean
                   }
                   Insert: {
-                    "correct_index": number,"explanation"?: string | null,"family_id": string,"question_id": string
+                    "confirmed"?: boolean,"correct_index": number,"explanation"?: string | null,"family_id": string,"question_id": string,"to_verify"?: boolean
                   }
                   Update: {
-                    "correct_index"?: number,"explanation"?: string | null,"family_id"?: string,"question_id"?: string
+                    "confirmed"?: boolean,"correct_index"?: number,"explanation"?: string | null,"family_id"?: string,"question_id"?: string,"to_verify"?: boolean
                   }
                   Relationships: [
                     {
@@ -461,13 +461,13 @@ isOneToOne: false
                   ]
                 },"quiz_questions": {
                   Row: {
-                    "choices": (string)[],"created_at": string,"family_id": string,"id": string,"position": number,"prompt": string,"set_id": string,"updated_at": string
+                    "choices": (string)[],"created_at": string,"family_id": string,"id": string,"needs_figure": boolean,"origin_number": number | null,"position": number,"prompt": string,"set_id": string,"updated_at": string
                   }
                   Insert: {
-                    "choices": (string)[],"created_at"?: string,"family_id": string,"id"?: string,"position": number,"prompt": string,"set_id": string,"updated_at"?: string
+                    "choices": (string)[],"created_at"?: string,"family_id": string,"id"?: string,"needs_figure"?: boolean,"origin_number"?: number | null,"position": number,"prompt": string,"set_id": string,"updated_at"?: string
                   }
                   Update: {
-                    "choices"?: (string)[],"created_at"?: string,"family_id"?: string,"id"?: string,"position"?: number,"prompt"?: string,"set_id"?: string,"updated_at"?: string
+                    "choices"?: (string)[],"created_at"?: string,"family_id"?: string,"id"?: string,"needs_figure"?: boolean,"origin_number"?: number | null,"position"?: number,"prompt"?: string,"set_id"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -505,13 +505,13 @@ isOneToOne: false
                   ]
                 },"quiz_sets": {
                   Row: {
-                    "child_id": string,"created_at": string,"created_by": string,"deleted_at": string | null,"family_id": string,"id": string,"status": Database["public"]['Enums']["quiz_status"],"subject": string | null,"title": string,"updated_at": string
+                    "child_id": string,"created_at": string,"created_by": string,"deleted_at": string | null,"family_id": string,"id": string,"kind_detected": boolean,"material_kind": Database["public"]['Enums']["quiz_material_kind"],"status": Database["public"]['Enums']["quiz_status"],"subject": string | null,"title": string,"updated_at": string
                   }
                   Insert: {
-                    "child_id": string,"created_at"?: string,"created_by": string,"deleted_at"?: string | null,"family_id": string,"id"?: string,"status"?: Database["public"]['Enums']["quiz_status"],"subject"?: string | null,"title": string,"updated_at"?: string
+                    "child_id": string,"created_at"?: string,"created_by": string,"deleted_at"?: string | null,"family_id": string,"id"?: string,"kind_detected"?: boolean,"material_kind"?: Database["public"]['Enums']["quiz_material_kind"],"status"?: Database["public"]['Enums']["quiz_status"],"subject"?: string | null,"title": string,"updated_at"?: string
                   }
                   Update: {
-                    "child_id"?: string,"created_at"?: string,"created_by"?: string,"deleted_at"?: string | null,"family_id"?: string,"id"?: string,"status"?: Database["public"]['Enums']["quiz_status"],"subject"?: string | null,"title"?: string,"updated_at"?: string
+                    "child_id"?: string,"created_at"?: string,"created_by"?: string,"deleted_at"?: string | null,"family_id"?: string,"id"?: string,"kind_detected"?: boolean,"material_kind"?: Database["public"]['Enums']["quiz_material_kind"],"status"?: Database["public"]['Enums']["quiz_status"],"subject"?: string | null,"title"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -744,8 +744,8 @@ isOneToOne: false
 { Args: { "p_failure": string,"p_id": string,"p_input": number,"p_model": string,"p_output": number,"p_status": string }; Returns: undefined
                            },
 "ai_reserve":
-{ Args: { "p_family": string,"p_limit": number,"p_member": string,"p_now"?: string }; Returns: {
-              "allowed": boolean,"usage_id": string,"used": number
+{ Args: { "p_family": string,"p_limit": number,"p_member": string,"p_now"?: string,"p_retry"?: boolean,"p_set"?: string }; Returns: {
+              "allowed": boolean,"free": boolean,"usage_id": string,"used": number
             }[]
                            },
 "ai_target":
@@ -802,6 +802,9 @@ isOneToOne: false
 "complete_task":
 { Args: { "p_task_id": string,"p_tx_id": string }; Returns: undefined
                            },
+"confirm_quiz_answers":
+{ Args: { "p_answers": Json,"p_set": string }; Returns: undefined
+                           },
 "copy_quiz_set":
 { Args: { "p_child": string,"p_new_set": string,"p_source": string }; Returns: undefined
                            },
@@ -812,7 +815,7 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: string
                            },
 "create_quiz_draft":
-{ Args: { "p_child": string,"p_questions": Json,"p_set": string,"p_subject": string,"p_title": string }; Returns: undefined
+{ Args: { "p_child": string,"p_kind"?: Database["public"]['Enums']["quiz_material_kind"],"p_kind_detected"?: boolean,"p_questions": Json,"p_replace"?: boolean,"p_set": string,"p_subject": string,"p_title": string }; Returns: undefined
                            },
 "delete_family":
 { Args: Record<PropertyKey, never>; Returns: (string)[]
@@ -992,6 +995,9 @@ isOneToOne: false
 "set_child_password":
 { Args: { "p_child_id": string,"p_password": string }; Returns: undefined
                            },
+"set_quiz_material_kind":
+{ Args: { "p_kind": Database["public"]['Enums']["quiz_material_kind"],"p_set": string }; Returns: undefined
+                           },
 "set_quiz_status":
 { Args: { "p_set": string,"p_status": Database["public"]['Enums']["quiz_status"] }; Returns: undefined
                            },
@@ -1021,7 +1027,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "member_role": "parent"|"child","point_reason": "task_validated"|"task_unvalidated"|"reward_redeemed"|"manual_adjust","quiz_attempt_status": "in_progress"|"submitted"|"validated","quiz_status": "draft"|"published","recurrence_rule": "daily"|"weekdays","request_status": "pending"|"approved"|"rejected"|"cancelled"|"expired","task_category": "study"|"sport"|"chores"|"personal"|"other","time_kind": "range"|"deadline"|"anytime"
+            "member_role": "parent"|"child","point_reason": "task_validated"|"task_unvalidated"|"reward_redeemed"|"manual_adjust","quiz_attempt_status": "in_progress"|"submitted"|"validated","quiz_material_kind": "exam"|"exam_key"|"course"|"list","quiz_status": "draft"|"published","recurrence_rule": "daily"|"weekdays","request_status": "pending"|"approved"|"rejected"|"cancelled"|"expired","task_category": "study"|"sport"|"chores"|"personal"|"other","time_kind": "range"|"deadline"|"anytime"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -1141,7 +1147,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "member_role": ["parent", "child"],"point_reason": ["task_validated", "task_unvalidated", "reward_redeemed", "manual_adjust"],"quiz_attempt_status": ["in_progress", "submitted", "validated"],"quiz_status": ["draft", "published"],"recurrence_rule": ["daily", "weekdays"],"request_status": ["pending", "approved", "rejected", "cancelled", "expired"],"task_category": ["study", "sport", "chores", "personal", "other"],"time_kind": ["range", "deadline", "anytime"]
+            "member_role": ["parent", "child"],"point_reason": ["task_validated", "task_unvalidated", "reward_redeemed", "manual_adjust"],"quiz_attempt_status": ["in_progress", "submitted", "validated"],"quiz_material_kind": ["exam", "exam_key", "course", "list"],"quiz_status": ["draft", "published"],"recurrence_rule": ["daily", "weekdays"],"request_status": ["pending", "approved", "rejected", "cancelled", "expired"],"task_category": ["study", "sport", "chores", "personal", "other"],"time_kind": ["range", "deadline", "anytime"]
           }
         }
 } as const

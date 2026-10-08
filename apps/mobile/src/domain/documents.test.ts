@@ -1,4 +1,7 @@
-import { base64Bytes, clampCount, DOC_LIMITS, fitWithin, generateErrorKey, kindOfFile, selectionErrorKey, validateSelection } from './documents';
+import {
+  allowsKey, base64Bytes, clampCount, DOC_LIMITS, fitWithin, generateErrorKey, instructionTooLong, isExamKind, kindOfFile, MATERIAL_KINDS, REQUEST_KINDS, reviewRoute, selectionErrorKey, summaryNotices,
+  validateSelection, type GenerateSummaryInput,
+} from './documents';
 
 describe('kindOfFile', () => {
   it('par type MIME puis par extension', () => {
@@ -52,9 +55,9 @@ describe('fitWithin / base64Bytes / clampCount', () => {
     expect(base64Bytes('YWI=')).toBe(2);
     expect(base64Bytes('YWJj')).toBe(3);
   });
-  it('clampCount : 5 à 20', () => {
-    expect(clampCount(1)).toBe(5);
-    expect(clampCount(100)).toBe(20);
+  it('clampCount : 3 à 30', () => {
+    expect(clampCount(1)).toBe(3);
+    expect(clampCount(100)).toBe(30);
     expect(clampCount(12.4)).toBe(12);
     expect(clampCount(DOC_LIMITS.defaultQuestions)).toBe(10);
   });
@@ -69,5 +72,75 @@ describe('messages d\'erreur', () => {
     expect(generateErrorKey('???')).toBe('revisions.import.errors.generic');
     expect(selectionErrorKey('tooLarge')).toBe('revisions.import.errors.tooLarge');
     expect(selectionErrorKey('unsupportedMix')).toBe('revisions.import.errors.unsupportedMix');
+  });
+});
+
+describe('validateSelection avec corrigé (rôle « key »)', () => {
+  const img = (role?: 'exam' | 'key', bytes = 1000) => ({ kind: 'image' as const, bytes, role });
+  it('le corrigé est un groupe à part : examen en PDF + corrigé en photos est valide', () => {
+    expect(validateSelection([{ kind: 'pdf', bytes: 1000, role: 'exam' }, img('key'), img('key')])).toBeNull();
+    expect(validateSelection([img('exam'), { kind: 'docx', bytes: 1000, role: 'key' }])).toBeNull();
+  });
+  it('dans CHAQUE groupe : images seules, OU un seul document', () => {
+    expect(validateSelection([{ kind: 'pdf', bytes: 1, role: 'key' }, img('key')])).toBe('unsupportedMix');
+    expect(validateSelection([{ kind: 'pdf', bytes: 1, role: 'key' }, { kind: 'pdf', bytes: 1, role: 'key' }])).toBe('unsupportedMix');
+    expect(validateSelection([{ kind: 'pdf', bytes: 1, role: 'exam' }, img('exam')])).toBe('unsupportedMix');
+  });
+  it('le corrigé compte dans les mêmes limites : 5 fichiers au total, 6 Mo au total', () => {
+    expect(validateSelection([img('exam'), img('exam'), img('exam'), img('key'), img('key')])).toBeNull();
+    expect(validateSelection([img('exam'), img('exam'), img('exam'), img('key'), img('key'), img('key')])).toBe('tooMany');
+    expect(validateSelection([img('exam', 2_500_000), img('exam', 2_500_000), img('key', 2_500_000)])).toBe('totalTooLarge');
+  });
+});
+
+describe('types de support', () => {
+  it('liste extensible : 4 types + Auto (par défaut, en tête)', () => {
+    expect([...MATERIAL_KINDS]).toEqual(['exam', 'exam_key', 'course', 'list']);
+    expect([...REQUEST_KINDS]).toEqual(['auto', 'exam', 'exam_key', 'course', 'list']);
+  });
+  it('types examen ; corrigé accepté avec Auto et « examen avec corrigé » seulement', () => {
+    expect(MATERIAL_KINDS.filter(isExamKind)).toEqual(['exam', 'exam_key']);
+    expect(REQUEST_KINDS.filter(allowsKey)).toEqual(['auto', 'exam_key']);
+  });
+  it('relecture : la grille Đáp án pour les examens, l\'éditeur sinon', () => {
+    expect(reviewRoute('exam')).toBe('/quiz/answers');
+    expect(reviewRoute('exam_key')).toBe('/quiz/answers');
+    expect(reviewRoute('course')).toBe('/quiz/[id]');
+    expect(reviewRoute('list')).toBe('/quiz/[id]');
+  });
+  it('consigne du parent : 300 caractères au plus (espaces de bord ignorés)', () => {
+    expect(instructionTooLong('x'.repeat(300))).toBe(false);
+    expect(instructionTooLong('x'.repeat(301))).toBe(true);
+    expect(instructionTooLong(`  ${'x'.repeat(300)}  `)).toBe(false);
+    expect(DOC_LIMITS.maxInstruction).toBe(300);
+  });
+});
+
+describe('summaryNotices : jamais de coupe ni d\'omission silencieuse', () => {
+  const base: GenerateSummaryInput = { kind: 'exam', kind_detected: true, kind_doubt: false, count: 30, found: 30, capped: false, ignored: [], ignored_count: 0, to_verify_count: 0, figure_count: 0, truncated: false };
+  it('rien à signaler', () => {
+    expect(summaryNotices(base)).toEqual([]);
+  });
+  it('plafond : « 42 QCM trouvées, 30 reprises »', () => {
+    expect(summaryNotices({ ...base, found: 42, capped: true })).toEqual([{ key: 'revisions.import.result.capped', values: { found: 42, kept: 30 } }]);
+  });
+  it('non-QCM ignorés : nombre et numéros', () => {
+    expect(summaryNotices({ ...base, ignored: ['Câu 13', 'Câu 14', 'Câu 15'], ignored_count: 3 })).toEqual([{ key: 'revisions.import.result.ignored', values: { count: 3, labels: 'Câu 13, Câu 14, Câu 15' } }]);
+  });
+  it('doute, figures, réponses à vérifier, texte tronqué — dans cet ordre', () => {
+    const keys = summaryNotices({ ...base, kind_doubt: true, figure_count: 2, to_verify_count: 5, truncated: true, found: 40, capped: true, ignored: ['Câu 1'], ignored_count: 1 }).map((n) => n.key);
+    expect(keys).toEqual([
+      'revisions.import.result.doubt', 'revisions.import.result.capped', 'revisions.import.result.ignored', 'revisions.import.result.figures', 'revisions.import.result.toVerify', 'revisions.import.truncated',
+    ]);
+  });
+});
+
+describe('messages d\'erreur des supports multiples', () => {
+  it('codes serveur', () => {
+    expect(generateErrorKey('key_required')).toBe('revisions.import.errors.keyRequired');
+    expect(generateErrorKey('key_not_allowed')).toBe('revisions.import.errors.keyNotAllowed');
+    expect(generateErrorKey('instruction_too_long')).toBe('revisions.import.errors.instructionTooLong');
+    expect(generateErrorKey('save_failed')).toBe('revisions.import.errors.saveFailed');
+    expect(generateErrorKey('invalid_kind')).toBe('revisions.import.errors.generic');
   });
 });

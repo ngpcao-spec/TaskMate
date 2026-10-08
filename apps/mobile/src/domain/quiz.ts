@@ -151,6 +151,10 @@ const SERVER_ERRORS: Record<string, string> = {
   set_not_found: 'revisions.server.setNotFound',
   attempt_closed: 'revisions.server.attemptClosed',
   not_submitted: 'revisions.server.notSubmitted',
+  answers_to_verify: 'revisions.server.answersToVerify',
+  answers_not_confirmed: 'revisions.server.answersNotConfirmed',
+  invalid_number: 'revisions.errors.promptRequired',
+  invalid_kind: 'common.error',
   duplicate_choices: 'revisions.errors.duplicateChoices',
   invalid_choices: 'revisions.errors.choicesCount',
   invalid_question: 'revisions.errors.promptRequired',
@@ -159,3 +163,28 @@ const SERVER_ERRORS: Record<string, string> = {
 
 /** Clé i18n du message pour un code d'erreur renvoyé par une RPC de révisions (repli : message générique). */
 export const quizErrorKey = (code: string): string => SERVER_ERRORS[code] ?? 'common.error';
+
+// ───────────── supports multiples (D-061) : grille « Đáp án » et règle de publication ─────────────
+export const LETTERS = ['A', 'B', 'C', 'D'] as const;
+export const letterOf = (index: number): string => LETTERS[index] ?? '?';
+
+/** Types « examen » : leurs réponses doivent toutes être confirmées avant publication (la base le refuse sinon). */
+export const isExamSet = (kind: string): boolean => kind === 'exam' || kind === 'exam_key';
+
+type GridQuestion = { id: string; position: number; origin_number: number | null };
+/** Ordre de la grille : par numéro d'origine (les questions sans numéro à la suite, dans l'ordre de saisie). */
+export function gridOrder<T extends GridQuestion>(questions: readonly T[]): T[] {
+  return [...questions].sort((a, b) => {
+    if (a.origin_number !== null && b.origin_number !== null) return a.origin_number - b.origin_number || a.position - b.position;
+    if (a.origin_number !== null) return -1;
+    if (b.origin_number !== null) return 1;
+    return a.position - b.position || a.id.localeCompare(b.id);
+  });
+}
+
+/** Ce qui empêche de publier (miroir de `set_quiz_status`, qui reste l'autorité) : réponses « à vérifier » non levées, puis, pour un examen, réponses non confirmées. */
+export function publishBlockers(kind: string, questions: readonly { to_verify: boolean; confirmed: boolean }[]): { toVerify: number; unconfirmed: number; blocked: boolean } {
+  const toVerify = questions.filter((q) => q.to_verify).length;
+  const unconfirmed = isExamSet(kind) ? questions.filter((q) => !q.confirmed).length : 0;
+  return { toVerify, unconfirmed, blocked: toVerify > 0 || unconfirmed > 0 };
+}

@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { quizKeys } from '@/api/keys';
 import {
-  copyQuizSet, deleteQuestion, deleteQuizSet, fetchAttemptDetail, fetchChildAttempts, fetchChildHistory, fetchChildQuestions, fetchChildQuizSets,
+  confirmQuizAnswers, copyQuizSet, deleteQuestion, deleteQuizSet, fetchAttemptDetail, fetchChildAttempts, fetchChildHistory, fetchChildQuestions, fetchChildQuizSets,
   fetchChildResult, fetchParentQuestions, fetchPendingQuizAttempts, fetchQuizSet, fetchQuizSets, fetchSetAttempts, relaunchQuizEvaluation,
-  reorderQuestions, setQuizStatus, updateQuizSet, upsertQuestion, type QuestionInput,
+  reorderQuestions, setQuizMaterialKind, setQuizStatus, updateQuizSet, upsertQuestion, type QuestionInput,
 } from '@/api/quizzes';
 import { generateQuestions, type GenerateInput } from '@/api/generate';
 import { serverErrorCode } from '@/api/tasks';
@@ -11,6 +11,7 @@ import { quizErrorKey } from '@/domain/quiz';
 import i18n from '@/i18n';
 import { mutationKeys, type CreateQuizSetVars, type StartEvaluationVars, type SubmitEvaluationVars, type ValidateAttemptVars } from '@/sync/mutations';
 import { useToastStore } from '@/store/toast';
+import type { QuizMaterialKind } from '@/types/models';
 
 // ───────────── lectures ─────────────
 // staleTime 0 : un résultat soumis ou validé doit apparaître dès l'ouverture de l'écran (le cache persisté ne doit pas masquer l'état courant).
@@ -56,6 +57,8 @@ export const useCopyQuizSet = () => useOnlineQuizMutation<{ source: string; newS
 export const useRelaunchEvaluation = () => useOnlineQuizMutation<{ setId: string; attemptId: string }>(({ setId, attemptId }) => relaunchQuizEvaluation(setId, attemptId));
 export const useUpdateQuizSet = () => useOnlineQuizMutation<{ id: string; patch: { title?: string; subject?: string | null } }>(({ id, patch }) => updateQuizSet(id, patch));
 export const useDeleteQuizSet = () => useOnlineQuizMutation<string>(deleteQuizSet);
+export const useConfirmAnswers = () => useOnlineQuizMutation<{ setId: string; answers: { question_id: string; correct: number }[] }>(({ setId, answers }) => confirmQuizAnswers(setId, answers));
+export const useSetMaterialKind = () => useOnlineQuizMutation<{ setId: string; kind: QuizMaterialKind }>(({ setId, kind }) => setQuizMaterialKind(setId, kind));
 
 /** Génération par IA depuis un document : en ligne uniquement, jamais rejouée automatiquement (chaque appel consomme le quota du jour). */
 export function useGenerateQuestions() {
