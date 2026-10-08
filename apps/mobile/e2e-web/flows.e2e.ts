@@ -589,8 +589,9 @@ test.describe('révisions (D-055)', () => {
     await expect(child.getByText('Đã nộp, chờ phụ huynh duyệt')).toBeVisible();
 
     // le serveur n'a RIEN mélangé : questions par numéro, choix dans l'ordre d'origine ; le score est calculé côté serveur
+    // l'écran passe à « Đã nộp » dès l'envoi local : l'envoi (mis en file) peut arriver au serveur un instant plus tard
+    await expect.poll(async () => (await db.from('quiz_attempts').select('status').eq('set_id', setId).single()).data?.status).toBe('submitted');
     const { data: attempt } = await db.from('quiz_attempts').select('id, status').eq('set_id', setId).single();
-    expect(attempt?.status).toBe('submitted');
     const { data: layout } = await db.from('quiz_attempt_layouts').select('layout').eq('attempt_id', attempt!.id).single();
     const { data: ordered } = await db.from('quiz_questions').select('id, choices, origin_number').eq('set_id', setId).order('origin_number');
     expect((layout!.layout as { order: string[] }).order).toEqual(ordered!.map((q) => q.id));
