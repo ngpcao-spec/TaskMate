@@ -35,8 +35,8 @@ jest.mock('@/hooks/useDisplayedChild', () => ({
   }),
 }));
 
-const set = (over: Record<string, unknown> = {}) => ({ id: 's1', family_id: 'f', child_id: 'c-minh', title: 'Fractions', subject: 'Toán', status: 'draft', created_by: 'm-p', created_at: '2026-07-01T00:00:00Z', updated_at: 'x', deleted_at: null, question_count: 2, ...over });
-const question = (id: string, position: number, prompt: string) => ({ id, set_id: 's1', family_id: 'f', position, prompt, choices: ['a', 'b', 'c'], created_at: 'x', updated_at: 'x', correct_index: 1, explanation: 'parce que' });
+const set = (over: Record<string, unknown> = {}) => ({ id: 's1', family_id: 'f', child_id: 'c-minh', title: 'Fractions', subject: 'Toán', status: 'draft', created_by: 'm-p', created_at: '2026-07-01T00:00:00Z', updated_at: 'x', deleted_at: null, question_count: 2, material_kind: 'course', kind_detected: false, ...over });
+const question = (id: string, position: number, prompt: string, over: Record<string, unknown> = {}) => ({ id, set_id: 's1', family_id: 'f', position, prompt, choices: ['a', 'b', 'c'], created_at: 'x', updated_at: 'x', correct_index: 1, explanation: 'parce que', origin_number: null, needs_figure: false, to_verify: false, confirmed: true, ...over });
 let mockSets: unknown[] = [];
 let mockPending: unknown[] = [];
 let mockSet: unknown = set();
@@ -53,6 +53,8 @@ const mockDelSet = jest.fn();
 const mockValidate = jest.fn();
 const mockCreate = jest.fn();
 const mockUpdate = jest.fn();
+const mockConfirm = jest.fn();
+const mockKind = jest.fn();
 const ok = (fn: jest.Mock) => ({ mutate: (v: unknown, o?: { onSuccess?: () => void }) => { fn(v); o?.onSuccess?.(); }, isPending: false });
 jest.mock('@/hooks/useQuizzes', () => ({
   useQuizSets: () => ({ data: mockSets }),
@@ -72,6 +74,8 @@ jest.mock('@/hooks/useQuizzes', () => ({
   useValidateQuizAttempt: () => ok(mockValidate),
   useCreateQuizSet: () => ok(mockCreate),
   useUpdateQuizSet: () => ok(mockUpdate),
+  useConfirmAnswers: () => ok(mockConfirm),
+  useSetMaterialKind: () => ok(mockKind),
 }));
 
 beforeEach(() => {
@@ -247,6 +251,74 @@ describe('Révisions — détail et validation d\'une tentative', () => {
     expect(screen.queryByRole('button', { name: 'Duyệt kết quả' })).toBeNull();
     expect(screen.queryByLabelText('Hiện đáp án đúng cho con')).toBeNull();
     expect(screen.getByText('Không hiện đáp án đúng cho con.')).toBeTruthy();
+  });
+});
+
+describe('Révisions — éditeur : supports multiples (D-061)', () => {
+  const exam = [
+    question('q1', 0, 'Calculer 1 + 1', { origin_number: 5, confirmed: false }),
+    question('q2', 1, 'D\'après la courbe…', { origin_number: 6, needs_figure: true, to_verify: true, confirmed: false }),
+  ];
+  it('type de support : les 4 types, le type enregistré sélectionné, correction par le parent', async () => {
+    mockSet = set({ material_kind: 'exam', kind_detected: true });
+    mockQuestions = exam;
+    await render(<QuizEditor setId="s1" />);
+    expect(screen.getByRole('radio', { name: 'Đề thi giấy' }).props.accessibilityState).toMatchObject({ selected: true });
+    for (const name of ['Đề thi kèm đáp án', 'Bài học', 'Danh sách cần học']) expect(screen.getByRole('radio', { name })).toBeTruthy();
+    expect(screen.getByText('Do AI phát hiện — bạn có thể sửa.')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('radio', { name: 'Bài học' }));
+    expect(mockKind).toHaveBeenCalledWith({ setId: 's1', kind: 'course' });
+    await fireEvent.press(screen.getByRole('radio', { name: 'Đề thi giấy' })); // déjà sélectionné : aucun appel
+    expect(mockKind).toHaveBeenCalledTimes(1);
+  });
+  it('numéro d\'origine, signalements ; bouton de confirmation seulement sur les réponses « à vérifier »', async () => {
+    mockSet = set({ material_kind: 'exam' });
+    mockQuestions = exam;
+    await render(<QuizEditor setId="s1" />);
+    expect(screen.getByText('Câu 5. Calculer 1 + 1')).toBeTruthy();
+    expect(screen.getByText('Câu 6. D\'après la courbe…')).toBeTruthy();
+    expect(screen.getByText('Phụ thuộc hình / bảng')).toBeTruthy();
+    expect(screen.getAllByText('Cần kiểm tra')).toHaveLength(1);
+    expect(screen.queryByRole('button', { name: 'Xác nhận đáp án câu 5' })).toBeNull();
+    await fireEvent.press(screen.getByRole('button', { name: 'Xác nhận đáp án câu 6' }));
+    expect(mockConfirm).toHaveBeenCalledWith({ setId: 's1', answers: [{ question_id: 'q2', correct: 1 }] });
+  });
+  it('examen : publication impossible tant qu\'une réponse n\'est pas confirmée (message), grille Đáp án proposée', async () => {
+    mockSet = set({ material_kind: 'exam' });
+    mockQuestions = exam;
+    await render(<QuizEditor setId="s1" />);
+    expect(screen.getByRole('button', { name: 'Đăng cho bạn ấy' }).props.accessibilityState).toMatchObject({ disabled: true });
+    expect(screen.getByText('Còn 1 đáp án cần kiểm tra')).toBeTruthy();
+    expect(screen.getByText('Còn 2 đáp án chưa xác nhận')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Mở bảng Đáp án' }));
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/quiz/answers', params: { id: 's1' } });
+  });
+  it('examen entièrement confirmé : publication possible', async () => {
+    mockSet = set({ material_kind: 'exam_key' });
+    mockQuestions = exam.map((q) => ({ ...(q as object), confirmed: true, to_verify: false }));
+    await render(<QuizEditor setId="s1" />);
+    expect(screen.getByRole('button', { name: 'Đăng cho bạn ấy' }).props.accessibilityState).toMatchObject({ disabled: false });
+    await fireEvent.press(screen.getByRole('button', { name: 'Đăng cho bạn ấy' }));
+    expect(mockStatus).toHaveBeenCalledWith({ setId: 's1', status: 'published' });
+  });
+  it('un TYPE « cours » ne retire pas le blocage : une réponse « à vérifier » empêche de publier', async () => {
+    mockSet = set({ material_kind: 'course', kind_detected: true });
+    mockQuestions = [question('q1', 0, 'Q1', { to_verify: true, confirmed: false })];
+    await render(<QuizEditor setId="s1" />);
+    expect(screen.getByRole('button', { name: 'Đăng cho bạn ấy' }).props.accessibilityState).toMatchObject({ disabled: true });
+    expect(screen.queryByRole('button', { name: 'Mở bảng Đáp án' })).toBeNull(); // la grille est réservée aux examens
+  });
+  it('cours sans signalement : publication libre (comportement actuel), aucune obligation de confirmer', async () => {
+    mockSet = set({ material_kind: 'course' });
+    mockQuestions = [question('q1', 0, 'Q1', { confirmed: false })];
+    await render(<QuizEditor setId="s1" />);
+    expect(screen.getByRole('button', { name: 'Đăng cho bạn ấy' }).props.accessibilityState).toMatchObject({ disabled: false });
+  });
+  it('jeu publié : type affiché en lecture seule (pas de sélecteur)', async () => {
+    mockSet = set({ material_kind: 'list', status: 'published' });
+    await render(<QuizEditor setId="s1" />);
+    expect(screen.queryByRole('radio', { name: 'Bài học' })).toBeNull();
+    expect(screen.getByText('Danh sách cần học')).toBeTruthy();
   });
 });
 

@@ -14,6 +14,7 @@ export type RequestStatus = Enums<'request_status'>;
 export type RecurrenceRule = Enums<'recurrence_rule'>;
 export type QuizStatus = Enums<'quiz_status'>;
 export type QuizAttemptStatus = Enums<'quiz_attempt_status'>;
+export type QuizMaterialKind = Enums<'quiz_material_kind'>;
 
 export type FamilyRow = Tables<'families'>;
 export type ChildRow = Tables<'children'>;

@@ -322,7 +322,9 @@
       "attemptInProgress": "Une évaluation est déjà en cours",
       "setNotFound": "Jeu introuvable",
       "attemptClosed": "Cette séance est terminée",
-      "notSubmitted": "L'évaluation n'a pas encore été envoyée"
+      "notSubmitted": "L'évaluation n'a pas encore été envoyée",
+      "answersToVerify": "Des réponses sont à vérifier : confirmez-les avant de publier",
+      "answersNotConfirmed": "Confirmez chaque réponse de l'examen avant de publier"
     },
     "import": {
       "entry": "Créer à partir d'un document",
@@ -365,12 +367,112 @@
         "timeout": "Délai dépassé. Réessayez.",
         "forbidden": "Seul un parent de la famille peut générer des questions.",
         "invalidCount": "Le nombre de questions va de 5 à 20.",
-        "network": "Serveur injoignable."
+        "network": "Serveur injoignable.",
+        "keyRequired": "Ajoutez le corrigé pour « Examen avec corrigé »",
+        "keyNotAllowed": "Seuls « Auto » et « Examen avec corrigé » acceptent un corrigé",
+        "instructionTooLong": "La consigne fait 300 caractères au maximum",
+        "saveFailed": "Impossible d'enregistrer le brouillon. Réessayez."
+      },
+      "kinds": {
+        "label": "Type de support",
+        "auto": {
+          "label": "Auto",
+          "help": "L'IA reconnaît le type de document : examen, examen avec corrigé, cours ou liste à apprendre."
+        },
+        "exam": {
+          "label": "Examen ou devoir papier",
+          "help": "Recopie fidèlement les QCM du document, avec leur numéro d'origine. L'IA ne fait que proposer une réponse : vous confirmez chaque réponse."
+        },
+        "exam_key": {
+          "label": "Examen avec corrigé",
+          "help": "Comme l'examen, mais les bonnes réponses sont lues dans le corrigé que vous fournissez. Une réponse absente du corrigé est marquée « à vérifier »."
+        },
+        "course": {
+          "label": "Cours ou leçon",
+          "help": "Crée des QCM de révision sur le contenu de la leçon."
+        },
+        "list": {
+          "label": "Liste à apprendre",
+          "help": "Vocabulaire, formules, dates, définitions : des QCM tirés de la liste elle-même, sans inventer d'éléments absents du document."
+        }
+      },
+      "countAuto": "Nombre auto",
+      "countPrecise": "Nombre précis",
+      "countAutoHelp": "L'IA choisit le nombre de questions selon le contenu (examen : toutes les QCM, 30 au maximum).",
+      "instructionLabel": "Consigne pour l'IA (facultatif)",
+      "instructionPlaceholder": "Par exemple : seulement le chapitre 2",
+      "instructionCounter": "{{count}}/300",
+      "examSection": "Examen / document",
+      "keySection": "Corrigé",
+      "keyOptional": "Facultatif. S'il est fourni, l'IA lit les bonnes réponses dedans.",
+      "keyRequiredHelp": "Obligatoire pour « Examen avec corrigé ».",
+      "takeKeyPhoto": "Photographier le corrigé",
+      "pickKeyPhotos": "Choisir des photos du corrigé",
+      "pickKeyFile": "Choisir un PDF/Word de corrigé",
+      "roleExam": "Examen",
+      "roleKey": "Corrigé",
+      "noneKey": "Aucun corrigé choisi.",
+      "result": {
+        "title": "Résultat",
+        "detected": "Détecté : {{kind}}",
+        "chosen": "Type de support : {{kind}}",
+        "saved": "{{count}} questions créées (brouillon). Relisez-les avant de publier.",
+        "doubt": "L'IA n'est pas sûre du type : elle a choisi « cours ». Vous pouvez le corriger.",
+        "capped": "{{found}} QCM trouvées, {{kept}} reprises : relancez pour les autres.",
+        "ignored": "{{count}} questions non QCM ignorées : {{labels}}",
+        "figures": "{{count}} questions dépendent d’une figure ou d’un tableau : à vérifier sur la feuille papier.",
+        "toVerify": "{{count}} réponses à vérifier.",
+        "open": "Relire les questions",
+        "openGrid": "Ouvrir la grille Đáp án",
+        "fix": "Corriger le type et relancer",
+        "fixHelp": "Choisissez le bon type puis relancez. Une relance par jeu ne consomme pas de quota supplémentaire.",
+        "relaunch": "Relancer avec ce type",
+        "cancelFix": "Ne pas corriger"
       }
     },
     "correctionShown": "La bonne réponse et l'explication sont montrées à l'enfant.",
     "correctionHidden": "La bonne réponse n'est pas montrée à l'enfant.",
-    "showCorrection": "Montrer la correction à l'enfant"
+    "showCorrection": "Montrer la correction à l'enfant",
+    "material": {
+      "title": "Type de support",
+      "detectedNote": "Détecté par l'IA — vous pouvez le corriger.",
+      "kinds": {
+        "exam": "Examen papier",
+        "exam_key": "Examen avec corrigé",
+        "course": "Cours",
+        "list": "Liste à apprendre"
+      }
+    },
+    "grid": {
+      "title": "Đáp án",
+      "intro": "Comparez chaque question à la feuille papier puis touchez la bonne réponse (A à D) pour la confirmer. Regardez de plus près les questions signalées.",
+      "question": "Câu {{n}}",
+      "unnumbered": "Câu #{{n}}",
+      "choice": "Câu {{n}} : réponse {{letter}}",
+      "confirmedBadge": "Confirmée",
+      "toVerifyBadge": "À vérifier",
+      "figureBadge": "Figure / tableau sur la feuille papier",
+      "confirmPlain": "Confirmer les réponses non signalées",
+      "save": "Enregistrer les confirmations",
+      "remaining": "{{count}} réponses restent à confirmer",
+      "allConfirmed": "Toutes les réponses sont confirmées",
+      "saved": "Confirmations enregistrées",
+      "edit": "Modifier la question {{n}}",
+      "unsaved": "Modifications non enregistrées",
+      "empty": "Ce jeu n'a encore aucune question.",
+      "kindLine": "{{kind}}"
+    },
+    "badges": {
+      "toVerify": "À vérifier",
+      "figure": "Dépend d’une figure / tableau",
+      "confirm": "Confirmer la réponse de la question {{n}}",
+      "confirmedShort": "Confirmée",
+      "number": "Câu {{n}}"
+    },
+    "blockers": {
+      "toVerify": "{{count}} réponses à vérifier",
+      "unconfirmed": "{{count}} réponses non confirmées"
+    }
   },
   "sync": {
     "offline": "Hors ligne — les changements seront synchronisés au retour du réseau",

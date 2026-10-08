@@ -1,4 +1,5 @@
 import {
+  gridOrder, isExamSet, letterOf, LETTERS, publishBlockers,
   answersPayload, canPublish, evaluationView, historySeries, lastChange, moveItem, nextPosition, normalizeQuestion, scoreAnswers, scorePercent,
   quizErrorKey, unansweredCount, validateQuestion, validateSetTitle, type QuestionDraft,
 } from './quiz';
@@ -130,5 +131,47 @@ describe('quizErrorKey', () => {
     expect(quizErrorKey('evaluation_already_taken')).toBe('revisions.server.evaluationTaken');
     expect(quizErrorKey('boom')).toBe('common.error');
     expect(quizErrorKey('')).toBe('common.error');
+  });
+});
+
+describe('supports multiples : grille Đáp án et règle de publication', () => {
+  const q = (id: string, position: number, origin_number: number | null) => ({ id, position, origin_number });
+  it('lettres A à D', () => {
+    expect([...LETTERS]).toEqual(['A', 'B', 'C', 'D']);
+    expect(letterOf(0)).toBe('A');
+    expect(letterOf(3)).toBe('D');
+    expect(letterOf(4)).toBe('?');
+  });
+  it('gridOrder : par numéro d\'origine, les questions sans numéro à la suite dans l\'ordre de saisie', () => {
+    const order = gridOrder([q('c', 2, 7), q('a', 0, 5), q('x', 5, null), q('b', 1, 6), q('y', 3, null)]);
+    expect(order.map((o) => o.id)).toEqual(['a', 'b', 'c', 'y', 'x']);
+  });
+  it('gridOrder : numéros égaux → ordre de saisie ; ne modifie pas l\'entrée', () => {
+    const input = [q('b', 1, 5), q('a', 0, 5)];
+    expect(gridOrder(input).map((o) => o.id)).toEqual(['a', 'b']);
+    expect(input.map((o) => o.id)).toEqual(['b', 'a']);
+    expect(gridOrder([q('z', 1, null), q('y', 1, null)]).map((o) => o.id)).toEqual(['y', 'z']); // même position : identifiant
+  });
+  it('types examen', () => {
+    expect(isExamSet('exam')).toBe(true);
+    expect(isExamSet('exam_key')).toBe(true);
+    expect(isExamSet('course')).toBe(false);
+    expect(isExamSet('list')).toBe(false);
+  });
+  it('publishBlockers : « à vérifier » bloque TOUS les types ; examen : réponses non confirmées bloquent aussi', () => {
+    const open = { to_verify: true, confirmed: false };
+    const plain = { to_verify: false, confirmed: false };
+    const done = { to_verify: false, confirmed: true };
+    expect(publishBlockers('exam', [done, done])).toEqual({ toVerify: 0, unconfirmed: 0, blocked: false });
+    expect(publishBlockers('exam', [done, plain])).toEqual({ toVerify: 0, unconfirmed: 1, blocked: true });
+    expect(publishBlockers('exam_key', [open, plain, done])).toEqual({ toVerify: 1, unconfirmed: 2, blocked: true });
+    expect(publishBlockers('course', [plain, plain])).toEqual({ toVerify: 0, unconfirmed: 0, blocked: false }); // comportement actuel
+    expect(publishBlockers('course', [open])).toEqual({ toVerify: 1, unconfirmed: 0, blocked: true }); // un type « cours » n'affaiblit pas le contrôle
+    expect(publishBlockers('list', [])).toEqual({ toVerify: 0, unconfirmed: 0, blocked: false });
+  });
+  it('messages d\'erreur de publication', () => {
+    expect(quizErrorKey('answers_to_verify')).toBe('revisions.server.answersToVerify');
+    expect(quizErrorKey('answers_not_confirmed')).toBe('revisions.server.answersNotConfirmed');
+    expect(quizErrorKey('invalid_number')).toBe('revisions.errors.promptRequired');
   });
 });

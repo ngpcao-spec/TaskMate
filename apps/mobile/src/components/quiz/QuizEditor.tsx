@@ -4,13 +4,16 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { newId } from '@/api/ids';
+import { Chip } from '@/components/Chip';
 import { Button, Card, Field, Screen, ScreenHeader } from '@/components/ui';
+import { MATERIAL_KINDS } from '@/domain/documents';
 import { formatShortDate } from '@/domain/calendar';
 import { todayInTz } from '@/domain/family-time';
-import { moveItem, validateSetTitle } from '@/domain/quiz';
+import { isExamSet, moveItem, publishBlockers, validateSetTitle } from '@/domain/quiz';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import {
-  useCopyQuizSet, useDeleteQuestion, useDeleteQuizSet, useParentQuestions, useQuizSet, useRelaunchEvaluation, useReorderQuestions, useSetAttempts, useSetQuizStatus, useUpdateQuizSet,
+  useConfirmAnswers, useCopyQuizSet, useDeleteQuestion, useDeleteQuizSet, useParentQuestions, useQuizSet, useRelaunchEvaluation, useReorderQuestions, useSetAttempts, useSetMaterialKind,
+  useSetQuizStatus, useUpdateQuizSet,
 } from '@/hooks/useQuizzes';
 import { useToastStore } from '@/store/toast';
 import { colors, MIN_TARGET, typography } from '@/theme/tokens';
@@ -34,6 +37,8 @@ export function QuizEditor({ setId }: { setId: string }) {
   const delQ = useDeleteQuestion();
   const reorder = useReorderQuestions();
   const relaunch = useRelaunchEvaluation();
+  const confirm = useConfirmAnswers();
+  const setKind = useSetMaterialKind();
   // saisie en cours (null = pas de modification : on affiche la valeur du serveur)
   const [titleEdit, setTitle] = useState<string | null>(null);
   const [subjectEdit, setSubject] = useState<string | null>(null);
@@ -55,6 +60,8 @@ export function QuizEditor({ setId }: { setId: string }) {
   const openEvaluation = tries.some((a) => a.status === 'in_progress');
   const hasEvaluation = tries.length > 0;
   const childName = d.children.find((c) => c.id === s.child_id)?.name ?? '';
+  const blockers = publishBlockers(s.material_kind, list);
+  const exam = isExamSet(s.material_kind);
 
   const move = (from: number, to: number) => {
     const ids = moveItem(list.map((q) => q.id), from, to);
@@ -72,12 +79,32 @@ export function QuizEditor({ setId }: { setId: string }) {
         {changed ? <Button variant="secondary" label={t('revisions.saveInfo')} disabled={titleErrors.length > 0} onPress={() => update.mutate({ id: setId, patch: { title: title.trim(), subject: subject.trim() || null } })} /> : null}
       </Card>
 
+      <Card>
+        <Text accessibilityRole="header" style={styles.section}>{t('revisions.material.title')}</Text>
+        {locked ? (
+          <Text style={typography.body}>{t(`revisions.material.kinds.${s.material_kind}`)}</Text>
+        ) : (
+          <View style={styles.kinds}>
+            {MATERIAL_KINDS.map((k) => (
+              <Chip key={k} label={t(`revisions.material.kinds.${k}`)} selected={s.material_kind === k} onPress={() => { if (s.material_kind !== k) setKind.mutate({ setId, kind: k }); }} />
+            ))}
+          </View>
+        )}
+        {s.kind_detected ? <Text style={typography.secondary}>{t('revisions.material.detectedNote')}</Text> : null}
+        {exam ? <Button variant="secondary" label={t('revisions.import.result.openGrid')} onPress={() => router.push({ pathname: '/quiz/answers', params: { id: setId } })} /> : null}
+      </Card>
+
       {lockMessage ? <Text accessibilityRole="alert" style={styles.lock}>{lockMessage}</Text> : null}
 
       {list.length === 0 ? <Text style={[typography.secondary, styles.empty]}>{t('revisions.noQuestions')}</Text> : null}
       {list.map((q, i) => (
         <View key={q.id} style={styles.q}>
-          <Text style={styles.qPrompt}>{`${i + 1}. ${q.prompt}`}</Text>
+          <Text style={styles.qPrompt}>{`${q.origin_number !== null ? t('revisions.badges.number', { n: q.origin_number }) : String(i + 1)}. ${q.prompt}`}</Text>
+          {q.needs_figure ? <Text style={styles.flag}>{t('revisions.badges.figure')}</Text> : null}
+          {q.to_verify ? <Text style={styles.flag}>{t('revisions.badges.toVerify')}</Text> : null}
+          {!locked && q.to_verify ? (
+            <Button variant="secondary" label={t('revisions.badges.confirm', { n: q.origin_number ?? i + 1 })} loading={confirm.isPending} onPress={() => confirm.mutate({ setId, answers: [{ question_id: q.id, correct: q.correct_index }] })} />
+          ) : null}
           {!locked ? (
             <View style={styles.actions}>
               <Pressable accessibilityRole="button" accessibilityLabel={`${t('revisions.moveUp')}: ${q.prompt}`} disabled={i === 0} onPress={() => move(i, i - 1)} style={[styles.icon, i === 0 && styles.off]}>
@@ -105,7 +132,11 @@ export function QuizEditor({ setId }: { setId: string }) {
       ) : null}
 
       {isDraft ? (
-        <Button label={t('revisions.publish')} disabled={list.length === 0} onPress={() => status.mutate({ setId, status: 'published' })} loading={status.isPending} />
+        <>
+          {blockers.toVerify > 0 ? <Text style={styles.flag}>{t('revisions.blockers.toVerify', { count: blockers.toVerify })}</Text> : null}
+          {blockers.unconfirmed > 0 ? <Text style={styles.flag}>{t('revisions.blockers.unconfirmed', { count: blockers.unconfirmed })}</Text> : null}
+          <Button label={t('revisions.publish')} disabled={list.length === 0 || blockers.blocked} onPress={() => status.mutate({ setId, status: 'published' })} loading={status.isPending} />
+        </>
       ) : (
         <Button variant="secondary" label={t('revisions.unpublish')} onPress={() => status.mutate({ setId, status: 'draft' })} loading={status.isPending} />
       )}
@@ -142,6 +173,8 @@ export function QuizEditor({ setId }: { setId: string }) {
 
 const styles = StyleSheet.create({
   lock: { color: colors.danger, fontSize: 14 },
+  kinds: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  flag: { fontSize: 13, fontWeight: '600', color: colors.warning },
   empty: { textAlign: 'center', paddingVertical: 16 },
   q: { backgroundColor: colors.card, borderRadius: 16, padding: 14, gap: 8 },
   qPrompt: { fontSize: 16, color: colors.text },

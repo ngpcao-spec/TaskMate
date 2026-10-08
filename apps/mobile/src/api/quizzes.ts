@@ -1,4 +1,4 @@
-import type { QuizAttemptRow, QuizAttemptStatus, QuizQuestionRow, QuizSetRow } from '@/types/models';
+import type { QuizAttemptRow, QuizAttemptStatus, QuizMaterialKind, QuizQuestionRow, QuizSetRow } from '@/types/models';
 import { supabase } from './supabase';
 
 /** Révisions (D-055). Parent : lectures directes (RLS) + RPC ; enfant : RPC uniquement (jamais la clé des réponses). */
@@ -24,14 +24,15 @@ export async function fetchQuizSet(id: string): Promise<QuizSetRow | null> {
   return data;
 }
 
-export type ParentQuestion = QuizQuestionRow & { correct_index: number; explanation: string | null };
+/** Question vue par le PARENT : énoncé, numéro d'origine, signalements, clé (réponse, explication, « à vérifier », confirmée). Jamais lisible par l'enfant. */
+export type ParentQuestion = QuizQuestionRow & { correct_index: number; explanation: string | null; to_verify: boolean; confirmed: boolean };
 
 export async function fetchParentQuestions(setId: string): Promise<ParentQuestion[]> {
-  const { data, error } = await supabase.from('quiz_questions').select('*, quiz_answer_keys(correct_index, explanation)').eq('set_id', setId).order('position').order('id');
+  const { data, error } = await supabase.from('quiz_questions').select('*, quiz_answer_keys(correct_index, explanation, to_verify, confirmed)').eq('set_id', setId).order('position').order('id');
   fail(error);
   return (data ?? []).map(({ quiz_answer_keys, ...q }) => {
-    const key = (Array.isArray(quiz_answer_keys) ? quiz_answer_keys[0] : quiz_answer_keys) as { correct_index: number; explanation: string | null } | null | undefined;
-    return { ...(q as QuizQuestionRow), correct_index: key?.correct_index ?? 0, explanation: key?.explanation ?? null };
+    const key = (Array.isArray(quiz_answer_keys) ? quiz_answer_keys[0] : quiz_answer_keys) as { correct_index: number; explanation: string | null; to_verify: boolean; confirmed: boolean } | null | undefined;
+    return { ...(q as QuizQuestionRow), correct_index: key?.correct_index ?? 0, explanation: key?.explanation ?? null, to_verify: key?.to_verify ?? false, confirmed: key?.confirmed ?? false };
   });
 }
 
@@ -126,6 +127,17 @@ export async function copyQuizSet(source: string, newSet: string, childId: strin
   fail(error);
 }
 /** `showCorrection` : réglage posé par le parent AU MOMENT de valider (désactivé par défaut), stocké et appliqué côté serveur. */
+/** Grille « Đáp án » : le parent confirme ses réponses (la réponse choisie devient la clé, confirmée, et le signalement « à vérifier » est levé). */
+export async function confirmQuizAnswers(setId: string, answers: { question_id: string; correct: number }[]): Promise<void> {
+  const { error } = await supabase.rpc('confirm_quiz_answers', { p_set: setId, p_answers: answers });
+  fail(error);
+}
+/** Corrige le type de support enregistré sur le jeu (brouillon sans tentative) ; la règle de publication suit ce type. */
+export async function setQuizMaterialKind(setId: string, kind: QuizMaterialKind): Promise<void> {
+  const { error } = await supabase.rpc('set_quiz_material_kind', { p_set: setId, p_kind: kind });
+  fail(error);
+}
+/** Les réglages posés par le parent AU MOMENT de valider (voir D-059). */
 export async function validateQuizAttempt(attemptId: string, showCorrection = false): Promise<void> {
   const { error } = await supabase.rpc('validate_quiz_attempt', { p_attempt: attemptId, p_show_correction: showCorrection });
   fail(error);
