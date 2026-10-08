@@ -153,3 +153,12 @@ Livrées en deux PR : [#13](https://github.com/ngpcao-spec/TaskMate/pull/13) (pa
 - Production Supabase : migrations `000017` et `000018` appliquées ; fonctions redéployées (`generate-questions` v3 à 02:00:31 UTC).
 - Déploiement Vercel de `main` : non constatable avec les outils de la session.
 - Reste à faire par l'humain : vérifier sur téléphone (voir le rapport de la PR #14) ; la clé `OPENAI_API_KEY` est déjà en place (D-060).
+
+## Notifications push dans la langue de l'appareil (D-063) — fusionnée le 2026-10-08
+PR [#16](https://github.com/ngpcao-spec/TaskMate/pull/16) (fusion `b1aa7dc`) : `devices.locale` + RPC `set_push_locale` (migration `…000019`), textes vi / fr / en dans `send-push`, langue envoyée par l'app à l'enregistrement et au changement de langue. Tests : pgTAP `23_push_locale`, Jest `send-push-locale`, `push-locale-api`, `settings`. Détail et limite connue (deux appareils d'une même personne dans deux langues) dans DECISIONS.md (D-063).
+
+État constaté (API GitHub / Supabase, lecture seule) :
+- CI de la PR avant fusion : `app`, `db` (types générés à jour compris) et `e2e` verts sur `540bd17`.
+- CI de `main` : run #133 sur `b1aa7dc`, `app`, `db` et `e2e` verts.
+- Production Supabase : migration `20260702000019 push_locale` appliquée ; fonctions redéployées le 2026-10-08 à 05:33 UTC (`send-push` v13).
+- Non vérifié ici : réception d'une vraie notification dans chaque langue (appareil réel), déploiement Vercel de `main`.
