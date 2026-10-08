@@ -472,6 +472,22 @@
     "blockers": {
       "toVerify": "{{count}} réponses à vérifier",
       "unconfirmed": "{{count}} réponses non confirmées"
+    },
+    "sheet": {
+      "title": "Feuille de réponses",
+      "intro": "Lis le sujet sur le papier, puis choisis tes réponses ici.",
+      "introPaper": "Lis la question (sur le papier ou ici), puis choisis ta réponse.",
+      "question": "Question {{n}}",
+      "figure": "Voir la figure / le tableau sur le sujet papier — Question {{n}}",
+      "choice": "Question {{n}} : réponse {{letter}}",
+      "progress": "{{done}}/{{total}} réponses données"
+    },
+    "paper": {
+      "title": "Mode de réponse de l'enfant",
+      "screen": "À l'écran",
+      "paper": "Papier, énoncés à l'écran",
+      "sheet": "Feuille de réponses seule (numéros et lettres)",
+      "hint": "Pour un sujet lu sur papier : les questions suivent les numéros du sujet et les choix gardent leurs lettres A à D (jamais mélangés)."
     }
   },
   "sync": {

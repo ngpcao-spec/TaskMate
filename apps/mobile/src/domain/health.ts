@@ -96,6 +96,7 @@ export const EXPECTED_FUNCTIONS = [
   'schedule_cron_jobs',
   'set_child_password',
   'set_quiz_material_kind',
+  'set_quiz_paper_support',
   'set_quiz_status',
   'start_quiz_evaluation',
   'submit_quiz_evaluation',

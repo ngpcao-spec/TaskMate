@@ -505,13 +505,13 @@ isOneToOne: false
                   ]
                 },"quiz_sets": {
                   Row: {
-                    "child_id": string,"created_at": string,"created_by": string,"deleted_at": string | null,"family_id": string,"id": string,"kind_detected": boolean,"material_kind": Database["public"]['Enums']["quiz_material_kind"],"status": Database["public"]['Enums']["quiz_status"],"subject": string | null,"title": string,"updated_at": string
+                    "answer_sheet_only": boolean,"child_id": string,"created_at": string,"created_by": string,"deleted_at": string | null,"family_id": string,"id": string,"kind_detected": boolean,"material_kind": Database["public"]['Enums']["quiz_material_kind"],"paper_support": boolean,"status": Database["public"]['Enums']["quiz_status"],"subject": string | null,"title": string,"updated_at": string
                   }
                   Insert: {
-                    "child_id": string,"created_at"?: string,"created_by": string,"deleted_at"?: string | null,"family_id": string,"id"?: string,"kind_detected"?: boolean,"material_kind"?: Database["public"]['Enums']["quiz_material_kind"],"status"?: Database["public"]['Enums']["quiz_status"],"subject"?: string | null,"title": string,"updated_at"?: string
+                    "answer_sheet_only"?: boolean,"child_id": string,"created_at"?: string,"created_by": string,"deleted_at"?: string | null,"family_id": string,"id"?: string,"kind_detected"?: boolean,"material_kind"?: Database["public"]['Enums']["quiz_material_kind"],"paper_support"?: boolean,"status"?: Database["public"]['Enums']["quiz_status"],"subject"?: string | null,"title": string,"updated_at"?: string
                   }
                   Update: {
-                    "child_id"?: string,"created_at"?: string,"created_by"?: string,"deleted_at"?: string | null,"family_id"?: string,"id"?: string,"kind_detected"?: boolean,"material_kind"?: Database["public"]['Enums']["quiz_material_kind"],"status"?: Database["public"]['Enums']["quiz_status"],"subject"?: string | null,"title"?: string,"updated_at"?: string
+                    "answer_sheet_only"?: boolean,"child_id"?: string,"created_at"?: string,"created_by"?: string,"deleted_at"?: string | null,"family_id"?: string,"id"?: string,"kind_detected"?: boolean,"material_kind"?: Database["public"]['Enums']["quiz_material_kind"],"paper_support"?: boolean,"status"?: Database["public"]['Enums']["quiz_status"],"subject"?: string | null,"title"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -785,7 +785,7 @@ isOneToOne: false
                            },
 "child_quiz_questions":
 { Args: { "p_attempt": string }; Returns: {
-              "choices": (string)[],"position": number,"prompt": string,"question_id": string
+              "choices": (string)[],"needs_figure": boolean,"origin_number": number,"position": number,"prompt": string,"question_id": string
             }[]
                            },
 "child_quiz_result":
@@ -793,7 +793,7 @@ isOneToOne: false
                            },
 "child_quiz_sets":
 { Args: Record<PropertyKey, never>; Returns: {
-              "can_start_evaluation": boolean,"evaluation_attempt_id": string,"evaluation_status": Database["public"]['Enums']["quiz_attempt_status"],"question_count": number,"set_id": string,"subject": string,"title": string
+              "answer_sheet_only": boolean,"can_start_evaluation": boolean,"evaluation_attempt_id": string,"evaluation_status": Database["public"]['Enums']["quiz_attempt_status"],"paper_support": boolean,"question_count": number,"set_id": string,"subject": string,"title": string
             }[]
                            },
 "child_reserved":
@@ -873,7 +873,8 @@ isOneToOne: false
                            },
 "quiz_editable_set":
 { Args: { "p_family": string,"p_set": string }; Returns: {
-              "child_id": string,
+              "answer_sheet_only": boolean,
+"child_id": string,
 "created_at": string,
 "created_by": string,
 "deleted_at": string | null,
@@ -881,6 +882,7 @@ isOneToOne: false
 "id": string,
 "kind_detected": boolean,
 "material_kind": Database["public"]['Enums']["quiz_material_kind"],
+"paper_support": boolean,
 "status": Database["public"]['Enums']["quiz_status"],
 "subject": string | null,
 "title": string,
@@ -999,6 +1001,9 @@ isOneToOne: false
                            },
 "set_quiz_material_kind":
 { Args: { "p_kind": Database["public"]['Enums']["quiz_material_kind"],"p_set": string }; Returns: undefined
+                           },
+"set_quiz_paper_support":
+{ Args: { "p_paper": boolean,"p_set": string,"p_sheet_only": boolean }; Returns: undefined
                            },
 "set_quiz_status":
 { Args: { "p_set": string,"p_status": Database["public"]['Enums']["quiz_status"] }; Returns: undefined

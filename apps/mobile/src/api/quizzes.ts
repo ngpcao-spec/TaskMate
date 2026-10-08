@@ -137,6 +137,11 @@ export async function setQuizMaterialKind(setId: string, kind: QuizMaterialKind)
   const { error } = await supabase.rpc('set_quiz_material_kind', { p_set: setId, p_kind: kind });
   fail(error);
 }
+/** Support papier / « feuille de réponses seule » (D-062) : brouillon sans tentative ; jamais d'écriture directe. */
+export async function setQuizPaperSupport(setId: string, paper: boolean, sheetOnly: boolean): Promise<void> {
+  const { error } = await supabase.rpc('set_quiz_paper_support', { p_set: setId, p_paper: paper, p_sheet_only: sheetOnly });
+  fail(error);
+}
 /** Les réglages posés par le parent AU MOMENT de valider (voir D-059). */
 export async function validateQuizAttempt(attemptId: string, showCorrection = false): Promise<void> {
   const { error } = await supabase.rpc('validate_quiz_attempt', { p_attempt: attemptId, p_show_correction: showCorrection });
@@ -156,6 +161,9 @@ export type ChildQuizSet = {
   evaluation_attempt_id: string | null;
   evaluation_status: QuizAttemptStatus | null;
   can_start_evaluation: boolean;
+  /** Support papier : écran « Phiếu trả lời ». « Feuille seule » : le serveur n'envoie que des lettres. */
+  paper_support: boolean;
+  answer_sheet_only: boolean;
 };
 export async function fetchChildQuizSets(): Promise<ChildQuizSet[]> {
   const { data, error } = await supabase.rpc('child_quiz_sets');
@@ -163,8 +171,12 @@ export async function fetchChildQuizSets(): Promise<ChildQuizSet[]> {
   return (data ?? []) as ChildQuizSet[];
 }
 
-/** Positions et choix déjà mélangés par le serveur pour CETTE tentative ; ni bonne réponse ni explication. */
-export type PlayQuestionRow = { question_id: string; position: number; prompt: string; choices: string[] };
+/**
+ * Positions et choix déjà décidés par le serveur pour CETTE tentative (mélangés, ou dans l'ordre de la feuille pour un support papier) ; ni bonne réponse
+ * ni explication ni drapeau « à vérifier ». `origin_number` : numéro de la feuille ; `needs_figure` : la question s'appuie sur une figure du papier.
+ * « Feuille seule » : `prompt` vide et `choices` = lettres.
+ */
+export type PlayQuestionRow = { question_id: string; position: number; prompt: string; choices: string[]; origin_number: number | null; needs_figure: boolean };
 export async function fetchChildQuestions(attemptId: string): Promise<PlayQuestionRow[]> {
   const { data, error } = await supabase.rpc('child_quiz_questions', { p_attempt: attemptId });
   fail(error);
@@ -181,11 +193,12 @@ export async function submitQuizEvaluation(attemptId: string, answers: { questio
 }
 
 /** Question ratée, telle que l'enfant la voit quand la correction est désactivée : énoncé + SA réponse, rien d'autre. */
-export type MissedItem = { question_id: string; position: number; prompt: string; chosen_text: string | null };
+export type MissedItem = { question_id: string; position: number; number: number | null; prompt: string; chosen_text: string | null };
 /** Correction complète (réglage activé par le parent à la validation). Indices = positions affichées à l'enfant. */
 export type CorrectionItem = {
   question_id: string;
   position: number;
+  number: number | null;
   prompt: string;
   choices: string[];
   choice_index: number | null;
@@ -201,6 +214,8 @@ export type ChildQuizResult = {
   total?: number;
   validated_at?: string;
   show_correction?: boolean;
+  paper_support?: boolean;
+  answer_sheet_only?: boolean;
   /** Correction désactivée : questions ratées seulement. */
   missed?: MissedItem[];
   /** Correction activée : toutes les questions avec bonne réponse et explication. */

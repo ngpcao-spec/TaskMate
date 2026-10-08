@@ -543,6 +543,80 @@ test.describe('révisions (D-055)', () => {
     expect((await childClient.rpc('confirm_quiz_answers', { p_set: setId, p_answers: [] })).error?.code).toBe('42501');
   });
 
+  test('support papier : l\'enfant remplit la Phiếu trả lời (numéros d\'origine, A à D, figure), le serveur ne mélange rien, le parent valide', async ({ browser }) => {
+    test.setTimeout(180_000);
+    const family = await createFamily();
+    const setId = crypto.randomUUID();
+    const db = serviceClient();
+    // jeu d'examen : numéros dans le désordre, une question qui dépend d'une figure ; réponses confirmées puis jeu publié en « feuille seule »
+    await seedDraft(family.familyId, family.minh.childId as string, family.parent.memberId as string, setId, 'Examen papier', {
+      kind: 'exam',
+      rows: [
+        { prompt: 'Énoncé secret douze', choices: ['a12', 'b12', 'c12', 'd12'], correct: 2, number: 12 },
+        { prompt: 'Énoncé secret trois', choices: ['a3', 'b3', 'c3', 'd3'], correct: 0, number: 3, figure: true },
+        { prompt: 'Énoncé secret cinq', choices: ['a5', 'b5', 'c5'], correct: 1, number: 5 },
+      ],
+    });
+    expect((await db.from('quiz_sets').select('paper_support, answer_sheet_only').eq('id', setId).single()).data).toEqual({ paper_support: true, answer_sheet_only: false }); // un examen est un support papier par défaut
+    await db.from('quiz_answer_keys').update({ confirmed: true, to_verify: false }).eq('family_id', family.familyId);
+    await db.from('quiz_sets').update({ status: 'published', answer_sheet_only: true }).eq('id', setId);
+
+    const childCtx = await browser.newContext();
+    await signInContext(childCtx, family.minh);
+    const child = await childCtx.newPage();
+    trace(child, 'enfant-feuille');
+    await open(child, '/more/revisions');
+    await child.getByRole('button', { name: /Examen papier/ }).click();
+    await child.getByRole('button', { name: 'Làm bài kiểm tra' }).click();
+
+    // la feuille : numéros d'origine dans l'ordre, boutons A–D, bandeau figure, AUCUN énoncé ni texte de choix
+    await expect(child.getByRole('heading', { name: 'Phiếu trả lời' })).toBeVisible();
+    await expect(child.getByRole('heading', { name: /^Câu \d+$/ })).toHaveText(['Câu 3', 'Câu 5', 'Câu 12']);
+    await expect(child.getByText('Xem hình / bảng trên đề giấy — Câu 3')).toBeVisible();
+    await expect(child.getByText(/Xem hình \/ bảng trên đề giấy — Câu (5|12)/)).toHaveCount(0);
+    await expect(child.getByRole('radio', { name: 'Câu 3: đáp án D' })).toBeVisible();
+    await expect(child.getByRole('radio', { name: 'Câu 5: đáp án D' })).toHaveCount(0);
+    await expect(child.getByText(/Énoncé secret|a12|b3|c5/)).toHaveCount(0);
+    const box = await child.getByRole('radio', { name: 'Câu 3: đáp án A' }).boundingBox();
+    expect(box!.width).toBeGreaterThanOrEqual(44);
+    expect(box!.height).toBeGreaterThanOrEqual(44);
+
+    await child.getByRole('radio', { name: 'Câu 3: đáp án A' }).click();
+    await child.getByRole('radio', { name: 'Câu 5: đáp án B' }).click();
+    await child.getByRole('radio', { name: 'Câu 12: đáp án A' }).click();
+    await expect(child.getByText('Đã trả lời 3/3 câu')).toBeVisible();
+    await child.getByRole('button', { name: 'Nộp bài' }).click();
+    await expect(child.getByText('Đã nộp, chờ phụ huynh duyệt')).toBeVisible();
+
+    // le serveur n'a RIEN mélangé : questions par numéro, choix dans l'ordre d'origine ; le score est calculé côté serveur
+    const { data: attempt } = await db.from('quiz_attempts').select('id, status').eq('set_id', setId).single();
+    expect(attempt?.status).toBe('submitted');
+    const { data: layout } = await db.from('quiz_attempt_layouts').select('layout').eq('attempt_id', attempt!.id).single();
+    const { data: ordered } = await db.from('quiz_questions').select('id, choices, origin_number').eq('set_id', setId).order('origin_number');
+    expect((layout!.layout as { order: string[] }).order).toEqual(ordered!.map((q) => q.id));
+    for (const q of ordered!) expect((layout!.layout as { choices: Record<string, number[]> }).choices[q.id]).toEqual((q.choices as string[]).map((_, i) => i));
+    expect((await db.from('quiz_results').select('score, total').eq('attempt_id', attempt!.id).single()).data).toEqual({ score: 2, total: 3 });
+
+    // le parent valide (correction masquée) ; l'enfant voit son score, ses lettres, et aucune bonne réponse
+    const { createClient } = await import('@supabase/supabase-js');
+    const parentClient = createClient(supabaseUrl(), process.env.E2E_ANON_KEY as string, { auth: { persistSession: false } });
+    expect((await parentClient.auth.signInWithPassword({ email: family.parent.email, password: family.parent.password })).error).toBeNull();
+    expect((await parentClient.rpc('validate_quiz_attempt', { p_attempt: attempt!.id, p_show_correction: false })).error).toBeNull();
+    await open(child, '/more/revisions');
+    await child.getByRole('button', { name: /Examen papier/ }).click();
+    await child.getByRole('button', { name: 'Xem kết quả' }).click();
+    await expect(child.getByText('Điểm: 2/3')).toBeVisible();
+    await expect(child.getByText('Câu 12', { exact: true })).toBeVisible();
+    await expect(child.getByText('Bạn chọn: A')).toBeVisible();
+    await expect(child.getByText(/Đáp án đúng|Énoncé secret/)).toHaveCount(0);
+
+    // l'enfant ne peut pas régler le support papier d'un jeu, ni lire la table des questions
+    const childClient = createClient(supabaseUrl(), process.env.E2E_ANON_KEY as string, { auth: { persistSession: false } });
+    expect((await childClient.auth.signInWithPassword({ email: family.minh.email, password: family.minh.password })).error).toBeNull();
+    expect((await childClient.rpc('set_quiz_paper_support', { p_set: setId, p_paper: false, p_sheet_only: false })).error?.code).toBe('42501');
+    expect((await childClient.from('quiz_questions').select('id')).data).toEqual([]);
+  });
+
   test('IA non configurée, quota atteint, document refusé : messages clairs, aucun jeu créé', async ({ browser }) => {
     test.setTimeout(120_000);
     const family = await createFamily();

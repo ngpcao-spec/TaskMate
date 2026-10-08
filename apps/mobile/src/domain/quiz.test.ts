@@ -1,6 +1,7 @@
 import {
   gridOrder, isExamSet, letterOf, LETTERS, publishBlockers,
   answersPayload, canPublish, evaluationView, historySeries, lastChange, moveItem, nextPosition, normalizeQuestion, scoreAnswers, scorePercent,
+  answeredCount, PAPER_MODES, paperFlags, paperModeOf, questionTag,
   quizErrorKey, unansweredCount, validateQuestion, validateSetTitle, type QuestionDraft,
 } from './quiz';
 
@@ -173,5 +174,30 @@ describe('supports multiples : grille Đáp án et règle de publication', () =>
     expect(quizErrorKey('answers_to_verify')).toBe('revisions.server.answersToVerify');
     expect(quizErrorKey('answers_not_confirmed')).toBe('revisions.server.answersNotConfirmed');
     expect(quizErrorKey('invalid_number')).toBe('revisions.errors.promptRequired');
+  });
+});
+
+describe('support papier (D-062)', () => {
+  it('mode de réponse depuis les réglages du jeu', () => {
+    expect(paperModeOf({ paper_support: false, answer_sheet_only: false })).toBe('screen');
+    expect(paperModeOf({ paper_support: true, answer_sheet_only: false })).toBe('paper');
+    expect(paperModeOf({ paper_support: true, answer_sheet_only: true })).toBe('sheet');
+  });
+  it('réglages envoyés au serveur : « feuille seule » implique le papier, aller-retour cohérent', () => {
+    expect(paperFlags('screen')).toEqual({ paper: false, sheetOnly: false });
+    expect(paperFlags('paper')).toEqual({ paper: true, sheetOnly: false });
+    expect(paperFlags('sheet')).toEqual({ paper: true, sheetOnly: true });
+    for (const m of PAPER_MODES) expect(paperModeOf({ paper_support: paperFlags(m).paper, answer_sheet_only: paperFlags(m).sheetOnly })).toBe(m);
+  });
+  it('numéro affiché : celui de la feuille, sinon « #rang » (jamais un nombre nu)', () => {
+    expect(questionTag(12, 0)).toBe('12');
+    expect(questionTag(null, 2)).toBe('#3');
+    expect(questionTag(undefined, 0)).toBe('#1');
+  });
+  it('progression de la feuille', () => {
+    const qs = [{ question_id: 'a', choices: ['A', 'B'] }, { question_id: 'b', choices: ['A', 'B'] }];
+    expect(answeredCount(qs, {})).toBe(0);
+    expect(answeredCount(qs, { a: 0, b: null })).toBe(1);
+    expect(answeredCount(qs, { a: 0, b: 1 })).toBe(2);
   });
 });

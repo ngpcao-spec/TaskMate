@@ -9,10 +9,10 @@ import { Button, Card, Field, Screen, ScreenHeader } from '@/components/ui';
 import { MATERIAL_KINDS } from '@/domain/documents';
 import { formatShortDate } from '@/domain/calendar';
 import { todayInTz } from '@/domain/family-time';
-import { isExamSet, moveItem, publishBlockers, validateSetTitle } from '@/domain/quiz';
+import { isExamSet, moveItem, PAPER_MODES, paperFlags, paperModeOf, publishBlockers, validateSetTitle } from '@/domain/quiz';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import {
-  useConfirmAnswers, useCopyQuizSet, useDeleteQuestion, useDeleteQuizSet, useParentQuestions, useQuizSet, useRelaunchEvaluation, useReorderQuestions, useSetAttempts, useSetMaterialKind,
+  useConfirmAnswers, useCopyQuizSet, useDeleteQuestion, useDeleteQuizSet, useParentQuestions, useQuizSet, useRelaunchEvaluation, useReorderQuestions, useSetAttempts, useSetMaterialKind, useSetPaperSupport,
   useSetQuizStatus, useUpdateQuizSet,
 } from '@/hooks/useQuizzes';
 import { useToastStore } from '@/store/toast';
@@ -39,6 +39,7 @@ export function QuizEditor({ setId }: { setId: string }) {
   const relaunch = useRelaunchEvaluation();
   const confirm = useConfirmAnswers();
   const setKind = useSetMaterialKind();
+  const setPaper = useSetPaperSupport();
   // saisie en cours (null = pas de modification : on affiche la valeur du serveur)
   const [titleEdit, setTitle] = useState<string | null>(null);
   const [subjectEdit, setSubject] = useState<string | null>(null);
@@ -92,6 +93,20 @@ export function QuizEditor({ setId }: { setId: string }) {
         )}
         {s.kind_detected ? <Text style={typography.secondary}>{t('revisions.material.detectedNote')}</Text> : null}
         {exam ? <Button variant="secondary" label={t('revisions.import.result.openGrid')} onPress={() => router.push({ pathname: '/quiz/answers', params: { id: setId } })} /> : null}
+      </Card>
+
+      <Card>
+        <Text accessibilityRole="header" style={styles.section}>{t('revisions.paper.title')}</Text>
+        {locked ? (
+          <Text style={typography.body}>{t(`revisions.paper.${paperModeOf(s)}`)}</Text>
+        ) : (
+          <View style={styles.kinds}>
+            {PAPER_MODES.map((m) => (
+              <Chip key={m} label={t(`revisions.paper.${m}`)} selected={paperModeOf(s) === m} onPress={() => { if (paperModeOf(s) !== m) setPaper.mutate({ setId, paper: paperFlags(m).paper, sheetOnly: paperFlags(m).sheetOnly }); }} />
+            ))}
+          </View>
+        )}
+        <Text style={typography.secondary}>{t('revisions.paper.hint')}</Text>
       </Card>
 
       {lockMessage ? <Text accessibilityRole="alert" style={styles.lock}>{lockMessage}</Text> : null}

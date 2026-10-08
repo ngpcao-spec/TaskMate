@@ -472,6 +472,22 @@
     "blockers": {
       "toVerify": "{{count}} answers to verify",
       "unconfirmed": "{{count}} answers not confirmed"
+    },
+    "sheet": {
+      "title": "Answer sheet",
+      "intro": "Read the paper exam, then pick your answers here.",
+      "introPaper": "Read the question (on paper or here), then pick your answer.",
+      "question": "Question {{n}}",
+      "figure": "See the figure / table on the paper exam — Question {{n}}",
+      "choice": "Question {{n}}: answer {{letter}}",
+      "progress": "{{done}}/{{total}} answered"
+    },
+    "paper": {
+      "title": "How the child answers",
+      "screen": "On screen",
+      "paper": "Paper, questions on screen",
+      "sheet": "Answer sheet only (numbers and letters)",
+      "hint": "For an exam read on paper: questions follow the exam numbers and choices keep their letters A to D (never shuffled)."
     }
   },
   "sync": {
