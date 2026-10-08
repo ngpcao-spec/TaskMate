@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { confirmDialog } from '@/components/confirm';
 import { Linking, StyleSheet, Text, View } from 'react-native';
 import { signOut } from '@/api/auth';
+import { syncPushLocale } from '@/api/notifications';
 import { Chip } from '@/components/Chip';
 import { ParentInviteCard } from '@/components/ParentInviteCard';
 import { ParentsCard } from '@/components/ParentsCard';
@@ -61,7 +62,7 @@ export default function SettingsScreen() {
         <Text accessibilityRole="header" style={styles.section}>{t('settings.language')}</Text>
         <View style={styles.wrap}>
           {SUPPORTED_LANGUAGES.map((l) => (
-            <Chip key={l} label={t(`settings.lang.${l}`)} selected={i18n.language === l} onPress={() => void setLanguage(l)} />
+            <Chip key={l} label={t(`settings.lang.${l}`)} selected={i18n.language === l} onPress={() => void setLanguage(l).then(syncPushLocale)} />
           ))}
         </View>
       </Card>

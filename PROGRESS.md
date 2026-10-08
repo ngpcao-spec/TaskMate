@@ -29,7 +29,7 @@ Table « Critères d'acceptation → tests » en fin de fichier : tous couverts 
 
 ### Dette technique connue
 - Apple/Google : boutons derrière un flag, handlers à brancher (D-013).
-- Jetons push invalides nettoyés au ticket Expo uniquement ; textes push en vietnamien uniquement.
+- Jetons push invalides nettoyés au ticket Expo uniquement. (Textes push en vi / fr / en selon l'appareil : fait, D-063.)
 - Création/édition de **séries** récurrentes en ligne uniquement ; changement d'enfant d'une série non supporté.
 - Avatars = initiales ; icône/splash = placeholders ; illustration du splash = SVG simplifié.
 

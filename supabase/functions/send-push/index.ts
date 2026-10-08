@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
     const ids = (members ?? []).map((m) => m.id);
     const [{ data: prefs }, { data: devices }] = await Promise.all([
       db.from('notification_prefs').select('member_id, prefs').in('member_id', ids),
-      db.from('devices').select('member_id, expo_push_token, web_push_subscription').in('member_id', ids).is('revoked_at', null),
+      db.from('devices').select('member_id, expo_push_token, web_push_subscription, locale').in('member_id', ids).is('revoked_at', null),
     ]);
     const prefsOf = new Map((prefs ?? []).map((p) => [p.member_id, p.prefs]));
     return {
