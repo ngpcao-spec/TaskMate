@@ -473,7 +473,7 @@ test.describe('révisions (D-055)', () => {
       const kind = sent.kind === 'auto' ? 'exam' : sent.kind;
       await route.fulfill({
         status: 200, headers: { 'access-control-allow-origin': '*' }, contentType: 'application/json',
-        body: JSON.stringify(summary(sent.setId, 'Examen de maths', { count: 3, kind, kind_detected: sent.kind === 'auto', found: 42, capped: true, ignored: ['Câu 13', 'Câu 14', 'Câu 15'], ignored_count: 3, figure_count: 1, to_verify_count: 1, free_retry: sent.retry })),
+        body: JSON.stringify(summary(sent.setId, 'Examen de maths', { count: 30, kind, kind_detected: sent.kind === 'auto', found: 42, capped: true, ignored: ['Câu 13', 'Câu 14', 'Câu 15'], ignored_count: 3, figure_count: 1, to_verify_count: 1, free_retry: sent.retry })),
       });
     });
 
