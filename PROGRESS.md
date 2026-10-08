@@ -143,3 +143,13 @@ Vérifications locales : typecheck, lint, 299 tests Jest, `expo export --platfor
 
 ## Changement produit — comptes e-mail/identifiant (D-048)
 Invitations/QR/OTP/connexion anonyme remplacés par : parent e-mail + mot de passe ; enfant identifiant + mot de passe créé par le parent (Edge Functions `create-child`, `reset-child-password`, `delete-child`). Migration `…0011_child_accounts`, pgTAP 12, tests Jest (domaine, fonctions, écrans) et E2E adaptés. Les sections ci-dessus décrivent l'ancien flux d'invitation (historique).
+
+## Révisions : supports multiples (D-061, D-062) — fusionnées le 2026-10-08
+Livrées en deux PR : [#13](https://github.com/ngpcao-spec/TaskMate/pull/13) (parent et serveur, migration `…000017`, fusion `a8f6c89`) et [#14](https://github.com/ngpcao-spec/TaskMate/pull/14) (côté enfant, migration `…000018`, fusion `461ca4f`). Détail et choix dans DECISIONS.md (D-061, D-062) ; tests : pgTAP `21_material_kinds` et `22_paper_support`, Jest (`answer-grid`, `import-document`, `paper-sheet`, `generate-questions-function`), E2E web (examen détecté → grille Đáp án → publication refusée par le serveur ; feuille de réponses de l'enfant).
+
+État constaté (API GitHub / Supabase, lecture seule) :
+- CI de chaque PR avant fusion : `app`, `db`, `e2e` verts sur le dernier commit (#13 : `ff21cf1` ; #14 : `db3b9b1`, run `push` et run `pull_request`).
+- CI de `main` : `a8f6c89` verte ; `461ca4f` **`app` et `db` verts, `e2e` rouge** — un test (feuille de réponses) lisait la base avant l'arrivée de l'envoi au serveur, défaut du test et non de l'application ; correctif en PR [#15](https://github.com/ngpcao-spec/TaskMate/pull/15) (non fusionnée tant que sa CI n'est pas constatée verte).
+- Production Supabase : migrations `000017` et `000018` appliquées ; fonctions redéployées (`generate-questions` v3 à 02:00:31 UTC).
+- Déploiement Vercel de `main` : non constatable avec les outils de la session.
+- Reste à faire par l'humain : vérifier sur téléphone (voir le rapport de la PR #14) ; la clé `OPENAI_API_KEY` est déjà en place (D-060).
