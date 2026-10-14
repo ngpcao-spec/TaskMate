@@ -413,3 +413,8 @@ Sélection par `<input type="file">` (`services/documents.web.ts`, `capture` pou
 **Accessibilité.** Contrastes imposés par test pour les CINQ thèmes (≥ 4,5:1 texte, 3:1 initiales d'enfant) : réussis du premier coup, aucun jeton ajusté.
 **Tests.** `themes.test` (5 thèmes, décor `bunny`), `theme-card` (5 choix, enregistrement de « bunny »).
 **Limites.** Illustrations maison simplifiées (pas la fillette au bonnet d'ourson ni les widgets de la référence) ; natif : rouvrir l'app après le choix ; rendu validé en web (Chromium), pas sur iPhone réel.
+
+## D-074 — Le bas des écrans à défilement ne passe plus sous la barre de navigation
+**Constat (Teo, iPhone, PWA).** Le dernier bandeau d'un écran (« Xem lịch tuần » du calendrier, bouton « Lưu » des notifications, dernière ligne du profil) restait coupé par la barre du bas : impossible de le voir en entier. Dans Chromium la page défile jusqu'au bout ; seul l'iPhone réel montrait le défaut (l'accueil avait déjà une marge basse écrite à la main, 96).
+**Correction.** La barre du bas mesure sa propre hauteur (`onLayout`) et la fournit aux écrans des onglets par `TabInsetContext` (`components/TabInset.tsx`) ; `Screen` et le calendrier l'ajoutent à leur marge basse (`bottomPaddingFor`). Hors onglets (écrans empilés) et sur grand écran (navigation latérale) la valeur est 0 : rien ne change. Marge en trop possible là où le défaut n'existait pas (bas de page un peu plus aéré) : accepté.
+**Tests.** `tab-inset` (contexte, calcul de la marge). **Limite.** Cause exacte sur iOS non reproduite ici (pas de WebKit) : la correction garantit l'accès au dernier élément quelle qu'en soit la cause ; à confirmer sur l'iPhone.

@@ -15,7 +15,7 @@ type BarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['tabBar']>>[0
  * Navigation en panneau marine (maquette) : barre du bas sur téléphone, colonne latérale avec « Hi, {prénom} ! » sur grand écran.
  * L'onglet actif est une pastille claire en relief ; les autres sont en texte clair sur fond marine.
  */
-export function NavBar({ state, descriptors, navigation }: BarProps) {
+export function NavBar({ state, descriptors, navigation, onHeight }: BarProps & { /** Hauteur mesurée de la barre du bas (0 en colonne latérale). */ onHeight?: (height: number) => void }) {
   const { t } = useTranslation();
   const wide = useIsWide();
   const insets = useSafeAreaInsets();
@@ -24,7 +24,7 @@ export function NavBar({ state, descriptors, navigation }: BarProps) {
   const childId = me?.member.role === 'child' ? me.member.child_id : null;
 
   const bar = (
-    <View style={[wide ? styles.side : styles.bottom, !wide && { paddingBottom: Math.max(insets.bottom, 8) }]}>
+    <View onLayout={(e) => onHeight?.(wide ? 0 : Math.round(e.nativeEvent.layout.height))} style={[wide ? styles.side : styles.bottom, !wide && { paddingBottom: Math.max(insets.bottom, 8) }]}>
       <Gradient from={colors.barFrom} to={colors.barTo} direction="v" />
       {wide ? (
         <View style={styles.hello}>

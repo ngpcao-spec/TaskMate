@@ -11,6 +11,7 @@ import { Backdrop } from '@/components/Backdrop';
 import { CalendarCard } from '@/components/CalendarCard';
 import { RoundButton } from '@/components/RoundButton';
 import { ScreenHeader } from '@/components/ui';
+import { bottomPaddingFor, useTabInset } from '@/components/TabInset';
 import { WeekStrip } from '@/components/WeekStrip';
 import {
   formatDayTitle,
@@ -34,6 +35,7 @@ export default function CalendarScreen() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const d = useDisplayedChild();
+  const tabInset = useTabInset();
   const now = useNow();
   const lang = (['vi', 'fr', 'en'].includes(i18n.language) ? i18n.language : 'vi') as CalendarLanguage;
   const tz = d?.me.family.timezone ?? 'Asia/Ho_Chi_Minh';
@@ -86,7 +88,7 @@ export default function CalendarScreen() {
     <SafeAreaView style={styles.screen} edges={['top']}>
       <Backdrop />
       <GestureDetector gesture={swipe}>
-        <ScrollView contentContainerStyle={styles.content}>
+        <ScrollView contentContainerStyle={[styles.content, { paddingBottom: bottomPaddingFor(tabInset, spacing.md) }]}>
           <ScreenHeader
             title={t('tabs.calendar')}
             right={

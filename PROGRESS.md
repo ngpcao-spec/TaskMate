@@ -214,3 +214,6 @@ Réglages → Giao diện : « Kính mờ » (défaut), « Kawaii », « Vũ tr�
 
 ### Cinquième thème « bunny » (D-073) — 2026-10-14
 Réglages → Giao diện : « Kính mờ » (défaut), « Kawaii », « Vũ trụ », « Gấu nâu » ou « Thỏ bông » (lapinous pastel sur vichy bleu ciel), par appareil. Captures : `docs/screenshots/bunny`. Jest : `themes.test` (contrastes ×5), `theme-card`. Non vérifié : rendu sur iPhone réel.
+
+### Bas des écrans sous la barre de navigation (D-074) — 2026-10-14
+Le dernier élément des écrans à défilement (onglets) est de nouveau atteignable sur iPhone : la barre du bas fournit sa hauteur mesurée, ajoutée à la marge basse. Jest : `tab-inset`. À confirmer sur l'iPhone réel.
