@@ -1,7 +1,7 @@
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import '@/i18n';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
-import { Stack } from 'expo-router';
+import { Stack, ThemeProvider } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ToastHost } from '@/components/ToastHost';
@@ -11,6 +11,7 @@ import { createQueryClient, CACHE_MAX_AGE } from '@/sync/client';
 import { setupNetworkListeners } from '@/sync/network';
 import { persister } from '@/sync/persister';
 import { registerServiceWorker } from '@/pwa/registerServiceWorker';
+import { navigationTheme } from '@/theme/navigation';
 
 setupNetworkListeners();
 registerServiceWorker();
@@ -23,26 +24,28 @@ function Root() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <StatusBar style="dark" />
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="task/new" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="task/renew" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="task/[id]" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="quiz/new" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="quiz/[id]" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="quiz/import" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="quiz/question" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="quiz/answers" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="quiz/attempt/[id]" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="quiz/evaluate/[id]" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="quiz/result/[id]" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="reward/new" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="reward/[id]" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="points-adjust" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="notifications" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="approvals" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="goal/new" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="goal/[id]" options={{ presentation: 'modal' }} />
-        </Stack>
+        <ThemeProvider value={navigationTheme}>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="task/new" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="task/renew" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="task/[id]" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="quiz/new" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="quiz/[id]" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="quiz/import" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="quiz/question" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="quiz/answers" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="quiz/attempt/[id]" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="quiz/evaluate/[id]" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="quiz/result/[id]" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="reward/new" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="reward/[id]" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="points-adjust" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="notifications" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="approvals" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="goal/new" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="goal/[id]" options={{ presentation: 'modal' }} />
+          </Stack>
+        </ThemeProvider>
         <ToastHost />
       </SafeAreaProvider>
     </GestureHandlerRootView>
