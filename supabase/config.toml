@@ -432,6 +432,9 @@ verify_jwt = false   # publique : l'enfant n'a pas encore de session ; protégé
 [functions.generate-questions]
 verify_jwt = true    # parent connecté (l'appartenance à la famille est revérifiée côté serveur par ai_target)
 
+[functions.generate-avatar]
+verify_jwt = true    # parent ou enfant connecté (autorisation et consentement du parent revérifiés par avatar_target)
+
 [functions.delete-account]
 verify_jwt = true    # parent connecté
 

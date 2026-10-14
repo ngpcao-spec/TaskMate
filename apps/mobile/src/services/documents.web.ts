@@ -1,19 +1,23 @@
+import { AVATAR_LIMITS } from '@/domain/avatar';
 import { DOC_LIMITS, fitWithin, kindOfFile, type DocKind } from '@/domain/documents';
-import type { PickedFile, PickResult, PickSource } from './documents';
+import type { PickedFile, PickResult, PickSource, PortraitResult, PortraitSource } from './documents';
 
-export type { PickedFile, PickResult, PickSource } from './documents';
+export type { PickedFile, PickResult, PickSource, PortraitResult, PortraitSource } from './documents';
 export const documentUploadSupported = true;
+export const portraitSupported = true;
 
 const ACCEPT: Record<PickSource, string> = { camera: 'image/*', gallery: 'image/*', document: 'application/pdf,.pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document' };
 
+type ChooseOptions = { accept: string; multiple: boolean; /** Caméra à ouvrir : `environment` (arrière, documents) ou `user` (avant, portrait) ; absent = galerie / fichiers. */ capture?: 'environment' | 'user' };
+
 /** Ouvre le sélecteur du navigateur (doit être appelée depuis un geste de l'utilisateur) : appareil photo, galerie ou fichier. */
-function chooseFiles(source: PickSource): Promise<File[] | null> {
+function chooseFiles({ accept, multiple, capture }: ChooseOptions): Promise<File[] | null> {
   return new Promise((resolve) => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = ACCEPT[source];
-    input.multiple = source !== 'camera';
-    if (source === 'camera') input.setAttribute('capture', 'environment');
+    input.accept = accept;
+    input.multiple = multiple;
+    if (capture) input.setAttribute('capture', capture);
     input.style.display = 'none';
     const finish = (files: File[] | null) => {
       input.remove();
@@ -60,13 +64,16 @@ async function decode(file: File): Promise<{ source: CanvasImageSource; width: n
 
 const toBlob = (canvas: HTMLCanvasElement, quality: number) => new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', quality));
 
-/** Photo → JPEG redimensionné (≤ 1600 px, qualité 0,8) : le document envoyé à l'IA reste léger et lisible (HEIC compris). */
-async function compressImage(file: File): Promise<PickedFile> {
+type CompressOptions = { maxSide: number; maxBytes: number; quality: number };
+const DOCUMENT_IMAGE: CompressOptions = { maxSide: DOC_LIMITS.maxImageSide, maxBytes: DOC_LIMITS.maxImageBytes, quality: DOC_LIMITS.jpegQuality };
+
+/** Photo → JPEG redimensionné (document : ≤ 1600 px, qualité 0,8 ; portrait : ≤ 1024 px) : l'image envoyée à l'IA reste légère (HEIC compris). */
+async function compressImage(file: File, options: CompressOptions = DOCUMENT_IMAGE): Promise<PickedFile> {
   const decoded = await decode(file);
   let scale = 1;
-  let quality: number = DOC_LIMITS.jpegQuality;
+  let quality = options.quality;
   for (let attempt = 0; attempt < 4; attempt++) {
-    const { width, height } = fitWithin(Math.round(decoded.width * scale), Math.round(decoded.height * scale), DOC_LIMITS.maxImageSide);
+    const { width, height } = fitWithin(Math.round(decoded.width * scale), Math.round(decoded.height * scale), options.maxSide);
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
@@ -77,7 +84,7 @@ async function compressImage(file: File): Promise<PickedFile> {
     ctx.drawImage(decoded.source, 0, 0, width, height);
     const blob = await toBlob(canvas, quality);
     if (!blob) throw new Error('encode');
-    if (blob.size <= DOC_LIMITS.maxImageBytes) {
+    if (blob.size <= options.maxBytes) {
       const name = file.name.replace(/\.[^.]+$/, '') + '.jpg';
       return { name, kind: 'image', mediaType: 'image/jpeg', data: await readBase64(blob), bytes: blob.size };
     }
@@ -97,12 +104,26 @@ async function prepare(file: File): Promise<PickedFile> {
 }
 
 export async function pickDocuments(source: PickSource): Promise<PickResult> {
-  const chosen = await chooseFiles(source);
+  const chosen = await chooseFiles({ accept: ACCEPT[source], multiple: source !== 'camera', capture: source === 'camera' ? 'environment' : undefined });
   if (!chosen) return { status: 'cancelled' };
   try {
     return { status: 'ok', files: await Promise.all(chosen.map(prepare)) };
   } catch (e) {
     const message = e instanceof Error ? e.message : '';
     return { status: 'error', code: message === 'type' ? 'unsupportedType' : message === 'too_large' ? 'tooLarge' : 'unreadable' };
+  }
+}
+
+/** Portrait de l'avatar : caméra avant ou galerie, UNE image, JPEG ≤ 1024 px. Rien n'est conservé : l'image n'existe que le temps de l'envoi. */
+export async function pickPortrait(source: PortraitSource): Promise<PortraitResult> {
+  const chosen = await chooseFiles({ accept: 'image/*', multiple: false, capture: source === 'camera' ? 'user' : undefined });
+  const file = chosen?.[0];
+  if (!file) return { status: 'cancelled' };
+  try {
+    if (kindOfFile(file) !== 'image') return { status: 'error', code: 'unsupportedType' };
+    const picked = await compressImage(file, { maxSide: AVATAR_LIMITS.maxSide, maxBytes: AVATAR_LIMITS.maxBytes, quality: AVATAR_LIMITS.jpegQuality });
+    return { status: 'ok', mediaType: 'image/jpeg', data: picked.data, bytes: picked.bytes };
+  } catch (e) {
+    return { status: 'error', code: e instanceof Error && e.message === 'too_large' ? 'tooLarge' : 'unreadable' };
   }
 }

@@ -30,6 +30,7 @@ jest.mock('@/hooks/useDisplayedChild', () => ({
     children: [minh, khang], child: minh, select: jest.fn(),
   }),
 }));
+jest.mock('@/hooks/useAvatars', () => ({ useAvatar: () => ({ allowed: false, uri: null, version: 0 }) }));
 let mockUnread = 0;
 jest.mock('@/hooks/useNotifications', () => ({ useUnreadNotifications: () => mockUnread }));
 jest.mock('@/hooks/useApprovals', () => ({ useApprovalCounts: () => mockCounts }));

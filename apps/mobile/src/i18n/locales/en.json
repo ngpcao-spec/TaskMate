@@ -31,6 +31,44 @@
     "later": "Later",
     "denied": "Notifications are blocked on this device. Turn them back on in iPhone Settings → Notifications → TaskMate."
   },
+  "avatar": {
+    "title": "Avatar",
+    "current": "{{name}}’s avatar",
+    "none": "No avatar yet: the first letter of the name is used.",
+    "consentTitle": "Create the avatar with AI",
+    "consentBody": "When turned on, {{name}} can take or pick a portrait photo to turn it into a cartoon. The photo is sent to OpenAI (an AI service) only to be redrawn; TaskMate does not keep the original photo, only the cartoon drawing. You can turn this off at any time.",
+    "consentSwitch": "Allow {{name}} to create an avatar with AI",
+    "childLocked": "Ask a parent to turn this on first.",
+    "pickGallery": "Choose a portrait",
+    "pickCamera": "Take a portrait",
+    "hint": "Pick a photo with a clear, well-lit face and only one person.",
+    "generating": "Drawing… this can take up to a minute.",
+    "preview": "The drawing is ready. Use this picture?",
+    "previewImage": "New avatar (preview)",
+    "use": "Use this picture",
+    "retry": "Try again",
+    "cancel": "Cancel",
+    "remove": "Remove avatar",
+    "removeTitle": "Remove the avatar?",
+    "removeBody": "The app will go back to the first letter of the name.",
+    "removeOk": "Remove",
+    "saved": "Avatar saved.",
+    "removed": "Avatar removed.",
+    "remaining": "{{count}} creation(s) left today.",
+    "unsupported": "This feature is available in the web app (PWA).",
+    "errors": {
+      "quota": "Today’s limit has been reached. Try again tomorrow.",
+      "notConfigured": "The AI feature is not set up. Tell a parent.",
+      "timeout": "The AI took too long to answer. Try again.",
+      "refused": "The AI could not draw this photo. Try another one.",
+      "generic": "The avatar could not be created. Try again.",
+      "notAllowed": "Creating an avatar with AI is not allowed.",
+      "tooLarge": "The photo is too large.",
+      "unsupportedType": "This photo format is not supported.",
+      "network": "No connection. Try again when you are online.",
+      "unreadable": "This photo could not be read."
+    }
+  },
   "theme": {
     "title": "Appearance",
     "glass": "Frosted glass",
@@ -532,7 +570,8 @@
     "goals": "Goals",
     "notifications": "Notification settings",
     "settings": "General settings",
-    "revisions": "Review"
+    "revisions": "Review",
+    "avatar": "Avatar"
   },
   "taskList": {
     "upcoming": "Upcoming",
@@ -777,6 +816,7 @@
       "fn-send-push": "Edge Function send-push",
       "vapid": "Web Push key (VAPID)",
       "fn-generate-questions": "Edge Function generate-questions",
+      "fn-generate-avatar": "Edge Function generate-avatar",
       "ai": "Revision AI"
     },
     "connection": {

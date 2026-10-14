@@ -31,6 +31,44 @@
     "later": "Plus tard",
     "denied": "Les notifications sont bloquées sur cet appareil. Réactivez-les dans Réglages de l’iPhone → Notifications → TaskMate."
   },
+  "avatar": {
+    "title": "Avatar",
+    "current": "Avatar de {{name}}",
+    "none": "Pas d’avatar : l’initiale du prénom est utilisée.",
+    "consentTitle": "Créer l’avatar avec l’IA",
+    "consentBody": "Une fois activé, {{name}} peut prendre ou choisir un portrait pour le transformer en dessin animé. La photo est envoyée à OpenAI (service d’IA) uniquement pour être redessinée ; TaskMate ne conserve pas la photo d’origine, seulement le dessin obtenu. Vous pouvez désactiver à tout moment.",
+    "consentSwitch": "Autoriser {{name}} à créer son avatar avec l’IA",
+    "childLocked": "Demande d’abord à un parent d’activer cette fonction.",
+    "pickGallery": "Choisir un portrait",
+    "pickCamera": "Prendre un portrait",
+    "hint": "Choisissez une photo où le visage est net, bien éclairé, avec une seule personne.",
+    "generating": "Dessin en cours… cela peut prendre jusqu’à une minute.",
+    "preview": "Le dessin est prêt. Utiliser cette image ?",
+    "previewImage": "Nouvel avatar (aperçu)",
+    "use": "Utiliser cette image",
+    "retry": "Réessayer",
+    "cancel": "Annuler",
+    "remove": "Supprimer l’avatar",
+    "removeTitle": "Supprimer l’avatar ?",
+    "removeBody": "L’application reviendra à l’initiale du prénom.",
+    "removeOk": "Supprimer",
+    "saved": "Avatar enregistré.",
+    "removed": "Avatar supprimé.",
+    "remaining": "Il reste {{count}} création(s) aujourd’hui.",
+    "unsupported": "Cette fonction est disponible dans l’application web (PWA).",
+    "errors": {
+      "quota": "Le nombre de créations du jour est atteint. Réessayez demain.",
+      "notConfigured": "La fonction d’IA n’est pas configurée. Prévenez un parent.",
+      "timeout": "L’IA met trop de temps à répondre. Réessayez.",
+      "refused": "L’IA n’a pas pu dessiner cette photo. Essayez-en une autre.",
+      "generic": "Impossible de créer l’avatar. Réessayez.",
+      "notAllowed": "La création d’avatar par IA n’est pas autorisée.",
+      "tooLarge": "La photo est trop lourde.",
+      "unsupportedType": "Ce format de photo n’est pas pris en charge.",
+      "network": "Pas de connexion. Réessayez une fois en ligne.",
+      "unreadable": "Cette photo est illisible."
+    }
+  },
   "theme": {
     "title": "Apparence",
     "glass": "Verre givré",
@@ -532,7 +570,8 @@
     "goals": "Objectifs",
     "notifications": "Réglages des notifications",
     "settings": "Réglages généraux",
-    "revisions": "Révisions"
+    "revisions": "Révisions",
+    "avatar": "Avatar"
   },
   "taskList": {
     "upcoming": "À venir",
@@ -777,6 +816,7 @@
       "fn-send-push": "Edge Function send-push",
       "vapid": "Clé Web Push (VAPID)",
       "fn-generate-questions": "Edge Function generate-questions",
+      "fn-generate-avatar": "Edge Function generate-avatar",
       "ai": "IA des révisions"
     },
     "connection": {

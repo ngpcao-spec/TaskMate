@@ -44,7 +44,7 @@ export type GenerateResult = {
   free_retry: boolean;
 };
 
-async function parseFailure(error: unknown): Promise<GenerateError> {
+export async function parseFailure(error: unknown): Promise<GenerateError> {
   const context = (error as { context?: Response } | null)?.context;
   if (context && typeof context.json === 'function') {
     try {

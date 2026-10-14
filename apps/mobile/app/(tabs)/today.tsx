@@ -6,6 +6,7 @@ import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeabl
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Backdrop } from '@/components/Backdrop';
 import { DogFace, OrnamentRow } from '@/components/decor/art';
+import { Avatar } from '@/components/Avatar';
 import { Astronaut, CosmosOrnamentRow } from '@/components/decor/art-cosmos';
 import { Fab } from '@/components/Fab';
 import { ProfilePills } from '@/components/ProfilePills';
@@ -25,8 +26,7 @@ import { useNow } from '@/hooks/useNow';
 import { useApprovalCounts } from '@/hooks/useApprovals';
 import { usePendingTaskIds } from '@/hooks/useSyncStatus';
 import { toggleVars, useDeleteTask, useRejectTask, useTasks, useToggleTask, useValidateTask, validateVars } from '@/hooks/useTasks';
-import { childColor } from '@/theme/childColor';
-import { colors, decor, glass, hasDecor, radius, shadowSmall, spacing, typography, line } from '@/theme/tokens';
+import { colors, decor, glass, hasDecor, radius, spacing, typography, line } from '@/theme/tokens';
 
 /** Mascotte du thème : petit chien (kawaii) ou astronaute (cosmos). */
 function Mascot({ size, happy }: { size: number; happy: boolean }) {
@@ -78,9 +78,7 @@ export default function TodayScreen() {
           </View>
         ) : null}
         <View style={styles.header}>
-          <View style={[styles.avatar, { backgroundColor: childColor(child.color) }]} accessible accessibilityLabel={child.name}>
-            <Text style={styles.avatarText}>{child.name.slice(0, 1).toUpperCase()}</Text>
-          </View>
+          <Avatar childId={child.id} name={child.name} color={child.color} size={52} />
           <View style={styles.flex}>
             <Text accessibilityRole="header" style={styles.greeting}>
               {t('today.greeting', { name: child.name })}
@@ -204,8 +202,6 @@ const styles = StyleSheet.create({
   content: { padding: spacing.md, gap: spacing.md, paddingBottom: 96 },
   ornament: { alignItems: 'center' },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  avatar: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', borderWidth: line.width, borderColor: colors.ring, ...shadowSmall },
-  avatarText: { color: colors.onPrimary, fontSize: 22, fontWeight: '700' },
   greeting: { fontSize: 22, fontWeight: '700', color: colors.text },
   bellBadge: { position: 'absolute', top: 0, right: -2, minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 4, backgroundColor: colors.danger, alignItems: 'center', justifyContent: 'center' },
   bellBadgeText: { color: colors.onSolid, fontSize: 11, fontWeight: '700' },
