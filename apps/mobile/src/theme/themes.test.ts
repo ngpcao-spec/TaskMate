@@ -77,6 +77,14 @@ describe('thèmes : cohérence', () => {
     for (const id of THEME_IDS) if (id !== 'glass') for (const fromGlass of THEMES.glass.childPalette) expect([id, THEMES[id].childSoft[fromGlass.toUpperCase()]]).toEqual([id, expect.any(String)]);
   });
 
+  // Thèmes illustrés : le damier / les étoiles ne doivent pas transparaître à travers une teinte (bandeaux, cartes), et le texte y reste lisible.
+  it.each(THEME_IDS.filter((id) => THEMES[id].decor !== 'none'))('%s : les teintes sont opaques et le texte y reste lisible', (id) => {
+    const c = THEMES[id].colors;
+    for (const key of ['primaryTint', 'mintTint', 'warningTint', 'successTint', 'card', 'cardStrong', 'cardSolid'] as const) expect([key, parse(c[key])[3]]).toEqual([key, 1]);
+    const failing = (['primaryTint', 'mintTint', 'successTint'] as const).map((bg) => ({ bg, r: ratio(seen(c, 'text'), seen(c, bg)) })).filter((x) => x.r < 4.5);
+    expect(failing).toEqual([]);
+  });
+
   it('seuls les thèmes illustrés portent des décors (chacun les siens) et des contours plus épais', () => {
     expect(THEMES.glass.decor).toBe('none');
     expect(THEMES.kawaii.decor).toBe('kawaii');

@@ -21,6 +21,7 @@ import { useCreateRecurrences, useDeleteRecurrence, useUpdateRecurrence } from '
 import { useCreateTasks, useDeleteTask, useUpdateTask } from '@/hooks/useTasks';
 import { CATEGORY_COLORS, TASK_CATEGORIES } from '@/theme/categories';
 import { useToastStore } from '@/store/toast';
+import { tint } from '@/theme/tint';
 import { colors, typography, shadowSmall, radius, line } from '@/theme/tokens';
 import type { TaskRow } from '@/types/models';
 
@@ -167,7 +168,7 @@ export function TaskForm({ task }: Props) {
                   onPress={() => field.onChange(c)}
                   style={styles.tileWrap}
                 >
-                  <View style={[styles.tile, { backgroundColor: `${CATEGORY_COLORS[c]}40` }, selected && styles.tileSelected]}>
+                  <View style={[styles.tile, { backgroundColor: tint(CATEGORY_COLORS[c], 0.25) }, selected && styles.tileSelected]}>
                     <CategoryIcon category={c} size={26} />
                   </View>
                   <Text style={[styles.tileLabel, selected && styles.tileLabelSelected]}>{t(`category.${c}`)}</Text>
