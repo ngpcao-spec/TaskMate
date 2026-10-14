@@ -405,3 +405,11 @@ Sélection par `<input type="file">` (`services/documents.web.ts`, `capture` pou
 **Accessibilité.** Contrastes imposés par test pour les QUATRE thèmes (≥ 4,5:1 texte, 3:1 initiales d'enfant) : réussis du premier coup, aucun jeton ajusté.
 **Tests.** `themes.test` (4 thèmes, décor `teddy`), `theme-card` (4 choix, enregistrement de « teddy »).
 **Limites.** Illustrations simples (pas de widgets horloge / compteur de la référence) ; natif : rouvrir l'app après le choix ; rendu validé en web (Chromium), pas sur iPhone réel.
+
+## D-073 — Cinquième thème « bunny » (lapinous pastel sur vichy bleu ciel)
+**Demande (Teo).** Un cinquième thème dans le style d'un écran d'accueil illustré fourni (`docs/mockups/theme-bunny-reference.png`) : fond bleu ciel à motif vichy, bandeau bleu poudré, cartes blanc crème aux contours bleu-gris, aplats rose / beurre / ciel / menthe, lapinous cotonneux, fraises, étoiles aux joues roses, nuages.
+**Architecture.** Même mécanisme que D-069 à D-072 : `theme/themes/bunny.ts` (jeu complet de jetons), une entrée de `THEMES`, famille de décors `bunny`, illustrations dans `components/decor/art-bunny.tsx`, trois lignes dans `components/decor/Decor.tsx` (`Mascot`, `TopOrnament`, `SectionMark`), vichy bleu dans `Backdrop`, écran de démarrage. Libellé « Thỏ bông » / « Lapinou » / « Bunny ».
+**Bunny en pratique.** Thème CLAIR : texte bleu-gris foncé partout, y compris sur les panneaux et la barre de navigation bleu poudré (`onNavy` et `onBar` sont donc sombres, comme en « kawaii »). Bouton principal et onglet actif roses à texte foncé, contours bleu-gris 2,2 pt, aucune ombre floue, police arrondie du système (web), `theme-color` bleu ciel. Les contours pointillés de la référence ne sont pas reproduits (le jeton de filet ne porte qu'une épaisseur).
+**Accessibilité.** Contrastes imposés par test pour les CINQ thèmes (≥ 4,5:1 texte, 3:1 initiales d'enfant) : réussis du premier coup, aucun jeton ajusté.
+**Tests.** `themes.test` (5 thèmes, décor `bunny`), `theme-card` (5 choix, enregistrement de « bunny »).
+**Limites.** Illustrations maison simplifiées (pas la fillette au bonnet d'ourson ni les widgets de la référence) ; natif : rouvrir l'app après le choix ; rendu validé en web (Chromium), pas sur iPhone réel.

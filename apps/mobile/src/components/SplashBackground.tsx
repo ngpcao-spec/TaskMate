@@ -2,6 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { Backdrop } from '@/components/Backdrop';
 import { Bow, DogFace } from '@/components/decor/art';
 import { Astronaut, MoonCookie, Planet, Rocket, StarShape } from '@/components/decor/art-cosmos';
+import { BunnyFace, Cloud, CuteStar, Strawberry } from '@/components/decor/art-bunny';
 import { Duckling, Flower, Paw, TeddyFace } from '@/components/decor/art-teddy';
 import { decor } from '@/theme/tokens';
 import Svg, { Circle, Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
@@ -33,6 +34,32 @@ export function SplashBackground() {
             <Rocket size={64} />
           </View>
           <Astronaut size={116} happy />
+        </View>
+      </View>
+    );
+  }
+  if (decor === 'bunny') {
+    return (
+      <View style={StyleSheet.absoluteFill}>
+        <Backdrop />
+        <View style={[styles.float, { top: 90, left: 30 }]}>
+          <Strawberry size={44} />
+        </View>
+        <View style={[styles.float, { top: 130, right: 40 }]}>
+          <CuteStar size={52} />
+        </View>
+        <View style={[styles.float, { top: 300, left: 54 }]}>
+          <Cloud size={72} />
+        </View>
+        <View style={[styles.float, { top: 330, right: 34 }]}>
+          <Strawberry size={34} />
+        </View>
+        <View style={styles.dogs}>
+          <BunnyFace size={150} />
+          <View style={styles.bow}>
+            <CuteStar size={52} />
+          </View>
+          <BunnyFace size={116} happy />
         </View>
       </View>
     );

@@ -6,7 +6,7 @@ import { STARFIELD } from '@/components/decor/art-cosmos';
 import { colors, decor } from '@/theme/tokens';
 import { Gradient } from './Gradient';
 
-/** Fond d'écran du thème : dégradé acier bleuté (verre givré), damier crème et bleu clair (kawaii), ciel nocturne étoilé (cosmos) ou vichy rose poudré (teddy). À placer en premier enfant d'un conteneur `flex: 1`. */
+/** Fond d'écran du thème : dégradé acier bleuté (verre givré), damier crème et bleu clair (kawaii), ciel nocturne étoilé (cosmos) vichy rose poudré (teddy) ou vichy bleu ciel (bunny). À placer en premier enfant d'un conteneur `flex: 1`. */
 export function Backdrop() {
   const id = useId().replace(/[^a-zA-Z0-9]/g, '');
   if (decor === 'none') return <Gradient from={colors.backgroundTop} to={colors.backgroundBottom} direction="d" />;
@@ -22,8 +22,9 @@ export function Backdrop() {
       </View>
     );
   }
-  // kawaii : damier crème et bleu clair ; teddy : vichy rose poudré, très discret pour ne pas gêner la lecture
-  const plaid = decor === 'teddy' ? { cream: '#E9D0C4', blue: '#DFC2B5' } : { cream: '#F7F1DD', blue: '#D3E2EC' };
+  // kawaii : damier crème et bleu clair ; teddy : vichy rose poudré ; bunny : vichy bleu ciel (très discrets pour ne pas gêner la lecture)
+  const plaids = { teddy: { cream: '#E9D0C4', blue: '#DFC2B5' }, bunny: { cream: '#EAF0FA', blue: '#D9E4F5' } } as const;
+  const plaid = decor === 'teddy' || decor === 'bunny' ? plaids[decor] : { cream: '#F7F1DD', blue: '#D3E2EC' };
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
       <Svg width="100%" height="100%">
