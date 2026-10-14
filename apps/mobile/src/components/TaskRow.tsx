@@ -6,7 +6,7 @@ import { taskState } from '@/domain/task-state';
 import { timeLabel } from '@/domain/task-time';
 import { CATEGORY_COLORS } from '@/theme/categories';
 import { GlassTile } from '@/components/GlassTile';
-import { colors, MIN_TARGET, shadowInset } from '@/theme/tokens';
+import { colors, MIN_TARGET, shadowInset, line } from '@/theme/tokens';
 import type { TaskRow as Task } from '@/types/models';
 
 type Props = {
@@ -54,7 +54,7 @@ export function TaskRow({ task, overdue, canToggle, canOpen, canValidate = false
           hitSlop={4}
           style={styles.checkHit}
         >
-          <View style={[styles.box, checked && styles.boxDone, !canToggle && !checked && styles.boxLocked]}>{checked ? <Check size={16} color="#fff" strokeWidth={3} /> : null}</View>
+          <View style={[styles.box, checked && styles.boxDone, !canToggle && !checked && styles.boxLocked]}>{checked ? <Check size={16} color={colors.onPrimary} strokeWidth={3} /> : null}</View>
         </Pressable>
         <Pressable
           accessibilityRole="button"
@@ -78,7 +78,7 @@ export function TaskRow({ task, overdue, canToggle, canOpen, canValidate = false
         ) : null}
         {state === 'validated' ? (
           <View accessible accessibilityLabel={t('task.validated', { points: task.points })} style={styles.validated}>
-            <Check size={14} color="#fff" strokeWidth={3} />
+            <Check size={14} color={colors.onPrimary} strokeWidth={3} />
           </View>
         ) : null}
         {pending ? <RefreshCw size={14} color={colors.textSecondary} accessibilityLabel={t('sync.pendingItem')} /> : null}
@@ -106,8 +106,8 @@ export function TaskRow({ task, overdue, canToggle, canOpen, canValidate = false
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 68 },
   checkHit: { width: MIN_TARGET, height: MIN_TARGET, alignItems: 'center', justifyContent: 'center' },
-  box: { width: 28, height: 28, borderRadius: 14, borderWidth: 1, borderColor: colors.glassBorder, backgroundColor: colors.inputBg, alignItems: 'center', justifyContent: 'center', ...shadowInset },
-  boxDone: { backgroundColor: colors.primary, borderColor: 'rgba(255,255,255,0.6)' },
+  box: { width: 28, height: 28, borderRadius: 14, borderWidth: line.width, borderColor: colors.glassBorder, backgroundColor: colors.inputBg, alignItems: 'center', justifyContent: 'center', ...shadowInset },
+  boxDone: { backgroundColor: colors.primary, borderColor: colors.ring },
   boxLocked: { opacity: 0.55 },
   body: { flex: 1, minHeight: MIN_TARGET, justifyContent: 'center' },
   title: { fontSize: 16, fontWeight: '600', color: colors.text },
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
   actions: { flexDirection: 'row', gap: 8, paddingBottom: 10, paddingLeft: MIN_TARGET + 10 },
   action: { flex: 1, minHeight: MIN_TARGET, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
   actionOk: { backgroundColor: colors.primary },
-  actionOkText: { color: '#fff', fontWeight: '700' },
+  actionOkText: { color: colors.onPrimary, fontWeight: '700' },
   actionKo: { backgroundColor: colors.cardStrong, borderWidth: 1, borderColor: colors.danger },
   actionKoText: { color: colors.danger, fontWeight: '700' },
 });

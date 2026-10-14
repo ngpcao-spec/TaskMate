@@ -191,3 +191,6 @@ Signalé sur iPhone (toast d'erreur sur « Lưu »). Cause : `upsert` PostgREST 
 
 ### Invitation à activer les notifications (D-067) — 2026-10-14
 Fenêtre affichée à l'ouverture de l'app tant que les notifications ne sont pas activées sur l'appareil (bouton = geste exigé par iOS ; « Để sau » = 24 h). Jest : domaine + composant. Non vérifié : parcours réel sur iPhone (demande iOS, abonnement).
+
+### Deuxième thème « kawaii » (D-069) — 2026-10-14
+Réglages → Giao diện : « Kính mờ » (défaut) ou « Kawaii », par appareil (web : rechargement automatique ; natif : rouvrir l'app). Architecture par jeux de jetons, contrastes testés pour les deux thèmes ; captures : `docs/screenshots/kawaii` (téléphone), `kawaii-wide` (large). Jest : `themes.test`, `theme-card`. Non vérifié : rendu sur iPhone réel (police arrondie SF Rounded, damier SVG).

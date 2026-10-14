@@ -1,0 +1,73 @@
+import type { Theme } from './types';
+
+/**
+ * Thème « kawaii » : fond crème à damier bleu, GROS contours noirs dessinés à la main, aplats pastel (bleu, jaune, rose, menthe), aucune ombre
+ * floue, petits chiens et ornements. Réf. : docs/mockups/theme-kawaii-reference.png (écran d'accueil illustré fourni par Teo).
+ */
+const LINE = '#1E1E1E';
+
+export const kawaii: Theme = {
+  id: 'kawaii',
+  colors: {
+    primary: '#8DB1E2',
+    accent: '#2B5C9E',
+    primaryLight: '#BBD3F0',
+    mint: '#9ED9B8',
+    background: '#FBF3DF',
+    backgroundTop: '#FBF3DF',
+    backgroundBottom: '#FBF3DF',
+    card: '#FFFDF4',
+    cardStrong: '#FFFFFF',
+    cardSolid: '#FFFDF4',
+    glassBorder: LINE,
+    glassBorderSoft: LINE,
+    text: LINE,
+    textSecondary: '#3B342E',
+    navy: '#8DB1E2',
+    navyDeep: '#8DB1E2',
+    navyLight: '#8DB1E2',
+    onNavy: LINE,
+    onNavySecondary: '#2C3A55',
+    navyBorder: LINE,
+    barFrom: '#FFF8E6',
+    barTo: '#FFF8E6',
+    onBar: LINE,
+    navActive: '#FBE3A0',
+    ringOnNavy: '#FBE3A0',
+    trackOnNavy: 'rgba(255,255,255,0.6)',
+    onPrimary: LINE,
+    onSolid: '#FFFFFF',
+    ring: LINE,
+    danger: '#B83247',
+    success: '#26784F',
+    warning: '#7A4A00',
+    primaryTint: 'rgba(141,177,226,0.45)',
+    mintTint: 'rgba(158,217,184,0.55)',
+    warningTint: '#FBE3A0',
+    successTint: 'rgba(158,217,184,0.6)',
+    separator: 'rgba(30,30,30,0.22)',
+    tileTeal: '#BFE3D0',
+    tileBlue: '#A9C6EC',
+    tileIce: '#FBE3A0',
+    tileViolet: '#F7C9C9',
+    inputBg: '#FFFFFF',
+    track: '#E3ECF6',
+    placeholder: '#6F645A',
+  },
+  radius: { card: 28, tile: 24, control: 18, pill: 999 },
+  lineWidth: 2.5,
+  shadow: '0px 0px 0px rgba(0,0,0,0)',
+  shadowSmall: '0px 0px 0px rgba(0,0,0,0)',
+  shadowInset: '0px 0px 0px rgba(0,0,0,0)',
+  chartTones: ['#8DB1E2', '#FBE3A0', '#F7C9C9', '#BFE3D0', '#C9B9F0', '#F4C59B', '#9ED9B8'],
+  categoryColors: { study: '#5B8FD6', sport: '#9B85DC', chores: '#E3A02E', personal: '#4FAF86', other: '#8394A8' },
+  rewardTints: { gift: '#D9742E', 'gamepad-2': '#D9742E', film: '#6A5FC4', smartphone: '#4F86D4', cookie: '#D9902A', star: '#D9A21E', pizza: '#D4505E', popcorn: '#D9902A', ticket: '#9B7FE0', trophy: '#D9A21E' },
+  childSoft: {
+    '#1E88F5': '#8DB1E2', '#2EC4A6': '#9ED9B8', '#8B5CF6': '#C9B9F0', '#F5A623': '#F4C15D', '#E5484D': '#F29B9B',
+    // couleurs choisies sous le thème « verre givré » : même correspondance
+    '#3A7CA5': '#8DB1E2', '#2F8F80': '#9ED9B8', '#6E6BB8': '#C9B9F0', '#B07A28': '#F4C15D', '#A83A44': '#F29B9B',
+  },
+  childPalette: ['#8DB1E2', '#9ED9B8', '#C9B9F0', '#F4C15D', '#F29B9B'],
+  decor: true,
+  browserColor: '#FBF3DF',
+};

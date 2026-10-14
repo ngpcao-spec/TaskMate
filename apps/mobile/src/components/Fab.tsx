@@ -5,7 +5,7 @@ import { colors, shadow } from '@/theme/tokens';
 export function Fab({ label, onPress }: { label: string; onPress: () => void }) {
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={({ pressed }) => [styles.fab, pressed && { opacity: 0.85 }]}>
-      <Plus color="#fff" size={28} />
+      <Plus color={colors.onPrimary} size={28} />
     </Pressable>
   );
 }
@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     backgroundColor: colors.primary,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.5)',
+    borderColor: colors.ring,
     alignItems: 'center',
     justifyContent: 'center',
     ...shadow,

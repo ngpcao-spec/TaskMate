@@ -7,7 +7,7 @@ import { Button, ErrorText } from '@/components/ui';
 import { parseSnooze, shouldPrompt, SNOOZE_KEY, SNOOZE_MS } from '@/domain/notification-prompt';
 import { enableWebPush, getWebPushStatus } from '@/services/webPush';
 import { kvStorage } from '@/sync/storage';
-import { colors, radius, shadow } from '@/theme/tokens';
+import { colors, radius, shadow, line } from '@/theme/tokens';
 
 type Phase = 'hidden' | 'ask' | 'denied';
 
@@ -79,7 +79,7 @@ export function NotificationPrompt() {
 
 const styles = StyleSheet.create({
   overlay: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, zIndex: 50, alignItems: 'center', justifyContent: 'center', padding: 24, backgroundColor: 'rgba(20,38,56,0.55)' },
-  dialog: { width: '100%', maxWidth: 420, alignItems: 'stretch', gap: 12, padding: 24, borderRadius: radius.card, backgroundColor: colors.cardSolid, borderWidth: 1, borderColor: colors.glassBorder, ...shadow },
+  dialog: { width: '100%', maxWidth: 420, alignItems: 'stretch', gap: 12, padding: 24, borderRadius: radius.card, backgroundColor: colors.cardSolid, borderWidth: line.width, borderColor: colors.glassBorder, ...shadow },
   icon: { alignSelf: 'center' },
   title: { fontSize: 22, fontWeight: '800', color: colors.text, textAlign: 'center' },
   body: { fontSize: 15, color: colors.textSecondary, textAlign: 'center', lineHeight: 22 },

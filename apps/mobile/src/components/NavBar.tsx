@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Gradient } from '@/components/Gradient';
 import { useMe } from '@/hooks/useMe';
 import { useIsWide } from '@/hooks/useLayout';
-import { colors, MIN_TARGET, radius, shadow, shadowSmall } from '@/theme/tokens';
+import { colors, MIN_TARGET, radius, shadow, shadowSmall, line } from '@/theme/tokens';
 
 type BarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['tabBar']>>[0];
 
@@ -23,7 +23,7 @@ export function NavBar({ state, descriptors, navigation }: BarProps) {
 
   const bar = (
     <View style={[wide ? styles.side : styles.bottom, !wide && { paddingBottom: Math.max(insets.bottom, 8) }]}>
-      <Gradient from={colors.navyLight} to={colors.navyDeep} direction="v" />
+      <Gradient from={colors.barFrom} to={colors.barTo} direction="v" />
       {wide ? (
         <View style={styles.hello}>
           <View accessible accessibilityLabel={name} style={styles.avatar}>
@@ -39,7 +39,7 @@ export function NavBar({ state, descriptors, navigation }: BarProps) {
           const focused = state.index === index;
           const label = typeof options.title === 'string' ? options.title : route.name;
           const badge = options.tabBarBadge;
-          const color = focused ? colors.accent : colors.onNavy;
+          const color = focused ? colors.accent : colors.onBar;
           const onPress = () => {
             const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
             if (!focused && !event.defaultPrevented) navigation.navigate(route.name, route.params);
@@ -62,7 +62,7 @@ export function NavBar({ state, descriptors, navigation }: BarProps) {
                   </View>
                 ) : null}
               </View>
-              <Text numberOfLines={1} style={[wide ? styles.labelWide : styles.label, { color: focused ? colors.text : colors.onNavy }]}>
+              <Text numberOfLines={1} style={[wide ? styles.labelWide : styles.label, { color: focused ? colors.text : colors.onBar }]}>
                 {label}
               </Text>
             </Pressable>
@@ -77,19 +77,19 @@ export function NavBar({ state, descriptors, navigation }: BarProps) {
 const styles = StyleSheet.create({
   /** Cadre derrière la colonne latérale : même fond que les écrans (pas de bande claire à gauche). */
   sideFrame: { backgroundColor: colors.backgroundTop },
-  bottom: { overflow: 'hidden', paddingTop: 8, paddingHorizontal: 8, borderTopLeftRadius: 28, borderTopRightRadius: 28, borderTopWidth: 1, borderColor: 'rgba(255,255,255,0.25)', ...shadow },
-  side: { width: 248, overflow: 'hidden', paddingTop: 24, paddingHorizontal: 14, margin: 12, marginRight: 0, borderRadius: radius.card + 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.25)', ...shadow },
+  bottom: { overflow: 'hidden', paddingTop: 8, paddingHorizontal: 8, borderTopLeftRadius: 28, borderTopRightRadius: 28, borderTopWidth: line.width, borderColor: colors.navyBorder, ...shadow },
+  side: { width: 248, overflow: 'hidden', paddingTop: 24, paddingHorizontal: 14, margin: 12, marginRight: 0, borderRadius: radius.card + 8, borderWidth: line.width, borderColor: colors.navyBorder, ...shadow },
   hello: { alignItems: 'center', gap: 10, paddingBottom: 20 },
-  avatar: { width: 76, height: 76, borderRadius: 38, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.navyLight, borderWidth: 2, borderColor: 'rgba(255,255,255,0.55)', ...shadowSmall },
+  avatar: { width: 76, height: 76, borderRadius: 38, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.navyLight, borderWidth: line.width, borderColor: colors.ring, ...shadowSmall },
   avatarText: { color: colors.onNavy, fontSize: 30, fontWeight: '700' },
-  helloText: { color: colors.onNavy, fontSize: 18, fontWeight: '700' },
+  helloText: { color: colors.onBar, fontSize: 18, fontWeight: '700' },
   row: { flexDirection: 'row', gap: 4 },
   list: { gap: 6 },
   item: { flex: 1, minHeight: MIN_TARGET + 16, borderRadius: 22, alignItems: 'center', justifyContent: 'center', gap: 2, paddingVertical: 6 },
   itemWide: { minHeight: MIN_TARGET + 8, borderRadius: radius.pill, flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: 18 },
-  itemActive: { backgroundColor: '#D6E4ED', borderWidth: 1, borderColor: 'rgba(255,255,255,0.8)', ...shadowSmall },
+  itemActive: { backgroundColor: colors.navActive, borderWidth: line.width, borderColor: colors.ring, ...shadowSmall },
   label: { fontSize: 11, fontWeight: '600' },
   labelWide: { fontSize: 15, fontWeight: '600' },
   badge: { position: 'absolute', top: -6, right: -10, minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 4, backgroundColor: colors.danger, alignItems: 'center', justifyContent: 'center' },
-  badgeText: { color: '#fff', fontSize: 11, fontWeight: '700' },
+  badgeText: { color: colors.onSolid, fontSize: 11, fontWeight: '700' },
 });

@@ -8,7 +8,7 @@ import { ageFromBirthDate } from '@/domain/age';
 import { todayInTz } from '@/domain/family-time';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { childColor } from '@/theme/childColor';
-import { colors, MIN_TARGET, radius, shadow, shadowSmall, typography } from '@/theme/tokens';
+import { colors, MIN_TARGET, radius, shadow, shadowSmall, typography, line } from '@/theme/tokens';
 
 type Href = '/more/tasks' | '/more/goals' | '/more/revisions' | '/more/points' | '/more/notification-settings' | '/more/settings';
 
@@ -41,7 +41,7 @@ export default function ProfileScreen() {
             <>
               {isParent && active ? (
                 <View style={[styles.checkBadge, { backgroundColor: color }]}>
-                  <Check size={14} color="#fff" strokeWidth={3} />
+                  <Check size={14} color={colors.onPrimary} strokeWidth={3} />
                 </View>
               ) : null}
               <View style={[styles.avatar, { backgroundColor: color }]}>
@@ -101,16 +101,16 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   cards: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  childCard: { flexGrow: 1, flexBasis: 140, alignItems: 'center', gap: 4, paddingVertical: 16, borderRadius: radius.card, borderWidth: 1, borderColor: colors.glassBorder, backgroundColor: colors.card, minHeight: 140, ...shadow },
-  childCardActive: { backgroundColor: colors.navy, borderColor: 'rgba(255,255,255,0.3)' },
-  checkBadge: { position: 'absolute', top: 10, right: 10, width: 24, height: 24, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.7)', alignItems: 'center', justifyContent: 'center' },
-  avatar: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', marginBottom: 4, borderWidth: 2, borderColor: 'rgba(255,255,255,0.65)', ...shadowSmall },
-  avatarText: { color: '#fff', fontSize: 26, fontWeight: '700' },
+  childCard: { flexGrow: 1, flexBasis: 140, alignItems: 'center', gap: 4, paddingVertical: 16, borderRadius: radius.card, borderWidth: line.width, borderColor: colors.glassBorder, backgroundColor: colors.card, minHeight: 140, ...shadow },
+  childCardActive: { backgroundColor: colors.navy, borderColor: colors.navyBorder },
+  checkBadge: { position: 'absolute', top: 10, right: 10, width: 24, height: 24, borderRadius: 12, borderWidth: line.width, borderColor: colors.ring, alignItems: 'center', justifyContent: 'center' },
+  avatar: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', marginBottom: 4, borderWidth: line.width, borderColor: colors.ring, ...shadowSmall },
+  avatarText: { color: colors.onPrimary, fontSize: 26, fontWeight: '700' },
   childName: { fontSize: 18, fontWeight: '700', color: colors.text },
   onNavy: { color: colors.onNavy },
   onNavySecondary: { color: colors.onNavySecondary },
   addCard: { justifyContent: 'center', paddingHorizontal: 8, borderColor: colors.accent, borderStyle: 'dashed', borderWidth: 1.5, backgroundColor: colors.primaryTint },
-  addIcon: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.cardStrong, borderWidth: 1, borderColor: colors.glassBorder, ...shadowSmall },
+  addIcon: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.cardStrong, borderWidth: line.width, borderColor: colors.glassBorder, ...shadowSmall },
   addText: { fontSize: 15, fontWeight: '700', color: colors.accent, textAlign: 'center' },
   menuRow: { flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: MIN_TARGET + 16 },
   menuSeparator: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.separator },

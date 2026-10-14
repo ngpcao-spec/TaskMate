@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { Button, Card } from '@/components/ui';
 import { daysUntilExpiry } from '@/domain/rewards';
-import { colors, MIN_TARGET, typography } from '@/theme/tokens';
+import { colors, MIN_TARGET, typography, line } from '@/theme/tokens';
 import type { RewardRequestRow } from '@/types/models';
 
 type Props = { request: RewardRequestRow; childName: string; now: Date; online: boolean; onApprove: () => void; onReject: (note?: string) => void; busy?: boolean };
@@ -33,5 +33,5 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   title: { fontSize: 16, fontWeight: '600', color: colors.text },
   actions: { flexDirection: 'row', gap: 8 },
-  input: { minHeight: MIN_TARGET, borderRadius: 12, borderWidth: 1, borderColor: colors.glassBorder, paddingHorizontal: 12, color: colors.text, backgroundColor: colors.card },
+  input: { minHeight: MIN_TARGET, borderRadius: 12, borderWidth: line.width, borderColor: colors.glassBorder, paddingHorizontal: 12, color: colors.text, backgroundColor: colors.card },
 });

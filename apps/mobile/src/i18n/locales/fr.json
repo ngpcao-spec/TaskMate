@@ -31,6 +31,12 @@
     "later": "Plus tard",
     "denied": "Les notifications sont bloquées sur cet appareil. Réactivez-les dans Réglages de l’iPhone → Notifications → TaskMate."
   },
+  "theme": {
+    "title": "Apparence",
+    "glass": "Verre givré",
+    "kawaii": "Kawaii",
+    "restart": "Enregistré. Fermez complètement l’application puis rouvrez-la pour changer d’apparence."
+  },
   "category": {
     "study": "Études",
     "sport": "Sport",

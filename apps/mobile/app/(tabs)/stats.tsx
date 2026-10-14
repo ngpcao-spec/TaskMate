@@ -15,7 +15,7 @@ import { completionBuckets, computeStats, encouragementFor, formatRate, periodRa
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { useTasks } from '@/hooks/useTasks';
 import { CATEGORY_COLORS } from '@/theme/categories';
-import { colors, MIN_TARGET, radius, shadowInset, shadowSmall, typography } from '@/theme/tokens';
+import { colors, MIN_TARGET, radius, shadowInset, shadowSmall, typography, line } from '@/theme/tokens';
 
 /**
  * Thống kê (SPEC §3.8, §5.4) : un seul profil à la fois — jamais les deux enfants côte à côte, ni classement.
@@ -134,15 +134,15 @@ function LegendRow({ color, label, value }: { color: string; label: string; valu
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   flex: { flex: 1 },
-  segment: { flexDirection: 'row', backgroundColor: colors.inputBg, borderRadius: 999, padding: 4, borderWidth: 1, borderColor: colors.glassBorderSoft, ...shadowInset },
+  segment: { flexDirection: 'row', backgroundColor: colors.inputBg, borderRadius: 999, padding: 4, borderWidth: line.width, borderColor: colors.glassBorderSoft, ...shadowInset },
   segmentItem: { flex: 1, minHeight: MIN_TARGET, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
-  segmentActive: { backgroundColor: colors.primary, borderWidth: 1, borderColor: 'rgba(255,255,255,0.5)', ...shadowSmall },
+  segmentActive: { backgroundColor: colors.primary, borderWidth: line.width, borderColor: colors.ring, ...shadowSmall },
   segmentText: { fontSize: 15, fontWeight: '600', color: colors.text },
-  segmentTextActive: { color: '#fff' },
+  segmentTextActive: { color: colors.onPrimary },
   ringRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   legend: { flex: 1, gap: 12, minWidth: 130 },
   legendRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  dot: { width: 10, height: 10, borderRadius: 5, borderWidth: 1, borderColor: 'rgba(255,255,255,0.7)' },
+  dot: { width: 10, height: 10, borderRadius: 5, borderWidth: line.width, borderColor: colors.ring },
   legendValue: { fontSize: 15, fontWeight: '700', color: colors.text },
   charts: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
   chartCol: { flexGrow: 1, flexBasis: 300, flexDirection: 'column' },
@@ -150,6 +150,6 @@ const styles = StyleSheet.create({
   catRow: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 30 },
   barLabel: { flex: 1, fontSize: 13, color: colors.text },
   barValue: { fontSize: 13, fontWeight: '700', color: colors.text },
-  encourage: { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: colors.primaryTint, borderRadius: radius.card, borderWidth: 1, borderColor: colors.glassBorder, padding: 16 },
+  encourage: { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: colors.primaryTint, borderRadius: radius.card, borderWidth: line.width, borderColor: colors.glassBorder, padding: 16 },
   encourageTitle: { fontSize: 16, fontWeight: '700', color: colors.text },
 });

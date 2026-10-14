@@ -6,7 +6,7 @@ import { newId } from '@/api/ids';
 import { Button, Field, Screen, ScreenHeader } from '@/components/ui';
 import { MAX_CHOICES, nextPosition, normalizeQuestion, validateQuestion, type QuestionDraft } from '@/domain/quiz';
 import { useParentQuestions, useUpsertQuestion } from '@/hooks/useQuizzes';
-import { colors, MIN_TARGET, typography } from '@/theme/tokens';
+import { colors, MIN_TARGET, typography, line } from '@/theme/tokens';
 
 /** Ajout / modification d'une question (parent) : énoncé, 3 à 4 choix, bonne réponse, explication facultative. */
 export function QuestionEditor({ setId, questionId }: { setId: string; questionId?: string }) {
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   multiline: { minHeight: 88, textAlignVertical: 'top', paddingTop: 12 },
   choiceRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
-  radio: { width: MIN_TARGET, height: MIN_TARGET, borderRadius: MIN_TARGET / 2, marginTop: 20, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: colors.glassBorder, backgroundColor: colors.card },
+  radio: { width: MIN_TARGET, height: MIN_TARGET, borderRadius: MIN_TARGET / 2, marginTop: 20, alignItems: 'center', justifyContent: 'center', borderWidth: line.width, borderColor: colors.glassBorder, backgroundColor: colors.card },
   radioOn: { borderColor: colors.success },
   radioDot: { width: 20, height: 20, borderRadius: 10, backgroundColor: colors.success },
   error: { color: colors.danger, fontSize: 13 },

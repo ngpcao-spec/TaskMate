@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { formatDayNumber, formatDayTitle, formatWeekdayLabel, type CalendarLanguage } from '@/domain/calendar';
-import { colors, MIN_TARGET, radius, shadowSmall } from '@/theme/tokens';
+import { colors, MIN_TARGET, radius, shadowSmall, line } from '@/theme/tokens';
 
 type Props = { days: readonly string[]; selected: string; today: string; lang: CalendarLanguage; onSelect: (day: string) => void };
 
@@ -35,12 +35,12 @@ export function WeekStrip({ days, selected, today, lang, onSelect }: Props) {
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', backgroundColor: colors.card, borderRadius: radius.card, borderWidth: 1, borderColor: colors.glassBorder, paddingHorizontal: 4 },
+  row: { flexDirection: 'row', backgroundColor: colors.card, borderRadius: radius.card, borderWidth: line.width, borderColor: colors.glassBorder, paddingHorizontal: 4 },
   day: { flex: 1, minHeight: MIN_TARGET + 24, alignItems: 'center', justifyContent: 'center', gap: 6 },
   weekday: { fontSize: 12, color: colors.textSecondary, fontWeight: '500' },
   circle: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  circleActive: { backgroundColor: colors.primary, borderWidth: 1, borderColor: 'rgba(255,255,255,0.55)', ...shadowSmall },
+  circleActive: { backgroundColor: colors.primary, borderWidth: line.width, borderColor: colors.ring, ...shadowSmall },
   number: { fontSize: 15, fontWeight: '600', color: colors.text },
-  numberActive: { color: '#fff', fontWeight: '700' },
+  numberActive: { color: colors.onPrimary, fontWeight: '700' },
   numberToday: { color: colors.accent, fontWeight: '800' },
 });

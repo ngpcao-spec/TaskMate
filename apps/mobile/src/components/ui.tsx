@@ -16,9 +16,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import i18n from '@/i18n';
 import { Backdrop } from '@/components/Backdrop';
+import { Sparkle } from '@/components/decor/art';
 import { Gradient } from '@/components/Gradient';
 import { RoundButton } from '@/components/RoundButton';
-import { colors, glass, MIN_TARGET, radius, shadow, shadowInset, shadowSmall, spacing, typography } from '@/theme/tokens';
+import { colors, glass, hasDecor, MIN_TARGET, radius, shadow, shadowInset, shadowSmall, spacing, typography, line } from '@/theme/tokens';
 
 /** Largeur max. du contenu (conteneur centré sur grand écran). `wide` : écrans à colonnes (file « Cần duyệt »). */
 const CONTENT_MAX_WIDTH = 760;
@@ -117,7 +118,7 @@ export function Button({ label, onPress, variant = 'primary', disabled = false, 
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'primary' ? '#fff' : colors.accent} />
+        <ActivityIndicator color={variant === 'primary' ? colors.onPrimary : colors.accent} />
       ) : (
         <Text style={[styles.buttonLabel, variant !== 'primary' && styles.buttonLabelAlt]}>{label}</Text>
       )}
@@ -148,10 +149,17 @@ export function Card({ children, fill = false }: { children: ReactNode; /** Occu
 
 /** Titre de section (« Top Genres », « Recently Played » de la maquette). */
 export function SectionTitle({ children }: { children: ReactNode }) {
-  return (
+  const title = (
     <Text accessibilityRole="header" style={styles.sectionTitle}>
       {children}
     </Text>
+  );
+  if (!hasDecor) return title;
+  return (
+    <View style={styles.sectionRow}>
+      <Sparkle size={24} />
+      {title}
+    </View>
   );
 }
 
@@ -182,11 +190,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: spacing.lg,
   },
-  buttonPrimary: { backgroundColor: colors.primary, borderWidth: 1, borderColor: 'rgba(255,255,255,0.45)', ...shadowSmall },
-  buttonSecondary: { backgroundColor: colors.cardStrong, borderWidth: 1, borderColor: colors.glassBorder, ...shadowSmall },
+  buttonPrimary: { backgroundColor: colors.primary, borderWidth: line.width, borderColor: colors.ring, ...shadowSmall },
+  buttonSecondary: { backgroundColor: colors.cardStrong, borderWidth: line.width, borderColor: colors.glassBorder, ...shadowSmall },
   buttonDisabled: { opacity: 0.5 },
   pressed: { opacity: 0.85 },
-  buttonLabel: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  buttonLabel: { color: colors.onPrimary, fontSize: 16, fontWeight: '600' },
   buttonLabelAlt: { color: colors.accent },
   field: { gap: spacing.xs },
   fieldLabel: { fontSize: 15, fontWeight: '600', color: colors.text },
@@ -202,7 +210,8 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   inputError: { borderColor: colors.danger },
+  sectionRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.text },
-  navy: { borderRadius: radius.card, padding: spacing.md, gap: spacing.sm, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.22)', ...shadow },
+  navy: { borderRadius: radius.card, padding: spacing.md, gap: spacing.sm, overflow: 'hidden', borderWidth: line.width, borderColor: colors.navyBorder, ...shadow },
   card: { ...glass, borderRadius: radius.card, padding: spacing.md, gap: spacing.sm },
 });

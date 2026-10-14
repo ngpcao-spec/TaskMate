@@ -31,6 +31,12 @@
     "later": "Later",
     "denied": "Notifications are blocked on this device. Turn them back on in iPhone Settings → Notifications → TaskMate."
   },
+  "theme": {
+    "title": "Appearance",
+    "glass": "Frosted glass",
+    "kawaii": "Kawaii",
+    "restart": "Saved. Fully close the app and reopen it to change the appearance."
+  },
   "category": {
     "study": "Study",
     "sport": "Sport",

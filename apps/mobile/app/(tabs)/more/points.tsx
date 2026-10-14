@@ -22,7 +22,7 @@ import {
 } from '@/hooks/usePoints';
 import { useApprovalCounts } from '@/hooks/useApprovals';
 import { useOnline } from '@/hooks/useSyncStatus';
-import { colors, glass, radius, shadowSmall, typography } from '@/theme/tokens';
+import { colors, glass, radius, shadowSmall, typography, line } from '@/theme/tokens';
 import type { RewardRequestRow } from '@/types/models';
 
 export default function PointsScreen() {
@@ -71,7 +71,7 @@ export default function PointsScreen() {
         <Card>
           <View style={styles.balanceRow}>
             <View style={styles.medal}>
-              <Star color="#fff" fill="#fff" size={30} />
+              <Star color={colors.onPrimary} fill={colors.onPrimary} size={30} />
             </View>
             <View style={styles.flex}>
               <Text accessibilityLabel={`${balance?.balance ?? 0} ${t('points.unit')}`} style={styles.balance}>
@@ -167,7 +167,7 @@ export default function PointsScreen() {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   balanceRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  medal: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: 'rgba(255,255,255,0.65)', ...shadowSmall },
+  medal: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center', borderWidth: line.width, borderColor: colors.ring, ...shadowSmall },
   balance: { fontSize: 36, fontWeight: '800', color: colors.text },
   unit: { fontSize: 20, fontWeight: '700' },
   reserved: { fontSize: 13, color: colors.textSecondary, marginTop: 4 },

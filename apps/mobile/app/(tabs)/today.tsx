@@ -5,6 +5,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Backdrop } from '@/components/Backdrop';
+import { DogFace, OrnamentRow } from '@/components/decor/art';
 import { Fab } from '@/components/Fab';
 import { ProfilePills } from '@/components/ProfilePills';
 import { ProgressRing } from '@/components/ProgressRing';
@@ -24,7 +25,7 @@ import { useApprovalCounts } from '@/hooks/useApprovals';
 import { usePendingTaskIds } from '@/hooks/useSyncStatus';
 import { toggleVars, useDeleteTask, useRejectTask, useTasks, useToggleTask, useValidateTask, validateVars } from '@/hooks/useTasks';
 import { childColor } from '@/theme/childColor';
-import { colors, glass, radius, shadowSmall, spacing, typography } from '@/theme/tokens';
+import { colors, glass, hasDecor, radius, shadowSmall, spacing, typography, line } from '@/theme/tokens';
 
 export default function TodayScreen() {
   const { t } = useTranslation();
@@ -65,6 +66,11 @@ export default function TodayScreen() {
     <SafeAreaView style={styles.screen}>
       <Backdrop />
       <ScrollView role="main" contentContainerStyle={[styles.content, centeredContent]}>
+        {hasDecor ? (
+          <View style={styles.ornament}>
+            <OrnamentRow />
+          </View>
+        ) : null}
         <View style={styles.header}>
           <View style={[styles.avatar, { backgroundColor: childColor(child.color) }]} accessible accessibilityLabel={child.name}>
             <Text style={styles.avatarText}>{child.name.slice(0, 1).toUpperCase()}</Text>
@@ -108,8 +114,8 @@ export default function TodayScreen() {
                 ratio={progress.ratio}
                 size={104}
                 stroke={12}
-                color="#8FE0D2"
-                trackColor="rgba(255,255,255,0.22)"
+                color={colors.ringOnNavy}
+                trackColor={colors.trackOnNavy}
                 textColor={colors.onNavy}
                 label={progress.total === 0 ? '—' : undefined}
                 accessibilityLabel={t('today.progress', { done: progress.done, total: progress.total })}
@@ -121,7 +127,7 @@ export default function TodayScreen() {
                 </Text>
                 <Text style={styles.bannerLabel}>{t('today.progressUnit')}</Text>
               </View>
-              <ChevronRight color={colors.onNavySecondary} />
+              {hasDecor ? <DogFace size={76} happy={progress.total > 0 && progress.ratio >= 0.5} /> : <ChevronRight color={colors.onNavySecondary} />}
             </View>
           </NavyPanel>
         </Pressable>
@@ -137,7 +143,10 @@ export default function TodayScreen() {
         {tasksQuery.isPending ? (
           <ActivityIndicator color={colors.primary} />
         ) : tasks.length === 0 ? (
-          <Text style={[typography.secondary, styles.empty]}>{t('today.empty')}</Text>
+          <View style={styles.emptyBox}>
+            {hasDecor ? <DogFace size={88} happy /> : null}
+            <Text style={[typography.secondary, styles.empty]}>{t('today.empty')}</Text>
+          </View>
         ) : (
           <View style={styles.list}>
             {tasks.map((task, index) => {
@@ -187,15 +196,16 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   flex: { flex: 1 },
   content: { padding: spacing.md, gap: spacing.md, paddingBottom: 96 },
+  ornament: { alignItems: 'center' },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  avatar: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: 'rgba(255,255,255,0.6)', ...shadowSmall },
-  avatarText: { color: '#fff', fontSize: 22, fontWeight: '700' },
+  avatar: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', borderWidth: line.width, borderColor: colors.ring, ...shadowSmall },
+  avatarText: { color: colors.onPrimary, fontSize: 22, fontWeight: '700' },
   greeting: { fontSize: 22, fontWeight: '700', color: colors.text },
   bellBadge: { position: 'absolute', top: 0, right: -2, minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 4, backgroundColor: colors.danger, alignItems: 'center', justifyContent: 'center' },
-  bellBadgeText: { color: '#fff', fontSize: 11, fontWeight: '700' },
+  bellBadgeText: { color: colors.onSolid, fontSize: 11, fontWeight: '700' },
   banner: { ...glass, borderRadius: radius.control, paddingVertical: 12, paddingHorizontal: 16 },
   bannerText: { color: colors.accent, fontSize: 14, fontWeight: '700' },
-  bannerPending: { backgroundColor: colors.warningTint, borderWidth: 1, borderColor: colors.glassBorder, borderRadius: radius.control, paddingVertical: 12, paddingHorizontal: 16 },
+  bannerPending: { backgroundColor: colors.warningTint, borderWidth: line.width, borderColor: colors.glassBorder, borderRadius: radius.control, paddingVertical: 12, paddingHorizontal: 16 },
   bannerPendingText: { color: colors.warning, fontSize: 14, fontWeight: '700' },
   progressRow: { flexDirection: 'row', alignItems: 'center', gap: 20 },
   bannerLabel: { fontSize: 13, color: colors.onNavySecondary },
@@ -203,7 +213,8 @@ const styles = StyleSheet.create({
   tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   list: { ...glass, borderRadius: radius.card, paddingHorizontal: 14 },
   separated: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.separator },
-  empty: { textAlign: 'center', paddingVertical: spacing.lg },
+  emptyBox: { alignItems: 'center', gap: 4, paddingVertical: spacing.md },
+  empty: { textAlign: 'center' },
   deleteAction: { backgroundColor: colors.danger, justifyContent: 'center', alignItems: 'center', width: 88 },
-  deleteText: { color: '#fff', fontWeight: '600' },
+  deleteText: { color: colors.onSolid, fontWeight: '600' },
 });

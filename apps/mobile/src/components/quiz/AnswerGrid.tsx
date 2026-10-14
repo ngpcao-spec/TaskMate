@@ -8,7 +8,7 @@ import { gridOrder, LETTERS, publishBlockers } from '@/domain/quiz';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { useConfirmAnswers, useParentQuestions, useQuizSet, useSetQuizStatus } from '@/hooks/useQuizzes';
 import { useToastStore } from '@/store/toast';
-import { colors, MIN_TARGET, typography } from '@/theme/tokens';
+import { colors, MIN_TARGET, typography, line } from '@/theme/tokens';
 
 type Local = { choice: number; confirmed: boolean };
 
@@ -143,10 +143,10 @@ const styles = StyleSheet.create({
   okBadge: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   okText: { fontSize: 13, fontWeight: '600', color: colors.success },
   letters: { flexDirection: 'row', gap: 10 },
-  pill: { width: MIN_TARGET + 6, height: MIN_TARGET + 6, borderRadius: 999, borderWidth: 2, borderColor: colors.glassBorder, backgroundColor: colors.card, alignItems: 'center', justifyContent: 'center' },
+  pill: { width: MIN_TARGET + 6, height: MIN_TARGET + 6, borderRadius: 999, borderWidth: line.width, borderColor: colors.glassBorder, backgroundColor: colors.card, alignItems: 'center', justifyContent: 'center' },
   pillSuggested: { borderColor: colors.primary, backgroundColor: colors.primaryTint },
   pillConfirmed: { borderColor: colors.success, backgroundColor: colors.success },
   pillText: { fontSize: 18, fontWeight: '700', color: colors.textSecondary },
   pillTextSelected: { color: colors.text },
-  pillTextOnConfirmed: { color: '#fff' },
+  pillTextOnConfirmed: { color: colors.onSolid },
 });

@@ -2,6 +2,7 @@ module.exports = {
   preset: 'jest-expo',
   // runners CI à cache froid : la 1re transformation d'un écran dépasse facilement les 5 s par défaut
   testTimeout: 30000,
+  setupFiles: ['<rootDir>/test-utils/mmkv-mock.js'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^lucide-react-native$': require('path').resolve(__dirname, '../../node_modules/lucide-react-native/dist/cjs/lucide-react-native.js'),

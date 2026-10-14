@@ -18,6 +18,6 @@ export function SyncBanner() {
 
 const styles = StyleSheet.create({
   bar: { backgroundColor: colors.primary, paddingVertical: 6, paddingHorizontal: 16 },
-  offline: { backgroundColor: colors.textSecondary },
-  text: { color: '#fff', fontSize: 13, textAlign: 'center' },
+  offline: { backgroundColor: colors.text },
+  text: { color: colors.onPrimary, fontSize: 13, textAlign: 'center' },
 });

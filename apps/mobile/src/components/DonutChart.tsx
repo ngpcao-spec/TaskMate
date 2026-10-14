@@ -14,7 +14,7 @@ export function DonutChart({ segments, size = 148, stroke = 30 }: { segments: re
   return (
     <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[styles.wrap, { width: size, height: size }]}>
       <Svg width={size} height={size}>
-        <Circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(255,255,255,0.35)" strokeWidth={stroke} fill="none" />
+        <Circle cx={size / 2} cy={size / 2} r={r} stroke={colors.track} strokeWidth={stroke} fill="none" />
         {total === 0
           ? null
           : segments
