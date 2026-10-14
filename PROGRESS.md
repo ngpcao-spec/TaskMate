@@ -226,3 +226,6 @@ Cartes du calendrier et bandeaux teintés opaques sur kawaii / cosmos / teddy / 
 
 ### Barre du bas : fond gris derrière les angles (D-077) — 2026-10-14
 Thème de navigation d'expo-router aux couleurs du thème actif (fin du gris `rgb(242,242,242)` dans les angles arrondis de la barre). Jest : `navigation-theme.test`. À confirmer sur l'iPhone.
+
+### Écrans d'onglets : plus de bande vide au-dessus de la barre (D-078) — 2026-10-14
+Plus de marge de sécurité du bas en double (liste jusqu'à la barre sur tous les onglets) ; marge ajoutée de D-074 retirée. Mesuré en Chromium avec marges de sécurité émulées. Jest : `bottom-bar-edges`. À confirmer sur l'iPhone.

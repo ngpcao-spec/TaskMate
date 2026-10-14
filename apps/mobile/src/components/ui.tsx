@@ -19,7 +19,7 @@ import { Backdrop } from '@/components/Backdrop';
 import { SectionMark } from '@/components/decor/Decor';
 import { Gradient } from '@/components/Gradient';
 import { RoundButton } from '@/components/RoundButton';
-import { bottomPaddingFor, useTabInset } from '@/components/TabInset';
+import { safeEdgesFor, useHasBottomBar } from '@/components/TabInset';
 import { colors, glass, decor, MIN_TARGET, radius, shadow, shadowInset, shadowSmall, spacing, typography, line } from '@/theme/tokens';
 
 /** Largeur max. du contenu (conteneur centré sur grand écran). `wide` : écrans à colonnes (file « Cần duyệt »). */
@@ -31,16 +31,16 @@ export const centeredContent = { width: '100%', maxWidth: CONTENT_MAX_WIDTH, ali
 
 export function Screen({ children, scroll = true, wide = false }: { children: ReactNode; scroll?: boolean; wide?: boolean }) {
   const centered = { width: '100%', maxWidth: wide ? CONTENT_MAX_WIDTH_WIDE : CONTENT_MAX_WIDTH, alignSelf: 'center' } as const;
-  const tabInset = useTabInset();
+  const edges = safeEdgesFor(useHasBottomBar());
   const body = scroll ? (
-    <ScrollView role="main" contentContainerStyle={[styles.screenContent, centered, { paddingBottom: bottomPaddingFor(tabInset, spacing.md) }]} keyboardShouldPersistTaps="handled">
+    <ScrollView role="main" contentContainerStyle={[styles.screenContent, centered]} keyboardShouldPersistTaps="handled">
       {children}
     </ScrollView>
   ) : (
     <View style={[styles.screenContent, centered]}>{children}</View>
   );
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={edges}>
       <Backdrop />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         {body}
