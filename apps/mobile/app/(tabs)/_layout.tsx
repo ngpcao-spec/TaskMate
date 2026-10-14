@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavBar } from '@/components/NavBar';
+import { NotificationPrompt } from '@/components/NotificationPrompt';
 import { SyncBanner } from '@/components/SyncBanner';
 import { useEntryRoute, useMe } from '@/hooks/useMe';
 import { useApprovalCounts } from '@/hooks/useApprovals';
@@ -41,6 +42,7 @@ export default function TabsLayout() {
         <Tabs.Screen name="stats" options={{ title: t('tabs.stats'), tabBarIcon: ({ color, size }) => <ChartColumn color={color} size={size} /> }} />
         <Tabs.Screen name="more" options={{ title: t('tabs.more'), tabBarIcon: ({ color, size }) => <EllipsisVertical color={color} size={size} />, tabBarBadge: approvals.total > 0 ? approvals.total : undefined, tabBarAccessibilityLabel: approvals.total > 0 ? `${t('tabs.more')}, ${t('approvals.badge', { count: approvals.total })}` : t('tabs.more') }} />
       </Tabs>
+      <NotificationPrompt />
     </View>
   );
 }

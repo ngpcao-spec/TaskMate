@@ -24,6 +24,13 @@
   "nav": {
     "hi": "Salut, {{name}} !"
   },
+  "notifPrompt": {
+    "title": "Activer les notifications ?",
+    "body": "Soyez prévenu dès qu’il y a une nouvelle tâche, une tâche à valider ou une récompense — même quand l’application est fermée.",
+    "enable": "Activer les notifications",
+    "later": "Plus tard",
+    "denied": "Les notifications sont bloquées sur cet appareil. Réactivez-les dans Réglages de l’iPhone → Notifications → TaskMate."
+  },
   "category": {
     "study": "Études",
     "sport": "Sport",
