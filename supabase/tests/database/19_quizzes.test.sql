@@ -152,7 +152,9 @@ select is((select count(*)::int from public.child_quiz_questions(tests.u(502)) g
 select is((select array_agg(g.question_id order by g."position") from public.child_quiz_questions(tests.u(502)) g),
           (select array(select (e.value)::uuid from public.quiz_attempt_layouts l, jsonb_array_elements_text(l.layout->'order') with ordinality e(value, ord) where l.attempt_id = tests.u(502) order by e.ord)),
           'mélange: l''ordre servi est celui du serveur');
-select is((select count(distinct public.quiz_make_layout(tests.u(301)))::int from generate_series(1, 12)), 12, 'mélange: chaque tirage est différent (12 tirages sur 12)');
+-- 3 questions × leurs choix = ~1 300 dispositions possibles : deux tirages identiques sur 12 arrivent par hasard (≈ 5 % des exécutions). Un mélange réel donne
+-- toujours au moins 9 dispositions distinctes sur 12 (probabilité d'en avoir moins ≈ 0,03 %) ; un mélange absent ou figé en donnerait 1.
+select ok((select count(distinct public.quiz_make_layout(tests.u(301)))::int from generate_series(1, 12)) >= 9, 'mélange: les tirages sont variés (au moins 9 dispositions distinctes sur 12)');
 select tests.login(13);
 select throws_ok($$select public.submit_quiz_evaluation(tests.u(502), '[{"question_id":"00000000-0000-0000-0000-000000000999","choice":0}]'::jsonb)$$, 'P0001', 'invalid_answers', 'question étrangère refusée');
 select throws_ok($$select public.submit_quiz_evaluation(tests.u(502), '[{"question_id":"00000000-0000-0000-0000-000000000401","choice":9}]'::jsonb)$$, 'P0001', 'invalid_answers', 'choix hors plage refusé');

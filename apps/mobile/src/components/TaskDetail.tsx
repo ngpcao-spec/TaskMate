@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 import { CategoryIcon } from '@/components/CategoryIcon';
-import { Card, Screen, Title } from '@/components/ui';
+import { Card, Screen, ScreenHeader } from '@/components/ui';
 import { formatDayTitle, type CalendarLanguage } from '@/domain/calendar';
 import { taskState } from '@/domain/task-state';
 import { timeLabel } from '@/domain/task-time';
@@ -18,7 +18,7 @@ export function TaskDetail({ task }: { task: TaskRow }) {
   const state = taskState(task);
   return (
     <Screen>
-      <Title>{task.title}</Title>
+      <ScreenHeader title={task.title} multiline />
       <Card>
         <View style={styles.row}>
           <CategoryIcon category={task.category} />

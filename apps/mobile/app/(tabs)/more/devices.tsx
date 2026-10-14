@@ -2,7 +2,7 @@ import { format, parseISO } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { confirmDialog } from '@/components/confirm';
 import { StyleSheet, Text, View } from 'react-native';
-import { Button, Card, Screen, Title } from '@/components/ui';
+import { Button, Card, Screen, ScreenHeader } from '@/components/ui';
 import { useDevices, useRevokeDevice } from '@/hooks/useFamilyAdmin';
 import { useMe } from '@/hooks/useMe';
 import { colors, typography } from '@/theme/tokens';
@@ -29,7 +29,7 @@ export default function DevicesScreen() {
 
   return (
     <Screen>
-      <Title>{t('settings.devices')}</Title>
+      <ScreenHeader title={t('settings.devices')} />
       {list.length === 0 ? <Text style={[typography.secondary, styles.empty]}>{t('settings.devicesEmpty')}</Text> : null}
       {list.map((d) => {
         const name = d.member?.display_name ?? '—';

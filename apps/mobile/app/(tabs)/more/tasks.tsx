@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { CalendarCard } from '@/components/CalendarCard';
 import { Chip } from '@/components/Chip';
-import { Screen, Title } from '@/components/ui';
+import { Screen, ScreenHeader } from '@/components/ui';
 import { formatDayTitle, type CalendarLanguage } from '@/domain/calendar';
 import { timeInTz, todayInTz } from '@/domain/family-time';
 import { taskPermissions } from '@/domain/permissions';
@@ -34,7 +34,7 @@ export default function TaskListScreen() {
 
   return (
     <Screen>
-      <Title>{t('profile.tasks')}</Title>
+      <ScreenHeader title={t('profile.tasks')} />
       <View style={styles.chips}>
         {FILTERS.map((f) => (
           <Chip key={f} label={t(`taskList.${f}`)} selected={filter === f} onPress={() => setFilter(f)} />

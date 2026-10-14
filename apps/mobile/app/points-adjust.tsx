@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 import { Chip } from '@/components/Chip';
-import { Button, Card, Field, Screen, Title } from '@/components/ui';
+import { Button, Card, Field, Screen, ScreenHeader } from '@/components/ui';
 import { parseAdjustment } from '@/domain/rewards';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { useAdjustPoints } from '@/hooks/usePoints';
@@ -24,7 +24,7 @@ export default function PointsAdjustScreen() {
 
   return (
     <Screen>
-      <Title>{t('points.adjustTitle', { name: target?.name ?? '' })}</Title>
+      <ScreenHeader title={t('points.adjustTitle', { name: target?.name ?? '' })} />
       <Card>
         <View style={styles.row}>
           <Chip label="+" selected={sign === 1} onPress={() => setSign(1)} />

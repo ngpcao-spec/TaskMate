@@ -8,9 +8,10 @@ export const colors = theme.colors;
 export const radius = theme.radius;
 export const spacing = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 } as const;
 
+// `title` et `body` portent la couleur de texte du thème : sans couleur, un texte s'affiche en noir (illisible sur le thème sombre « cosmos »).
 export const typography = {
-  title: { fontSize: 24, fontWeight: '700' as const },
-  body: { fontSize: 15 },
+  title: { fontSize: 24, fontWeight: '700' as const, color: colors.text },
+  body: { fontSize: 15, color: colors.text },
   secondary: { fontSize: 13, color: colors.textSecondary },
 };
 
