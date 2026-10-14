@@ -22,6 +22,7 @@ import {
 } from '@/hooks/usePoints';
 import { useApprovalCounts } from '@/hooks/useApprovals';
 import { useOnline } from '@/hooks/useSyncStatus';
+import { tint as tintColor } from '@/theme/tint';
 import { colors, glass, radius, shadowSmall, typography, line } from '@/theme/tokens';
 import type { RewardRequestRow } from '@/types/models';
 
@@ -123,7 +124,7 @@ export default function PointsScreen() {
               onPress={() => (isParent ? router.push({ pathname: '/reward/[id]', params: { id: r.id } }) : confirmRequest(r.id, r.title, r.cost))}
               style={[styles.reward, index > 0 && styles.rewardSeparator, !affordable && !isParent && styles.rewardDisabled]}
             >
-              <GlassTile size={44} tint={`${tint}33`}>
+              <GlassTile size={44} tint={tintColor(tint, 0.2)}>
                 <RewardIcon name={r.icon} color={affordable || isParent ? tint : colors.textSecondary} />
               </GlassTile>
               <Text style={[styles.rowTitle, styles.flex]}>{r.title}</Text>

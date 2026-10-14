@@ -6,6 +6,7 @@ import { taskState } from '@/domain/task-state';
 import { timeLabel } from '@/domain/task-time';
 import { CATEGORY_COLORS } from '@/theme/categories';
 import { GlassTile } from '@/components/GlassTile';
+import { tint } from '@/theme/tint';
 import { colors, MIN_TARGET, shadowInset, line } from '@/theme/tokens';
 import type { TaskRow as Task } from '@/types/models';
 
@@ -68,7 +69,7 @@ export function TaskRow({ task, overdue, canToggle, canOpen, canValidate = false
           </Text>
           <Text style={[styles.time, overdue && styles.overdue]}>{overdue ? `${t('today.overdue')} · ${time}` : time}</Text>
         </Pressable>
-        <GlassTile size={40} tint={`${CATEGORY_COLORS[task.category]}33`}>
+        <GlassTile size={40} tint={tint(CATEGORY_COLORS[task.category], 0.2)}>
           <CategoryIcon category={task.category} size={18} />
         </GlassTile>
         {state === 'pending' ? (

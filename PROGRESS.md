@@ -220,3 +220,6 @@ Le dernier élément des écrans à défilement (onglets) est de nouveau atteign
 
 ### Calendrier : défilement tactile (D-075) — 2026-10-14
 Le calendrier défile au doigt (`touch-action: pan-y` sur le détecteur de balayage). Reproduit puis corrigé dans Chromium mobile (balayage tactile CDP). Jest : `calendar.test`. À confirmer sur l'iPhone réel.
+
+### Thèmes illustrés : teintes opaques (D-076) — 2026-10-14
+Cartes du calendrier et bandeaux teintés opaques sur kawaii / cosmos / teddy / bunny (le motif ne transparaît plus) ; « verre givré » inchangé. Captures Chromium contrôlées (bunny, cosmos, teddy). Jest : `themes.test`, `blend.test`.
