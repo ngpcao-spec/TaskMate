@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { safeEdgesFor, useHasBottomBar } from '@/components/TabInset';
 import { Backdrop } from '@/components/Backdrop';
 import { Avatar } from '@/components/Avatar';
 import { Mascot, TopOrnament } from '@/components/decor/Decor';
@@ -28,6 +29,7 @@ import { toggleVars, useDeleteTask, useRejectTask, useTasks, useToggleTask, useV
 import { colors, glass, hasDecor, radius, spacing, typography, line } from '@/theme/tokens';
 
 export default function TodayScreen() {
+  const edges = safeEdgesFor(useHasBottomBar());
   const { t } = useTranslation();
   const router = useRouter();
   const d = useDisplayedChild();
@@ -47,7 +49,7 @@ export default function TodayScreen() {
 
   if (!d || !d.child) {
     return (
-      <SafeAreaView style={styles.screen}>
+      <SafeAreaView style={styles.screen} edges={edges}>
         <Backdrop />
         <ActivityIndicator color={colors.accent} />
       </SafeAreaView>
@@ -63,7 +65,7 @@ export default function TodayScreen() {
   const child = d.child;
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={edges}>
       <Backdrop />
       <ScrollView role="main" contentContainerStyle={[styles.content, centeredContent]}>
         {hasDecor ? (
