@@ -211,3 +211,6 @@ Plus → Ảnh đại diện : le parent consent enfant par enfant, l'enfant cha
 
 ### Quatrième thème « teddy » (D-072) — 2026-10-14
 Réglages → Giao diện : « Kính mờ » (défaut), « Kawaii », « Vũ trụ » ou « Gấu nâu » (nounours chocolat sur vichy rose poudré), par appareil. Décors centralisés dans `components/decor/Decor.tsx`. Captures : `docs/screenshots/teddy`. Jest : `themes.test` (contrastes ×4), `theme-card`. Non vérifié : rendu sur iPhone réel.
+
+### Cinquième thème « bunny » (D-073) — 2026-10-14
+Réglages → Giao diện : « Kính mờ » (défaut), « Kawaii », « Vũ trụ », « Gấu nâu » ou « Thỏ bông » (lapinous pastel sur vichy bleu ciel), par appareil. Captures : `docs/screenshots/bunny`. Jest : `themes.test` (contrastes ×5), `theme-card`. Non vérifié : rendu sur iPhone réel.

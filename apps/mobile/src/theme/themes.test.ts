@@ -35,7 +35,7 @@ const READABLE: [keyof ThemeColors, keyof ThemeColors][] = [
 
 describe('thèmes : cohérence', () => {
   it('les thèmes sont listés, uniques, et le défaut existe', () => {
-    expect(THEME_IDS).toEqual(['glass', 'kawaii', 'cosmos', 'teddy']);
+    expect(THEME_IDS).toEqual(['glass', 'kawaii', 'cosmos', 'teddy', 'bunny']);
     expect(THEMES[DEFAULT_THEME]).toBeDefined();
     for (const id of THEME_IDS) expect(THEMES[id].id).toBe(id);
   });
@@ -82,6 +82,8 @@ describe('thèmes : cohérence', () => {
     expect(THEMES.kawaii.decor).toBe('kawaii');
     expect(THEMES.cosmos.decor).toBe('cosmos');
     expect(THEMES.teddy.decor).toBe('teddy');
+    expect(THEMES.bunny.decor).toBe('bunny');
+    expect(THEMES.bunny.lineWidth).toBeGreaterThan(THEMES.glass.lineWidth);
     expect(THEMES.teddy.lineWidth).toBeGreaterThan(THEMES.glass.lineWidth);
     expect(THEMES.kawaii.lineWidth).toBeGreaterThan(THEMES.glass.lineWidth);
     expect(THEMES.cosmos.lineWidth).toBeGreaterThan(THEMES.glass.lineWidth);
