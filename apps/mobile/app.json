@@ -14,7 +14,7 @@
       [
         "expo-notifications",
         {
-          "color": "#1E88F5"
+          "color": "#2B7A89"
         }
       ]
     ],
@@ -47,8 +47,8 @@
       "name": "TaskMate",
       "shortName": "TaskMate",
       "description": "Vi\u1ec7c nh\u00e0 c\u1ee7a gia \u0111\u00ecnh \u2014 TaskMate",
-      "themeColor": "#1E88F5",
-      "backgroundColor": "#F5F9FF",
+      "themeColor": "#3C536C",
+      "backgroundColor": "#9CB0C0",
       "lang": "vi"
     },
     "extra": {

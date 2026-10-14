@@ -162,3 +162,14 @@ PR [#16](https://github.com/ngpcao-spec/TaskMate/pull/16) (fusion `b1aa7dc`) : `
 - CI de `main` : run #133 sur `b1aa7dc`, `app`, `db` et `e2e` verts.
 - Production Supabase : migration `20260702000019 push_locale` appliquée ; fonctions redéployées le 2026-10-08 à 05:33 UTC (`send-push` v13).
 - Non vérifié ici : réception d'une vraie notification dans chaque langue (appareil réel), déploiement Vercel de `main`.
+
+## Refonte visuelle « verre givré bleu-gris » (D-064) — fusionnée le 2026-10-14
+PR [#17](https://github.com/ngpcao-spec/TaskMate/pull/17) (fusion `9b1563e`) : thème, navigation (barre du bas / colonne latérale marine), accueil, statistiques (barres + anneau), profil, objectifs, points, formulaires, splash ; détail et limites dans DECISIONS.md (D-064). Captures : `docs/screenshots/glass`, `glass-wide`, `glass-child`.
+
+État constaté (API GitHub / Vercel / Supabase, lecture seule) :
+- CI de la PR avant fusion : `app`, `db` et `e2e` verts sur `d0e17c3`.
+- CI de `main` : run #137 sur `9b1563e`, `app`, `db` et `e2e` verts.
+- Production Vercel : déploiement `dpl_3WyRvXD5qvAf9m3QQjFfz8reECM7` (commit `9b1563e`) `READY`, alias `taskmate-rho-nine.vercel.app` ; l'URL répond 200.
+- Supabase : aucune migration ni fonction nouvelle ; migrations jusqu'à `…000019` inchangées.
+- Reste : les couleurs de l'enveloppe web (fond du `body`, `theme-color`, manifeste PWA, contour de focus) étaient encore bleues dans `9b1563e` ; corrigées dans la PR suivante (voir ci-dessous). Les icônes PNG de l'app (icône, splash natif) sont encore celles d'avant (HUMAN_TODO « assets »).
+- Non vérifié : rendu sur appareil réel iOS / Android (ombres internes, dégradés SVG).
