@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
   figureText: { fontSize: 14, fontWeight: '700', color: colors.text },
   prompt: { ...typography.body, color: colors.text },
   letters: { flexDirection: 'row', gap: 12, flexWrap: 'wrap' },
-  letter: { width: MIN_TARGET + 12, height: MIN_TARGET + 12, borderRadius: 999, borderWidth: 2, borderColor: '#D5DFEC', backgroundColor: colors.card, alignItems: 'center', justifyContent: 'center' },
+  letter: { width: MIN_TARGET + 12, height: MIN_TARGET + 12, borderRadius: 999, borderWidth: 2, borderColor: colors.glassBorder, backgroundColor: colors.card, alignItems: 'center', justifyContent: 'center' },
   letterOn: { borderColor: colors.primary, backgroundColor: colors.primary },
   letterText: { fontSize: 22, fontWeight: '800', color: colors.textSecondary },
   letterTextOn: { color: '#fff' },

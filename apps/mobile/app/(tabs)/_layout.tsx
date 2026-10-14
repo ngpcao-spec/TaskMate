@@ -4,6 +4,7 @@ import { ChartColumn, EllipsisVertical, House, Calendar } from 'lucide-react-nat
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { NavBar } from '@/components/NavBar';
 import { SyncBanner } from '@/components/SyncBanner';
 import { useEntryRoute, useMe } from '@/hooks/useMe';
 import { useApprovalCounts } from '@/hooks/useApprovals';
@@ -34,7 +35,7 @@ export default function TabsLayout() {
       <SafeAreaView edges={['top']} style={{ backgroundColor: colors.background }}>
         <SyncBanner />
       </SafeAreaView>
-      <Tabs screenOptions={{ headerShown: false, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.textSecondary, tabBarLabelStyle: { fontSize: 11, fontWeight: '500' }, ...(wide ? { tabBarPosition: 'left' as const, tabBarVariant: 'material' as const, tabBarLabelStyle: { fontSize: 15, fontWeight: '600' as const }, tabBarStyle: { width: 240, paddingTop: 16, borderRightColor: colors.separator } } : { tabBarStyle: { height: 68, paddingTop: 8, paddingBottom: 10, borderTopColor: colors.separator } }) }}>
+      <Tabs tabBar={(props) => <NavBar {...props} />} screenOptions={{ headerShown: false, ...(wide ? { tabBarPosition: 'left' as const } : {}) }}>
         <Tabs.Screen name="today" options={{ title: t('tabs.today'), tabBarIcon: ({ color, size }) => <House color={color} size={size} /> }} />
         <Tabs.Screen name="calendar" options={{ title: t('tabs.calendar'), tabBarIcon: ({ color, size }) => <Calendar color={color} size={size} /> }} />
         <Tabs.Screen name="stats" options={{ title: t('tabs.stats'), tabBarIcon: ({ color, size }) => <ChartColumn color={color} size={size} /> }} />

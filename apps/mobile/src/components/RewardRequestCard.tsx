@@ -33,5 +33,5 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   title: { fontSize: 16, fontWeight: '600', color: colors.text },
   actions: { flexDirection: 'row', gap: 8 },
-  input: { minHeight: MIN_TARGET, borderRadius: 12, borderWidth: 1, borderColor: '#DDE5F0', paddingHorizontal: 12, color: colors.text, backgroundColor: colors.card },
+  input: { minHeight: MIN_TARGET, borderRadius: 12, borderWidth: 1, borderColor: colors.glassBorder, paddingHorizontal: 12, color: colors.text, backgroundColor: colors.card },
 });

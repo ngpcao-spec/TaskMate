@@ -1,3 +1,4 @@
+import { childColor } from '@/theme/childColor';
 import { onlineManager, useQueries } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -116,7 +117,7 @@ export function RenewTask({ task }: { task: TaskRow }) {
           <Text style={typography.secondary}>{t('taskForm.forWhom')}</Text>
           <View style={styles.wrap}>
             {children.map((c) => (
-              <Chip key={c.id} role="checkbox" label={c.name} color={c.color ?? undefined} selected={childIds.includes(c.id)} onPress={() => toggleChild(c.id)} />
+              <Chip key={c.id} role="checkbox" label={c.name} color={c.color ? childColor(c.color) : undefined} selected={childIds.includes(c.id)} onPress={() => toggleChild(c.id)} />
             ))}
           </View>
         </>
@@ -223,7 +224,7 @@ const styles = StyleSheet.create({
   weekRow: { flexDirection: 'row', gap: 4 },
   weekdayHead: { flex: 1, textAlign: 'center', fontSize: 12, color: colors.textSecondary, fontWeight: '600' },
   cell: { flex: 1, minHeight: MIN_TARGET },
-  day: { alignItems: 'center', justifyContent: 'center', borderRadius: radius.card, borderWidth: 1, borderColor: '#E4ECF7', backgroundColor: colors.card },
+  day: { alignItems: 'center', justifyContent: 'center', borderRadius: radius.card, borderWidth: 1, borderColor: colors.glassBorder, backgroundColor: colors.card },
   daySelected: { backgroundColor: colors.primary, borderColor: colors.primary },
   dayPast: { opacity: 0.35 },
   dayText: { fontSize: 15, fontWeight: '600', color: colors.text },
@@ -231,7 +232,7 @@ const styles = StyleSheet.create({
   dot: { position: 'absolute', bottom: 5, width: 6, height: 6, borderRadius: 3, backgroundColor: colors.warning },
   dotSelected: { backgroundColor: '#fff' },
   stepper: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  stepBtn: { width: MIN_TARGET, height: MIN_TARGET, borderRadius: radius.pill, borderWidth: 1.5, borderColor: '#D5DFEC', alignItems: 'center', justifyContent: 'center', backgroundColor: colors.card },
+  stepBtn: { width: MIN_TARGET, height: MIN_TARGET, borderRadius: radius.pill, borderWidth: 1.5, borderColor: colors.glassBorder, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.card },
   stepText: { fontSize: 22, fontWeight: '700', color: colors.primary },
   stepValue: { fontSize: 16, fontWeight: '600', color: colors.text, minWidth: 96, textAlign: 'center' },
   warn: { color: colors.danger, fontSize: 14 },

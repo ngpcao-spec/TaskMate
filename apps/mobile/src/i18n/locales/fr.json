@@ -21,6 +21,9 @@
     "stats": "Statistiques",
     "more": "Plus"
   },
+  "nav": {
+    "hi": "Salut, {{name}} !"
+  },
   "category": {
     "study": "Études",
     "sport": "Sport",
@@ -123,7 +126,10 @@
     "cannotUncheck": "Impossible de décocher : ces points sont réservés pour une récompense",
     "alreadyValidated": "Un parent a déjà validé cette tâche, impossible de la décocher",
     "progressLabel": "Aujourd'hui",
-    "progressUnit": "tâches terminées"
+    "progressUnit": "tâches terminées",
+    "tileDone": "Validées",
+    "tilePending": "En attente",
+    "tileTodo": "À faire"
   },
   "taskForm": {
     "title": "Nouvelle tâche",
@@ -614,7 +620,8 @@
       "good": "Bien joué ! Encore un petit effort !",
       "keepGoing": "Courage, un peu chaque jour !"
     },
-    "doneShort": "Terminées"
+    "doneShort": "Terminées",
+    "overview": "Vue d’ensemble"
   },
   "notifications": {
     "reminderStart": "Début à {{time}} (dans {{minutes}} min)",

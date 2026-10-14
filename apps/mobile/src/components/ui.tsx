@@ -15,7 +15,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import i18n from '@/i18n';
-import { colors, MIN_TARGET, radius, shadow, spacing, typography } from '@/theme/tokens';
+import { Backdrop } from '@/components/Backdrop';
+import { Gradient } from '@/components/Gradient';
+import { RoundButton } from '@/components/RoundButton';
+import { colors, glass, MIN_TARGET, radius, shadow, shadowInset, shadowSmall, spacing, typography } from '@/theme/tokens';
 
 /** Largeur max. du contenu (conteneur centré sur grand écran). `wide` : écrans à colonnes (file « Cần duyệt »). */
 const CONTENT_MAX_WIDTH = 760;
@@ -35,6 +38,7 @@ export function Screen({ children, scroll = true, wide = false }: { children: Re
   );
   return (
     <SafeAreaView style={styles.screen}>
+      <Backdrop />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         {body}
       </KeyboardAvoidingView>
@@ -51,9 +55,9 @@ export function ScreenHeader({ title, right, onBack, hideBack = false }: HeaderP
   return (
     <View style={styles.header}>
       {hideBack ? null : (
-        <Pressable accessibilityRole="button" accessibilityLabel={i18n.t('common.back')} onPress={back} style={styles.backButton}>
-          <ChevronLeft color={colors.text} size={26} />
-        </Pressable>
+        <RoundButton label={i18n.t('common.back')} onPress={back}>
+          <ChevronLeft color={colors.text} size={24} />
+        </RoundButton>
       )}
       <Text accessibilityRole="header" style={[typography.title, styles.headerTitle, hideBack && styles.headerTitleFlush]} numberOfLines={1}>
         {title}
@@ -113,7 +117,7 @@ export function Button({ label, onPress, variant = 'primary', disabled = false, 
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'primary' ? '#fff' : colors.primary} />
+        <ActivityIndicator color={variant === 'primary' ? '#fff' : colors.accent} />
       ) : (
         <Text style={[styles.buttonLabel, variant !== 'primary' && styles.buttonLabelAlt]}>{label}</Text>
       )}
@@ -129,7 +133,7 @@ export function Field({ label, error, style, ...props }: FieldProps) {
       <Text style={styles.fieldLabel}>{label}</Text>
       <TextInput
         accessibilityLabel={label}
-        placeholderTextColor={colors.textSecondary}
+        placeholderTextColor={colors.placeholder}
         style={[styles.input, error ? styles.inputError : null, style]}
         {...props}
       />
@@ -138,15 +142,33 @@ export function Field({ label, error, style, ...props }: FieldProps) {
   );
 }
 
-export function Card({ children }: { children: ReactNode }) {
-  return <View style={styles.card}>{children}</View>;
+export function Card({ children, fill = false }: { children: ReactNode; /** Occupe toute la hauteur de la colonne (deux cartes côte à côte de même hauteur). */ fill?: boolean }) {
+  return <View style={[styles.card, fill && styles.flex]}>{children}</View>;
+}
+
+/** Titre de section (« Top Genres », « Recently Played » de la maquette). */
+export function SectionTitle({ children }: { children: ReactNode }) {
+  return (
+    <Text accessibilityRole="header" style={styles.sectionTitle}>
+      {children}
+    </Text>
+  );
+}
+
+/** Panneau marine (bannière d'accueil de la maquette : fond ardoise, texte clair). Les enfants doivent utiliser `colors.onNavy`. */
+export function NavyPanel({ children }: { children: ReactNode }) {
+  return (
+    <View style={styles.navy}>
+      <Gradient from={colors.navyLight} to={colors.navyDeep} direction="d" />
+      {children}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-  header: { flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: MIN_TARGET, marginLeft: -8 },
-  backButton: { width: MIN_TARGET, height: MIN_TARGET, alignItems: 'center', justifyContent: 'center' },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: MIN_TARGET },
   headerTitle: { flex: 1, color: colors.text },
-  headerTitleFlush: { marginLeft: 8 },
+  headerTitleFlush: { marginLeft: 4 },
   flex: { flex: 1 },
   screen: { flex: 1, backgroundColor: colors.background },
   screenContent: { padding: spacing.md, gap: spacing.md, flexGrow: 1 },
@@ -160,24 +182,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: spacing.lg,
   },
-  buttonPrimary: { backgroundColor: colors.primary },
-  buttonSecondary: { backgroundColor: colors.card, borderWidth: 1.5, borderColor: colors.primary },
+  buttonPrimary: { backgroundColor: colors.primary, borderWidth: 1, borderColor: 'rgba(255,255,255,0.45)', ...shadowSmall },
+  buttonSecondary: { backgroundColor: colors.cardStrong, borderWidth: 1, borderColor: colors.glassBorder, ...shadowSmall },
   buttonDisabled: { opacity: 0.5 },
   pressed: { opacity: 0.85 },
   buttonLabel: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  buttonLabelAlt: { color: colors.primary },
+  buttonLabelAlt: { color: colors.accent },
   field: { gap: spacing.xs },
   fieldLabel: { fontSize: 15, fontWeight: '600', color: colors.text },
   input: {
     minHeight: MIN_TARGET + 4,
-    backgroundColor: colors.card,
-    borderRadius: 12,
+    backgroundColor: colors.inputBg,
+    borderRadius: radius.control,
     borderWidth: 1,
-    borderColor: '#DDE5F0',
+    borderColor: colors.glassBorderSoft,
+    ...shadowInset,
     paddingHorizontal: spacing.md,
     fontSize: 16,
     color: colors.text,
   },
   inputError: { borderColor: colors.danger },
-  card: { backgroundColor: colors.card, borderRadius: radius.card, padding: spacing.md, gap: spacing.sm, ...shadow },
+  sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.text },
+  navy: { borderRadius: radius.card, padding: spacing.md, gap: spacing.sm, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.22)', ...shadow },
+  card: { ...glass, borderRadius: radius.card, padding: spacing.md, gap: spacing.sm },
 });

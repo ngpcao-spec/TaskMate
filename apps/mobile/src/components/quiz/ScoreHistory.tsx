@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 16, fontWeight: '700', color: colors.text },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 28 },
   date: { width: 84, fontSize: 13, color: colors.textSecondary },
-  track: { flex: 1, height: 8, borderRadius: 4, backgroundColor: '#E4ECF7', overflow: 'hidden' },
+  track: { flex: 1, height: 8, borderRadius: 4, backgroundColor: colors.track, overflow: 'hidden' },
   fill: { height: '100%', borderRadius: 4 },
   score: { width: 52, textAlign: 'right', fontSize: 13, fontWeight: '600', color: colors.text },
 });

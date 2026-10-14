@@ -21,6 +21,9 @@
     "stats": "Stats",
     "more": "More"
   },
+  "nav": {
+    "hi": "Hi, {{name}}!"
+  },
   "category": {
     "study": "Study",
     "sport": "Sport",
@@ -123,7 +126,10 @@
     "cannotUncheck": "Can't uncheck: those points are reserved for a reward",
     "alreadyValidated": "A parent already approved this task, it cannot be unchecked",
     "progressLabel": "Today",
-    "progressUnit": "tasks completed"
+    "progressUnit": "tasks completed",
+    "tileDone": "Approved",
+    "tilePending": "Awaiting approval",
+    "tileTodo": "To do"
   },
   "taskForm": {
     "title": "New task",
@@ -614,7 +620,8 @@
       "good": "Well done! Keep going a little more!",
       "keepGoing": "Keep it up, a little every day!"
     },
-    "doneShort": "Done"
+    "doneShort": "Done",
+    "overview": "Overview"
   },
   "notifications": {
     "reminderStart": "Starts at {{time}} (in {{minutes}} min)",

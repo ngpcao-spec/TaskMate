@@ -1,3 +1,4 @@
+import { childColor } from '@/theme/childColor';
 import { onlineManager } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { Camera, FileText, Image as ImageIcon, X } from 'lucide-react-native';
@@ -220,7 +221,7 @@ export function ImportDocument() {
           <Text style={typography.secondary}>{t('revisions.import.child')}</Text>
           <View style={styles.wrap}>
             {d.children.map((c) => (
-              <Chip key={c.id} label={c.name} color={c.color ?? undefined} selected={childId === c.id} onPress={() => setChildId(c.id)} />
+              <Chip key={c.id} label={c.name} color={c.color ? childColor(c.color) : undefined} selected={childId === c.id} onPress={() => setChildId(c.id)} />
             ))}
           </View>
         </>
@@ -285,7 +286,7 @@ const styles = StyleSheet.create({
   notice2: { fontSize: 14, color: colors.text, lineHeight: 20 },
   detected: { fontSize: 18, fontWeight: '700', color: colors.text },
   stepper: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  stepBtn: { width: MIN_TARGET, height: MIN_TARGET, borderRadius: 999, borderWidth: 1.5, borderColor: '#D5DFEC', alignItems: 'center', justifyContent: 'center', backgroundColor: colors.card },
+  stepBtn: { width: MIN_TARGET, height: MIN_TARGET, borderRadius: 999, borderWidth: 1.5, borderColor: colors.glassBorder, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.card },
   stepText: { fontSize: 22, fontWeight: '700', color: colors.primary },
   stepValue: { fontSize: 16, fontWeight: '600', color: colors.text, minWidth: 110, textAlign: 'center' },
   sources: { gap: 10 },

@@ -7,7 +7,9 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Backdrop } from '@/components/Backdrop';
 import { CalendarCard } from '@/components/CalendarCard';
+import { RoundButton } from '@/components/RoundButton';
 import { ScreenHeader } from '@/components/ui';
 import { WeekStrip } from '@/components/WeekStrip';
 import {
@@ -24,7 +26,7 @@ import { isOverdue, sortTasks } from '@/domain/task-time';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { useNow } from '@/hooks/useNow';
 import { useTasks } from '@/hooks/useTasks';
-import { colors, MIN_TARGET, spacing, typography } from '@/theme/tokens';
+import { colors, glass, MIN_TARGET, radius, spacing, typography } from '@/theme/tokens';
 
 const SWIPE_THRESHOLD = 60;
 
@@ -59,7 +61,8 @@ export default function CalendarScreen() {
   if (!d || !d.child) {
     return (
       <SafeAreaView style={styles.screen}>
-        <ActivityIndicator color={colors.primary} />
+        <Backdrop />
+        <ActivityIndicator color={colors.accent} />
       </SafeAreaView>
     );
   }
@@ -81,14 +84,15 @@ export default function CalendarScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
+      <Backdrop />
       <GestureDetector gesture={swipe}>
         <ScrollView contentContainerStyle={styles.content}>
           <ScreenHeader
             title={t('tabs.calendar')}
             right={
-              <Pressable accessibilityRole="button" accessibilityLabel={t('calendar.pickDate')} onPress={() => setPickerOpen((v) => !v)} style={styles.iconButton}>
-                <CalendarDays color={colors.primary} />
-              </Pressable>
+              <RoundButton label={t('calendar.pickDate')} onPress={() => setPickerOpen((v) => !v)}>
+                <CalendarDays color={colors.accent} />
+              </RoundButton>
             }
           />
 
@@ -106,12 +110,12 @@ export default function CalendarScreen() {
 
           <View style={styles.monthRow}>
             <Text style={styles.month}>{formatMonthTitle(selected, lang)}</Text>
-            <Pressable accessibilityRole="button" accessibilityLabel={t('calendar.prevWeek')} onPress={() => setPicked(shiftWeek(selected, -1))} style={styles.iconButton}>
-              <ChevronLeft color={colors.textSecondary} />
-            </Pressable>
-            <Pressable accessibilityRole="button" accessibilityLabel={t('calendar.nextWeek')} onPress={() => setPicked(shiftWeek(selected, 1))} style={styles.iconButton}>
-              <ChevronRight color={colors.textSecondary} />
-            </Pressable>
+            <RoundButton label={t('calendar.prevWeek')} onPress={() => setPicked(shiftWeek(selected, -1))}>
+              <ChevronLeft color={colors.text} />
+            </RoundButton>
+            <RoundButton label={t('calendar.nextWeek')} onPress={() => setPicked(shiftWeek(selected, 1))}>
+              <ChevronRight color={colors.text} />
+            </RoundButton>
           </View>
 
           {d.viewer.role === 'parent' ? <Text style={typography.secondary}>{d.child.name}</Text> : null}
@@ -149,7 +153,7 @@ export default function CalendarScreen() {
           )}
 
           <Pressable accessibilityRole="button" accessibilityLabel={weekMode ? t('calendar.viewDay') : t('calendar.viewWeek')} onPress={() => setWeekMode((v) => !v)} style={styles.toggle}>
-            <CalendarRange color={colors.primary} size={22} />
+            <CalendarRange color={colors.accent} size={22} />
             <Text style={styles.toggleText}>{weekMode ? t('calendar.viewDay') : t('calendar.viewWeek')}</Text>
             <ChevronRight color={colors.textSecondary} />
           </Pressable>
@@ -163,13 +167,12 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   flex: { flex: 1 },
   content: { padding: spacing.md, gap: spacing.sm, paddingBottom: spacing.xl },
-  iconButton: { width: MIN_TARGET, height: MIN_TARGET, alignItems: 'center', justifyContent: 'center' },
   list: { gap: 10 },
   daySection: { gap: 8 },
   dayHeading: { fontSize: 15, fontWeight: '700', color: colors.text, marginTop: 8 },
   empty: { textAlign: 'center', paddingVertical: spacing.lg },
-  toggle: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: MIN_TARGET + 12, backgroundColor: colors.card, borderRadius: 16, paddingHorizontal: 16 },
+  toggle: { ...glass, flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: MIN_TARGET + 12, borderRadius: radius.card, paddingHorizontal: 16 },
   toggleText: { flex: 1, color: colors.text, fontSize: 16, fontWeight: '600' },
-  monthRow: { flexDirection: 'row', alignItems: 'center' },
-  month: { flex: 1, fontSize: 14, fontWeight: '600', color: colors.textSecondary, textTransform: 'capitalize' },
+  monthRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  month: { flex: 1, fontSize: 15, fontWeight: '700', color: colors.text, textTransform: 'capitalize' },
 });

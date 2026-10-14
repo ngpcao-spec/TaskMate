@@ -4,7 +4,9 @@ import { Field } from '@/components/ui';
 import { validateBirthDate } from '@/domain/birth-date';
 import { colors, MIN_TARGET, typography } from '@/theme/tokens';
 
-export const CHILD_PALETTE = [colors.primary, colors.mint, '#8B5CF6', '#F5A623', '#E5484D'] as const;
+import { CHILD_PALETTE } from '@/theme/childColor';
+
+export { CHILD_PALETTE };
 
 type Props = {
   name: string;

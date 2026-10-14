@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
   okBadge: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   okText: { fontSize: 13, fontWeight: '600', color: colors.success },
   letters: { flexDirection: 'row', gap: 10 },
-  pill: { width: MIN_TARGET + 6, height: MIN_TARGET + 6, borderRadius: 999, borderWidth: 2, borderColor: '#D5DFEC', backgroundColor: colors.card, alignItems: 'center', justifyContent: 'center' },
+  pill: { width: MIN_TARGET + 6, height: MIN_TARGET + 6, borderRadius: 999, borderWidth: 2, borderColor: colors.glassBorder, backgroundColor: colors.card, alignItems: 'center', justifyContent: 'center' },
   pillSuggested: { borderColor: colors.primary, backgroundColor: colors.primaryTint },
   pillConfirmed: { borderColor: colors.success, backgroundColor: colors.success },
   pillText: { fontSize: 18, fontWeight: '700', color: colors.textSecondary },

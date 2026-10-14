@@ -2,11 +2,11 @@ export const TASK_CATEGORIES = ['study', 'sport', 'chores', 'personal', 'other']
 export type TaskCategory = (typeof TASK_CATEGORIES)[number];
 
 export const CATEGORY_COLORS: Record<TaskCategory, string> = {
-  study: '#2F80ED',
-  sport: '#8B5CF6',
-  chores: '#F5A623',
-  personal: '#27AE60',
-  other: '#94A3B8',
+  study: '#3A7CA5',
+  sport: '#7C79C2',
+  chores: '#C98E36',
+  personal: '#3A9A84',
+  other: '#7D93A6',
 };
 
 /** lucide icon names, resolved in components. */
