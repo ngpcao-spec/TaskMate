@@ -1,7 +1,7 @@
 import { format, parseISO } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
-import { Card, Screen, Title } from '@/components/ui';
+import { Card, Screen, ScreenHeader } from '@/components/ui';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { useTransactions } from '@/hooks/usePoints';
 import { colors, typography } from '@/theme/tokens';
@@ -15,7 +15,7 @@ export default function PointsHistoryScreen() {
   const rows = tx.data ?? [];
   return (
     <Screen>
-      <Title>{t('points.history')}</Title>
+      <ScreenHeader title={t('points.history')} />
       {rows.length === 0 ? <Text style={typography.secondary}>{t('points.historyEmpty')}</Text> : null}
       {rows.map((r) => (
         <Card key={r.id}>

@@ -48,10 +48,10 @@ export function Screen({ children, scroll = true, wide = false }: { children: Re
   );
 }
 
-type HeaderProps = { title: string; right?: ReactNode; onBack?: () => void; hideBack?: boolean };
+type HeaderProps = { title: string; right?: ReactNode; onBack?: () => void; hideBack?: boolean; /** Titre long (ex. nom d'une tâche) : à la ligne plutôt que tronqué. */ multiline?: boolean };
 
 /** En-tête des maquettes : flèche retour + titre (22 semibold), élément optionnel à droite. */
-export function ScreenHeader({ title, right, onBack, hideBack = false }: HeaderProps) {
+export function ScreenHeader({ title, right, onBack, hideBack = false, multiline = false }: HeaderProps) {
   const router = useRouter();
   const back = onBack ?? (() => (router.canGoBack() ? router.back() : router.replace('/(tabs)/today')));
   return (
@@ -61,7 +61,7 @@ export function ScreenHeader({ title, right, onBack, hideBack = false }: HeaderP
           <ChevronLeft color={colors.text} size={24} />
         </RoundButton>
       )}
-      <Text accessibilityRole="header" style={[typography.title, styles.headerTitle, hideBack && styles.headerTitleFlush]} numberOfLines={1}>
+      <Text accessibilityRole="header" style={[typography.title, styles.headerTitle, hideBack && styles.headerTitleFlush]} numberOfLines={multiline ? undefined : 1}>
         {title}
       </Text>
       {right}

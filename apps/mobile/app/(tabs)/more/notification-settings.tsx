@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Switch, Text, View } from 'react-native';
-import { Button, Card, Field, Screen, Title } from '@/components/ui';
+import { Button, Card, Field, Screen, ScreenHeader } from '@/components/ui';
 import { WebPushCard } from '@/components/WebPushCard';
 import { DEFAULT_PREFS, isValidTime, MAX_REMINDER_MIN, type NotificationPrefs } from '@/domain/notification-prefs';
 import { useMe } from '@/hooks/useMe';
@@ -47,7 +47,7 @@ function PrefsForm({ initial }: { initial: NotificationPrefs }) {
 
   return (
     <Screen>
-      <Title>{t('notifSettings.title')}</Title>
+      <ScreenHeader title={t('notifSettings.title')} />
       <WebPushCard />
       {isParent ? null : (
         <Card>

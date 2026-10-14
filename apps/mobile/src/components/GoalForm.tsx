@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 import { IconChoice } from '@/components/IconChoice';
 import { GoalIcon } from '@/components/GoalIcon';
-import { Button, Card, Field, Screen, Title } from '@/components/ui';
+import { Button, Card, Field, Screen, ScreenHeader } from '@/components/ui';
 import { GOAL_ICONS, goalFormSchema, type GoalFormValues } from '@/domain/goals';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { useDeleteGoal, useSaveGoal } from '@/hooks/useGoals';
@@ -37,7 +37,7 @@ export function GoalForm({ goal }: { goal?: GoalRow }) {
 
   return (
     <Screen>
-      <Title>{goal ? t('goals.editTitle') : t('goals.add')}</Title>
+      <ScreenHeader title={goal ? t('goals.editTitle') : t('goals.add')} />
       <Card>
         <Controller control={control} name="title" render={({ field, fieldState }) => (
           <Field label={t('goals.name')} value={field.value} onChangeText={field.onChange} maxLength={80} error={fieldState.isTouched ? err(fieldState.error?.message) : null} />

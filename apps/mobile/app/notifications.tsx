@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
-import { Button, Card, Screen, Title } from '@/components/ui';
+import { Button, Card, Screen, ScreenHeader } from '@/components/ui';
 import { latestAt } from '@/domain/notification-center';
 import { useApprovalCounts } from '@/hooks/useApprovals';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
@@ -45,7 +45,7 @@ export default function NotificationsScreen() {
 
   return (
     <Screen>
-      <Title>{t('notifications.title')}</Title>
+      <ScreenHeader title={t('notifications.title')} />
       {isParent && approvals.total > 0 ? <Button label={t('approvals.openQueue', { count: approvals.total })} onPress={() => router.push('/approvals')} /> : null}
       {rows.length === 0 ? <Text style={[typography.secondary, styles.empty]}>{t('notifications.empty')}</Text> : null}
       {rows.map((r) => (

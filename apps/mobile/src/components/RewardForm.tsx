@@ -6,7 +6,7 @@ import { StyleSheet, View } from 'react-native';
 import { Chip } from '@/components/Chip';
 import { IconChoice } from '@/components/IconChoice';
 import { REWARD_ICON_NAMES, RewardIcon } from '@/components/RewardIcon';
-import { Button, Card, Field, Screen, Title } from '@/components/ui';
+import { Button, Card, Field, Screen, ScreenHeader } from '@/components/ui';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { useDeleteReward, useSaveReward } from '@/hooks/usePoints';
 import type { RewardRow } from '@/types/models';
@@ -29,7 +29,7 @@ export function RewardForm({ reward }: { reward?: RewardRow }) {
 
   return (
     <Screen>
-      <Title>{reward ? t('reward.editTitle') : t('reward.newTitle')}</Title>
+      <ScreenHeader title={reward ? t('reward.editTitle') : t('reward.newTitle')} />
       <Card>
         <Field label={t('reward.name')} value={title} onChangeText={setTitle} maxLength={80} />
         <Field label={t('reward.cost')} value={cost} onChangeText={(v) => setCost(v.replace(/\D/g, ''))} keyboardType="number-pad" maxLength={6} />

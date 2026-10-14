@@ -4,7 +4,7 @@ import { confirmDialog } from '@/components/confirm';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ChildAccountSection } from '@/components/ChildAccountSection';
 import { useRouter } from 'expo-router';
-import { Button, Card, Field, Screen, Title } from '@/components/ui';
+import { Button, Card, Field, Screen, ScreenHeader } from '@/components/ui';
 import { ageFromBirthDate } from '@/domain/age';
 import { validateBirthDate } from '@/domain/birth-date';
 import { todayInTz } from '@/domain/family-time';
@@ -25,7 +25,7 @@ export default function ChildrenAdminScreen() {
   const today = todayInTz(new Date(), me.family.timezone);
   return (
     <Screen>
-      <Title>{t('settings.manageChildren')}</Title>
+      <ScreenHeader title={t('settings.manageChildren')} />
       <Button label={t('addChild.button')} onPress={() => router.push('/more/add-child')} />
       {me.children.map((c) => (
         <ChildCard key={c.id} child={c} today={today} />

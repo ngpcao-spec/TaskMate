@@ -5,7 +5,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { ApprovalTaskCard } from '@/components/ApprovalTaskCard';
 import { Chip } from '@/components/Chip';
 import { RewardRequestCard } from '@/components/RewardRequestCard';
-import { Button, Screen, Title } from '@/components/ui';
+import { Button, Screen, ScreenHeader } from '@/components/ui';
 import { groupPendingByChild } from '@/domain/approvals';
 import { formatDayTitle, type CalendarLanguage } from '@/domain/calendar';
 import { useApprovalCounts } from '@/hooks/useApprovals';
@@ -89,7 +89,7 @@ export default function ApprovalsScreen() {
   if (wide) {
     return (
       <Screen wide>
-        <Title>{t('approvals.title')}</Title>
+        <ScreenHeader title={t('approvals.title')} />
         <View style={styles.columns}>
           <View style={styles.column}>
             <Text accessibilityRole="header" style={styles.columnTitle}>
@@ -110,7 +110,7 @@ export default function ApprovalsScreen() {
 
   return (
     <Screen>
-      <Title>{t('approvals.title')}</Title>
+      <ScreenHeader title={t('approvals.title')} />
       <View style={styles.tabs}>
         <Chip label={t('approvals.tabTasks', { count: counts.tasks })} selected={tab === 'tasks'} onPress={() => setTab('tasks')} />
         <Chip label={t('approvals.tabRewards', { count: counts.requests })} selected={tab === 'rewards'} onPress={() => setTab('rewards')} />
