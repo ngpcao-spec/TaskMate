@@ -24,7 +24,7 @@ const seen = (c: ThemeColors, key: keyof ThemeColors): [number, number, number] 
 
 // [texte, fond] : tout texte courant doit être lisible (WCAG AA, 4,5:1) dans CHAQUE thème.
 const READABLE: [keyof ThemeColors, keyof ThemeColors][] = [
-  ['text', 'background'], ['text', 'card'], ['text', 'cardStrong'], ['text', 'cardSolid'], ['text', 'tileTeal'], ['text', 'tileBlue'], ['text', 'tileIce'], ['text', 'tileViolet'], ['text', 'navActive'],
+  ['text', 'background'], ['text', 'card'], ['text', 'cardStrong'], ['text', 'cardSolid'], ['onTile', 'tileTeal'], ['onTile', 'tileBlue'], ['onTile', 'tileIce'], ['onTile', 'tileViolet'], ['onNavActive', 'navActive'],
   ['textSecondary', 'background'], ['textSecondary', 'card'], ['textSecondary', 'cardSolid'],
   ['onPrimary', 'primary'], ['onSolid', 'danger'], ['onSolid', 'success'], ['onSolid', 'text'],
   ['onNavy', 'navy'], ['onNavy', 'navyLight'], ['onNavy', 'navyDeep'], ['onNavySecondary', 'navy'], ['onNavySecondary', 'navyDeep'], ['onBar', 'barFrom'], ['onBar', 'barTo'],
@@ -35,7 +35,7 @@ const READABLE: [keyof ThemeColors, keyof ThemeColors][] = [
 
 describe('thèmes : cohérence', () => {
   it('les thèmes sont listés, uniques, et le défaut existe', () => {
-    expect(THEME_IDS).toEqual(['glass', 'kawaii']);
+    expect(THEME_IDS).toEqual(['glass', 'kawaii', 'cosmos']);
     expect(THEMES[DEFAULT_THEME]).toBeDefined();
     for (const id of THEME_IDS) expect(THEMES[id].id).toBe(id);
   });
@@ -72,15 +72,17 @@ describe('thèmes : cohérence', () => {
     expect(t.lineWidth).toBeGreaterThan(0);
   });
 
-  it('chaque ancienne couleur d’enfant vive est traduite dans chaque thème ; les couleurs « verre givré » aussi dans le thème kawaii', () => {
+  it('chaque ancienne couleur d’enfant vive est traduite dans chaque thème ; les couleurs « verre givré » aussi dans les autres thèmes', () => {
     for (const id of THEME_IDS) for (const legacy of ['#1E88F5', '#2EC4A6', '#8B5CF6', '#F5A623', '#E5484D']) expect(THEMES[id].childSoft[legacy]).toBeTruthy();
-    for (const fromGlass of THEMES.glass.childPalette) expect(THEMES.kawaii.childSoft[fromGlass.toUpperCase()]).toBeTruthy();
+    for (const id of THEME_IDS) if (id !== 'glass') for (const fromGlass of THEMES.glass.childPalette) expect([id, THEMES[id].childSoft[fromGlass.toUpperCase()]]).toEqual([id, expect.any(String)]);
   });
 
-  it('seul le thème kawaii porte des décors et des contours épais', () => {
-    expect(THEMES.glass.decor).toBe(false);
-    expect(THEMES.kawaii.decor).toBe(true);
+  it('seuls les thèmes kawaii et cosmos portent des décors (chacun les siens) et des contours plus épais', () => {
+    expect(THEMES.glass.decor).toBe('none');
+    expect(THEMES.kawaii.decor).toBe('kawaii');
+    expect(THEMES.cosmos.decor).toBe('cosmos');
     expect(THEMES.kawaii.lineWidth).toBeGreaterThan(THEMES.glass.lineWidth);
+    expect(THEMES.cosmos.lineWidth).toBeGreaterThan(THEMES.glass.lineWidth);
   });
 });
 

@@ -1,5 +1,8 @@
 /** Un thème = un jeu COMPLET de jetons. Ajouter un thème : un fichier ici + une entrée dans `THEMES` ; `theme/themes.test` impose les mêmes clés et des contrastes lisibles. */
-export type ThemeId = 'glass' | 'kawaii';
+export type ThemeId = 'glass' | 'kawaii' | 'cosmos';
+
+/** Famille de décors illustrés : aucun, chiens et damier (kawaii), astronautes et étoiles (cosmos). */
+export type DecorKind = 'none' | 'kawaii' | 'cosmos';
 
 export type ThemeColors = {
   /** Fond des boutons et accents (texte `onPrimary` dessus). */
@@ -35,8 +38,12 @@ export type ThemeColors = {
   trackOnNavy: string;
   /** Texte / icône posé sur un fond `primary` ou une couleur d'enfant. */
   onPrimary: string;
-  /** Texte / icône posé sur un fond plein foncé (danger, succès, infobulle). */
+  /** Texte / icône posé sur un fond plein de couleur d'alerte (danger, succès) ou sur la couleur `text` (infobulle). */
   onSolid: string;
+  /** Texte posé sur les tuiles pastel (`tile*`) : sombre même dans un thème sombre. */
+  onTile: string;
+  /** Texte et icône de l'onglet actif (posés sur `navActive`). */
+  onNavActive: string;
   /** Contour d'une surface pleine accentuée (bouton principal, avatar, coche). */
   ring: string;
   danger: string;
@@ -74,8 +81,8 @@ export type Theme = {
   childSoft: Record<string, string>;
   /** Palette proposée à la création d'un enfant (déjà dans la palette du thème). */
   childPalette: readonly [string, string, string, string, string];
-  /** Décors illustrés (chiens, nœuds, étincelles) : thème « kawaii » seulement. */
-  decor: boolean;
+  /** Décors illustrés du thème. */
+  decor: DecorKind;
   /** Couleur de la barre du navigateur / de la PWA. */
   browserColor: string;
 };

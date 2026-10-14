@@ -6,6 +6,7 @@ import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeabl
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Backdrop } from '@/components/Backdrop';
 import { DogFace, OrnamentRow } from '@/components/decor/art';
+import { Astronaut, CosmosOrnamentRow } from '@/components/decor/art-cosmos';
 import { Fab } from '@/components/Fab';
 import { ProfilePills } from '@/components/ProfilePills';
 import { ProgressRing } from '@/components/ProgressRing';
@@ -25,7 +26,12 @@ import { useApprovalCounts } from '@/hooks/useApprovals';
 import { usePendingTaskIds } from '@/hooks/useSyncStatus';
 import { toggleVars, useDeleteTask, useRejectTask, useTasks, useToggleTask, useValidateTask, validateVars } from '@/hooks/useTasks';
 import { childColor } from '@/theme/childColor';
-import { colors, glass, hasDecor, radius, shadowSmall, spacing, typography, line } from '@/theme/tokens';
+import { colors, decor, glass, hasDecor, radius, shadowSmall, spacing, typography, line } from '@/theme/tokens';
+
+/** Mascotte du thème : petit chien (kawaii) ou astronaute (cosmos). */
+function Mascot({ size, happy }: { size: number; happy: boolean }) {
+  return decor === 'cosmos' ? <Astronaut size={size} happy={happy} /> : <DogFace size={size} happy={happy} />;
+}
 
 export default function TodayScreen() {
   const { t } = useTranslation();
@@ -68,7 +74,7 @@ export default function TodayScreen() {
       <ScrollView role="main" contentContainerStyle={[styles.content, centeredContent]}>
         {hasDecor ? (
           <View style={styles.ornament}>
-            <OrnamentRow />
+            {decor === 'cosmos' ? <CosmosOrnamentRow /> : <OrnamentRow />}
           </View>
         ) : null}
         <View style={styles.header}>
@@ -127,7 +133,7 @@ export default function TodayScreen() {
                 </Text>
                 <Text style={styles.bannerLabel}>{t('today.progressUnit')}</Text>
               </View>
-              {hasDecor ? <DogFace size={76} happy={progress.total > 0 && progress.ratio >= 0.5} /> : <ChevronRight color={colors.onNavySecondary} />}
+              {hasDecor ? <Mascot size={76} happy={progress.total > 0 && progress.ratio >= 0.5} /> : <ChevronRight color={colors.onNavySecondary} />}
             </View>
           </NavyPanel>
         </Pressable>
@@ -144,7 +150,7 @@ export default function TodayScreen() {
           <ActivityIndicator color={colors.primary} />
         ) : tasks.length === 0 ? (
           <View style={styles.emptyBox}>
-            {hasDecor ? <DogFace size={88} happy /> : null}
+            {hasDecor ? <Mascot size={88} happy /> : null}
             <Text style={[typography.secondary, styles.empty]}>{t('today.empty')}</Text>
           </View>
         ) : (

@@ -17,9 +17,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import i18n from '@/i18n';
 import { Backdrop } from '@/components/Backdrop';
 import { Sparkle } from '@/components/decor/art';
+import { StarShape } from '@/components/decor/art-cosmos';
 import { Gradient } from '@/components/Gradient';
 import { RoundButton } from '@/components/RoundButton';
-import { colors, glass, hasDecor, MIN_TARGET, radius, shadow, shadowInset, shadowSmall, spacing, typography, line } from '@/theme/tokens';
+import { colors, glass, decor, MIN_TARGET, radius, shadow, shadowInset, shadowSmall, spacing, typography, line } from '@/theme/tokens';
 
 /** Largeur max. du contenu (conteneur centré sur grand écran). `wide` : écrans à colonnes (file « Cần duyệt »). */
 const CONTENT_MAX_WIDTH = 760;
@@ -154,10 +155,10 @@ export function SectionTitle({ children }: { children: ReactNode }) {
       {children}
     </Text>
   );
-  if (!hasDecor) return title;
+  if (decor === 'none') return title;
   return (
     <View style={styles.sectionRow}>
-      <Sparkle size={24} />
+      {decor === 'cosmos' ? <StarShape size={24} /> : <Sparkle size={24} />}
       {title}
     </View>
   );

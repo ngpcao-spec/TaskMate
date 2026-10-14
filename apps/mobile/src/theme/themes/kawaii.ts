@@ -37,6 +37,8 @@ export const kawaii: Theme = {
     trackOnNavy: 'rgba(255,255,255,0.6)',
     onPrimary: LINE,
     onSolid: '#FFFFFF',
+    onTile: LINE,
+    onNavActive: LINE,
     ring: LINE,
     danger: '#B83247',
     success: '#26784F',
@@ -68,6 +70,6 @@ export const kawaii: Theme = {
     '#3A7CA5': '#8DB1E2', '#2F8F80': '#9ED9B8', '#6E6BB8': '#C9B9F0', '#B07A28': '#F4C15D', '#A83A44': '#F29B9B',
   },
   childPalette: ['#8DB1E2', '#9ED9B8', '#C9B9F0', '#F4C15D', '#F29B9B'],
-  decor: true,
+  decor: 'kawaii',
   browserColor: '#FBF3DF',
 };

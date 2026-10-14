@@ -586,7 +586,7 @@ test.describe('révisions (D-055)', () => {
     await child.getByRole('radio', { name: 'Câu 12: đáp án A' }).click();
     await expect(child.getByText('Đã trả lời 3/3 câu')).toBeVisible();
     await child.getByRole('button', { name: 'Nộp bài' }).click();
-    await expect(child.getByText('Đã nộp, chờ phụ huynh duyệt')).toBeVisible();
+    await expect(child.getByRole('heading', { name: 'Đã nộp, chờ phụ huynh duyệt' }).filter({ visible: true }).first()).toBeVisible();
 
     // le serveur n'a RIEN mélangé : questions par numéro, choix dans l'ordre d'origine ; le score est calculé côté serveur
     // l'écran passe à « Đã nộp » dès l'envoi local : l'envoi (mis en file) peut arriver au serveur un instant plus tard
