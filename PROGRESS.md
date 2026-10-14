@@ -194,3 +194,11 @@ Fenêtre affichée à l'ouverture de l'app tant que les notifications ne sont pa
 
 ### Deuxième thème « kawaii » (D-069) — 2026-10-14
 Réglages → Giao diện : « Kính mờ » (défaut) ou « Kawaii », par appareil (web : rechargement automatique ; natif : rouvrir l'app). Architecture par jeux de jetons, contrastes testés pour les deux thèmes ; captures : `docs/screenshots/kawaii` (téléphone), `kawaii-wide` (large). Jest : `themes.test`, `theme-card`. Non vérifié : rendu sur iPhone réel (police arrondie SF Rounded, damier SVG).
+
+### PR #19 et #20 fusionnées — 2026-10-14
+PR [#19](https://github.com/ngpcao-spec/TaskMate/pull/19) (fusion `7873785` : correctif d'enregistrement des préférences D-066, invitation à activer les notifications D-067, règle de fusion autonome D-068) et PR [#20](https://github.com/ngpcao-spec/TaskMate/pull/20) (fusion `7ed7950` : thème « kawaii » D-069).
+État constaté (API GitHub / Vercel / Supabase) :
+- CI de `main` : run #149 sur `7873785` et run #152 sur `7ed7950`, `app`, `db`, `e2e` verts.
+- Production Vercel : déploiements `dpl_7fhrtwzfovG7T2o2ANtGSzZkNEeR` (`7873785`) et `dpl_CKKJZ5kKrFMpSZAkkf1bgYpyCuFx` (`7ed7950`) `READY`.
+- Supabase : migrations jusqu'à `…000020_push_webhook` enregistrées, aucune migration dans ces deux PR.
+- Reste (humain) : activer les notifications sur chaque iPhone, parent compris (0 appareil parent enregistré à ce jour). Non vérifié : rendu du thème kawaii et parcours d'activation sur un iPhone réel.
