@@ -188,3 +188,6 @@ PR [#18](https://github.com/ngpcao-spec/TaskMate/pull/18) (fusion `19c1a93`) : m
 
 ### Correctif : enregistrement des préférences de notification (D-066) — 2026-10-14
 Signalé sur iPhone (toast d'erreur sur « Lưu »). Cause : `upsert` PostgREST réécrivant `member_id` (UPDATE refusé aux clients) → 403 ; table `notification_prefs` toujours vide en production. Corrigé côté client (UPDATE puis INSERT), droits inchangés ; pgTAP 25 + Jest `prefs-api`. Même constat côté appareil : 1 appareil web (compte enfant) enregistré, langue `vi`, donc l'abonnement Web Push fonctionne.
+
+### Invitation à activer les notifications (D-067) — 2026-10-14
+Fenêtre affichée à l'ouverture de l'app tant que les notifications ne sont pas activées sur l'appareil (bouton = geste exigé par iOS ; « Để sau » = 24 h). Jest : domaine + composant. Non vérifié : parcours réel sur iPhone (demande iOS, abonnement).

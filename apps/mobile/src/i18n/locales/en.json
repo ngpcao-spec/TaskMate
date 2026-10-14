@@ -24,6 +24,13 @@
   "nav": {
     "hi": "Hi, {{name}}!"
   },
+  "notifPrompt": {
+    "title": "Turn on notifications?",
+    "body": "Get notified as soon as there is a new task, a task to approve or a reward — even when the app is closed.",
+    "enable": "Turn on notifications",
+    "later": "Later",
+    "denied": "Notifications are blocked on this device. Turn them back on in iPhone Settings → Notifications → TaskMate."
+  },
   "category": {
     "study": "Study",
     "sport": "Sport",

@@ -24,6 +24,13 @@
   "nav": {
     "hi": "Xin chào, {{name}}!"
   },
+  "notifPrompt": {
+    "title": "Bật thông báo?",
+    "body": "Nhận thông báo ngay khi có việc mới, việc chờ duyệt hoặc phần thưởng — kể cả khi không mở ứng dụng.",
+    "enable": "Bật thông báo",
+    "later": "Để sau",
+    "denied": "Thông báo đang bị chặn trên thiết bị này. Hãy bật lại trong Cài đặt của iPhone → Thông báo → TaskMate."
+  },
   "category": {
     "study": "Học tập",
     "sport": "Thể thao",
