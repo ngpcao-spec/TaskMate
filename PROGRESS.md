@@ -185,3 +185,6 @@ PR [#18](https://github.com/ngpcao-spec/TaskMate/pull/18) (fusion `19c1a93`) : m
 - Supabase : migration `20260702000020` enregistrée par l'intégration GitHub ; déclencheur `activity_log_push` unique ; deux secrets `push_webhook_*` dans le Vault ; fonctions redéployées (`send-push` v16, 2026-10-14 04:27 UTC).
 - Chaîne vérifiée : un événement factice envoyé à `send-push` avec le secret du coffre répond 200 (`sent: 0`), donc `WEBHOOK_SECRET` est saisi et identique. Les secrets VAPID ne sont pas vérifiables sans envoi réel.
 - Reste : activer les notifications sur chaque iPhone (PWA installée, iOS ≥ 16.4, bouton des réglages) ; aucun appareil enregistré à cette date (0 web, 0 Expo). Non vérifié : réception d'une vraie notification.
+
+### Correctif : enregistrement des préférences de notification (D-066) — 2026-10-14
+Signalé sur iPhone (toast d'erreur sur « Lưu »). Cause : `upsert` PostgREST réécrivant `member_id` (UPDATE refusé aux clients) → 403 ; table `notification_prefs` toujours vide en production. Corrigé côté client (UPDATE puis INSERT), droits inchangés ; pgTAP 25 + Jest `prefs-api`. Même constat côté appareil : 1 appareil web (compte enfant) enregistré, langue `vi`, donc l'abonnement Web Push fonctionne.

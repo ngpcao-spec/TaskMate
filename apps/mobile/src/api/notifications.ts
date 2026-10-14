@@ -11,9 +11,22 @@ export async function fetchPrefs(memberId: string): Promise<NotificationPrefs> {
   return data ? normalizePrefs(data.prefs) : DEFAULT_PREFS;
 }
 
+/**
+ * Enregistre les préférences du membre. PAS d'`upsert` : PostgREST réécrirait aussi `member_id` (`ON CONFLICT … SET member_id = …`), colonne dont
+ * l'UPDATE est refusé aux clients (RLS/droits de colonne, D-066) → 403 à chaque enregistrement. On met à jour la ligne ; si elle n'existe pas encore,
+ * on la crée ; si deux enregistrements se croisent (clé déjà prise, 23505), on remet à jour.
+ */
 export async function savePrefs(memberId: string, prefs: NotificationPrefs): Promise<void> {
-  const { error } = await supabase.from('notification_prefs').upsert({ member_id: memberId, prefs }, { onConflict: 'member_id' });
-  if (error) throw error;
+  const update = async (): Promise<number> => {
+    const { data, error } = await supabase.from('notification_prefs').update({ prefs }).eq('member_id', memberId).select('member_id');
+    if (error) throw error;
+    return data.length;
+  };
+  if ((await update()) > 0) return;
+  const { error } = await supabase.from('notification_prefs').insert({ member_id: memberId, prefs });
+  if (!error) return;
+  if (error.code === '23505' && (await update()) > 0) return;
+  throw error;
 }
 
 /** Centre de notifications parent : activité récente de la famille (RLS : parents uniquement). */
