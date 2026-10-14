@@ -1,7 +1,8 @@
 import { StyleSheet, View } from 'react-native';
 import { Backdrop } from '@/components/Backdrop';
 import { Bow, DogFace } from '@/components/decor/art';
-import { hasDecor } from '@/theme/tokens';
+import { Astronaut, MoonCookie, Planet, Rocket, StarShape } from '@/components/decor/art-cosmos';
+import { decor } from '@/theme/tokens';
 import Svg, { Circle, Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 
 /**
@@ -9,7 +10,33 @@ import Svg, { Circle, Defs, LinearGradient, Path, Rect, Stop } from 'react-nativ
  * Placeholder SVG généré — à remplacer par l'illustration finale (HUMAN_TODO « assets »).
  */
 export function SplashBackground() {
-  if (hasDecor) {
+  if (decor === 'cosmos') {
+    return (
+      <View style={StyleSheet.absoluteFill}>
+        <Backdrop />
+        <View style={[styles.float, { top: 90, left: 36 }]}>
+          <MoonCookie size={70} />
+        </View>
+        <View style={[styles.float, { top: 330, right: 24 }]}>
+          <Planet size={88} />
+        </View>
+        <View style={[styles.float, { top: 60, right: 120 }]}>
+          <StarShape size={26} />
+        </View>
+        <View style={[styles.float, { top: 250, left: 70 }]}>
+          <StarShape size={20} />
+        </View>
+        <View style={styles.dogs}>
+          <Astronaut size={150} />
+          <View style={styles.bow}>
+            <Rocket size={64} />
+          </View>
+          <Astronaut size={116} happy />
+        </View>
+      </View>
+    );
+  }
+  if (decor === 'kawaii') {
     return (
       <View style={StyleSheet.absoluteFill}>
         <Backdrop />
@@ -59,4 +86,5 @@ export function SplashBackground() {
 const styles = StyleSheet.create({
   dogs: { position: 'absolute', left: 0, right: 0, bottom: 150, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', gap: 4 },
   bow: { position: 'absolute', top: -34 },
+  float: { position: 'absolute' },
 });

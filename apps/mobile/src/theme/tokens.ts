@@ -35,7 +35,9 @@ export const glass = {
 
 export const chartTones = theme.chartTones;
 export const themeId = theme.id;
-export const hasDecor = theme.decor;
+/** Famille de décors du thème (`none`, `kawaii`, `cosmos`) et indicateur « il y a des décors ». */
+export const decor = theme.decor;
+export const hasDecor = theme.decor !== 'none';
 
 /** Minimum touch target (pt). */
 export const MIN_TARGET = 44;

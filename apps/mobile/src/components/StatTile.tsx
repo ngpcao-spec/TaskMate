@@ -27,7 +27,7 @@ export function StatTile({ icon, label, value, caption, tint, accessibilityLabel
 
 const styles = StyleSheet.create({
   tile: { flexGrow: 1, flexBasis: 100, minHeight: 132, borderRadius: radius.tile, padding: 12, gap: 2, borderWidth: line.width, borderColor: colors.glassBorder, ...shadow },
-  label: { fontSize: 12, fontWeight: '600', color: colors.text, marginTop: 6, minHeight: 30 },
-  value: { fontSize: 26, fontWeight: '800', color: colors.text },
-  caption: { fontSize: 12, color: colors.textSecondary },
+  label: { fontSize: 12, fontWeight: '600', color: colors.onTile, marginTop: 6, minHeight: 30 },
+  value: { fontSize: 26, fontWeight: '800', color: colors.onTile },
+  caption: { fontSize: 12, color: colors.onTile },
 });

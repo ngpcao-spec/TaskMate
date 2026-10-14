@@ -32,6 +32,8 @@ export const glass: Theme = {
     trackOnNavy: 'rgba(255,255,255,0.22)',
     onPrimary: '#FFFFFF',
     onSolid: '#FFFFFF',
+    onTile: '#142638',
+    onNavActive: '#142638',
     ring: 'rgba(255,255,255,0.5)',
     danger: '#97283A',
     success: '#1B6048',
@@ -59,6 +61,6 @@ export const glass: Theme = {
   rewardTints: { gift: '#B8613A', 'gamepad-2': '#B8613A', film: '#4B5AA5', smartphone: '#3A7CA5', cookie: '#C98E36', star: '#C98E36', pizza: '#B8454E', popcorn: '#C98E36', ticket: '#7C79C2', trophy: '#C98E36' },
   childSoft: { '#1E88F5': '#3A7CA5', '#2EC4A6': '#2F8F80', '#8B5CF6': '#6E6BB8', '#F5A623': '#B07A28', '#E5484D': '#A83A44' },
   childPalette: ['#3A7CA5', '#2F8F80', '#6E6BB8', '#B07A28', '#A83A44'],
-  decor: false,
+  decor: 'none',
   browserColor: '#3C536C',
 };

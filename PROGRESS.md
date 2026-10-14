@@ -202,3 +202,6 @@ PR [#19](https://github.com/ngpcao-spec/TaskMate/pull/19) (fusion `7873785` : co
 - Production Vercel : déploiements `dpl_7fhrtwzfovG7T2o2ANtGSzZkNEeR` (`7873785`) et `dpl_CKKJZ5kKrFMpSZAkkf1bgYpyCuFx` (`7ed7950`) `READY`.
 - Supabase : migrations jusqu'à `…000020_push_webhook` enregistrées, aucune migration dans ces deux PR.
 - Reste (humain) : activer les notifications sur chaque iPhone, parent compris (0 appareil parent enregistré à ce jour). Non vérifié : rendu du thème kawaii et parcours d'activation sur un iPhone réel.
+
+### Troisième thème « cosmos » (D-070) — 2026-10-14
+Réglages → Giao diện : « Kính mờ » (défaut), « Kawaii » ou « Vũ trụ » (sombre, astronautes, étoiles), par appareil. Jetons `onTile` / `onNavActive` ajoutés, `decor` devient une famille. Captures : `docs/screenshots/cosmos`. Jest : `themes.test` (contrastes ×3), `theme-card`. Non vérifié : rendu sur iPhone réel.

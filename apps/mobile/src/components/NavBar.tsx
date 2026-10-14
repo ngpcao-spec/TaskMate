@@ -39,7 +39,7 @@ export function NavBar({ state, descriptors, navigation }: BarProps) {
           const focused = state.index === index;
           const label = typeof options.title === 'string' ? options.title : route.name;
           const badge = options.tabBarBadge;
-          const color = focused ? colors.accent : colors.onBar;
+          const color = focused ? colors.onNavActive : colors.onBar;
           const onPress = () => {
             const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
             if (!focused && !event.defaultPrevented) navigation.navigate(route.name, route.params);
@@ -62,7 +62,7 @@ export function NavBar({ state, descriptors, navigation }: BarProps) {
                   </View>
                 ) : null}
               </View>
-              <Text numberOfLines={1} style={[wide ? styles.labelWide : styles.label, { color: focused ? colors.text : colors.onBar }]}>
+              <Text numberOfLines={1} style={[wide ? styles.labelWide : styles.label, { color: focused ? colors.onNavActive : colors.onBar }]}>
                 {label}
               </Text>
             </Pressable>

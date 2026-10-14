@@ -1,14 +1,27 @@
 import { useId } from 'react';
 import { StyleSheet, View } from 'react-native';
-import Svg, { Defs, Pattern, Rect } from 'react-native-svg';
+import Svg, { Circle, Defs, Pattern, Rect } from 'react-native-svg';
 import { Checker } from '@/components/decor/art';
-import { colors, hasDecor } from '@/theme/tokens';
+import { STARFIELD } from '@/components/decor/art-cosmos';
+import { colors, decor } from '@/theme/tokens';
 import { Gradient } from './Gradient';
 
-/** Fond d'écran du thème : dégradé acier bleuté (verre givré) ou damier crème et bleu clair (kawaii). À placer en premier enfant d'un conteneur `flex: 1`. */
+/** Fond d'écran du thème : dégradé acier bleuté (verre givré), damier crème et bleu clair (kawaii) ou ciel nocturne étoilé (cosmos). À placer en premier enfant d'un conteneur `flex: 1`. */
 export function Backdrop() {
   const id = useId().replace(/[^a-zA-Z0-9]/g, '');
-  if (!hasDecor) return <Gradient from={colors.backgroundTop} to={colors.backgroundBottom} direction="d" />;
+  if (decor === 'none') return <Gradient from={colors.backgroundTop} to={colors.backgroundBottom} direction="d" />;
+  if (decor === 'cosmos') {
+    return (
+      <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+        <Gradient from={colors.backgroundTop} to={colors.backgroundBottom} direction="d" />
+        <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
+          {STARFIELD.map(([x, y, r]) => (
+            <Circle key={`${x}-${y}`} cx={`${x * 100}%`} cy={`${y * 100}%`} r={r} fill="#F5F0E1" opacity={0.7} />
+          ))}
+        </Svg>
+      </View>
+    );
+  }
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
       <Svg width="100%" height="100%">
