@@ -8,10 +8,17 @@ jest.mock('react-native-safe-area-context', () => ({
   SafeAreaView: ({ children }: { children: React.ReactNode }) => children,
 }));
 jest.mock('@react-native-community/datetimepicker', () => ({ __esModule: true, default: () => null }));
+const mockDetectorProps = jest.fn();
 jest.mock('react-native-gesture-handler', () => {
   const chain: Record<string, unknown> = {};
   const fluent = new Proxy(chain, { get: () => () => fluent });
-  return { Gesture: { Pan: () => fluent }, GestureDetector: ({ children }: { children: React.ReactNode }) => children };
+  return {
+    Gesture: { Pan: () => fluent },
+    GestureDetector: (props: { children: React.ReactNode }) => {
+      mockDetectorProps(props);
+      return props.children;
+    },
+  };
 });
 
 const minh = { id: 'c-minh', name: 'Minh', birth_date: '2009-03-01', color: '#1E88F5' } as ChildRow;
@@ -34,6 +41,11 @@ jest.mock('@/hooks/useTasks', () => ({ useTasks: (...a: unknown[]) => mockUseTas
 
 describe('CalendarScreen', () => {
   beforeEach(() => mockUseTasks.mockReturnValue({ data: [t1, t2], isPending: false }));
+
+  it('le balayage de semaine laisse le défilement vertical au navigateur (web : touch-action pan-y, sinon la liste ne défile plus au doigt)', async () => {
+    await render(<CalendarScreen />);
+    expect(mockDetectorProps).toHaveBeenCalledWith(expect.objectContaining({ touchAction: 'pan-y' }));
+  });
 
   it('interroge la semaine lundi → dimanche du jour courant (fuseau famille)', async () => {
     await render(<CalendarScreen />);

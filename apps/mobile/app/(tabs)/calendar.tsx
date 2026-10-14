@@ -87,7 +87,7 @@ export default function CalendarScreen() {
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
       <Backdrop />
-      <GestureDetector gesture={swipe}>
+      <GestureDetector gesture={swipe} touchAction="pan-y">
         <ScrollView contentContainerStyle={[styles.content, { paddingBottom: bottomPaddingFor(tabInset, spacing.md) }]}>
           <ScreenHeader
             title={t('tabs.calendar')}
