@@ -101,10 +101,11 @@ Sans cette clé, l'app fonctionne normalement : « Créer à partir d'un documen
 5. **Tester** : côté parent, Plus → Révisions → « Créer à partir d'un document », **avec une photo, puis un PDF, puis un Word** ; le PDF est le cas à confirmer (D-060). Vérifier le coût réel dans https://platform.openai.com/usage.
 La fonction `generate-questions` est déployée automatiquement par l'intégration GitHub au merge (étape 4). Les documents ne sont ni conservés ni journalisés ; seul le nombre de jetons et le succès/échec sont enregistrés.
 
-## 7. Database Webhook (notifications)
-- **Où** : https://supabase.com/dashboard/project/olftkozksanvnzlsvwrp/integrations/webhooks/overview → *Integrations → Database Webhooks → Create a new hook*.
-- **Saisir** : Name `activity-log-push` · Table `public.activity_log` · Events **Insert** · Type **Supabase Edge Functions** · Edge Function `send-push` · Method `POST` · Timeout `5000` · **HTTP Headers** → *Add a new header* : nom `x-webhook-secret`, valeur = **le même** `WEBHOOK_SECRET` → **Create webhook**.
-- **Vérifier** : avec un compte enfant, cocher une tâche ; puis *Edge Functions → send-push → Logs* montre un appel en **200** (la réponse contient `"sent":0` tant qu'aucun appareil n'a activé les notifications). Un 401 = secret différent entre l'en-tête et `WEBHOOK_SECRET`.
+## 7. Déclencheur des notifications (fait, D-065)
+Plus de Database Webhook à créer dans le tableau de bord : la migration `…000020_push_webhook` pose un déclencheur sur `public.activity_log` qui appelle `send-push` via `pg_net`. Il lit l'adresse de la fonction et le secret partagé dans le **coffre Supabase (Vault)** sous `push_webhook_url` et `push_webhook_secret` (posés en production le 2026-10-14) ; tant qu'ils sont absents (CI, base locale) il ne fait rien, et une erreur d'envoi n'empêche jamais l'enregistrement d'une activité.
+- **À faire par vous (secrets d'une fonction : saisie humaine uniquement)** : https://supabase.com/dashboard/project/olftkozksanvnzlsvwrp/functions/secrets → *Add new secrets* → `WEBHOOK_SECRET` = la **même** valeur que `push_webhook_secret` du coffre ; `VAPID_PUBLIC_KEY` = la clé publique, `VAPID_PRIVATE_KEY` = la clé privée (uniquement ici), `VAPID_SUBJECT` = `mailto:` + votre e-mail. La clé publique est déjà sur Vercel (`EXPO_PUBLIC_VAPID_PUBLIC_KEY`).
+- **Changer le secret plus tard** : modifier `WEBHOOK_SECRET` (secrets de fonction) ET le secret `push_webhook_secret` du coffre (SQL Editor : `select vault.update_secret((select id from vault.secrets where name = 'push_webhook_secret'), 'nouvelle-valeur');`).
+- **Vérifier** : avec un compte enfant, cocher une tâche ; *Edge Functions → send-push → Logs* montre un appel en **200** (`"sent":0` tant qu'aucun appareil n'a activé les notifications). Un 401 = secrets différents.
 - *(Facultatif, plus tard)* récap du soir des parents : tâche pg_cron appelant `send-push` avec `{"type":"evening_recap"}` et le même en-tête ; dites-le-moi et je prépare le SQL.
 
 ## Contrôle final

@@ -12,7 +12,7 @@ test.describe('PWA', () => {
     for (const icon of manifest.icons) expect((await request.get(new URL(icon.src, page.url()).href)).ok()).toBe(true);
     await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveCount(1);
     await expect(page.locator('meta[name="apple-mobile-web-app-capable"]')).toHaveCount(1);
-    await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content', '#1E88F5');
+    await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content', '#3C536C');
   });
 
   test('le service worker met l\'app en cache : démarrage hors ligne', async ({ page, context }) => {
