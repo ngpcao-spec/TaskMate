@@ -1,13 +1,14 @@
 import { cosmos } from './themes/cosmos';
 import { glass } from './themes/glass';
 import { kawaii } from './themes/kawaii';
+import { teddy } from './themes/teddy';
 import type { Theme, ThemeId } from './themes/types';
 import { readStoredTheme, reloadApp, writeStoredTheme } from './themeStore';
 
 export type { Theme, ThemeId } from './themes/types';
 
 /** Thèmes disponibles, dans l'ordre d'affichage des réglages. */
-export const THEMES: Record<ThemeId, Theme> = { glass, kawaii, cosmos };
+export const THEMES: Record<ThemeId, Theme> = { glass, kawaii, cosmos, teddy };
 export const THEME_IDS = Object.keys(THEMES) as ThemeId[];
 export const DEFAULT_THEME: ThemeId = 'glass';
 

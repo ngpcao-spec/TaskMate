@@ -208,3 +208,6 @@ Réglages → Giao diện : « Kính mờ » (défaut), « Kawaii » ou « Vũ t
 
 ### Avatar « dessin animé » par IA (D-071) — 2026-10-14
 Plus → Ảnh đại diện : le parent consent enfant par enfant, l'enfant charge un portrait (galerie ou caméra avant, PWA), l'Edge Function `generate-avatar` (OpenAI) le dessine, aperçu puis validation ; la photo n'est jamais conservée. Migration `…000021_child_avatars`, pgTAP `26`, Jest et E2E ajoutés ; captures : `docs/screenshots/avatar`. Reste (humain) : HUMAN_TODO § 6 ter (clé déjà posée ou non, réglages facultatifs). Non vérifié : appel IA réel (coût, qualité), caméra avant sur iPhone.
+
+### Quatrième thème « teddy » (D-072) — 2026-10-14
+Réglages → Giao diện : « Kính mờ » (défaut), « Kawaii », « Vũ trụ » ou « Gấu nâu » (nounours chocolat sur vichy rose poudré), par appareil. Décors centralisés dans `components/decor/Decor.tsx`. Captures : `docs/screenshots/teddy`. Jest : `themes.test` (contrastes ×4), `theme-card`. Non vérifié : rendu sur iPhone réel.

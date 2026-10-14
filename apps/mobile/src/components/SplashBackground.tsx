@@ -2,6 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { Backdrop } from '@/components/Backdrop';
 import { Bow, DogFace } from '@/components/decor/art';
 import { Astronaut, MoonCookie, Planet, Rocket, StarShape } from '@/components/decor/art-cosmos';
+import { Duckling, Flower, Paw, TeddyFace } from '@/components/decor/art-teddy';
 import { decor } from '@/theme/tokens';
 import Svg, { Circle, Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 
@@ -32,6 +33,29 @@ export function SplashBackground() {
             <Rocket size={64} />
           </View>
           <Astronaut size={116} happy />
+        </View>
+      </View>
+    );
+  }
+  if (decor === 'teddy') {
+    return (
+      <View style={StyleSheet.absoluteFill}>
+        <Backdrop />
+        <View style={[styles.float, { top: 96, left: 30 }]}>
+          <Flower size={56} />
+        </View>
+        <View style={[styles.float, { top: 150, right: 36 }]}>
+          <Paw size={48} />
+        </View>
+        <View style={[styles.float, { top: 300, left: 60 }]}>
+          <Flower size={38} petal="#F0AAB0" />
+        </View>
+        <View style={styles.dogs}>
+          <TeddyFace size={150} />
+          <View style={styles.bow}>
+            <Duckling size={64} />
+          </View>
+          <TeddyFace size={116} happy />
         </View>
       </View>
     );

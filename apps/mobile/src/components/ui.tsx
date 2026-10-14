@@ -16,8 +16,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import i18n from '@/i18n';
 import { Backdrop } from '@/components/Backdrop';
-import { Sparkle } from '@/components/decor/art';
-import { StarShape } from '@/components/decor/art-cosmos';
+import { SectionMark } from '@/components/decor/Decor';
 import { Gradient } from '@/components/Gradient';
 import { RoundButton } from '@/components/RoundButton';
 import { colors, glass, decor, MIN_TARGET, radius, shadow, shadowInset, shadowSmall, spacing, typography, line } from '@/theme/tokens';
@@ -158,7 +157,7 @@ export function SectionTitle({ children }: { children: ReactNode }) {
   if (decor === 'none') return title;
   return (
     <View style={styles.sectionRow}>
-      {decor === 'cosmos' ? <StarShape size={24} /> : <Sparkle size={24} />}
+      <SectionMark size={24} />
       {title}
     </View>
   );

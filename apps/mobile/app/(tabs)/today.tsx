@@ -5,9 +5,8 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Backdrop } from '@/components/Backdrop';
-import { DogFace, OrnamentRow } from '@/components/decor/art';
 import { Avatar } from '@/components/Avatar';
-import { Astronaut, CosmosOrnamentRow } from '@/components/decor/art-cosmos';
+import { Mascot, TopOrnament } from '@/components/decor/Decor';
 import { Fab } from '@/components/Fab';
 import { ProfilePills } from '@/components/ProfilePills';
 import { ProgressRing } from '@/components/ProgressRing';
@@ -26,12 +25,7 @@ import { useNow } from '@/hooks/useNow';
 import { useApprovalCounts } from '@/hooks/useApprovals';
 import { usePendingTaskIds } from '@/hooks/useSyncStatus';
 import { toggleVars, useDeleteTask, useRejectTask, useTasks, useToggleTask, useValidateTask, validateVars } from '@/hooks/useTasks';
-import { colors, decor, glass, hasDecor, radius, spacing, typography, line } from '@/theme/tokens';
-
-/** Mascotte du thème : petit chien (kawaii) ou astronaute (cosmos). */
-function Mascot({ size, happy }: { size: number; happy: boolean }) {
-  return decor === 'cosmos' ? <Astronaut size={size} happy={happy} /> : <DogFace size={size} happy={happy} />;
-}
+import { colors, glass, hasDecor, radius, spacing, typography, line } from '@/theme/tokens';
 
 export default function TodayScreen() {
   const { t } = useTranslation();
@@ -74,7 +68,7 @@ export default function TodayScreen() {
       <ScrollView role="main" contentContainerStyle={[styles.content, centeredContent]}>
         {hasDecor ? (
           <View style={styles.ornament}>
-            {decor === 'cosmos' ? <CosmosOrnamentRow /> : <OrnamentRow />}
+            <TopOrnament />
           </View>
         ) : null}
         <View style={styles.header}>
