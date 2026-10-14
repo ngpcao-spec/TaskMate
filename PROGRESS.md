@@ -217,3 +217,6 @@ Réglages → Giao diện : « Kính mờ » (défaut), « Kawaii », « Vũ tr�
 
 ### Bas des écrans sous la barre de navigation (D-074) — 2026-10-14
 Le dernier élément des écrans à défilement (onglets) est de nouveau atteignable sur iPhone : la barre du bas fournit sa hauteur mesurée, ajoutée à la marge basse. Jest : `tab-inset`. À confirmer sur l'iPhone réel.
+
+### Calendrier : défilement tactile (D-075) — 2026-10-14
+Le calendrier défile au doigt (`touch-action: pan-y` sur le détecteur de balayage). Reproduit puis corrigé dans Chromium mobile (balayage tactile CDP). Jest : `calendar.test`. À confirmer sur l'iPhone réel.
