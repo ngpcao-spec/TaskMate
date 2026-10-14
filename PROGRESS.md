@@ -176,3 +176,12 @@ PR [#17](https://github.com/ngpcao-spec/TaskMate/pull/17) (fusion `9b1563e`) : t
 
 ## Notifications push : chaîne de production (D-065) — 2026-10-14
 Constaté avant : 0 déclencheur sur `activity_log`, 0 appareil enregistré, pas de clé VAPID sur Vercel. Fait (lecture/écriture vérifiées par l'API Supabase/Vercel) : `pg_net` activé, fonction `push_on_activity` + déclencheur `activity_log_push`, secrets `push_webhook_url` / `push_webhook_secret` dans le Vault, variable Vercel `EXPO_PUBLIC_VAPID_PUBLIC_KEY`, production redéployée. Reste à faire par l'humain : saisir les 4 secrets de la fonction `send-push` (HUMAN_TODO § 7), puis activer les notifications depuis l'app installée sur chaque iPhone. Migration `…000020` et test pgTAP 24 dans la PR à venir.
+
+### Suite : PR #18 fusionnée (D-065) — 2026-10-14
+PR [#18](https://github.com/ngpcao-spec/TaskMate/pull/18) (fusion `19c1a93`) : migration `…000020_push_webhook` + test pgTAP 24 + enveloppe web (fond, `theme-color`, manifeste, focus) aux couleurs du thème.
+État constaté (API GitHub / Vercel / Supabase) :
+- CI de la PR avant fusion : `app`, `db`, `e2e` verts sur `818cf02`. CI de `main` : run #141 sur `19c1a93`, `app`, `db`, `e2e` verts.
+- Vercel : déploiement `dpl_GucKmp2vyDFAtudYdP96Xxh63E6r` (commit `19c1a93`) `READY` sur `taskmate-rho-nine.vercel.app`.
+- Supabase : migration `20260702000020` enregistrée par l'intégration GitHub ; déclencheur `activity_log_push` unique ; deux secrets `push_webhook_*` dans le Vault ; fonctions redéployées (`send-push` v16, 2026-10-14 04:27 UTC).
+- Chaîne vérifiée : un événement factice envoyé à `send-push` avec le secret du coffre répond 200 (`sent: 0`), donc `WEBHOOK_SECRET` est saisi et identique. Les secrets VAPID ne sont pas vérifiables sans envoi réel.
+- Reste : activer les notifications sur chaque iPhone (PWA installée, iOS ≥ 16.4, bouton des réglages) ; aucun appareil enregistré à cette date (0 web, 0 Expo). Non vérifié : réception d'une vraie notification.
