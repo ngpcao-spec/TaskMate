@@ -1,4 +1,5 @@
 import { Cookie, Film, Gamepad2, Gift, Pizza, Popcorn, Smartphone, Star, Ticket, Trophy, type LucideIcon } from 'lucide-react-native';
+import { theme } from '@/theme';
 import { colors } from '@/theme/tokens';
 
 export const REWARD_ICONS: Record<string, LucideIcon> = {
@@ -21,15 +22,4 @@ export function RewardIcon({ name, size = 24, color = colors.primary }: { name: 
 }
 
 /** Teinte de la pastille d'icône (maquette « Điểm thưởng »). */
-export const REWARD_TINTS: Record<string, string> = {
-  gift: '#B8613A',
-  'gamepad-2': '#B8613A',
-  film: '#4B5AA5',
-  smartphone: '#3A7CA5',
-  cookie: '#C98E36',
-  star: '#C98E36',
-  pizza: '#B8454E',
-  popcorn: '#C98E36',
-  ticket: '#7C79C2',
-  trophy: '#C98E36',
-};
+export const REWARD_TINTS: Record<string, string> = theme.rewardTints;

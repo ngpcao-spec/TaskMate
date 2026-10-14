@@ -27,6 +27,11 @@
         height: 100%;
         flex: 1;
       }
+      /* Thème kawaii : police arrondie du système (SF Rounded sur iPhone) */
+      html[data-theme='kawaii'] body,
+      html[data-theme='kawaii'] body * {
+        font-family: ui-rounded, 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', 'Arial Rounded MT Bold', 'Nunito', system-ui, sans-serif !important;
+      }
       /* Focus clavier visible (accessibilité) */
       :focus-visible {
         outline: 3px solid #ffffff !important;

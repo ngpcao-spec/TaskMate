@@ -17,7 +17,7 @@ import { validateSetTitle } from '@/domain/quiz';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { useGenerateQuestions } from '@/hooks/useQuizzes';
 import { documentUploadSupported, pickDocuments, type PickedFile, type PickSource } from '@/services/documents';
-import { colors, MIN_TARGET, typography } from '@/theme/tokens';
+import { colors, MIN_TARGET, typography, line } from '@/theme/tokens';
 
 type RoleFile = PickedFile & { role: FileRole };
 
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
   notice2: { fontSize: 14, color: colors.text, lineHeight: 20 },
   detected: { fontSize: 18, fontWeight: '700', color: colors.text },
   stepper: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  stepBtn: { width: MIN_TARGET, height: MIN_TARGET, borderRadius: 999, borderWidth: 1.5, borderColor: colors.glassBorder, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.card },
+  stepBtn: { width: MIN_TARGET, height: MIN_TARGET, borderRadius: 999, borderWidth: line.width, borderColor: colors.glassBorder, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.card },
   stepText: { fontSize: 22, fontWeight: '700', color: colors.primary },
   stepValue: { fontSize: 16, fontWeight: '600', color: colors.text, minWidth: 110, textAlign: 'center' },
   sources: { gap: 10 },

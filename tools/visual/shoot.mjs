@@ -1,5 +1,5 @@
 // Usage : node shoot.mjs <dossier-sortie> [parent|child]
-// Variables : DIST (dossier exporté), VIEWPORT (ex. 1280x800).
+// Variables : DIST (dossier exporté), VIEWPORT (ex. 1280x800), THEME (glass | kawaii : thème enregistré sur l'appareil avant le chargement).
 // Prérequis : `node mock-server.mjs` lancé ; app exportée en web (voir README.md) dans ../../apps/mobile/dist-web.
 import { chromium } from 'playwright-core';
 import http from 'node:http';
@@ -45,6 +45,7 @@ const browser = await chromium.launch({ executablePath: process.env.CHROMIUM ?? 
 fs.mkdirSync(out, { recursive: true });
 for (const [name, route, authed] of screens) {
   const ctx = await browser.newContext({ viewport: { width: vw, height: vh }, deviceScaleFactor: vw < 900 ? 2 : 1, isMobile: vw < 900, locale: 'vi-VN', timezoneId: 'Asia/Ho_Chi_Minh' });
+  if (process.env.THEME) await ctx.addInitScript((id) => localStorage.setItem('taskmate-theme', id), process.env.THEME);
   if (authed) await ctx.addInitScript(([k, v]) => localStorage.setItem(k, v), ['sb-127-auth-token', JSON.stringify(session)]);
   const page = await ctx.newPage();
   page.on('pageerror', (e) => console.log(`[${name}] pageerror:`, e.message.slice(0, 200)));

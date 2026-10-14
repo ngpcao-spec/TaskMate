@@ -12,7 +12,7 @@ import { filterTasks, type TaskFilter } from '@/domain/task-filters';
 import { isOverdue } from '@/domain/task-time';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { useAllTasks } from '@/hooks/useTasks';
-import { colors, MIN_TARGET, typography } from '@/theme/tokens';
+import { colors, MIN_TARGET, typography, line } from '@/theme/tokens';
 
 const FILTERS: TaskFilter[] = ['upcoming', 'done', 'overdue'];
 
@@ -68,7 +68,7 @@ export default function TaskListScreen() {
 
 const styles = StyleSheet.create({
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  search: { minHeight: MIN_TARGET, borderRadius: 12, borderWidth: 1, borderColor: colors.glassBorder, paddingHorizontal: 14, color: colors.text, backgroundColor: colors.card },
+  search: { minHeight: MIN_TARGET, borderRadius: 12, borderWidth: line.width, borderColor: colors.glassBorder, paddingHorizontal: 14, color: colors.text, backgroundColor: colors.card },
   empty: { textAlign: 'center', paddingVertical: 24 },
   item: { gap: 4 },
   date: { fontSize: 13, color: colors.textSecondary, fontWeight: '600' },

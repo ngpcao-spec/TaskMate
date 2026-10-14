@@ -10,7 +10,7 @@ import { formatGoalProgress, goalRatio, isGoalAchieved } from '@/domain/goals';
 import { todayInTz } from '@/domain/family-time';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { useGoals, useSetGoalProgress } from '@/hooks/useGoals';
-import { colors, glass, MIN_TARGET, radius, shadowInset, shadowSmall, typography } from '@/theme/tokens';
+import { colors, glass, MIN_TARGET, radius, shadowInset, shadowSmall, typography, line } from '@/theme/tokens';
 
 /** Mục tiêu : cartes avec barre de progression, −/+ manuel ; frère en lecture seule (SPEC §3.6). */
 export default function GoalsScreen() {
@@ -80,13 +80,13 @@ const styles = StyleSheet.create({
   title: { fontSize: 16, fontWeight: '600', color: colors.text },
   barRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 8 },
   track: { flex: 1, height: 12, borderRadius: 6, backgroundColor: colors.track, overflow: 'hidden', ...shadowInset },
-  fill: { height: '100%', borderRadius: 6, borderWidth: 1, borderColor: 'rgba(255,255,255,0.45)' },
+  fill: { height: '100%', borderRadius: 6, borderWidth: line.width, borderColor: colors.ring },
   progress: { fontSize: 13, color: colors.textSecondary, minWidth: 34, textAlign: 'right' },
-  badge: { backgroundColor: colors.success, color: '#fff', fontSize: 12, fontWeight: '700', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, overflow: 'hidden' },
+  badge: { backgroundColor: colors.success, color: colors.onSolid, fontSize: 12, fontWeight: '700', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, overflow: 'hidden' },
   steppers: { flexDirection: 'row', gap: 8, justifyContent: 'flex-end' },
-  step: { width: MIN_TARGET, height: MIN_TARGET, borderRadius: MIN_TARGET / 2, borderWidth: 1, borderColor: colors.glassBorder, backgroundColor: colors.cardStrong, alignItems: 'center', justifyContent: 'center', ...shadowSmall },
+  step: { width: MIN_TARGET, height: MIN_TARGET, borderRadius: MIN_TARGET / 2, borderWidth: line.width, borderColor: colors.glassBorder, backgroundColor: colors.cardStrong, alignItems: 'center', justifyContent: 'center', ...shadowSmall },
   stepOff: { opacity: 0.35 },
-  addButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: MIN_TARGET + 12, borderRadius: radius.pill, backgroundColor: colors.cardStrong, borderWidth: 1, borderColor: colors.glassBorder, ...shadowSmall },
+  addButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: MIN_TARGET + 12, borderRadius: radius.pill, backgroundColor: colors.cardStrong, borderWidth: line.width, borderColor: colors.glassBorder, ...shadowSmall },
   addText: { color: colors.accent, fontSize: 16, fontWeight: '600' },
   empty: { textAlign: 'center', paddingVertical: 24 },
   banner: { backgroundColor: colors.primaryTint, borderRadius: 16, padding: 12 },

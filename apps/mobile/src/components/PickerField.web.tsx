@@ -1,6 +1,6 @@
 import { type ChangeEvent, type CSSProperties } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { colors, MIN_TARGET, radius, shadowInset, typography } from '@/theme/tokens';
+import { colors, MIN_TARGET, radius, shadowInset, typography, line } from '@/theme/tokens';
 
 type Props = { label: string; mode: 'date' | 'time'; value: string; onChange: (value: string) => void; error?: string | null };
 
@@ -37,7 +37,7 @@ const inputStyle: CSSProperties = {
   minHeight: MIN_TARGET,
   width: '100%',
   borderRadius: radius.control,
-  border: `1px solid ${colors.glassBorderSoft}`,
+  border: `${line.width}px solid ${colors.glassBorderSoft}`,
   backgroundColor: colors.inputBg,
   boxShadow: shadowInset.boxShadow,
   color: colors.text,

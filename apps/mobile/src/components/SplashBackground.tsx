@@ -1,4 +1,7 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Backdrop } from '@/components/Backdrop';
+import { Bow, DogFace } from '@/components/decor/art';
+import { hasDecor } from '@/theme/tokens';
 import Svg, { Circle, Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 
 /**
@@ -6,6 +9,20 @@ import Svg, { Circle, Defs, LinearGradient, Path, Rect, Stop } from 'react-nativ
  * Placeholder SVG généré — à remplacer par l'illustration finale (HUMAN_TODO « assets »).
  */
 export function SplashBackground() {
+  if (hasDecor) {
+    return (
+      <View style={StyleSheet.absoluteFill}>
+        <Backdrop />
+        <View style={styles.dogs}>
+          <DogFace size={150} />
+          <View style={styles.bow}>
+            <Bow size={74} />
+          </View>
+          <DogFace size={116} happy />
+        </View>
+      </View>
+    );
+  }
   return (
     <Svg style={StyleSheet.absoluteFill} viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
       <Defs>
@@ -38,3 +55,8 @@ export function SplashBackground() {
     </Svg>
   );
 }
+
+const styles = StyleSheet.create({
+  dogs: { position: 'absolute', left: 0, right: 0, bottom: 150, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', gap: 4 },
+  bow: { position: 'absolute', top: -34 },
+});

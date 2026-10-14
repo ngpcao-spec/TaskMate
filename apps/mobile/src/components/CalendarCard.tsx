@@ -6,7 +6,7 @@ import { categoryTint } from '@/domain/calendar';
 import { timeLabel } from '@/domain/task-time';
 import { CATEGORY_COLORS } from '@/theme/categories';
 import { GlassTile } from '@/components/GlassTile';
-import { colors, MIN_TARGET, radius, shadow } from '@/theme/tokens';
+import { colors, MIN_TARGET, radius, shadow, line } from '@/theme/tokens';
 import type { TaskRow } from '@/types/models';
 
 type Props = { task: TaskRow; overdue: boolean; onPress?: () => void };
@@ -41,7 +41,7 @@ export function CalendarCard({ task, overdue, onPress }: Props) {
 }
 
 const styles = StyleSheet.create({
-  card: { flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: MIN_TARGET + 24, paddingHorizontal: 14, paddingVertical: 12, borderRadius: radius.card, borderWidth: 1, borderColor: colors.glassBorder, ...shadow },
+  card: { flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: MIN_TARGET + 24, paddingHorizontal: 14, paddingVertical: 12, borderRadius: radius.card, borderWidth: line.width, borderColor: colors.glassBorder, ...shadow },
   done: { opacity: 0.72 },
   body: { flex: 1, gap: 2 },
   time: { fontSize: 13, color: colors.textSecondary },

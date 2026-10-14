@@ -5,7 +5,7 @@ import { colors } from '@/theme/tokens';
 type Props = { ratio: number; size?: number; stroke?: number; label?: string; sublabel?: string; color?: string; trackColor?: string; textColor?: string; accessibilityLabel?: string };
 
 /** Anneau de progression (SVG maison, SPEC §6). `label` = texte central (ex. « 60% » ou « — »). */
-export function ProgressRing({ ratio, size = 72, stroke = 8, label, sublabel, color = colors.primary, trackColor = 'rgba(255,255,255,0.5)', textColor = colors.text, accessibilityLabel }: Props) {
+export function ProgressRing({ ratio, size = 72, stroke = 8, label, sublabel, color = colors.primary, trackColor = colors.track, textColor = colors.text, accessibilityLabel }: Props) {
   const r = (size - stroke) / 2;
   const circumference = 2 * Math.PI * r;
   const clamped = Math.min(Math.max(ratio, 0), 1);

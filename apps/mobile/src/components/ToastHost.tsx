@@ -29,5 +29,5 @@ const styles = StyleSheet.create({
   wrap: { position: 'absolute', left: 16, right: 16, alignItems: 'center' },
   toast: { backgroundColor: colors.text, borderRadius: radius.card, paddingHorizontal: 16, paddingVertical: 12, ...shadow },
   error: { backgroundColor: colors.danger },
-  text: { color: '#fff', fontSize: 14 },
+  text: { color: colors.onSolid, fontSize: 14 },
 });

@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, MIN_TARGET, radius } from '@/theme/tokens';
+import { colors, MIN_TARGET, radius, line } from '@/theme/tokens';
 
 type Props = {
   label: string;
@@ -27,7 +27,7 @@ export function ChoiceButton({ label, selected = false, disabled = false, onPres
 }
 
 const styles = StyleSheet.create({
-  choice: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: MIN_TARGET + 8, paddingHorizontal: 14, paddingVertical: 10, borderRadius: radius.card, borderWidth: 1.5, borderColor: colors.glassBorder, backgroundColor: colors.card },
+  choice: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: MIN_TARGET + 8, paddingHorizontal: 14, paddingVertical: 10, borderRadius: radius.card, borderWidth: line.width, borderColor: colors.glassBorder, backgroundColor: colors.card },
   selected: { borderColor: colors.primary, backgroundColor: colors.primaryTint },
   text: { flex: 1, fontSize: 16, color: colors.text },
   dot: { width: 12, height: 12, borderRadius: 6, backgroundColor: colors.primary },

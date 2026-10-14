@@ -9,6 +9,7 @@ import { syncPushLocale } from '@/api/notifications';
 import { Chip } from '@/components/Chip';
 import { ParentInviteCard } from '@/components/ParentInviteCard';
 import { ParentsCard } from '@/components/ParentsCard';
+import { ThemeCard } from '@/components/ThemeCard';
 import { Button, Card, Field, Screen, Title } from '@/components/ui';
 import { config } from '@/config';
 import { isValidTimeZone } from '@/domain/timezone';
@@ -66,6 +67,8 @@ export default function SettingsScreen() {
           ))}
         </View>
       </Card>
+
+      <ThemeCard />
 
       {isParent ? (
         <>

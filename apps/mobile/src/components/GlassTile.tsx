@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
-import { colors, shadowSmall } from '@/theme/tokens';
+import { colors, shadowSmall, line } from '@/theme/tokens';
 
 type Props = { children: ReactNode; size?: number; tint?: string; style?: StyleProp<ViewStyle> };
 
@@ -14,5 +14,5 @@ export function GlassTile({ children, size = 44, tint = colors.cardStrong, style
 }
 
 const styles = StyleSheet.create({
-  tile: { alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.glassBorder, ...shadowSmall },
+  tile: { alignItems: 'center', justifyContent: 'center', borderWidth: line.width, borderColor: colors.glassBorder, ...shadowSmall },
 });

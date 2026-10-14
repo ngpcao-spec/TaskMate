@@ -1,7 +1,7 @@
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, MIN_TARGET, typography } from '@/theme/tokens';
+import { colors, MIN_TARGET, typography, line } from '@/theme/tokens';
 
 type Props = { label: string; mode: 'date' | 'time'; value: string; onChange: (value: string) => void; error?: string | null };
 
@@ -55,7 +55,7 @@ export function PickerField({ label, mode, value, onChange, error }: Props) {
 const styles = StyleSheet.create({
   wrap: { gap: 4, flex: 1 },
   iosRow: { minHeight: MIN_TARGET, alignItems: 'flex-start', justifyContent: 'center' },
-  button: { minHeight: MIN_TARGET, borderRadius: 12, borderWidth: 1, borderColor: colors.glassBorder, backgroundColor: colors.card, justifyContent: 'center', paddingHorizontal: 16 },
+  button: { minHeight: MIN_TARGET, borderRadius: 12, borderWidth: line.width, borderColor: colors.glassBorder, backgroundColor: colors.card, justifyContent: 'center', paddingHorizontal: 16 },
   value: { fontSize: 16, color: colors.text },
   error: { color: colors.danger, fontSize: 13 },
 });

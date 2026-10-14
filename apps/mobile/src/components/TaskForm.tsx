@@ -21,7 +21,7 @@ import { useCreateRecurrences, useDeleteRecurrence, useUpdateRecurrence } from '
 import { useCreateTasks, useDeleteTask, useUpdateTask } from '@/hooks/useTasks';
 import { CATEGORY_COLORS, TASK_CATEGORIES } from '@/theme/categories';
 import { useToastStore } from '@/store/toast';
-import { colors, typography, shadowSmall, radius } from '@/theme/tokens';
+import { colors, typography, shadowSmall, radius, line } from '@/theme/tokens';
 import type { TaskRow } from '@/types/models';
 
 type Props = { task?: TaskRow };
@@ -393,11 +393,11 @@ const styles = StyleSheet.create({
   label: { fontSize: 15, fontWeight: '600', color: colors.text },
   tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   tileWrap: { width: 76, alignItems: 'center', gap: 6 },
-  tile: { width: 68, height: 68, borderRadius: 22, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.glassBorder, ...shadowSmall },
+  tile: { width: 68, height: 68, borderRadius: 22, alignItems: 'center', justifyContent: 'center', borderWidth: line.width, borderColor: colors.glassBorder, ...shadowSmall },
   tileSelected: { borderColor: colors.primary, borderWidth: 3 },
   tileLabel: { fontSize: 12, color: colors.textSecondary },
   tileLabelSelected: { color: colors.accent, fontWeight: '700' },
-  timeRow: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 56, backgroundColor: colors.cardStrong, borderRadius: radius.control, borderWidth: 1, borderColor: colors.glassBorder, paddingHorizontal: 14 },
+  timeRow: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 56, backgroundColor: colors.cardStrong, borderRadius: radius.control, borderWidth: line.width, borderColor: colors.glassBorder, paddingHorizontal: 14 },
   timeSummary: { flex: 1, fontSize: 16, color: colors.text },
   chevronOpen: { transform: [{ rotate: '90deg' }] },
   error: { color: colors.danger, fontSize: 13 },

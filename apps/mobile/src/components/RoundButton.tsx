@@ -24,6 +24,6 @@ export function RoundButton({ label, onPress, children, size = MIN_TARGET, teal 
 const styles = StyleSheet.create({
   round: { alignItems: 'center', justifyContent: 'center', borderWidth: 1, ...shadowSmall },
   glass: { backgroundColor: colors.cardStrong, borderColor: colors.glassBorder },
-  teal: { backgroundColor: colors.primary, borderColor: 'rgba(255,255,255,0.45)' },
+  teal: { backgroundColor: colors.primary, borderColor: colors.ring },
   pressed: { opacity: 0.85 },
 });
