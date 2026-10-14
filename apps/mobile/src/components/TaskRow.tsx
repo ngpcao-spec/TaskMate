@@ -5,7 +5,8 @@ import { CategoryIcon } from '@/components/CategoryIcon';
 import { taskState } from '@/domain/task-state';
 import { timeLabel } from '@/domain/task-time';
 import { CATEGORY_COLORS } from '@/theme/categories';
-import { colors, MIN_TARGET } from '@/theme/tokens';
+import { GlassTile } from '@/components/GlassTile';
+import { colors, MIN_TARGET, shadowInset } from '@/theme/tokens';
 import type { TaskRow as Task } from '@/types/models';
 
 type Props = {
@@ -67,9 +68,9 @@ export function TaskRow({ task, overdue, canToggle, canOpen, canValidate = false
           </Text>
           <Text style={[styles.time, overdue && styles.overdue]}>{overdue ? `${t('today.overdue')} · ${time}` : time}</Text>
         </Pressable>
-        <View style={[styles.tile, { backgroundColor: `${CATEGORY_COLORS[task.category]}1F` }]}>
+        <GlassTile size={40} tint={`${CATEGORY_COLORS[task.category]}33`}>
           <CategoryIcon category={task.category} size={18} />
-        </View>
+        </GlassTile>
         {state === 'pending' ? (
           <View style={styles.badgePending}>
             <Text style={styles.badgePendingText}>{t('task.pending')}</Text>
@@ -105,23 +106,22 @@ export function TaskRow({ task, overdue, canToggle, canOpen, canValidate = false
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 68 },
   checkHit: { width: MIN_TARGET, height: MIN_TARGET, alignItems: 'center', justifyContent: 'center' },
-  box: { width: 24, height: 24, borderRadius: 6, borderWidth: 2, borderColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  boxDone: { backgroundColor: colors.primary },
-  boxLocked: { borderColor: '#C8D2E0' },
+  box: { width: 28, height: 28, borderRadius: 14, borderWidth: 1, borderColor: colors.glassBorder, backgroundColor: colors.inputBg, alignItems: 'center', justifyContent: 'center', ...shadowInset },
+  boxDone: { backgroundColor: colors.primary, borderColor: 'rgba(255,255,255,0.6)' },
+  boxLocked: { opacity: 0.55 },
   body: { flex: 1, minHeight: MIN_TARGET, justifyContent: 'center' },
   title: { fontSize: 16, fontWeight: '600', color: colors.text },
   time: { fontSize: 13, color: colors.textSecondary, marginTop: 2 },
   overdue: { color: colors.danger },
-  tile: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   badgePending: { backgroundColor: colors.warningTint, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
-  badgePendingText: { color: '#B86E00', fontSize: 12, fontWeight: '700' },
+  badgePendingText: { color: colors.warning, fontSize: 12, fontWeight: '700' },
   validated: { width: 22, height: 22, borderRadius: 11, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  points: { color: '#1B7F43', fontSize: 12, fontWeight: '700', marginTop: -10, marginBottom: 8, paddingLeft: MIN_TARGET + 10 },
+  points: { color: colors.success, fontSize: 12, fontWeight: '700', marginTop: -10, marginBottom: 8, paddingLeft: MIN_TARGET + 10 },
   rejection: { color: colors.danger, fontSize: 13, paddingBottom: 10, paddingLeft: MIN_TARGET + 10 },
   actions: { flexDirection: 'row', gap: 8, paddingBottom: 10, paddingLeft: MIN_TARGET + 10 },
   action: { flex: 1, minHeight: MIN_TARGET, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
   actionOk: { backgroundColor: colors.primary },
   actionOkText: { color: '#fff', fontWeight: '700' },
-  actionKo: { backgroundColor: colors.card, borderWidth: 1.5, borderColor: colors.danger },
+  actionKo: { backgroundColor: colors.cardStrong, borderWidth: 1, borderColor: colors.danger },
   actionKoText: { color: colors.danger, fontWeight: '700' },
 });

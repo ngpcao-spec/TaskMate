@@ -2,11 +2,13 @@ import { useRouter } from 'expo-router';
 import { Bell, BookOpen, Check, ChevronRight, ListChecks, Plus, Settings, Star, Target } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { GlassTile } from '@/components/GlassTile';
 import { Card, Screen, ScreenHeader } from '@/components/ui';
 import { ageFromBirthDate } from '@/domain/age';
 import { todayInTz } from '@/domain/family-time';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
-import { colors, MIN_TARGET, typography } from '@/theme/tokens';
+import { childColor } from '@/theme/childColor';
+import { colors, MIN_TARGET, radius, shadow, shadowSmall, typography } from '@/theme/tokens';
 
 type Href = '/more/tasks' | '/more/goals' | '/more/revisions' | '/more/points' | '/more/notification-settings' | '/more/settings';
 
@@ -34,7 +36,7 @@ export default function ProfileScreen() {
           const isParent = d.viewer.role === 'parent';
           const active = c.id === d.child?.id;
           const age = t('common.yearsOld', { age: ageFromBirthDate(c.birth_date, today) });
-          const color = c.color ?? colors.primary;
+          const color = childColor(c.color);
           const content = (
             <>
               {isParent && active ? (
@@ -45,8 +47,8 @@ export default function ProfileScreen() {
               <View style={[styles.avatar, { backgroundColor: color }]}>
                 <Text style={styles.avatarText}>{c.name.slice(0, 1).toUpperCase()}</Text>
               </View>
-              <Text style={styles.childName}>{c.name}</Text>
-              <Text style={typography.secondary}>{age}</Text>
+              <Text style={[styles.childName, isParent && active && styles.onNavy]}>{c.name}</Text>
+              <Text style={[typography.secondary, isParent && active && styles.onNavySecondary]}>{age}</Text>
             </>
           );
           // Enfant (D-052) : sa seule carte, sans sélection possible. Parent : une carte sélectionnable par enfant.
@@ -58,12 +60,12 @@ export default function ProfileScreen() {
               accessibilityState={{ selected: active }}
               aria-checked={active}
               onPress={() => d.select(c.id)}
-              style={[styles.childCard, { backgroundColor: `${color}1A` }, active && { borderColor: color }]}
+              style={[styles.childCard, active && styles.childCardActive]}
             >
               {content}
             </Pressable>
           ) : (
-            <View key={c.id} accessible accessibilityLabel={`${c.name}, ${age}`} style={[styles.childCard, { backgroundColor: `${color}1A` }]}>
+            <View key={c.id} accessible accessibilityLabel={`${c.name}, ${age}`} style={styles.childCard}>
               {content}
             </View>
           );
@@ -76,7 +78,7 @@ export default function ProfileScreen() {
             style={[styles.childCard, styles.addCard]}
           >
             <View style={styles.addIcon}>
-              <Plus size={28} color={colors.primary} strokeWidth={2.5} />
+              <Plus size={28} color={colors.accent} strokeWidth={2.5} />
             </View>
             <Text style={styles.addText}>{t('addChild.button')}</Text>
           </Pressable>
@@ -85,9 +87,11 @@ export default function ProfileScreen() {
       <Card>
         {menu.map(({ key, label, href, icon: Icon, tint }, i) => (
           <Pressable key={key} accessibilityRole="button" accessibilityLabel={label} onPress={() => router.push(href)} style={[styles.menuRow, i > 0 && styles.menuSeparator]}>
-            <Icon color={tint ?? colors.primary} size={22} />
+            <GlassTile size={42}>
+              <Icon color={tint ?? colors.accent} size={22} />
+            </GlassTile>
             <Text style={styles.menuLabel}>{label}</Text>
-            <ChevronRight color={colors.textSecondary} />
+            <ChevronRight color={colors.text} />
           </Pressable>
         ))}
       </Card>
@@ -97,15 +101,18 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   cards: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  childCard: { flexGrow: 1, flexBasis: 140, alignItems: 'center', gap: 4, paddingVertical: 16, borderRadius: 16, borderWidth: 2, borderColor: 'transparent', minHeight: 140 },
-  checkBadge: { position: 'absolute', top: 8, right: 8, width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
-  avatar: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  childCard: { flexGrow: 1, flexBasis: 140, alignItems: 'center', gap: 4, paddingVertical: 16, borderRadius: radius.card, borderWidth: 1, borderColor: colors.glassBorder, backgroundColor: colors.card, minHeight: 140, ...shadow },
+  childCardActive: { backgroundColor: colors.navy, borderColor: 'rgba(255,255,255,0.3)' },
+  checkBadge: { position: 'absolute', top: 10, right: 10, width: 24, height: 24, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.7)', alignItems: 'center', justifyContent: 'center' },
+  avatar: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', marginBottom: 4, borderWidth: 2, borderColor: 'rgba(255,255,255,0.65)', ...shadowSmall },
   avatarText: { color: '#fff', fontSize: 26, fontWeight: '700' },
   childName: { fontSize: 18, fontWeight: '700', color: colors.text },
-  addCard: { justifyContent: 'center', paddingHorizontal: 8, backgroundColor: colors.primaryTint, borderColor: colors.primary, borderStyle: 'dashed' },
-  addIcon: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.card },
-  addText: { fontSize: 15, fontWeight: '700', color: colors.primary, textAlign: 'center' },
-  menuRow: { flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: MIN_TARGET + 12 },
+  onNavy: { color: colors.onNavy },
+  onNavySecondary: { color: colors.onNavySecondary },
+  addCard: { justifyContent: 'center', paddingHorizontal: 8, borderColor: colors.accent, borderStyle: 'dashed', borderWidth: 1.5, backgroundColor: colors.primaryTint },
+  addIcon: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.cardStrong, borderWidth: 1, borderColor: colors.glassBorder, ...shadowSmall },
+  addText: { fontSize: 15, fontWeight: '700', color: colors.accent, textAlign: 'center' },
+  menuRow: { flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: MIN_TARGET + 16 },
   menuSeparator: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.separator },
-  menuLabel: { flex: 1, fontSize: 16, color: colors.text },
+  menuLabel: { flex: 1, fontSize: 16, fontWeight: '600', color: colors.text },
 });

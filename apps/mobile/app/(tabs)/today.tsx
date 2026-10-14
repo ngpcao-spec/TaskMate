@@ -1,16 +1,20 @@
 import { useRouter } from 'expo-router';
-import { Bell, ChevronRight } from 'lucide-react-native';
+import { Bell, ChevronRight, CircleCheck, Hourglass, ListTodo } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Backdrop } from '@/components/Backdrop';
 import { Fab } from '@/components/Fab';
 import { ProfilePills } from '@/components/ProfilePills';
 import { ProgressRing } from '@/components/ProgressRing';
+import { RoundButton } from '@/components/RoundButton';
+import { StatTile } from '@/components/StatTile';
 import { TaskRow } from '@/components/TaskRow';
-import { Card, centeredContent } from '@/components/ui';
+import { centeredContent, NavyPanel, SectionTitle } from '@/components/ui';
 import { timeInTz, todayInTz } from '@/domain/family-time';
 import { taskPermissions } from '@/domain/permissions';
+import { taskState } from '@/domain/task-state';
 import { dayProgress } from '@/domain/progress';
 import { isOverdue, sortTasks } from '@/domain/task-time';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
@@ -19,7 +23,8 @@ import { useNow } from '@/hooks/useNow';
 import { useApprovalCounts } from '@/hooks/useApprovals';
 import { usePendingTaskIds } from '@/hooks/useSyncStatus';
 import { toggleVars, useDeleteTask, useRejectTask, useTasks, useToggleTask, useValidateTask, validateVars } from '@/hooks/useTasks';
-import { colors, MIN_TARGET, radius, shadow, spacing, typography } from '@/theme/tokens';
+import { childColor } from '@/theme/childColor';
+import { colors, glass, radius, shadowSmall, spacing, typography } from '@/theme/tokens';
 
 export default function TodayScreen() {
   const { t } = useTranslation();
@@ -42,20 +47,26 @@ export default function TodayScreen() {
   if (!d || !d.child) {
     return (
       <SafeAreaView style={styles.screen}>
-        <ActivityIndicator color={colors.primary} />
+        <Backdrop />
+        <ActivityIndicator color={colors.accent} />
       </SafeAreaView>
     );
   }
 
   const tasks = sortTasks(tasksQuery.data ?? []);
   const progress = dayProgress(tasks);
+  const states = tasks.map((task) => taskState(task));
+  const validatedCount = states.filter((x) => x === 'validated').length;
+  const pendingCount = states.filter((x) => x === 'pending').length;
+  const todoCount = states.filter((x) => x === 'todo').length;
   const child = d.child;
 
   return (
     <SafeAreaView style={styles.screen}>
+      <Backdrop />
       <ScrollView role="main" contentContainerStyle={[styles.content, centeredContent]}>
         <View style={styles.header}>
-          <View style={[styles.avatar, { backgroundColor: child.color ?? colors.primary }]} accessible accessibilityLabel={child.name}>
+          <View style={[styles.avatar, { backgroundColor: childColor(child.color) }]} accessible accessibilityLabel={child.name}>
             <Text style={styles.avatarText}>{child.name.slice(0, 1).toUpperCase()}</Text>
           </View>
           <View style={styles.flex}>
@@ -64,11 +75,9 @@ export default function TodayScreen() {
             </Text>
             <Text style={typography.secondary}>{t('today.encouragement')}</Text>
           </View>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={unread > 0 ? `${t('notifications.bell')}, ${t('notifications.unread', { count: unread })}` : t('notifications.bell')}
+          <RoundButton
+            label={unread > 0 ? `${t('notifications.bell')}, ${t('notifications.unread', { count: unread })}` : t('notifications.bell')}
             onPress={() => router.push('/notifications')}
-            style={styles.bell}
           >
             <Bell color={colors.text} />
             {unread > 0 ? (
@@ -76,7 +85,7 @@ export default function TodayScreen() {
                 <Text style={styles.bellBadgeText}>{unread > 99 ? '99+' : unread}</Text>
               </View>
             ) : null}
-          </Pressable>
+          </RoundButton>
         </View>
 
         {isParent && d.children.length > 1 ? <ProfilePills profiles={d.children} selectedId={child.id} onSelect={d.select} today={today} /> : null}
@@ -93,24 +102,37 @@ export default function TodayScreen() {
         ) : null}
 
         <Pressable accessibilityRole="button" accessibilityLabel={t('today.progress', { done: progress.done, total: progress.total })} onPress={() => router.push('/(tabs)/stats')}>
-          <Card>
+          <NavyPanel>
             <View style={styles.progressRow}>
-              <ProgressRing ratio={progress.ratio} size={96} stroke={11} label={progress.total === 0 ? '—' : undefined} accessibilityLabel={t('today.progress', { done: progress.done, total: progress.total })} />
+              <ProgressRing
+                ratio={progress.ratio}
+                size={104}
+                stroke={12}
+                color="#8FE0D2"
+                trackColor="rgba(255,255,255,0.22)"
+                textColor={colors.onNavy}
+                label={progress.total === 0 ? '—' : undefined}
+                accessibilityLabel={t('today.progress', { done: progress.done, total: progress.total })}
+              />
               <View style={styles.flex}>
-                <Text style={typography.secondary}>{t('today.progressLabel')}</Text>
+                <Text style={styles.bannerLabel}>{t('today.progressLabel')}</Text>
                 <Text style={styles.progressCount}>
                   {progress.done}/{progress.total}
                 </Text>
-                <Text style={typography.secondary}>{t('today.progressUnit')}</Text>
+                <Text style={styles.bannerLabel}>{t('today.progressUnit')}</Text>
               </View>
-              <ChevronRight color={colors.textSecondary} />
+              <ChevronRight color={colors.onNavySecondary} />
             </View>
-          </Card>
+          </NavyPanel>
         </Pressable>
 
-        <Text accessibilityRole="header" style={styles.listTitle}>
-          {t('today.listTitle')}
-        </Text>
+        <View style={styles.tiles}>
+          <StatTile tint={colors.tileTeal} icon={<CircleCheck color={colors.accent} size={22} />} label={t('today.tileDone')} value={String(validatedCount)} />
+          <StatTile tint={colors.tileIce} icon={<Hourglass color={colors.accent} size={22} />} label={t('today.tilePending')} value={String(pendingCount)} />
+          <StatTile tint={colors.tileViolet} icon={<ListTodo color={colors.accent} size={22} />} label={t('today.tileTodo')} value={String(todoCount)} />
+        </View>
+
+        <SectionTitle>{t('today.listTitle')}</SectionTitle>
 
         {tasksQuery.isPending ? (
           <ActivityIndicator color={colors.primary} />
@@ -166,20 +188,20 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   content: { padding: spacing.md, gap: spacing.md, paddingBottom: 96 },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  avatar: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
+  avatar: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: 'rgba(255,255,255,0.6)', ...shadowSmall },
   avatarText: { color: '#fff', fontSize: 22, fontWeight: '700' },
   greeting: { fontSize: 22, fontWeight: '700', color: colors.text },
-  bellBadge: { position: 'absolute', top: 2, right: 0, minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 4, backgroundColor: colors.danger, alignItems: 'center', justifyContent: 'center' },
+  bellBadge: { position: 'absolute', top: 0, right: -2, minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 4, backgroundColor: colors.danger, alignItems: 'center', justifyContent: 'center' },
   bellBadgeText: { color: '#fff', fontSize: 11, fontWeight: '700' },
-  bell: { width: MIN_TARGET, height: MIN_TARGET, alignItems: 'center', justifyContent: 'center' },
-  banner: { backgroundColor: colors.primaryTint, borderRadius: radius.card, paddingVertical: 10, paddingHorizontal: 14 },
-  bannerText: { color: colors.primary, fontSize: 14, fontWeight: '600' },
-  bannerPending: { backgroundColor: colors.warningTint, borderRadius: radius.card, paddingVertical: 10, paddingHorizontal: 14 },
-  bannerPendingText: { color: '#B86E00', fontSize: 14, fontWeight: '700' },
+  banner: { ...glass, borderRadius: radius.control, paddingVertical: 12, paddingHorizontal: 16 },
+  bannerText: { color: colors.accent, fontSize: 14, fontWeight: '700' },
+  bannerPending: { backgroundColor: colors.warningTint, borderWidth: 1, borderColor: colors.glassBorder, borderRadius: radius.control, paddingVertical: 12, paddingHorizontal: 16 },
+  bannerPendingText: { color: colors.warning, fontSize: 14, fontWeight: '700' },
   progressRow: { flexDirection: 'row', alignItems: 'center', gap: 20 },
-  progressCount: { fontSize: 34, fontWeight: '800', color: colors.text, lineHeight: 40 },
-  listTitle: { fontSize: 18, fontWeight: '700', color: colors.text, marginTop: 4 },
-  list: { backgroundColor: colors.card, borderRadius: radius.card, paddingHorizontal: 12, ...shadow },
+  bannerLabel: { fontSize: 13, color: colors.onNavySecondary },
+  progressCount: { fontSize: 36, fontWeight: '800', color: colors.onNavy, lineHeight: 42 },
+  tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  list: { ...glass, borderRadius: radius.card, paddingHorizontal: 14 },
   separated: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.separator },
   empty: { textAlign: 'center', paddingVertical: spacing.lg },
   deleteAction: { backgroundColor: colors.danger, justifyContent: 'center', alignItems: 'center', width: 88 },

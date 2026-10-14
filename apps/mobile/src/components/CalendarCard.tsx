@@ -5,7 +5,8 @@ import { CategoryIcon } from '@/components/CategoryIcon';
 import { categoryTint } from '@/domain/calendar';
 import { timeLabel } from '@/domain/task-time';
 import { CATEGORY_COLORS } from '@/theme/categories';
-import { colors, MIN_TARGET, radius } from '@/theme/tokens';
+import { GlassTile } from '@/components/GlassTile';
+import { colors, MIN_TARGET, radius, shadow } from '@/theme/tokens';
 import type { TaskRow } from '@/types/models';
 
 type Props = { task: TaskRow; overdue: boolean; onPress?: () => void };
@@ -25,9 +26,9 @@ export function CalendarCard({ task, overdue, onPress }: Props) {
       onPress={onPress}
       style={[styles.card, { backgroundColor: categoryTint(task.category) }, done && styles.done]}
     >
-      <View style={[styles.tile, { backgroundColor: `${CATEGORY_COLORS[task.category]}26` }]}>
+      <GlassTile size={46} tint={`${CATEGORY_COLORS[task.category]}33`}>
         <CategoryIcon category={task.category} size={22} />
-      </View>
+      </GlassTile>
       <View style={styles.body}>
         <Text style={[styles.time, overdue && styles.overdue]}>{time}</Text>
         <Text numberOfLines={2} style={styles.title}>
@@ -40,9 +41,8 @@ export function CalendarCard({ task, overdue, onPress }: Props) {
 }
 
 const styles = StyleSheet.create({
-  card: { flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: MIN_TARGET + 24, paddingHorizontal: 14, paddingVertical: 12, borderRadius: radius.card },
-  done: { opacity: 0.55 },
-  tile: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  card: { flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: MIN_TARGET + 24, paddingHorizontal: 14, paddingVertical: 12, borderRadius: radius.card, borderWidth: 1, borderColor: colors.glassBorder, ...shadow },
+  done: { opacity: 0.72 },
   body: { flex: 1, gap: 2 },
   time: { fontSize: 13, color: colors.textSecondary },
   overdue: { color: colors.danger },

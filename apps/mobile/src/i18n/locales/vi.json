@@ -21,6 +21,9 @@
     "stats": "Thống kê",
     "more": "Thêm"
   },
+  "nav": {
+    "hi": "Xin chào, {{name}}!"
+  },
   "category": {
     "study": "Học tập",
     "sport": "Thể thao",
@@ -123,7 +126,10 @@
     "cannotUncheck": "Không thể bỏ chọn: điểm đã được dành cho phần thưởng",
     "alreadyValidated": "Phụ huynh đã duyệt việc này, không thể bỏ chọn",
     "progressLabel": "Hôm nay",
-    "progressUnit": "việc đã hoàn thành"
+    "progressUnit": "việc đã hoàn thành",
+    "tileDone": "Đã duyệt",
+    "tilePending": "Đợi phụ huynh duyệt",
+    "tileTodo": "Còn lại"
   },
   "taskForm": {
     "title": "Thêm việc",
@@ -614,7 +620,8 @@
       "good": "Làm tốt lắm! Còn cố gắng hơn nữa nhé!",
       "keepGoing": "Cố lên, mỗi ngày một chút!"
     },
-    "doneShort": "Hoàn thành"
+    "doneShort": "Hoàn thành",
+    "overview": "Tổng quan trong kỳ"
   },
   "notifications": {
     "reminderStart": "Bắt đầu lúc {{time}} (còn {{minutes}} phút)",

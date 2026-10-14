@@ -10,7 +10,7 @@ import { colors, typography } from '@/theme/tokens';
 /** Outil d'exploitation destiné au propriétaire : toujours en français, quelle que soit la langue de l'app. */
 const tf = i18n.getFixedT('fr');
 
-const STATUS_COLOR: Record<HealthStatus, string> = { ok: '#1E8E5A', warn: '#B86E00', fail: colors.danger };
+const STATUS_COLOR: Record<HealthStatus, string> = { ok: colors.success, warn: colors.warning, fail: colors.danger };
 const STATUS_MARK: Record<HealthStatus, string> = { ok: '✓', warn: '!', fail: '✕' };
 
 /** Réglages → Diagnostic (parents) : ce qui fonctionne, ce qui manque et où cliquer pour le corriger. */

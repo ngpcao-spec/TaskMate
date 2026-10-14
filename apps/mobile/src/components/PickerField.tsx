@@ -55,7 +55,7 @@ export function PickerField({ label, mode, value, onChange, error }: Props) {
 const styles = StyleSheet.create({
   wrap: { gap: 4, flex: 1 },
   iosRow: { minHeight: MIN_TARGET, alignItems: 'flex-start', justifyContent: 'center' },
-  button: { minHeight: MIN_TARGET, borderRadius: 12, borderWidth: 1, borderColor: '#DDE5F0', backgroundColor: colors.card, justifyContent: 'center', paddingHorizontal: 16 },
+  button: { minHeight: MIN_TARGET, borderRadius: 12, borderWidth: 1, borderColor: colors.glassBorder, backgroundColor: colors.card, justifyContent: 'center', paddingHorizontal: 16 },
   value: { fontSize: 16, color: colors.text },
   error: { color: colors.danger, fontSize: 13 },
 });

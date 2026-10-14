@@ -1,3 +1,4 @@
+import { childColor } from '@/theme/childColor';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { onlineManager } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
@@ -20,7 +21,7 @@ import { useCreateRecurrences, useDeleteRecurrence, useUpdateRecurrence } from '
 import { useCreateTasks, useDeleteTask, useUpdateTask } from '@/hooks/useTasks';
 import { CATEGORY_COLORS, TASK_CATEGORIES } from '@/theme/categories';
 import { useToastStore } from '@/store/toast';
-import { colors, typography } from '@/theme/tokens';
+import { colors, typography, shadowSmall, radius } from '@/theme/tokens';
 import type { TaskRow } from '@/types/models';
 
 type Props = { task?: TaskRow };
@@ -166,7 +167,7 @@ export function TaskForm({ task }: Props) {
                   onPress={() => field.onChange(c)}
                   style={styles.tileWrap}
                 >
-                  <View style={[styles.tile, { backgroundColor: `${CATEGORY_COLORS[c]}1F` }, selected && styles.tileSelected]}>
+                  <View style={[styles.tile, { backgroundColor: `${CATEGORY_COLORS[c]}40` }, selected && styles.tileSelected]}>
                     <CategoryIcon category={c} size={26} />
                   </View>
                   <Text style={[styles.tileLabel, selected && styles.tileLabelSelected]}>{t(`category.${c}`)}</Text>
@@ -337,7 +338,7 @@ export function TaskForm({ task }: Props) {
                               key={c.id}
                               role="checkbox"
                               label={c.name}
-                              color={c.color ?? undefined}
+                              color={c.color ? childColor(c.color) : undefined}
                               selected={on}
                               onPress={() => field.onChange(on ? field.value.filter((id) => id !== c.id) : [...field.value, c.id])}
                             />
@@ -392,14 +393,14 @@ const styles = StyleSheet.create({
   label: { fontSize: 15, fontWeight: '600', color: colors.text },
   tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   tileWrap: { width: 76, alignItems: 'center', gap: 6 },
-  tile: { width: 68, height: 68, borderRadius: 18, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: 'transparent' },
-  tileSelected: { borderColor: colors.primary, backgroundColor: colors.primaryTint },
+  tile: { width: 68, height: 68, borderRadius: 22, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.glassBorder, ...shadowSmall },
+  tileSelected: { borderColor: colors.primary, borderWidth: 3 },
   tileLabel: { fontSize: 12, color: colors.textSecondary },
-  tileLabelSelected: { color: colors.primary, fontWeight: '600' },
-  timeRow: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 56, backgroundColor: colors.card, borderRadius: 14, borderWidth: 1, borderColor: '#DDE5F0', paddingHorizontal: 14 },
+  tileLabelSelected: { color: colors.accent, fontWeight: '700' },
+  timeRow: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 56, backgroundColor: colors.cardStrong, borderRadius: radius.control, borderWidth: 1, borderColor: colors.glassBorder, paddingHorizontal: 14 },
   timeSummary: { flex: 1, fontSize: 16, color: colors.text },
   chevronOpen: { transform: [{ rotate: '90deg' }] },
-  error: { color: '#E5484D', fontSize: 13 },
+  error: { color: colors.danger, fontSize: 13 },
   switchRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   flexText: { flex: 1 },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },

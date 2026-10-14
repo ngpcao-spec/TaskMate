@@ -1,3 +1,4 @@
+import { childColor } from '@/theme/childColor';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -42,7 +43,7 @@ export function RewardForm({ reward }: { reward?: RewardRow }) {
         <View style={styles.wrap}>
           <Chip label={t('reward.everyone')} selected={childId === null} onPress={() => setChildId(null)} />
           {d.children.map((c) => (
-            <Chip key={c.id} label={c.name} color={c.color ?? undefined} selected={childId === c.id} onPress={() => setChildId(c.id)} />
+            <Chip key={c.id} label={c.name} color={c.color ? childColor(c.color) : undefined} selected={childId === c.id} onPress={() => setChildId(c.id)} />
           ))}
         </View>
       </Card>

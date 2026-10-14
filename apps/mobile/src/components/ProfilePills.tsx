@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ageFromBirthDate } from '@/domain/age';
-import { colors, MIN_TARGET, radius } from '@/theme/tokens';
+import { childColor } from '@/theme/childColor';
+import { colors, MIN_TARGET, radius, shadowSmall } from '@/theme/tokens';
 import type { ChildRow } from '@/types/models';
 
 type Props = { profiles: ChildRow[]; selectedId: string | null; onSelect: (id: string) => void; today: string };
@@ -17,7 +18,7 @@ export function ProfilePills({ profiles, selectedId, onSelect, today }: Props) {
       {profiles.map((c) => {
         const active = c.id === selectedId;
         const age = t('common.yearsOld', { age: ageFromBirthDate(c.birth_date, today) });
-        const color = c.color ?? colors.primary;
+        const color = childColor(c.color);
         return (
           <Pressable
             key={c.id}
@@ -26,10 +27,11 @@ export function ProfilePills({ profiles, selectedId, onSelect, today }: Props) {
             accessibilityState={{ selected: active }}
             aria-selected={active}
             onPress={() => onSelect(c.id)}
-            style={[styles.pill, { backgroundColor: active ? color : `${color}26` }]}
+            style={[styles.pill, active && styles.pillActive]}
           >
-            <Text numberOfLines={1} style={[styles.name, { color: active ? '#fff' : color }]}>{c.name}</Text>
-            <Text numberOfLines={1} style={[styles.age, { color: active ? '#fff' : color }]}>{age}</Text>
+            <View style={[styles.dot, { backgroundColor: color }]} />
+            <Text numberOfLines={1} style={[styles.name, active && styles.onNavy]}>{c.name}</Text>
+            <Text numberOfLines={1} style={[styles.age, active && styles.onNavy]}>{age}</Text>
           </Pressable>
         );
       })}
@@ -39,7 +41,10 @@ export function ProfilePills({ profiles, selectedId, onSelect, today }: Props) {
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  pill: { flexGrow: 1, flexBasis: 100, minHeight: MIN_TARGET + 8, paddingHorizontal: 12, paddingVertical: 6, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
-  name: { fontSize: 16, fontWeight: '700' },
-  age: { fontSize: 12, fontWeight: '500', opacity: 0.9 },
+  pill: { flexGrow: 1, flexBasis: 100, minHeight: MIN_TARGET + 8, paddingHorizontal: 12, paddingVertical: 6, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.cardStrong, borderWidth: 1, borderColor: colors.glassBorder, ...shadowSmall },
+  pillActive: { backgroundColor: colors.navy, borderColor: 'rgba(255,255,255,0.25)' },
+  dot: { position: 'absolute', left: 14, top: '50%', marginTop: -5, width: 10, height: 10, borderRadius: 5, borderWidth: 1, borderColor: 'rgba(255,255,255,0.7)' },
+  name: { fontSize: 16, fontWeight: '700', color: colors.text },
+  age: { fontSize: 12, fontWeight: '500', color: colors.textSecondary },
+  onNavy: { color: colors.onNavy },
 });

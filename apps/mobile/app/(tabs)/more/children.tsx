@@ -10,10 +10,11 @@ import { validateBirthDate } from '@/domain/birth-date';
 import { todayInTz } from '@/domain/family-time';
 import { useDeleteChild, useUpdateChild } from '@/hooks/useFamilyAdmin';
 import { useMe } from '@/hooks/useMe';
+import { CHILD_PALETTE } from '@/theme/childColor';
 import { colors, MIN_TARGET, typography } from '@/theme/tokens';
 import type { ChildRow } from '@/types/models';
 
-const PALETTE = [colors.primary, colors.mint, '#8B5CF6', '#F5A623', '#E5484D'] as const;
+const PALETTE = CHILD_PALETTE;
 
 /** Gestion des enfants (parent) : modifier, supprimer, comptes de connexion (SPEC §3.9). */
 export default function ChildrenAdminScreen() {

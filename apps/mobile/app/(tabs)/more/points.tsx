@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { confirmDialog } from '@/components/confirm';
 import { Star } from 'lucide-react-native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { GlassTile } from '@/components/GlassTile';
 import { ProfilePills } from '@/components/ProfilePills';
 import { REWARD_TINTS, RewardIcon } from '@/components/RewardIcon';
 import { RewardRequestCard } from '@/components/RewardRequestCard';
@@ -21,7 +22,7 @@ import {
 } from '@/hooks/usePoints';
 import { useApprovalCounts } from '@/hooks/useApprovals';
 import { useOnline } from '@/hooks/useSyncStatus';
-import { colors, radius, shadow, typography } from '@/theme/tokens';
+import { colors, glass, radius, shadowSmall, typography } from '@/theme/tokens';
 import type { RewardRequestRow } from '@/types/models';
 
 export default function PointsScreen() {
@@ -122,9 +123,9 @@ export default function PointsScreen() {
               onPress={() => (isParent ? router.push({ pathname: '/reward/[id]', params: { id: r.id } }) : confirmRequest(r.id, r.title, r.cost))}
               style={[styles.reward, index > 0 && styles.rewardSeparator, !affordable && !isParent && styles.rewardDisabled]}
             >
-              <View style={[styles.rewardTile, { backgroundColor: `${tint}22` }]}>
+              <GlassTile size={44} tint={`${tint}33`}>
                 <RewardIcon name={r.icon} color={affordable || isParent ? tint : colors.textSecondary} />
-              </View>
+              </GlassTile>
               <Text style={[styles.rowTitle, styles.flex]}>{r.title}</Text>
               <Text style={styles.cost}>
                 {r.cost} {t('points.unit')}
@@ -166,19 +167,18 @@ export default function PointsScreen() {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   balanceRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  medal: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#F5B301', alignItems: 'center', justifyContent: 'center', borderWidth: 4, borderColor: '#FFD965' },
+  medal: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: 'rgba(255,255,255,0.65)', ...shadowSmall },
   balance: { fontSize: 36, fontWeight: '800', color: colors.text },
   unit: { fontSize: 20, fontWeight: '700' },
   reserved: { fontSize: 13, color: colors.textSecondary, marginTop: 4 },
-  pendingTasks: { fontSize: 13, color: '#B86E00', fontWeight: '600', marginTop: 2 },
+  pendingTasks: { fontSize: 13, color: colors.warning, fontWeight: '600', marginTop: 2 },
   section: { gap: 10 },
   sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.text },
   rowTitle: { fontSize: 15, fontWeight: '500', color: colors.text },
   cost: { fontSize: 15, fontWeight: '600', color: colors.text },
-  rewardsCard: { backgroundColor: colors.card, borderRadius: radius.card, paddingHorizontal: 14, ...shadow },
+  rewardsCard: { ...glass, borderRadius: radius.card, paddingHorizontal: 14 },
   reward: { flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: 64 },
   rewardSeparator: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.separator },
-  rewardTile: { width: 40, height: 40, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   rewardDisabled: { opacity: 0.45 },
   offline: { color: colors.danger, fontSize: 13 },
   banner: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.primaryTint, borderRadius: radius.card, padding: 14 },

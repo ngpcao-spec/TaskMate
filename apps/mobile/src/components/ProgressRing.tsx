@@ -2,17 +2,17 @@ import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { colors } from '@/theme/tokens';
 
-type Props = { ratio: number; size?: number; stroke?: number; label?: string; sublabel?: string; color?: string; accessibilityLabel?: string };
+type Props = { ratio: number; size?: number; stroke?: number; label?: string; sublabel?: string; color?: string; trackColor?: string; textColor?: string; accessibilityLabel?: string };
 
 /** Anneau de progression (SVG maison, SPEC §6). `label` = texte central (ex. « 60% » ou « — »). */
-export function ProgressRing({ ratio, size = 72, stroke = 8, label, sublabel, color = colors.primary, accessibilityLabel }: Props) {
+export function ProgressRing({ ratio, size = 72, stroke = 8, label, sublabel, color = colors.primary, trackColor = 'rgba(255,255,255,0.5)', textColor = colors.text, accessibilityLabel }: Props) {
   const r = (size - stroke) / 2;
   const circumference = 2 * Math.PI * r;
   const clamped = Math.min(Math.max(ratio, 0), 1);
   return (
     <View style={{ width: size, height: size }} accessible accessibilityRole="progressbar" accessibilityLabel={accessibilityLabel}>
       <Svg width={size} height={size}>
-        <Circle cx={size / 2} cy={size / 2} r={r} stroke="#E4ECF7" strokeWidth={stroke} fill="none" />
+        <Circle cx={size / 2} cy={size / 2} r={r} stroke={trackColor} strokeWidth={stroke} fill="none" />
         <Circle
           cx={size / 2}
           cy={size / 2}
@@ -28,8 +28,8 @@ export function ProgressRing({ ratio, size = 72, stroke = 8, label, sublabel, co
       </Svg>
       {label ? (
         <View style={[StyleSheet.absoluteFill, styles.center]}>
-          <Text style={styles.label}>{label}</Text>
-          {sublabel ? <Text style={styles.sublabel}>{sublabel}</Text> : null}
+          <Text style={[styles.label, { color: textColor }]}>{label}</Text>
+          {sublabel ? <Text style={[styles.sublabel, { color: textColor }]}>{sublabel}</Text> : null}
         </View>
       ) : null}
     </View>
@@ -38,6 +38,6 @@ export function ProgressRing({ ratio, size = 72, stroke = 8, label, sublabel, co
 
 const styles = StyleSheet.create({
   center: { alignItems: 'center', justifyContent: 'center' },
-  label: { fontSize: 22, fontWeight: '800', color: colors.text },
-  sublabel: { fontSize: 12, color: colors.textSecondary },
+  label: { fontSize: 22, fontWeight: '800' },
+  sublabel: { fontSize: 12, opacity: 0.85 },
 });

@@ -1,4 +1,4 @@
-import { endOfMonth, format, parseISO, startOfMonth } from 'date-fns';
+import { addDays, endOfMonth, format, parseISO, startOfMonth } from 'date-fns';
 import { TASK_CATEGORIES, type TaskCategory } from '@/theme/categories';
 import { weekDays } from './calendar';
 
@@ -52,3 +52,32 @@ export function encouragementFor(rate: number | null): Encouragement | null {
 }
 
 export const formatRate = (rate: number | null): string => (rate === null ? '—' : `${rate}%`);
+
+export type Bucket = { from: string; to: string; done: number; total: number };
+
+/**
+ * Barres du graphique « vue d'ensemble » : une barre par JOUR pour la semaine, une par SEMAINE (lundi → dimanche, bornée au mois) pour le mois.
+ * Mêmes règles que `computeStats` (tâches supprimées exclues, `completed_at` = faite) ; 100 % local, jamais de NaN.
+ */
+export function completionBuckets(tasks: readonly StatTask[], period: StatsPeriod, from: string, to: string): Bucket[] {
+  const inPeriod = tasks.filter((t) => !t.deleted_at && t.date >= from && t.date <= to);
+  const ranges: { from: string; to: string }[] = [];
+  if (period === 'week') {
+    for (let d = parseISO(from); format(d, 'yyyy-MM-dd') <= to; d = addDays(d, 1)) {
+      const day = format(d, 'yyyy-MM-dd');
+      ranges.push({ from: day, to: day });
+    }
+  } else {
+    let start = from;
+    while (start <= to) {
+      const week = weekDays(start);
+      const end = (week[6] as string) < to ? (week[6] as string) : to;
+      ranges.push({ from: start, to: end });
+      start = format(addDays(parseISO(end), 1), 'yyyy-MM-dd');
+    }
+  }
+  return ranges.map((r) => {
+    const inside = inPeriod.filter((t) => t.date >= r.from && t.date <= r.to);
+    return { ...r, total: inside.length, done: inside.filter((t) => t.completed_at !== null).length };
+  });
+}

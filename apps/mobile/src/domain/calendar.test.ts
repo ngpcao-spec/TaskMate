@@ -1,3 +1,4 @@
+import { CATEGORY_COLORS } from '@/theme/categories';
 import { getISODay, parseISO } from 'date-fns';
 import {
   categoryTint,
@@ -56,7 +57,7 @@ describe('libellés calculés (jamais en dur)', () => {
 
 describe('cartes et regroupement', () => {
   it('teinte de catégorie à ~12 %', () => {
-    expect(categoryTint('study')).toBe('#2F80ED1F');
+    expect(categoryTint('study')).toBe(`${CATEGORY_COLORS.study}1F`); // 0x1F / 255 ≈ 12 %
   });
   it('regroupe les tâches par jour et ignore celles hors semaine', () => {
     const days = weekDays('2026-07-02');

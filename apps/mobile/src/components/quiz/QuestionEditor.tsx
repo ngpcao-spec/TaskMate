@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   multiline: { minHeight: 88, textAlignVertical: 'top', paddingTop: 12 },
   choiceRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
-  radio: { width: MIN_TARGET, height: MIN_TARGET, borderRadius: MIN_TARGET / 2, marginTop: 20, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#D5DFEC', backgroundColor: colors.card },
+  radio: { width: MIN_TARGET, height: MIN_TARGET, borderRadius: MIN_TARGET / 2, marginTop: 20, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: colors.glassBorder, backgroundColor: colors.card },
   radioOn: { borderColor: colors.success },
   radioDot: { width: 20, height: 20, borderRadius: 10, backgroundColor: colors.success },
   error: { color: colors.danger, fontSize: 13 },

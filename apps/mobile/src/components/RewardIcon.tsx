@@ -22,14 +22,14 @@ export function RewardIcon({ name, size = 24, color = colors.primary }: { name: 
 
 /** Teinte de la pastille d'icône (maquette « Điểm thưởng »). */
 export const REWARD_TINTS: Record<string, string> = {
-  gift: '#F5762E',
-  'gamepad-2': '#F5762E',
-  film: '#3B4A9B',
-  smartphone: '#1E88F5',
-  cookie: '#F5A623',
-  star: '#F5B301',
-  pizza: '#E5484D',
-  popcorn: '#F5A623',
-  ticket: '#8B5CF6',
-  trophy: '#F5B301',
+  gift: '#B8613A',
+  'gamepad-2': '#B8613A',
+  film: '#4B5AA5',
+  smartphone: '#3A7CA5',
+  cookie: '#C98E36',
+  star: '#C98E36',
+  pizza: '#B8454E',
+  popcorn: '#C98E36',
+  ticket: '#7C79C2',
+  trophy: '#C98E36',
 };

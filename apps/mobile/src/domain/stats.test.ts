@@ -1,4 +1,4 @@
-import { computeStats, encouragementFor, formatRate, periodRange } from './stats';
+import { completionBuckets, computeStats, encouragementFor, formatRate, periodRange } from './stats';
 
 const t = (date: string, category: 'study' | 'sport' | 'chores' | 'personal' | 'other', done: boolean, deleted = false) => ({
   date, category, completed_at: done ? '2026-07-01T10:00:00Z' : null, deleted_at: deleted ? '2026-07-01T10:00:00Z' : null,
@@ -60,4 +60,38 @@ describe('encouragementFor (§5.4)', () => {
     expect(encouragementFor(rate)).toBe(expected);
   });
   it('aucune carte quand la période est vide', () => expect(encouragementFor(null)).toBeNull());
+});
+
+describe('completionBuckets (graphique en barres)', () => {
+  const tasks = [
+    t('2026-07-01', 'study', true), t('2026-07-01', 'sport', false), t('2026-07-03', 'study', true),
+    t('2026-07-02', 'sport', true, true), // supprimée : ignorée
+    t('2026-06-28', 'study', true), // hors période
+  ];
+  it('semaine : sept barres, une par jour, lundi → dimanche', () => {
+    const b = completionBuckets(tasks, 'week', '2026-06-29', '2026-07-05');
+    expect(b.map((x) => x.from)).toEqual(['2026-06-29', '2026-06-30', '2026-07-01', '2026-07-02', '2026-07-03', '2026-07-04', '2026-07-05']);
+    expect(b.every((x) => x.from === x.to)).toBe(true);
+    expect(b.map((x) => [x.done, x.total])).toEqual([[0, 0], [0, 0], [1, 2], [0, 0], [1, 1], [0, 0], [0, 0]]);
+  });
+  it('mois : une barre par semaine, première et dernière semaines bornées au mois', () => {
+    const b = completionBuckets(tasks, 'month', '2026-07-01', '2026-07-31');
+    expect(b.map((x) => [x.from, x.to])).toEqual([
+      ['2026-07-01', '2026-07-05'], ['2026-07-06', '2026-07-12'], ['2026-07-13', '2026-07-19'], ['2026-07-20', '2026-07-26'], ['2026-07-27', '2026-07-31'],
+    ]);
+    expect(b[0]).toMatchObject({ done: 2, total: 3 });
+    expect(b.slice(1).every((x) => x.total === 0 && x.done === 0)).toBe(true);
+  });
+  it('mois finissant un dimanche : pas de barre vide en trop', () => {
+    expect(completionBuckets([], 'month', '2026-05-01', '2026-05-31').at(-1)).toMatchObject({ from: '2026-05-25', to: '2026-05-31' });
+  });
+  it('la somme des barres égale le total des statistiques', () => {
+    const s = computeStats(tasks, '2026-07-01', '2026-07-31');
+    const b = completionBuckets(tasks, 'month', '2026-07-01', '2026-07-31');
+    expect(b.reduce((n, x) => n + x.total, 0)).toBe(s.total);
+    expect(b.reduce((n, x) => n + x.done, 0)).toBe(s.done);
+  });
+  it('période sans tâche : barres à zéro, jamais NaN', () => {
+    expect(completionBuckets([], 'week', '2026-06-29', '2026-07-05').every((x) => x.done === 0 && x.total === 0)).toBe(true);
+  });
 });
