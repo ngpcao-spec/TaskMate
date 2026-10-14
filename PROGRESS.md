@@ -223,3 +223,6 @@ Le calendrier défile au doigt (`touch-action: pan-y` sur le détecteur de balay
 
 ### Thèmes illustrés : teintes opaques (D-076) — 2026-10-14
 Cartes du calendrier et bandeaux teintés opaques sur kawaii / cosmos / teddy / bunny (le motif ne transparaît plus) ; « verre givré » inchangé. Captures Chromium contrôlées (bunny, cosmos, teddy). Jest : `themes.test`, `blend.test`.
+
+### Barre du bas : fond gris derrière les angles (D-077) — 2026-10-14
+Thème de navigation d'expo-router aux couleurs du thème actif (fin du gris `rgb(242,242,242)` dans les angles arrondis de la barre). Jest : `navigation-theme.test`. À confirmer sur l'iPhone.
