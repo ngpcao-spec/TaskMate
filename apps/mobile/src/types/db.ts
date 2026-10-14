@@ -86,6 +86,37 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"avatar_usage": {
+                  Row: {
+                    "child_id": string,"created_at": string,"day": string,"failure": string | null,"family_id": string,"finished_at": string | null,"id": string,"member_id": string,"model": string | null,"status": string
+                  }
+                  Insert: {
+                    "child_id": string,"created_at"?: string,"day": string,"failure"?: string | null,"family_id": string,"finished_at"?: string | null,"id"?: string,"member_id": string,"model"?: string | null,"status"?: string
+                  }
+                  Update: {
+                    "child_id"?: string,"created_at"?: string,"day"?: string,"failure"?: string | null,"family_id"?: string,"finished_at"?: string | null,"id"?: string,"member_id"?: string,"model"?: string | null,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "avatar_usage_child_id_family_id_fkey"
+      columns: ["child_id","family_id"]
+isOneToOne: false
+      referencedRelation: "child_balances"
+      referencedColumns: ["child_id","family_id"]
+    },{
+      foreignKeyName: "avatar_usage_child_id_family_id_fkey"
+      columns: ["child_id","family_id"]
+isOneToOne: false
+      referencedRelation: "children"
+      referencedColumns: ["id","family_id"]
+    },{
+      foreignKeyName: "avatar_usage_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "members"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"child_accounts": {
                   Row: {
                     "auth_email": string,"child_id": string,"created_at": string,"family_id": string,"id": string,"login_id": string,"member_id": string,"password_hash": string | null
@@ -119,6 +150,37 @@ isOneToOne: false
       foreignKeyName: "child_accounts_member_id_fkey"
       columns: ["member_id"]
 isOneToOne: true
+      referencedRelation: "members"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"child_avatars": {
+                  Row: {
+                    "ai_allowed": boolean,"candidate_b64": string | null,"child_id": string,"consent_at": string | null,"consent_by": string | null,"family_id": string,"image_b64": string | null,"updated_at": string,"version": number
+                  }
+                  Insert: {
+                    "ai_allowed"?: boolean,"candidate_b64"?: string | null,"child_id": string,"consent_at"?: string | null,"consent_by"?: string | null,"family_id": string,"image_b64"?: string | null,"updated_at"?: string,"version"?: number
+                  }
+                  Update: {
+                    "ai_allowed"?: boolean,"candidate_b64"?: string | null,"child_id"?: string,"consent_at"?: string | null,"consent_by"?: string | null,"family_id"?: string,"image_b64"?: string | null,"updated_at"?: string,"version"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "child_avatars_child_id_family_id_fkey"
+      columns: ["child_id","family_id"]
+isOneToOne: false
+      referencedRelation: "child_balances"
+      referencedColumns: ["child_id","family_id"]
+    },{
+      foreignKeyName: "child_avatars_child_id_family_id_fkey"
+      columns: ["child_id","family_id"]
+isOneToOne: false
+      referencedRelation: "children"
+      referencedColumns: ["id","family_id"]
+    },{
+      foreignKeyName: "child_avatars_consent_by_fkey"
+      columns: ["consent_by"]
+isOneToOne: false
       referencedRelation: "members"
       referencedColumns: ["id"]
     }
@@ -757,6 +819,42 @@ isOneToOne: false
 "approve_reward_request":
 { Args: { "p_request_id": string,"p_tx_id": string }; Returns: undefined
                            },
+"avatar_authorize":
+{ Args: { "p_child": string }; Returns: {
+              "child_id": string | null,
+"created_at": string,
+"deleted_at": string | null,
+"display_name": string,
+"family_id": string,
+"id": string,
+"revoked_at": string | null,
+"role": Database["public"]['Enums']["member_role"],
+"updated_at": string,
+"user_id": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "members"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"avatar_finish":
+{ Args: { "p_failure": string,"p_id": string,"p_model": string,"p_status": string }; Returns: undefined
+                           },
+"avatar_reserve":
+{ Args: { "p_child": string,"p_child_limit": number,"p_family": string,"p_family_limit": number,"p_hard": number,"p_member": string,"p_now"?: string }; Returns: {
+              "allowed": boolean,"usage_id": string,"used": number
+            }[]
+                           },
+"avatar_save_candidate":
+{ Args: { "p_b64": string,"p_child": string,"p_family": string }; Returns: undefined
+                           },
+"avatar_target":
+{ Args: { "p_child"?: string }; Returns: Json
+                           },
+"avatar_used_today":
+{ Args: { "p_child": string,"p_family": string,"p_now"?: string }; Returns: number
+                           },
 "cancel_reward_request":
 { Args: { "p_request_id": string }; Returns: undefined
                            },
@@ -802,6 +900,9 @@ isOneToOne: false
 "complete_task":
 { Args: { "p_task_id": string,"p_tx_id": string }; Returns: undefined
                            },
+"confirm_child_avatar":
+{ Args: { "p_child": string }; Returns: undefined
+                           },
 "confirm_quiz_answers":
 { Args: { "p_answers": Json,"p_set": string }; Returns: undefined
                            },
@@ -825,6 +926,9 @@ isOneToOne: false
                            },
 "diagnostics":
 { Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"discard_avatar_candidate":
+{ Args: { "p_child": string }; Returns: undefined
                            },
 "expire_reward_requests":
 { Args: Record<PropertyKey, never>; Returns: number
@@ -962,6 +1066,9 @@ isOneToOne: false
 "remove_child_account":
 { Args: { "p_child_id": string }; Returns: string
                            },
+"remove_child_avatar":
+{ Args: { "p_child": string }; Returns: undefined
+                           },
 "reorder_quiz_questions":
 { Args: { "p_ids": (string)[],"p_set": string }; Returns: undefined
                            },
@@ -995,6 +1102,9 @@ isOneToOne: false
                            },
 "schedule_cron_jobs":
 { Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"set_avatar_ai_allowed":
+{ Args: { "p_allowed": boolean,"p_child": string }; Returns: undefined
                            },
 "set_child_password":
 { Args: { "p_child_id": string,"p_password": string }; Returns: undefined

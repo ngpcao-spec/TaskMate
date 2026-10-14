@@ -1068,6 +1068,88 @@ test.describe('ajouter un enfant après l\'onboarding', () => {
   });
 });
 
+test.describe('avatar « dessin animé » (D-071)', () => {
+  const PNG_1X1 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+  const DRAWING = 'UklGRgAAAAA=';
+  const corsOk = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': '*' };
+
+  test('le parent consent, l\'enfant envoie un portrait (IA simulée), voit l\'aperçu et le valide ; rien d\'autre que le dessin n\'est conservé', async ({ browser }) => {
+    test.setTimeout(150_000);
+    const family = await createFamily();
+    const parentCtx = await browser.newContext();
+    await signInContext(parentCtx, family.parent);
+    const parent = await parentCtx.newPage();
+    await open(parent, '/more/avatar');
+    await expect(parent.getByText(/OpenAI/)).toBeVisible();
+    // sans consentement : aucun bouton de création
+    await expect(parent.getByRole('button', { name: 'Chọn ảnh chân dung' })).toHaveCount(0);
+    await parent.getByLabel('Cho phép Minh tạo ảnh đại diện bằng AI').click();
+    await expect(parent.getByRole('button', { name: 'Chọn ảnh chân dung' })).toBeVisible();
+    const { data: consent } = await serviceClient().from('child_avatars').select('ai_allowed, consent_by').eq('child_id', family.minh.childId as string).single();
+    expect(consent).toMatchObject({ ai_allowed: true, consent_by: family.parent.memberId });
+
+    // l'enfant (sa propre session) : la fonction répond avec un dessin ; le serveur l'a enregistré comme CANDIDAT
+    const childCtx = await browser.newContext();
+    await signInContext(childCtx, family.minh);
+    const child = await childCtx.newPage();
+    trace(child, 'child-avatar');
+    let sent: { image: string; childId?: string } | null = null;
+    await child.route('**/functions/v1/generate-avatar', async (route) => {
+      const request = route.request();
+      if (request.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: corsOk });
+      sent = request.postDataJSON();
+      await serviceClient().rpc('avatar_save_candidate', { p_child: family.minh.childId as string, p_family: family.familyId, p_b64: DRAWING });
+      await route.fulfill({ status: 200, headers: { 'access-control-allow-origin': '*' }, contentType: 'application/json', body: JSON.stringify({ candidate: DRAWING, child_id: family.minh.childId, remaining: 2 }) });
+    });
+    await open(child, '/more/avatar');
+    await expect(child.getByLabel('Cho phép Minh tạo ảnh đại diện bằng AI')).toHaveCount(0); // l'enfant ne règle pas le consentement
+    const [chooser] = await Promise.all([child.waitForEvent('filechooser'), child.getByRole('button', { name: 'Chọn ảnh chân dung' }).click()]);
+    await chooser.setFiles({ name: 'portrait.png', mimeType: 'image/png', buffer: Buffer.from(PNG_1X1, 'base64') });
+    await expect(child.getByText('Hình hoạt hình đã vẽ xong. Dùng ảnh này?')).toBeVisible();
+    // le portrait part en JPEG redimensionné, SANS identifiant d'enfant (le serveur le déduit du jeton)
+    expect(sent).not.toBeNull();
+    expect(sent!.childId).toBeUndefined();
+    expect(sent!.image.startsWith('/9j/')).toBe(true);
+    // avant validation : pas encore d'avatar
+    const before = await serviceClient().from('child_avatars').select('image_b64, version').eq('child_id', family.minh.childId as string).single();
+    expect(before.data).toMatchObject({ image_b64: null, version: 0 });
+
+    await child.getByRole('button', { name: 'Dùng ảnh này' }).click();
+    await expect(child.getByText('Đã lưu ảnh đại diện.')).toBeVisible();
+    const after = await serviceClient().from('child_avatars').select('image_b64, version').eq('child_id', family.minh.childId as string).single();
+    expect(after.data).toMatchObject({ image_b64: DRAWING, version: 1 });
+    // la base ne garde aucune photo : aucune colonne ne peut en contenir une autre que le dessin WebP
+    const { data: columns } = await serviceClient().from('child_avatars').select('*').eq('child_id', family.minh.childId as string).single();
+    expect(Object.keys(columns ?? {}).sort()).toEqual(['ai_allowed', 'candidate_b64', 'child_id', 'consent_at', 'consent_by', 'family_id', 'image_b64', 'updated_at', 'version']);
+    expect((columns as { candidate_b64: string | null }).candidate_b64).toBeNull();
+
+    // l'avatar s'affiche dans le profil de l'enfant
+    await open(child, '/more');
+    await expect(child.getByTestId('avatar-image').first()).toBeVisible();
+  });
+
+  test('sans consentement du parent : l\'enfant ne peut ni créer d\'avatar ni contourner la base', async ({ browser }) => {
+    const family = await createFamily();
+    const childCtx = await browser.newContext();
+    await signInContext(childCtx, family.minh);
+    const child = await childCtx.newPage();
+    await open(child, '/more/avatar');
+    await expect(child.getByText('Hãy nhờ ba mẹ bật tính năng này trước.')).toBeVisible();
+    await expect(child.getByRole('button', { name: 'Chọn ảnh chân dung' })).toHaveCount(0);
+    // côté base : l'enfant ne peut ni donner le consentement, ni écrire un avatar, ni lire le candidat
+    const token = await accessTokenOf(family.minh);
+    const headers = { apikey: process.env.E2E_ANON_KEY as string, Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
+    const consent = await fetch(`${supabaseUrl()}/rest/v1/rpc/set_avatar_ai_allowed`, { method: 'POST', headers, body: JSON.stringify({ p_child: family.minh.childId, p_allowed: true }) });
+    expect(consent.status).toBeGreaterThanOrEqual(400);
+    const write = await fetch(`${supabaseUrl()}/rest/v1/child_avatars`, { method: 'POST', headers, body: JSON.stringify({ child_id: family.minh.childId, family_id: family.familyId, image_b64: DRAWING }) });
+    expect(write.status).toBeGreaterThanOrEqual(400);
+    const candidate = await fetch(`${supabaseUrl()}/rest/v1/child_avatars?select=candidate_b64`, { headers });
+    expect(candidate.status).toBeGreaterThanOrEqual(400);
+    const { data } = await serviceClient().from('child_avatars').select('child_id').eq('family_id', family.familyId);
+    expect(data ?? []).toHaveLength(0);
+  });
+});
+
 test.describe('mise en page bureau', () => {
   test.use({ viewport: { width: 1280, height: 800 } });
 

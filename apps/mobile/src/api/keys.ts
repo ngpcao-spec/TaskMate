@@ -30,3 +30,6 @@ export const quizKeys = {
   result: (attemptId: string) => ['quiz', 'result', attemptId] as const,
   history: (setId: string) => ['quiz', 'history', setId] as const,
 };
+
+/** Avatars des enfants (D-071) : la liste visible par l'utilisateur (parent : toute la famille ; enfant : lui seul). */
+export const avatarKeys = { all: ['avatars'] as const };

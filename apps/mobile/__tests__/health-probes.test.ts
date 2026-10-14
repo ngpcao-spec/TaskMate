@@ -30,7 +30,7 @@ describe('sondes de diagnostic', () => {
     const d = deps();
     const p = await runProbes(d);
     expect(p).toMatchObject({ reachable: true, auth: { google: true, email: true }, realtime: 'SUBSCRIBED' });
-    expect(p.functions).toEqual({ 'child-login': true, 'create-child': true, 'reset-child-password': true, 'delete-child': true, 'delete-account': true, 'send-push': true, 'generate-questions': true });
+    expect(p.functions).toEqual({ 'child-login': true, 'create-child': true, 'reset-child-password': true, 'delete-child': true, 'delete-account': true, 'send-push': true, 'generate-questions': true, 'generate-avatar': true });
     // jamais de POST : delete-account supprime la famille, signup créerait un utilisateur
     expect(d.calls.every((c) => c.method === 'GET')).toBe(true);
     expect(d.calls.filter((c) => c.url.includes('/functions/v1/')).every((c) => c.auth === 'Bearer jwt-parent')).toBe(true);

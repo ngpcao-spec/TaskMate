@@ -205,3 +205,6 @@ PR [#19](https://github.com/ngpcao-spec/TaskMate/pull/19) (fusion `7873785` : co
 
 ### Troisième thème « cosmos » (D-070) — 2026-10-14
 Réglages → Giao diện : « Kính mờ » (défaut), « Kawaii » ou « Vũ trụ » (sombre, astronautes, étoiles), par appareil. Jetons `onTile` / `onNavActive` ajoutés, `decor` devient une famille. Captures : `docs/screenshots/cosmos`. Jest : `themes.test` (contrastes ×3), `theme-card`. Non vérifié : rendu sur iPhone réel.
+
+### Avatar « dessin animé » par IA (D-071) — 2026-10-14
+Plus → Ảnh đại diện : le parent consent enfant par enfant, l'enfant charge un portrait (galerie ou caméra avant, PWA), l'Edge Function `generate-avatar` (OpenAI) le dessine, aperçu puis validation ; la photo n'est jamais conservée. Migration `…000021_child_avatars`, pgTAP `26`, Jest et E2E ajoutés ; captures : `docs/screenshots/avatar`. Reste (humain) : HUMAN_TODO § 6 ter (clé déjà posée ou non, réglages facultatifs). Non vérifié : appel IA réel (coût, qualité), caméra avant sur iPhone.

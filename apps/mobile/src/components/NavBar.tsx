@@ -3,6 +3,7 @@ import { type ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Avatar } from '@/components/Avatar';
 import { Gradient } from '@/components/Gradient';
 import { useMe } from '@/hooks/useMe';
 import { useIsWide } from '@/hooks/useLayout';
@@ -20,15 +21,20 @@ export function NavBar({ state, descriptors, navigation }: BarProps) {
   const insets = useSafeAreaInsets();
   const me = useMe().data;
   const name = me?.member.display_name ?? '';
+  const childId = me?.member.role === 'child' ? me.member.child_id : null;
 
   const bar = (
     <View style={[wide ? styles.side : styles.bottom, !wide && { paddingBottom: Math.max(insets.bottom, 8) }]}>
       <Gradient from={colors.barFrom} to={colors.barTo} direction="v" />
       {wide ? (
         <View style={styles.hello}>
-          <View accessible accessibilityLabel={name} style={styles.avatar}>
-            <Text style={styles.avatarText}>{name.slice(0, 1).toUpperCase()}</Text>
-          </View>
+          {childId ? (
+            <Avatar childId={childId} name={name} color={me?.children.find((c) => c.id === childId)?.color} size={76} />
+          ) : (
+            <View accessible accessibilityLabel={name} style={styles.avatar}>
+              <Text style={styles.avatarText}>{name.slice(0, 1).toUpperCase()}</Text>
+            </View>
+          )}
           {name ? <Text style={styles.helloText}>{t('nav.hi', { name })}</Text> : null}
         </View>
       ) : null}

@@ -1,5 +1,5 @@
 // Usage : node shoot.mjs <dossier-sortie> [parent|child]
-// Variables : DIST (dossier exporté), VIEWPORT (ex. 1280x800), THEME (glass | kawaii : thème enregistré sur l'appareil avant le chargement).
+// Variables : DIST (dossier exporté), VIEWPORT (ex. 1280x800), THEME (glass | kawaii | cosmos : thème enregistré sur l'appareil avant le chargement).
 // Prérequis : `node mock-server.mjs` lancé ; app exportée en web (voir README.md) dans ../../apps/mobile/dist-web.
 import { chromium } from 'playwright-core';
 import http from 'node:http';
@@ -39,6 +39,7 @@ const screens = [
   ['08-stats', '/stats', true],
   ['09-file-a-approuver', '/approvals', true],
   ['10-reglages', '/more/settings', true],
+  ['11-avatar', '/more/avatar', true],
 ];
 
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM ?? undefined, args: ['--no-sandbox'] });

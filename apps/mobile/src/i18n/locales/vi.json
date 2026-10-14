@@ -31,6 +31,44 @@
     "later": "Để sau",
     "denied": "Thông báo đang bị chặn trên thiết bị này. Hãy bật lại trong Cài đặt của iPhone → Thông báo → TaskMate."
   },
+  "avatar": {
+    "title": "Ảnh đại diện",
+    "current": "Ảnh đại diện của {{name}}",
+    "none": "Chưa có ảnh đại diện: đang dùng chữ cái đầu của tên.",
+    "consentTitle": "Tạo ảnh đại diện bằng AI",
+    "consentBody": "Khi bật, {{name}} có thể chụp hoặc chọn một ảnh chân dung để biến thành hình hoạt hình. Ảnh được gửi đến OpenAI (dịch vụ AI) chỉ để vẽ lại; TaskMate không lưu ảnh gốc, chỉ lưu hình hoạt hình đã vẽ. Bạn có thể tắt bất cứ lúc nào.",
+    "consentSwitch": "Cho phép {{name}} tạo ảnh đại diện bằng AI",
+    "childLocked": "Hãy nhờ ba mẹ bật tính năng này trước.",
+    "pickGallery": "Chọn ảnh chân dung",
+    "pickCamera": "Chụp ảnh chân dung",
+    "hint": "Chọn ảnh rõ mặt, đủ sáng, chỉ có một người.",
+    "generating": "Đang vẽ… có thể mất tới một phút.",
+    "preview": "Hình hoạt hình đã vẽ xong. Dùng ảnh này?",
+    "previewImage": "Ảnh đại diện mới (xem trước)",
+    "use": "Dùng ảnh này",
+    "retry": "Thử lại",
+    "cancel": "Hủy",
+    "remove": "Xóa ảnh đại diện",
+    "removeTitle": "Xóa ảnh đại diện?",
+    "removeBody": "Ứng dụng sẽ quay lại dùng chữ cái đầu của tên.",
+    "removeOk": "Xóa",
+    "saved": "Đã lưu ảnh đại diện.",
+    "removed": "Đã xóa ảnh đại diện.",
+    "remaining": "Còn {{count}} lần tạo hôm nay.",
+    "unsupported": "Chức năng này dùng được trên ứng dụng web (PWA).",
+    "errors": {
+      "quota": "Hôm nay đã tạo đủ số lần. Hãy thử lại vào ngày mai.",
+      "notConfigured": "Tính năng AI chưa được cấu hình. Hãy báo cho ba mẹ.",
+      "timeout": "AI trả lời quá lâu. Hãy thử lại.",
+      "refused": "AI không vẽ được ảnh này. Hãy thử một ảnh khác.",
+      "generic": "Không tạo được ảnh đại diện. Hãy thử lại.",
+      "notAllowed": "Chưa được phép tạo ảnh đại diện bằng AI.",
+      "tooLarge": "Ảnh quá lớn.",
+      "unsupportedType": "Định dạng ảnh không được hỗ trợ.",
+      "network": "Không có kết nối mạng. Hãy thử lại khi có mạng.",
+      "unreadable": "Không đọc được ảnh này."
+    }
+  },
   "theme": {
     "title": "Giao diện",
     "glass": "Kính mờ",
@@ -532,7 +570,8 @@
     "goals": "Mục tiêu",
     "notifications": "Cài đặt thông báo",
     "settings": "Cài đặt chung",
-    "revisions": "Ôn tập"
+    "revisions": "Ôn tập",
+    "avatar": "Ảnh đại diện"
   },
   "taskList": {
     "upcoming": "Sắp tới",
@@ -777,6 +816,7 @@
       "fn-send-push": "Edge Function send-push",
       "vapid": "Khóa Web Push (VAPID)",
       "fn-generate-questions": "Edge Function generate-questions",
+      "fn-generate-avatar": "Edge Function generate-avatar",
       "ai": "AI tạo câu hỏi (Ôn tập)"
     },
     "connection": {

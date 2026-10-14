@@ -10,7 +10,9 @@ export const EXPECTED_TABLES = [
   'activity_log',
   'ai_usage',
   'auth_attempts',
+  'avatar_usage',
   'child_accounts',
+  'child_avatars',
   'children',
   'devices',
   'families',
@@ -39,6 +41,12 @@ export const EXPECTED_FUNCTIONS = [
   'ai_target',
   'ai_usage_today',
   'approve_reward_request',
+  'avatar_authorize',
+  'avatar_finish',
+  'avatar_reserve',
+  'avatar_save_candidate',
+  'avatar_target',
+  'avatar_used_today',
   'cancel_reward_request',
   'child_account_target',
   'child_balance',
@@ -52,6 +60,7 @@ export const EXPECTED_FUNCTIONS = [
   'child_quiz_sets',
   'child_reserved',
   'complete_task',
+  'confirm_child_avatar',
   'confirm_quiz_answers',
   'copy_quiz_set',
   'create_family',
@@ -60,6 +69,7 @@ export const EXPECTED_FUNCTIONS = [
   'delete_family',
   'delete_quiz_question',
   'diagnostics',
+  'discard_avatar_candidate',
   'expire_reward_requests',
   'family_today',
   'generate_all_recurrences',
@@ -88,12 +98,14 @@ export const EXPECTED_FUNCTIONS = [
   'reject_task',
   'relaunch_quiz_evaluation',
   'remove_child_account',
+  'remove_child_avatar',
   'reorder_quiz_questions',
   'request_reward',
   'require_member',
   'revoke_device',
   'revoke_parent_invite',
   'schedule_cron_jobs',
+  'set_avatar_ai_allowed',
   'set_child_password',
   'set_push_locale',
   'set_quiz_material_kind',
@@ -115,7 +127,7 @@ type NotListedFunction = Exclude<DbFunction, (typeof EXPECTED_FUNCTIONS)[number]
 export const COMPLETENESS: [NotListedTable, NotListedFunction] extends [never, never] ? true : never = true;
 
 export const EXPECTED_CRON_JOBS = ['expire-reward-requests', 'generate-recurrences'] as const;
-export const EDGE_FUNCTIONS = ['child-login', 'create-child', 'reset-child-password', 'delete-child', 'delete-account', 'send-push', 'generate-questions'] as const;
+export const EDGE_FUNCTIONS = ['child-login', 'create-child', 'reset-child-password', 'delete-child', 'delete-account', 'send-push', 'generate-questions', 'generate-avatar'] as const;
 export type EdgeFunctionName = (typeof EDGE_FUNCTIONS)[number];
 
 export type DiagnosticsData = {

@@ -16,7 +16,7 @@ const healthy: Probes = {
   auth: { google: true, email: true },
   diagnostics: { ok: true, data: healthyData },
   realtime: 'SUBSCRIBED',
-  functions: { 'child-login': true, 'create-child': true, 'reset-child-password': true, 'delete-child': true, 'delete-account': true, 'send-push': true, 'generate-questions': true },
+  functions: { 'child-login': true, 'create-child': true, 'reset-child-password': true, 'delete-child': true, 'delete-account': true, 'send-push': true, 'generate-questions': true, 'generate-avatar': true },
   ai: { configured: true, usedToday: 2, dailyLimit: 20 },
 };
 const env = { supabaseUrl: 'https://olftkozksanvnzlsvwrp.supabase.co', webUrl: 'https://taskmate-rho-nine.vercel.app', vapidPublicKey: 'KEY' };
@@ -31,7 +31,7 @@ describe('diagnostic de production', () => {
 
   it('les listes attendues couvrent exactement les types générés (garde de compilation) et les tables Realtime', () => {
     expect(COMPLETENESS).toBe(true);
-    expect(EDGE_FUNCTIONS).toEqual(['child-login', 'create-child', 'reset-child-password', 'delete-child', 'delete-account', 'send-push', 'generate-questions']);
+    expect(EDGE_FUNCTIONS).toEqual(['child-login', 'create-child', 'reset-child-password', 'delete-child', 'delete-account', 'send-push', 'generate-questions', 'generate-avatar']);
   });
 
   it('IA : configurée (usage du jour), non configurée (secret absent), inconnue', () => {
@@ -83,7 +83,7 @@ describe('diagnostic de production', () => {
 
   it('Realtime, Edge Functions et Web Push', () => {
     const items = evaluateHealth(
-      { ...healthy, realtime: 'TIMED_OUT', functions: { 'child-login': true, 'create-child': false, 'reset-child-password': true, 'delete-child': true, 'delete-account': null, 'send-push': true, 'generate-questions': true } },
+      { ...healthy, realtime: 'TIMED_OUT', functions: { 'child-login': true, 'create-child': false, 'reset-child-password': true, 'delete-child': true, 'delete-account': null, 'send-push': true, 'generate-questions': true, 'generate-avatar': true } },
       { ...env, vapidPublicKey: '', webUrl: '' },
     );
     expect(find(items, 'realtime')).toMatchObject({ status: 'fail', params: { status: 'TIMED_OUT' } });

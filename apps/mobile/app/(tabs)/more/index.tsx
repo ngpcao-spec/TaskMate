@@ -1,7 +1,8 @@
 import { useRouter } from 'expo-router';
-import { Bell, BookOpen, Check, ChevronRight, ListChecks, Plus, Settings, Star, Target } from 'lucide-react-native';
+import { Bell, BookOpen, Camera, Check, ChevronRight, ListChecks, Plus, Settings, Star, Target } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Avatar } from '@/components/Avatar';
 import { GlassTile } from '@/components/GlassTile';
 import { Card, Screen, ScreenHeader } from '@/components/ui';
 import { ageFromBirthDate } from '@/domain/age';
@@ -10,7 +11,7 @@ import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { childColor } from '@/theme/childColor';
 import { colors, MIN_TARGET, radius, shadow, shadowSmall, typography, line } from '@/theme/tokens';
 
-type Href = '/more/tasks' | '/more/goals' | '/more/revisions' | '/more/points' | '/more/notification-settings' | '/more/settings';
+type Href = '/more/avatar' | '/more/tasks' | '/more/goals' | '/more/revisions' | '/more/points' | '/more/notification-settings' | '/more/settings';
 
 /** Hồ sơ : cartes des enfants (parent) / sa carte + celle du frère (enfant) et menu (SPEC §3.5). */
 export default function ProfileScreen() {
@@ -22,6 +23,7 @@ export default function ProfileScreen() {
   const menu: { key: string; label: string; href: Href; icon: typeof Star; tint?: string }[] = [
     { key: 'tasks', label: t('profile.tasks'), href: '/more/tasks', icon: ListChecks },
     { key: 'goals', label: t('profile.goals'), href: '/more/goals', icon: Target },
+    { key: 'avatar', label: t('profile.avatar'), href: '/more/avatar', icon: Camera },
     { key: 'revisions', label: t('profile.revisions'), href: '/more/revisions', icon: BookOpen },
     { key: 'points', label: t('profile.points'), href: '/more/points', icon: Star, tint: colors.warning },
     { key: 'notifications', label: t('profile.notifications'), href: '/more/notification-settings', icon: Bell },
@@ -44,8 +46,8 @@ export default function ProfileScreen() {
                   <Check size={14} color={colors.onPrimary} strokeWidth={3} />
                 </View>
               ) : null}
-              <View style={[styles.avatar, { backgroundColor: color }]}>
-                <Text style={styles.avatarText}>{c.name.slice(0, 1).toUpperCase()}</Text>
+              <View style={styles.avatarGap}>
+                <Avatar childId={c.id} name={c.name} color={c.color} size={64} />
               </View>
               <Text style={[styles.childName, isParent && active && styles.onNavy]}>{c.name}</Text>
               <Text style={[typography.secondary, isParent && active && styles.onNavySecondary]}>{age}</Text>
@@ -104,8 +106,7 @@ const styles = StyleSheet.create({
   childCard: { flexGrow: 1, flexBasis: 140, alignItems: 'center', gap: 4, paddingVertical: 16, borderRadius: radius.card, borderWidth: line.width, borderColor: colors.glassBorder, backgroundColor: colors.card, minHeight: 140, ...shadow },
   childCardActive: { backgroundColor: colors.navy, borderColor: colors.navyBorder },
   checkBadge: { position: 'absolute', top: 10, right: 10, width: 24, height: 24, borderRadius: 12, borderWidth: line.width, borderColor: colors.ring, alignItems: 'center', justifyContent: 'center' },
-  avatar: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', marginBottom: 4, borderWidth: line.width, borderColor: colors.ring, ...shadowSmall },
-  avatarText: { color: colors.onPrimary, fontSize: 26, fontWeight: '700' },
+  avatarGap: { marginBottom: 4 },
   childName: { fontSize: 18, fontWeight: '700', color: colors.text },
   onNavy: { color: colors.onNavy },
   onNavySecondary: { color: colors.onNavySecondary },
