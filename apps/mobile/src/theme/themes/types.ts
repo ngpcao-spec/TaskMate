@@ -1,8 +1,8 @@
 /** Un thème = un jeu COMPLET de jetons. Ajouter un thème : un fichier ici + une entrée dans `THEMES` ; `theme/themes.test` impose les mêmes clés et des contrastes lisibles. */
-export type ThemeId = 'glass' | 'kawaii' | 'cosmos';
+export type ThemeId = 'glass' | 'kawaii' | 'cosmos' | 'teddy';
 
 /** Famille de décors illustrés : aucun, chiens et damier (kawaii), astronautes et étoiles (cosmos). */
-export type DecorKind = 'none' | 'kawaii' | 'cosmos';
+export type DecorKind = 'none' | 'kawaii' | 'cosmos' | 'teddy';
 
 export type ThemeColors = {
   /** Fond des boutons et accents (texte `onPrimary` dessus). */
