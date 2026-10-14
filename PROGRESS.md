@@ -173,3 +173,6 @@ PR [#17](https://github.com/ngpcao-spec/TaskMate/pull/17) (fusion `9b1563e`) : t
 - Supabase : aucune migration ni fonction nouvelle ; migrations jusqu'à `…000019` inchangées.
 - Reste : les couleurs de l'enveloppe web (fond du `body`, `theme-color`, manifeste PWA, contour de focus) étaient encore bleues dans `9b1563e` ; corrigées dans la PR suivante (voir ci-dessous). Les icônes PNG de l'app (icône, splash natif) sont encore celles d'avant (HUMAN_TODO « assets »).
 - Non vérifié : rendu sur appareil réel iOS / Android (ombres internes, dégradés SVG).
+
+## Notifications push : chaîne de production (D-065) — 2026-10-14
+Constaté avant : 0 déclencheur sur `activity_log`, 0 appareil enregistré, pas de clé VAPID sur Vercel. Fait (lecture/écriture vérifiées par l'API Supabase/Vercel) : `pg_net` activé, fonction `push_on_activity` + déclencheur `activity_log_push`, secrets `push_webhook_url` / `push_webhook_secret` dans le Vault, variable Vercel `EXPO_PUBLIC_VAPID_PUBLIC_KEY`, production redéployée. Reste à faire par l'humain : saisir les 4 secrets de la fonction `send-push` (HUMAN_TODO § 7), puis activer les notifications depuis l'app installée sur chaque iPhone. Migration `…000020` et test pgTAP 24 dans la PR à venir.
