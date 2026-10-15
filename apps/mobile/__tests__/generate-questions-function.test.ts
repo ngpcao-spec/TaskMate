@@ -879,3 +879,98 @@ describe('supports multiples — résultat renvoyé au parent', () => {
   });
 });
 
+
+describe('QCM déjà rédigés dans le fichier (D-079) : reprise FIDÈLE, rien d\'inventé', () => {
+  // fichier au format « Question 1 … A B C D … Réponse : B » (+ explication) : l'IA (simulée) le recopie ; la fonction doit tout conserver
+  const readyMade = (n: number, qOver: (i: number) => Partial<AiQuestion> = () => ({})) =>
+    JSON.stringify({
+      detected_kind: 'exam', kind_unsure: false, title: 'QCM de géographie', qcm_found: n, ignored: [],
+      questions: Array.from({ length: n }, (_, i) =>
+        aiQuestion(i, { number: i + 1, prompt: `Texte exact de la question ${i + 1}`, choices: [`A${i}`, `B${i}`, `C${i}`, `D${i}`], correct_index: (i + 1) % 4, explanation: `Explication du fichier ${i + 1}`, answer_source: 'document_key', ...qOver(i) })),
+    });
+
+  it('la consigne impose la reprise fidèle pour TOUS les types (jamais d\'invention) et la lecture de la réponse / de l\'explication imprimées', () => {
+    for (const k of ['auto', ...KINDS] as const) {
+      const sys = systemPrompt(k);
+      expect(sys).toContain('READY-MADE QUESTIONS');
+      expect(sys).toMatch(/never invent, replace, reword or add questions/);
+      expect(sys).toMatch(/explanation copied verbatim/);
+      expect(sys).toMatch(/at most the allowed number/);
+    }
+    expect(KIND_RULES.exam).toContain('READY-MADE ANSWERS');
+    expect(KIND_RULES.exam).toContain('"Réponse : B"');
+    expect(KIND_RULES.exam).toMatch(/number them 1, 2, 3/); // un fichier sans numéros imprimés : numérotés dans l'ordre
+    expect(KIND_RULES.exam).toMatch(/the parent confirms the answers afterwards/);
+  });
+
+  it('la détection reconnaît une feuille de QCM toute faite, avec ou sans ses réponses imprimées', () => {
+    expect(systemPrompt('auto')).toMatch(/ready-made multiple-choice sheet — with or without its answers printed/);
+  });
+
+  it('les questions, choix, réponses et explications du fichier sont conservés tels quels (type « examen » détecté, numéros d\'origine)', async () => {
+    const { deps, calls } = makeDeps({ reply: ok(readyMade(5)) });
+    const out = await handleGenerate(deps, body());
+    expect(out.status).toBe(200);
+    expect(out.body).toMatchObject({ kind: 'exam', kind_detected: true, count: 5, found: 5, capped: false });
+    const saved = savedQuestions(calls);
+    expect(saved.map((q) => q.prompt)).toEqual([1, 2, 3, 4, 5].map((n) => `Texte exact de la question ${n}`)); // aucune question ajoutée ni retirée
+    expect(saved.map((q) => q.number)).toEqual([1, 2, 3, 4, 5]);
+    expect(saved.map((q) => q.correct)).toEqual([1, 2, 3, 0, 1]); // réponses reprises du fichier
+    expect(saved.map((q) => q.explanation)).toEqual([1, 2, 3, 4, 5].map((n) => `Explication du fichier ${n}`)); // explications reprises
+    expect(saved.every((q) => q.choices.length === 4)).toBe(true);
+    expect(saved.some((q) => q.toVerify)).toBe(false); // réponse LUE dans le fichier : pas « à vérifier »… (le parent la confirme quand même, règle des examens en base)
+    expect(savedKind(calls)).toEqual({ kind: 'exam', detected: true, replace: false });
+  });
+
+  it('une question qui renvoie à une figure ou à une carte est marquée « voir la feuille » ET « à vérifier », même si le fichier donne la réponse', async () => {
+    const { deps, calls } = makeDeps({ reply: ok(readyMade(3, (i) => (i === 1 ? { depends_on_figure: true } : {}))) });
+    const out = await handleGenerate(deps, body());
+    expect(out.status).toBe(200);
+    const saved = savedQuestions(calls);
+    expect(saved.map((q) => q.needsFigure)).toEqual([false, true, false]);
+    expect(saved.map((q) => q.toVerify)).toEqual([false, true, false]);
+    expect(out.body).toMatchObject({ figure_count: 1 });
+  });
+
+  it('fichier sans réponse imprimée : suggestion de l\'IA, « à vérifier » si elle hésite', async () => {
+    const { deps, calls } = makeDeps({ reply: ok(readyMade(2, (i) => ({ answer_source: i === 0 ? 'suggested' : 'unknown', explanation: null }))) });
+    await handleGenerate(deps, body());
+    const saved = savedQuestions(calls);
+    expect(saved.map((q) => q.toVerify)).toEqual([false, true]);
+    expect(saved.map((q) => q.explanation)).toEqual([null, null]);
+  });
+
+  it('jusqu\'à 30 questions reprises ; au-delà, le parent est PRÉVENU (jamais de troncature silencieuse)', async () => {
+    const { deps, calls } = makeDeps({ reply: ok(readyMade(30)) });
+    const out = await handleGenerate(deps, body());
+    expect(out.body).toMatchObject({ count: 30, found: 30, capped: false });
+    expect(savedQuestions(calls)).toHaveLength(30);
+    const over = makeDeps({ reply: ok(readyMade(34, () => ({}))) });
+    const out34 = await handleGenerate(over.deps, body());
+    expect(out34.body).toMatchObject({ count: 30, found: 34, capped: true, cap: 30 });
+    expect(savedQuestions(over.calls).map((q) => q.number)).toEqual(range(1, 30));
+  });
+
+  it('fichier sans numéros imprimés : l\'IA les numérote 1…N dans l\'ordre, le type « examen » est conservé (donc réponses à confirmer)', async () => {
+    const json = readyMade(3);
+    const { deps, calls } = makeDeps({ reply: ok(json) });
+    const out = await handleGenerate(deps, body());
+    expect(out.body).toMatchObject({ kind: 'exam', kind_doubt: false });
+    expect(savedQuestions(calls).map((q) => q.number)).toEqual([1, 2, 3]);
+  });
+
+  it('un fichier de QCM traité en « cours » (type choisi par le parent) reprend aussi les questions telles quelles, sans numéro', async () => {
+    const { deps, calls } = makeDeps({ reply: ok(readyMade(2, () => ({ number: null }))) });
+    const out = await handleGenerate(deps, body({ kind: 'course' }));
+    expect(out.status).toBe(200);
+    expect((calls.ai[0] as AiRequest).system).toContain('READY-MADE QUESTIONS');
+    expect(savedQuestions(calls).map((q) => q.prompt)).toEqual(['Texte exact de la question 1', 'Texte exact de la question 2']);
+    expect(savedQuestions(calls).map((q) => q.number)).toEqual([null, null]);
+  });
+
+  it('rien d\'inventé côté serveur : le nombre de questions enregistrées est celui du fichier, jamais complété', async () => {
+    const { deps, calls } = makeDeps({ reply: ok(readyMade(4)) });
+    await handleGenerate(deps, body({ count: 10 }));
+    expect(savedQuestions(calls)).toHaveLength(4);
+  });
+});

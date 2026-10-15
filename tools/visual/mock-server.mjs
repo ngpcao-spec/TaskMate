@@ -33,6 +33,8 @@ function query(table, params) {
 }
 
 function rpc(name, body) {
+  if (name === 'quiz_progress_counts') return data.progressCounts;
+  if (name === 'child_quiz_sets') return data.childQuizSets;
   const now = new Date().toISOString();
   const t = data.tasks.find((x) => x.id === (body.p_task_id ?? ''));
   if (name === 'complete_task' && t && !t.completed_at) { t.completed_at = now; }

@@ -34,6 +34,11 @@ export function formatDayTitle(date: string, lang: CalendarLanguage): string {
   return lang === 'vi' ? title.replace(/tháng 0(\d)/, 'tháng $1') : title;
 }
 
+/** Jour d'une date limite (« dimanche 26/10 ») : le jour de la semaine découle de la date (date-fns), jamais d'un texte en dur. */
+export function formatDueDay(date: string, lang: CalendarLanguage): string {
+  return format(parseISO(date), 'EEEE dd/MM', { locale: LOCALES[lang] });
+}
+
 /** Étiquette de colonne : T2…T7, CN en vietnamien. */
 export function formatWeekdayLabel(date: string, lang: CalendarLanguage): string {
   return format(parseISO(date), lang === 'vi' ? 'EEEEE' : 'EEEEEE', { locale: LOCALES[lang] });

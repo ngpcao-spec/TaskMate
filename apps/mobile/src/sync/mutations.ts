@@ -12,8 +12,9 @@ import {
   type NewTask,
   type TaskPatch,
 } from '@/api/tasks';
-import { createQuizSet, startQuizEvaluation, submitQuizEvaluation, validateQuizAttempt, type NewQuizSet } from '@/api/quizzes';
+import { createQuizSet, saveQuizProgress, startQuizEvaluation, submitQuizEvaluation, validateQuizAttempt, type NewQuizSet } from '@/api/quizzes';
 import { isTransientError } from '@/domain/errors';
+import { quizErrorKey } from '@/domain/quiz';
 import { dateInRange, optimisticTask } from '@/domain/optimistic-task';
 import { optimisticToggle } from '@/domain/task-state';
 import i18n from '@/i18n';
@@ -30,6 +31,7 @@ export const mutationKeys = {
   rejectTask: ['rejectTask'] as const,
   createQuizSet: ['createQuizSet'] as const,
   startQuizEvaluation: ['startQuizEvaluation'] as const,
+  saveQuizProgress: ['saveQuizProgress'] as const,
   submitQuizEvaluation: ['submitQuizEvaluation'] as const,
   validateQuizAttempt: ['validateQuizAttempt'] as const,
 };
@@ -43,6 +45,8 @@ export type UpdateVars = { task: TaskRow; patch: TaskPatch };
 /** Révisions (D-055) : écritures mises en file hors ligne ; les ids sont fixés à la création → rejeu idempotent côté RPC. */
 export type CreateQuizSetVars = NewQuizSet;
 export type StartEvaluationVars = { setId: string; attemptId: string };
+/** Une réponse (position AFFICHÉE ; null = effacée) : écriture idempotente, enregistrée au fil de l'eau avant l'envoi final. */
+export type SaveProgressVars = { attemptId: string; questionId: string; choice: number | null };
 export type SubmitEvaluationVars = { attemptId: string; answers: { question_id: string; choice: number | null }[] };
 export type ValidateAttemptVars = { attemptId: string; showCorrection?: boolean };
 type SnapshotCtx = { snapshot?: ReturnType<typeof snapshotTasks> };
@@ -218,6 +222,12 @@ export function registerMutationDefaults(
     mutationFn: ({ setId, attemptId }: StartEvaluationVars) => startQuizEvaluation(setId, attemptId),
     onError: () => toast(i18n.t('common.error'), 'error'),
     onSettled: refreshQuiz,
+  });
+  // Pas de rafraîchissement global à chaque réponse (une écriture par tap) ; refus du serveur (tentative envoyée…) : message précis
+  queryClient.setMutationDefaults(mutationKeys.saveQuizProgress, {
+    ...common,
+    mutationFn: ({ attemptId, questionId, choice }: SaveProgressVars) => saveQuizProgress(attemptId, questionId, choice),
+    onError: (error: unknown) => toast(i18n.t(quizErrorKey(serverErrorCode(error))), 'error'),
   });
   queryClient.setMutationDefaults(mutationKeys.submitQuizEvaluation, {
     ...common,

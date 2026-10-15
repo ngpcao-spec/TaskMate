@@ -3,12 +3,15 @@ import { ChevronRight, FileUp, Plus } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ProfilePills } from '@/components/ProfilePills';
+import { DueLabel } from '@/components/quiz/DueLabel';
 import { ScoreHistory } from '@/components/quiz/ScoreHistory';
+import { weekStatusLabel, WeekStatusBadge } from '@/components/quiz/WeekStatus';
 import { Card, Screen, ScreenHeader } from '@/components/ui';
 import { todayInTz } from '@/domain/family-time';
 import { historySeries } from '@/domain/quiz';
+import { quizWeekStatus } from '@/domain/quiz-week';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
-import { useChildAttempts, usePendingQuizAttempts, useQuizSets } from '@/hooks/useQuizzes';
+import { useChildAttempts, usePendingQuizAttempts, useQuizProgressCounts, useQuizSets } from '@/hooks/useQuizzes';
 import { colors, MIN_TARGET, typography } from '@/theme/tokens';
 
 /** Plus → Révisions (parent) : les jeux de l'enfant sélectionné, ses évaluations à valider et sa progression. */
@@ -20,6 +23,7 @@ export function ParentRevisions() {
   const sets = useQuizSets(childId, childId !== null);
   const pending = usePendingQuizAttempts(true);
   const attempts = useChildAttempts(childId);
+  const counts = useQuizProgressCounts(childId !== null);
   if (!d || !d.child) return null;
   const today = todayInTz(new Date(), d.me.family.timezone);
   const list = sets.data ?? [];
@@ -50,11 +54,17 @@ export function ParentRevisions() {
       {list.map((s) => {
         const state = s.status === 'published' ? t('revisions.published') : t('revisions.draft');
         const count = t('revisions.questionCount', { count: s.question_count });
+        // statut de la semaine : seulement pour un quiz publié (dernière tentative de CET enfant sur ce quiz) ; information, jamais bloquante
+        const latest = s.status === 'published' ? (attempts.data ?? []).find((a) => a.set_id === s.id) : undefined;
+        const week = s.status === 'published' ? quizWeekStatus({ dueOn: s.due_on, today, attemptStatus: latest?.status ?? null, answered: latest ? (counts.data ?? []).find((c) => c.attempt_id === latest.id)?.answered ?? 0 : 0, total: s.question_count }) : null;
+        const weekText = week ? weekStatusLabel(t, week) : null;
         return (
-          <Pressable key={s.id} accessibilityRole="button" accessibilityLabel={`${s.title}, ${state}, ${count}`} onPress={() => router.push({ pathname: '/quiz/[id]', params: { id: s.id } })} style={styles.card}>
+          <Pressable key={s.id} accessibilityRole="button" accessibilityLabel={[s.title, state, count, weekText].filter(Boolean).join(', ')} onPress={() => router.push({ pathname: '/quiz/[id]', params: { id: s.id } })} style={styles.card}>
             <View style={styles.flex}>
               <Text style={styles.rowTitle}>{s.title}</Text>
               <Text style={typography.secondary}>{[s.subject, count].filter(Boolean).join(' · ')}</Text>
+              <DueLabel dueOn={s.due_on} />
+              {week && weekText ? <WeekStatusBadge label={weekText} late={week.late} /> : null}
             </View>
             <Text style={[styles.badge, s.status === 'published' ? styles.badgeOn : null]}>{state}</Text>
             <ChevronRight color={colors.textSecondary} />
@@ -77,7 +87,7 @@ export function ParentRevisions() {
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
+  flex: { flex: 1, gap: 4, alignItems: 'flex-start' },
   section: { fontSize: 16, fontWeight: '700', color: colors.text },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: MIN_TARGET },
   card: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: MIN_TARGET + 16, backgroundColor: colors.card, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 10 },

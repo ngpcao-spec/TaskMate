@@ -40,6 +40,8 @@ const screens = [
   ['09-file-a-approuver', '/approvals', true],
   ['10-reglages', '/more/settings', true],
   ['11-avatar', '/more/avatar', true],
+  ['12-revisions', '/more/revisions', true],
+  ['13-quiz-editor', '/quiz/00000000-0000-0000-0000-000000000701', true],
 ];
 
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM ?? undefined, args: ['--no-sandbox'] });

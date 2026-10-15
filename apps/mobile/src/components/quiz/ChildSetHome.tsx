@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet, Text } from 'react-native';
+import { DueLabel } from '@/components/quiz/DueLabel';
 import { ScoreHistory } from '@/components/quiz/ScoreHistory';
 import { Button, Card, Screen, ScreenHeader } from '@/components/ui';
 import { evaluationView, historySeries } from '@/domain/quiz';
@@ -25,6 +26,8 @@ export function ChildSetHome({ setId }: { setId: string }) {
     <Screen>
       <ScreenHeader title={info.title} />
       <Text style={typography.secondary}>{[info.subject, t('revisions.questionCount', { count: info.question_count })].filter(Boolean).join(' · ')}</Text>
+      {view === 'todo' || view === 'in_progress' ? <DueLabel dueOn={info.due_on} /> : null}
+      {view === 'in_progress' ? <Text accessibilityLiveRegion="polite" style={typography.secondary}>{t('revisions.week.answered', { done: info.answered_count, total: info.question_count })}</Text> : null}
 
       {view === 'todo' ? <Button label={t('revisions.child.evaluate')} onPress={() => router.push({ pathname: '/quiz/evaluate/[id]', params: { id: setId } })} /> : null}
       {view === 'in_progress' ? <Button label={t('revisions.child.resume')} onPress={() => router.push({ pathname: '/quiz/evaluate/[id]', params: { id: setId } })} /> : null}

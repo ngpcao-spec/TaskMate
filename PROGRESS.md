@@ -229,3 +229,6 @@ Thème de navigation d'expo-router aux couleurs du thème actif (fin du gris `rg
 
 ### Écrans d'onglets : plus de bande vide au-dessus de la barre (D-078) — 2026-10-14
 Plus de marge de sécurité du bas en double (liste jusqu'à la barre sur tous les onglets) ; marge ajoutée de D-074 retirée. Mesuré en Chromium avec marges de sécurité émulées. Jest : `bottom-bar-edges`. À confirmer sur l'iPhone.
+
+### Quiz de la semaine (D-079) — 2026-10-15
+Progression de l'enfant enregistrée au fil de l'eau (table fermée + RPC, file hors ligne) et reprise sur tout appareil ; date limite en jour local (dimanche suivant proposé, jamais bloquante) avec statut parent (Chưa bắt đầu / Đang làm n/N / Đã nộp / Quá hạn) ; import fidèle d'un QCM déjà rédigé. PR ouverte, NON fusionnée (exception à D-068 demandée par Teo : fusion sur son autorisation explicite).
