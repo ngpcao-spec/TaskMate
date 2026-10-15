@@ -472,6 +472,49 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"quiz_attempt_progress": {
+                  Row: {
+                    "attempt_id": string,"child_id": string,"choice": number,"family_id": string,"question_id": string,"saved_at": string
+                  }
+                  Insert: {
+                    "attempt_id": string,"child_id": string,"choice": number,"family_id": string,"question_id": string,"saved_at"?: string
+                  }
+                  Update: {
+                    "attempt_id"?: string,"child_id"?: string,"choice"?: number,"family_id"?: string,"question_id"?: string,"saved_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "quiz_attempt_progress_attempt_id_fkey"
+      columns: ["attempt_id"]
+isOneToOne: false
+      referencedRelation: "quiz_attempts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quiz_attempt_progress_child_id_family_id_fkey"
+      columns: ["child_id","family_id"]
+isOneToOne: false
+      referencedRelation: "child_balances"
+      referencedColumns: ["child_id","family_id"]
+    },{
+      foreignKeyName: "quiz_attempt_progress_child_id_family_id_fkey"
+      columns: ["child_id","family_id"]
+isOneToOne: false
+      referencedRelation: "children"
+      referencedColumns: ["id","family_id"]
+    },{
+      foreignKeyName: "quiz_attempt_progress_family_id_fkey"
+      columns: ["family_id"]
+isOneToOne: false
+      referencedRelation: "families"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quiz_attempt_progress_question_id_fkey"
+      columns: ["question_id"]
+isOneToOne: false
+      referencedRelation: "quiz_questions"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"quiz_attempts": {
                   Row: {
                     "child_id": string,"created_at": string,"family_id": string,"id": string,"relaunched_by": string | null,"set_id": string,"show_correction": boolean,"started_at": string,"status": Database["public"]['Enums']["quiz_attempt_status"],"submitted_at": string | null,"updated_at": string,"validated_at": string | null,"validated_by": string | null
@@ -567,13 +610,13 @@ isOneToOne: false
                   ]
                 },"quiz_sets": {
                   Row: {
-                    "answer_sheet_only": boolean,"child_id": string,"created_at": string,"created_by": string,"deleted_at": string | null,"family_id": string,"id": string,"kind_detected": boolean,"material_kind": Database["public"]['Enums']["quiz_material_kind"],"paper_support": boolean,"status": Database["public"]['Enums']["quiz_status"],"subject": string | null,"title": string,"updated_at": string
+                    "answer_sheet_only": boolean,"child_id": string,"created_at": string,"created_by": string,"deleted_at": string | null,"due_on": string | null,"family_id": string,"id": string,"kind_detected": boolean,"material_kind": Database["public"]['Enums']["quiz_material_kind"],"paper_support": boolean,"status": Database["public"]['Enums']["quiz_status"],"subject": string | null,"title": string,"updated_at": string
                   }
                   Insert: {
-                    "answer_sheet_only"?: boolean,"child_id": string,"created_at"?: string,"created_by": string,"deleted_at"?: string | null,"family_id": string,"id"?: string,"kind_detected"?: boolean,"material_kind"?: Database["public"]['Enums']["quiz_material_kind"],"paper_support"?: boolean,"status"?: Database["public"]['Enums']["quiz_status"],"subject"?: string | null,"title": string,"updated_at"?: string
+                    "answer_sheet_only"?: boolean,"child_id": string,"created_at"?: string,"created_by": string,"deleted_at"?: string | null,"due_on"?: string | null,"family_id": string,"id"?: string,"kind_detected"?: boolean,"material_kind"?: Database["public"]['Enums']["quiz_material_kind"],"paper_support"?: boolean,"status"?: Database["public"]['Enums']["quiz_status"],"subject"?: string | null,"title": string,"updated_at"?: string
                   }
                   Update: {
-                    "answer_sheet_only"?: boolean,"child_id"?: string,"created_at"?: string,"created_by"?: string,"deleted_at"?: string | null,"family_id"?: string,"id"?: string,"kind_detected"?: boolean,"material_kind"?: Database["public"]['Enums']["quiz_material_kind"],"paper_support"?: boolean,"status"?: Database["public"]['Enums']["quiz_status"],"subject"?: string | null,"title"?: string,"updated_at"?: string
+                    "answer_sheet_only"?: boolean,"child_id"?: string,"created_at"?: string,"created_by"?: string,"deleted_at"?: string | null,"due_on"?: string | null,"family_id"?: string,"id"?: string,"kind_detected"?: boolean,"material_kind"?: Database["public"]['Enums']["quiz_material_kind"],"paper_support"?: boolean,"status"?: Database["public"]['Enums']["quiz_status"],"subject"?: string | null,"title"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -881,6 +924,11 @@ isOneToOne: false
               "attempt_id": string,"score": number,"total": number,"validated_at": string
             }[]
                            },
+"child_quiz_progress":
+{ Args: { "p_attempt": string }; Returns: {
+              "choice": number,"question_id": string
+            }[]
+                           },
 "child_quiz_questions":
 { Args: { "p_attempt": string }; Returns: {
               "choices": (string)[],"needs_figure": boolean,"origin_number": number,"position": number,"prompt": string,"question_id": string
@@ -891,7 +939,7 @@ isOneToOne: false
                            },
 "child_quiz_sets":
 { Args: Record<PropertyKey, never>; Returns: {
-              "answer_sheet_only": boolean,"can_start_evaluation": boolean,"evaluation_attempt_id": string,"evaluation_status": Database["public"]['Enums']["quiz_attempt_status"],"paper_support": boolean,"question_count": number,"set_id": string,"subject": string,"title": string
+              "answer_sheet_only": boolean,"answered_count": number,"can_start_evaluation": boolean,"due_on": string,"evaluation_attempt_id": string,"evaluation_status": Database["public"]['Enums']["quiz_attempt_status"],"paper_support": boolean,"question_count": number,"set_id": string,"subject": string,"title": string
             }[]
                            },
 "child_reserved":
@@ -1004,6 +1052,11 @@ isOneToOne: false
 "quiz_new_attempt":
 { Args: { "p_attempt": string,"p_relaunched_by": string,"p_set": Database["public"]['Tables']["quiz_sets"]['Row'] }; Returns: undefined
                            },
+"quiz_progress_counts":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "answered": number,"attempt_id": string
+            }[]
+                           },
 "quiz_require_child":
 { Args: Record<PropertyKey, never>; Returns: {
               "child_id": string | null,
@@ -1100,6 +1153,9 @@ isOneToOne: false
 "revoke_parent_invite":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
+"save_quiz_progress":
+{ Args: { "p_attempt": string,"p_choice": number,"p_question": string }; Returns: undefined
+                           },
 "schedule_cron_jobs":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
@@ -1111,6 +1167,9 @@ isOneToOne: false
                            },
 "set_push_locale":
 { Args: { "p_locale": string }; Returns: undefined
+                           },
+"set_quiz_due_on":
+{ Args: { "p_due": string,"p_set": string }; Returns: undefined
                            },
 "set_quiz_material_kind":
 { Args: { "p_kind": Database["public"]['Enums']["quiz_material_kind"],"p_set": string }; Returns: undefined
