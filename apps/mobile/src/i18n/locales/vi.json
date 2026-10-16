@@ -384,7 +384,8 @@
       "attemptClosed": "Bài này đã kết thúc",
       "notSubmitted": "Bài chưa được nộp",
       "answersToVerify": "Còn đáp án cần kiểm tra: hãy xác nhận trước khi đăng",
-      "answersNotConfirmed": "Hãy xác nhận từng đáp án của đề trước khi đăng"
+      "answersNotConfirmed": "Hãy xác nhận từng đáp án của đề trước khi đăng",
+      "invalidDueDate": "Hạn chót này không hợp lệ."
     },
     "import": {
       "entry": "Tạo từ tài liệu",
@@ -548,6 +549,30 @@
       "paper": "Đề giấy, có câu hỏi trên màn hình",
       "sheet": "Chỉ phiếu trả lời (số câu và A–D)",
       "hint": "Dùng khi con đọc đề trên giấy: các câu theo số câu của đề, các đáp án giữ nguyên A–D (không đảo thứ tự)."
+    },
+    "week": {
+      "dueChild": "Hoàn thành trước {{day}}",
+      "duePast": "Đã quá hạn ({{day}}) — con vẫn có thể làm tiếp",
+      "dueParent": "Hoàn thành trước {{day}}",
+      "noDue": "Không có hạn chót",
+      "answered": "Đã trả lời {{done}}/{{total}} câu",
+      "due": {
+        "title": "Hạn chót",
+        "hint": "Ngày bài kiểm tra cần làm xong (mặc định là Chủ nhật tới). Con vẫn có thể làm nốt sau ngày này.",
+        "field": "Hạn chót của bài kiểm tra",
+        "proposed": "Ngày gợi ý: Chủ nhật tới.",
+        "save": "Lưu hạn chót",
+        "clear": "Bỏ hạn chót",
+        "saved": "Đã lưu hạn chót."
+      },
+      "state": {
+        "not_started": "Chưa bắt đầu",
+        "in_progress": "Đang làm ({{done}}/{{total}})",
+        "submitted": "Đã nộp",
+        "late": "Quá hạn",
+        "lateProgress": "Quá hạn ({{done}}/{{total}})",
+        "validated": "Đã duyệt"
+      }
     }
   },
   "sync": {

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { accessTokenOf, createFamily, createGoogleParent, directSignIn, internalEmailOf, resetAttempts, revokeChildMembers, serviceClient, seedTask, taskChildId, serverState, signInContext, supabaseUrl } from './support/seed';
+import { accessTokenOf, createFamily, createGoogleParent, directSignIn, internalEmailOf, resetAttempts, revokeChildMembers, serviceClient, seedTask, taskChildId, serverState, signInContext, supabaseUrl, todayVn } from './support/seed';
 
 const title = (label: string) => `${label} ${Math.random().toString(36).slice(2, 7)}`;
 
@@ -648,6 +648,84 @@ test.describe('révisions (D-055)', () => {
     const [chooser2] = await Promise.all([page.waitForEvent('filechooser'), page.getByRole('button', { name: 'Chọn PDF hoặc Word', exact: true }).click()]);
     await chooser2.setFiles({ name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('bonjour') });
     await expect(page.getByText(/Loại tệp không được hỗ trợ/)).toBeVisible();
+  });
+
+  test('quiz de la semaine : l\'enfant répond à quelques questions, quitte, revient (même appareil ou un autre) et retrouve ses réponses ; date limite ; progression vue du parent', async ({ browser }) => {
+    test.setTimeout(240_000);
+    const family = await createFamily();
+    const setId = crypto.randomUUID();
+    const db = serviceClient();
+    const setTitle = title('Quiz tuần');
+    await seedDraft(family.familyId, family.minh.childId as string, family.parent.memberId as string, setId, setTitle, {
+      kind: 'course',
+      rows: [
+        { prompt: 'Thủ đô Việt Nam?', choices: ['Hà Nội', 'Huế', 'Đà Nẵng'], correct: 0 },
+        { prompt: 'Sông dài nhất?', choices: ['Sông Hồng', 'Sông Mê Kông', 'Sông Đà'], correct: 1 },
+        { prompt: 'Đại dương lớn nhất?', choices: ['Thái Bình Dương', 'Đại Tây Dương', 'Ấn Độ Dương'], correct: 0 },
+      ],
+    });
+    // date limite = jour LOCAL de la famille + 2 (jamais dérivée de l'UTC)
+    const due = new Date(`${todayVn()}T00:00:00Z`);
+    due.setUTCDate(due.getUTCDate() + 2);
+    await db.from('quiz_sets').update({ status: 'published', due_on: due.toISOString().slice(0, 10) }).eq('id', setId);
+    const progressCount = async () => (await db.from('quiz_attempt_progress').select('question_id', { count: 'exact', head: true }).eq('family_id', family.familyId)).count;
+
+    // 1. l'enfant voit la date limite, commence et répond à 2 questions sur 3
+    const childCtx = await browser.newContext();
+    await signInContext(childCtx, family.minh);
+    const child = await childCtx.newPage();
+    trace(child, 'enfant-semaine');
+    await open(child, '/more/revisions');
+    await expect(child.getByText(/Hoàn thành trước/).filter({ visible: true }).first()).toBeVisible();
+    await child.getByRole('button', { name: new RegExp(setTitle) }).click();
+    await child.getByRole('button', { name: 'Làm bài kiểm tra' }).click();
+    await child.getByRole('radio', { name: 'Hà Nội', exact: true }).click();
+    await child.getByRole('radio', { name: 'Sông Mê Kông', exact: true }).click();
+    await expect(child.getByText('Đã trả lời 2/3 câu')).toBeVisible();
+    // les réponses sont enregistrées côté SERVEUR au fil de l'eau (sans envoi) et ne contiennent aucune correction
+    await expect.poll(progressCount).toBe(2);
+    expect((await db.from('quiz_attempts').select('status').eq('set_id', setId).single()).data?.status).toBe('in_progress');
+    expect((await db.from('quiz_results').select('attempt_id').eq('family_id', family.familyId)).data).toEqual([]);
+
+    // 2. il QUITTE l'écran, puis revient : la liste montre sa progression, l'écran restaure ses réponses
+    await open(child, '/');
+    await open(child, '/more/revisions');
+    await expect(child.getByText('Đã trả lời 2/3 câu').filter({ visible: true }).first()).toBeVisible();
+    await child.getByRole('button', { name: new RegExp(setTitle) }).click();
+    await expect(child.getByText(/Hoàn thành trước/).filter({ visible: true }).first()).toBeVisible();
+    await expect(child.getByText('Đã trả lời 2/3 câu').filter({ visible: true }).first()).toBeVisible();
+    await child.getByRole('button', { name: 'Làm tiếp bài kiểm tra' }).click();
+    await expect(child.getByRole('radio', { name: 'Hà Nội', exact: true })).toHaveAttribute('aria-checked', 'true');
+    await expect(child.getByRole('radio', { name: 'Sông Mê Kông', exact: true })).toHaveAttribute('aria-checked', 'true');
+    await expect(child.getByRole('radio', { name: 'Thái Bình Dương', exact: true })).toHaveAttribute('aria-checked', 'false');
+    await expect(child.getByText('Đúng rồi!')).toHaveCount(0); // jamais de retour juste/faux
+
+    // 3. AUTRE APPAREIL (nouveau contexte, même enfant) : les mêmes réponses sont restaurées
+    const otherCtx = await browser.newContext();
+    await signInContext(otherCtx, family.minh);
+    const other = await otherCtx.newPage();
+    await open(other, '/more/revisions');
+    await other.getByRole('button', { name: new RegExp(setTitle) }).click();
+    await other.getByRole('button', { name: 'Làm tiếp bài kiểm tra' }).click();
+    await expect(other.getByRole('radio', { name: 'Hà Nội', exact: true })).toHaveAttribute('aria-checked', 'true');
+    await expect(other.getByRole('radio', { name: 'Sông Mê Kông', exact: true })).toHaveAttribute('aria-checked', 'true');
+
+    // 4. le parent voit « Đang làm (2/3) » (un nombre, jamais le détail des réponses) et la date limite
+    const parentCtx = await browser.newContext();
+    await signInContext(parentCtx, family.parent);
+    const parent = await parentCtx.newPage();
+    await open(parent, '/more/revisions');
+    await expect(parent.getByText('Đang làm (2/3)').filter({ visible: true }).first()).toBeVisible();
+    await expect(parent.getByText(/Hoàn thành trước/).filter({ visible: true }).first()).toBeVisible();
+
+    // 5. l'enfant termine sur l'autre appareil et envoie : le score vient du serveur, la progression est effacée
+    await other.getByRole('radio', { name: 'Thái Bình Dương', exact: true }).click();
+    await other.getByRole('button', { name: 'Nộp bài' }).click();
+    await expect(other.getByRole('heading', { name: 'Đã nộp, chờ phụ huynh duyệt' }).filter({ visible: true }).first()).toBeVisible();
+    await expect.poll(async () => (await db.from('quiz_attempts').select('status').eq('set_id', setId).single()).data?.status).toBe('submitted');
+    const { data: attempt } = await db.from('quiz_attempts').select('id').eq('set_id', setId).single();
+    expect((await db.from('quiz_results').select('score, total').eq('attempt_id', attempt!.id).single()).data).toEqual({ score: 3, total: 3 });
+    expect(await progressCount()).toBe(0);
   });
 
   test('un enfant n\'a aucun accès aux écrans parent des révisions', async ({ browser }) => {

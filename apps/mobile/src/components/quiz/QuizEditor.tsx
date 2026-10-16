@@ -5,15 +5,18 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { newId } from '@/api/ids';
 import { Chip } from '@/components/Chip';
+import { PickerField } from '@/components/PickerField';
+import { weekStatusLabel, WeekStatusBadge } from '@/components/quiz/WeekStatus';
 import { Button, Card, Field, Screen, ScreenHeader } from '@/components/ui';
 import { MATERIAL_KINDS } from '@/domain/documents';
 import { formatShortDate } from '@/domain/calendar';
 import { todayInTz } from '@/domain/family-time';
 import { isExamSet, moveItem, PAPER_MODES, paperFlags, paperModeOf, publishBlockers, validateSetTitle } from '@/domain/quiz';
+import { defaultDueOn, quizWeekStatus } from '@/domain/quiz-week';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import {
-  useConfirmAnswers, useCopyQuizSet, useDeleteQuestion, useDeleteQuizSet, useParentQuestions, useQuizSet, useRelaunchEvaluation, useReorderQuestions, useSetAttempts, useSetMaterialKind, useSetPaperSupport,
-  useSetQuizStatus, useUpdateQuizSet,
+  useConfirmAnswers, useCopyQuizSet, useDeleteQuestion, useDeleteQuizSet, useParentQuestions, useQuizProgressCounts, useQuizSet, useRelaunchEvaluation, useReorderQuestions, useSetAttempts, useSetMaterialKind,
+  useSetPaperSupport, useSetQuizDueOn, useSetQuizStatus, useUpdateQuizSet,
 } from '@/hooks/useQuizzes';
 import { useToastStore } from '@/store/toast';
 import { colors, MIN_TARGET, typography } from '@/theme/tokens';
@@ -40,9 +43,13 @@ export function QuizEditor({ setId }: { setId: string }) {
   const confirm = useConfirmAnswers();
   const setKind = useSetMaterialKind();
   const setPaper = useSetPaperSupport();
+  const setDue = useSetQuizDueOn();
+  const counts = useQuizProgressCounts();
   // saisie en cours (null = pas de modification : on affiche la valeur du serveur)
   const [titleEdit, setTitle] = useState<string | null>(null);
   const [subjectEdit, setSubject] = useState<string | null>(null);
+  // date limite : undefined = pas touchée (valeur du serveur, ou la date proposée pour un brouillon), null = retirée
+  const [dueEdit, setDueEdit] = useState<string | null | undefined>(undefined);
 
   if (!d) return null;
   if (set.isPending) return <ActivityIndicator />;
@@ -63,6 +70,26 @@ export function QuizEditor({ setId }: { setId: string }) {
   const childName = d.children.find((c) => c.id === s.child_id)?.name ?? '';
   const blockers = publishBlockers(s.material_kind, list);
   const exam = isExamSet(s.material_kind);
+  // date limite (D-079) : jour LOCAL de la famille ; proposée au dimanche suivant tant que le brouillon n'en a pas ; jamais bloquante pour l'enfant
+  const today = todayInTz(new Date(), tz);
+  const suggestedDue = defaultDueOn(today);
+  const storedDue = s.due_on ?? null;
+  const due = dueEdit !== undefined ? dueEdit : storedDue ?? (isDraft ? suggestedDue : null);
+  const dueChanged = due !== storedDue;
+  const latest = tries[0];
+  const week = !isDraft ? quizWeekStatus({ dueOn: storedDue, today, attemptStatus: latest?.status ?? null, answered: latest ? (counts.data ?? []).find((c) => c.attempt_id === latest.id)?.answered ?? 0 : 0, total: list.length }) : null;
+  const saveDue = () => setDue.mutateAsync({ setId, dueOn: due }).then(() => { setDueEdit(undefined); show(t('revisions.week.due.saved')); }, () => undefined);
+  const publish = async () => {
+    if (dueChanged) {
+      try {
+        await setDue.mutateAsync({ setId, dueOn: due }); // la date proposée est enregistrée avec la publication
+      } catch {
+        return; // message déjà affiché ; on ne publie pas avec une date refusée
+      }
+      setDueEdit(undefined);
+    }
+    status.mutate({ setId, status: 'published' });
+  };
 
   const move = (from: number, to: number) => {
     const ids = moveItem(list.map((q) => q.id), from, to);
@@ -73,6 +100,7 @@ export function QuizEditor({ setId }: { setId: string }) {
     <Screen>
       <ScreenHeader title={t('revisions.editorTitle')} />
       <Text style={typography.secondary}>{childName}</Text>
+      {week ? <WeekStatusBadge label={weekStatusLabel(t, week)} late={week.late} /> : null}
 
       <Card>
         <Field label={t('revisions.titleField')} value={title} onChangeText={setTitle} maxLength={120} editable={isDraft} error={titleErrors.includes('titleRequired') ? t('revisions.errors.titleRequired') : titleErrors.includes('titleTooLong') ? t('revisions.errors.titleTooLong') : null} />
@@ -107,6 +135,26 @@ export function QuizEditor({ setId }: { setId: string }) {
           </View>
         )}
         <Text style={typography.secondary}>{t('revisions.paper.hint')}</Text>
+      </Card>
+
+      <Card>
+        <Text accessibilityRole="header" style={styles.section}>{t('revisions.week.due.title')}</Text>
+        <Text style={typography.secondary}>{t('revisions.week.due.hint')}</Text>
+        {due !== null ? (
+          <>
+            <View style={styles.dueRow}>
+              <PickerField label={t('revisions.week.due.field')} mode="date" value={due} onChange={setDueEdit} />
+            </View>
+            {isDraft && storedDue === null && dueEdit === undefined ? <Text style={typography.secondary}>{t('revisions.week.due.proposed')}</Text> : null}
+            <Button variant="secondary" label={t('revisions.week.due.clear')} onPress={() => setDueEdit(null)} />
+          </>
+        ) : (
+          <>
+            <Text style={typography.body}>{t('revisions.week.noDue')}</Text>
+            <Button variant="secondary" label={t('revisions.week.due.title')} onPress={() => setDueEdit(suggestedDue)} />
+          </>
+        )}
+        {dueChanged ? <Button label={t('revisions.week.due.save')} onPress={saveDue} loading={setDue.isPending} /> : null}
       </Card>
 
       {lockMessage ? <Text accessibilityRole="alert" style={styles.lock}>{lockMessage}</Text> : null}
@@ -150,7 +198,7 @@ export function QuizEditor({ setId }: { setId: string }) {
         <>
           {blockers.toVerify > 0 ? <Text style={styles.flag}>{t('revisions.blockers.toVerify', { count: blockers.toVerify })}</Text> : null}
           {blockers.unconfirmed > 0 ? <Text style={styles.flag}>{t('revisions.blockers.unconfirmed', { count: blockers.unconfirmed })}</Text> : null}
-          <Button label={t('revisions.publish')} disabled={list.length === 0 || blockers.blocked} onPress={() => status.mutate({ setId, status: 'published' })} loading={status.isPending} />
+          <Button label={t('revisions.publish')} disabled={list.length === 0 || blockers.blocked} onPress={publish} loading={status.isPending || setDue.isPending} />
         </>
       ) : (
         <Button variant="secondary" label={t('revisions.unpublish')} onPress={() => status.mutate({ setId, status: 'draft' })} loading={status.isPending} />
@@ -189,6 +237,7 @@ export function QuizEditor({ setId }: { setId: string }) {
 const styles = StyleSheet.create({
   lock: { color: colors.danger, fontSize: 14 },
   kinds: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  dueRow: { flexDirection: 'row' },
   flag: { fontSize: 13, fontWeight: '600', color: colors.warning },
   empty: { textAlign: 'center', paddingVertical: 16 },
   q: { backgroundColor: colors.card, borderRadius: 16, padding: 14, gap: 8 },

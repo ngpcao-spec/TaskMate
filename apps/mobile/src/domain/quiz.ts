@@ -155,6 +155,7 @@ const SERVER_ERRORS: Record<string, string> = {
   answers_not_confirmed: 'revisions.server.answersNotConfirmed',
   invalid_number: 'revisions.errors.promptRequired',
   invalid_kind: 'common.error',
+  invalid_due_date: 'revisions.server.invalidDueDate',
   duplicate_choices: 'revisions.errors.duplicateChoices',
   invalid_choices: 'revisions.errors.choicesCount',
   invalid_question: 'revisions.errors.promptRequired',

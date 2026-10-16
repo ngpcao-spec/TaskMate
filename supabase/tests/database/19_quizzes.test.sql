@@ -48,7 +48,7 @@ select * from no_plan();
 -- ───────────── structure : RLS partout, anciens RPC supprimés (non-régression), colonnes de retour sans fuite ─────────────
 select is((select count(*)::int from pg_class c join pg_namespace n on n.oid = c.relnamespace
            where n.nspname = 'public' and c.relkind = 'r' and c.relname like 'quiz\_%' and not c.relrowsecurity), 0, 'toutes les tables quiz_* ont la RLS');
-select is((select count(*)::int from pg_class c join pg_namespace n on n.oid = c.relnamespace where n.nspname = 'public' and c.relkind = 'r' and c.relname like 'quiz\_%'), 7, '7 tables quiz_*');
+select is((select count(*)::int from pg_class c join pg_namespace n on n.oid = c.relnamespace where n.nspname = 'public' and c.relkind = 'r' and c.relname like 'quiz\_%'), 8, '8 tables quiz_* (dont la progression de la semaine, D-079)');
 select is((select count(*)::int from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname in ('check_quiz_answer', 'start_quiz_practice', 'finish_quiz_practice')), 0, 'NON-RÉGRESSION : les RPC d''entraînement n''existent plus');
 select throws_ok($$select * from public.check_quiz_answer(tests.u(1), tests.u(1), 0)$$, '42883', null, 'check_quiz_answer : fonction inexistante');
 select throws_ok($$select public.start_quiz_practice(tests.u(1), tests.u(1))$$, '42883', null, 'start_quiz_practice : fonction inexistante');

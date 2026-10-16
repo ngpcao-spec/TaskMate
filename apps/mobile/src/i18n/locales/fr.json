@@ -384,7 +384,8 @@
       "attemptClosed": "Cette séance est terminée",
       "notSubmitted": "L'évaluation n'a pas encore été envoyée",
       "answersToVerify": "Des réponses sont à vérifier : confirmez-les avant de publier",
-      "answersNotConfirmed": "Confirmez chaque réponse de l'examen avant de publier"
+      "answersNotConfirmed": "Confirmez chaque réponse de l'examen avant de publier",
+      "invalidDueDate": "Cette date limite n'est pas valable."
     },
     "import": {
       "entry": "Créer à partir d'un document",
@@ -548,6 +549,30 @@
       "paper": "Papier, énoncés à l'écran",
       "sheet": "Feuille de réponses seule (numéros et lettres)",
       "hint": "Pour un sujet lu sur papier : les questions suivent les numéros du sujet et les choix gardent leurs lettres A à D (jamais mélangés)."
+    },
+    "week": {
+      "dueChild": "À finir avant {{day}}",
+      "duePast": "Date limite dépassée ({{day}}) : tu peux encore finir",
+      "dueParent": "À finir avant {{day}}",
+      "noDue": "Sans date limite",
+      "answered": "Déjà répondu : {{done}} sur {{total}}",
+      "due": {
+        "title": "Date limite",
+        "hint": "Le jour où le quiz doit être fini (le dimanche suivant est proposé). Ton enfant peut quand même finir après cette date.",
+        "field": "Date limite du quiz",
+        "proposed": "Date proposée : le dimanche suivant.",
+        "save": "Enregistrer la date limite",
+        "clear": "Retirer la date limite",
+        "saved": "Date limite enregistrée."
+      },
+      "state": {
+        "not_started": "Pas commencé",
+        "in_progress": "En cours ({{done}} sur {{total}})",
+        "submitted": "Envoyé",
+        "late": "En retard",
+        "lateProgress": "En retard ({{done}} sur {{total}})",
+        "validated": "Validé"
+      }
     }
   },
   "sync": {

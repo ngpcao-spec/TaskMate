@@ -9,6 +9,8 @@ import NewQuizScreen from '../app/quiz/new';
 import QuestionScreen from '../app/quiz/question';
 import AttemptScreen from '../app/quiz/attempt/[id]';
 import type { ChildRow } from '@/types/models';
+import { todayInTz } from '@/domain/family-time';
+import { defaultDueOn } from '@/domain/quiz-week';
 
 const mockBack = jest.fn();
 const mockPush = jest.fn();
@@ -20,6 +22,7 @@ jest.mock('expo-router', () => ({
   Redirect: (props: { href: string }) => { mockRedirect(props.href); return null; },
 }));
 jest.mock('react-native-safe-area-context', () => ({ SafeAreaView: ({ children }: { children: React.ReactNode }) => children }));
+jest.mock('@react-native-community/datetimepicker', () => ({ __esModule: true, default: () => null }));
 let mockSeq = 0;
 jest.mock('@/api/ids', () => ({ newId: () => `id-${++mockSeq}` }));
 
@@ -56,11 +59,14 @@ const mockUpdate = jest.fn();
 const mockConfirm = jest.fn();
 const mockKind = jest.fn();
 const mockPaper = jest.fn();
+const mockDue = jest.fn();
+let mockCounts: { attempt_id: string; answered: number }[] = [];
+let mockChildAttempts: unknown[] = [];
 const ok = (fn: jest.Mock) => ({ mutate: (v: unknown, o?: { onSuccess?: () => void }) => { fn(v); o?.onSuccess?.(); }, isPending: false });
 jest.mock('@/hooks/useQuizzes', () => ({
   useQuizSets: () => ({ data: mockSets }),
   usePendingQuizAttempts: () => ({ data: mockPending }),
-  useChildAttempts: () => ({ data: [] }),
+  useChildAttempts: () => ({ data: mockChildAttempts }),
   useQuizSet: () => ({ data: mockSet, isPending: false }),
   useParentQuestions: () => ({ data: mockQuestions, isPending: false }),
   useSetAttempts: () => ({ data: mockAttempts }),
@@ -78,11 +84,13 @@ jest.mock('@/hooks/useQuizzes', () => ({
   useConfirmAnswers: () => ok(mockConfirm),
   useSetMaterialKind: () => ok(mockKind),
   useSetPaperSupport: () => ok(mockPaper),
+  useSetQuizDueOn: () => ({ mutateAsync: async (v: unknown) => { mockDue(v); }, isPending: false }),
+  useQuizProgressCounts: () => ({ data: mockCounts }),
 }));
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockRole = 'parent'; mockSets = []; mockPending = []; mockSet = set(); mockAttempts = []; mockDetail = null;
+  mockRole = 'parent'; mockSets = []; mockPending = []; mockSet = set(); mockAttempts = []; mockDetail = null; mockCounts = []; mockChildAttempts = [];
   mockQuestions = [question('q1', 0, 'Un plus un ?'), question('q2', 1, 'Deux plus deux ?')];
 });
 
@@ -93,7 +101,7 @@ describe('Révisions — liste du parent', () => {
     expect(screen.getByRole('tab', { name: 'Minh, 17 tuổi' })).toBeTruthy();
     expect(screen.getByRole('tab', { name: 'Khang, 13 tuổi' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Fractions, Bản nháp, 2 câu hỏi' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Verbes, Đã đăng, 5 câu hỏi' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Verbes, Đã đăng, 5 câu hỏi, Chưa bắt đầu' })).toBeTruthy();
     expect(screen.queryByText(/hạng|rank|classement/i)).toBeNull();
   });
   it('liste vide : message et bouton de création', async () => {
@@ -359,5 +367,85 @@ describe('routes parent : un enfant est redirigé', () => {
     await render(<NewQuizScreen />);
     expect(mockRedirect).not.toHaveBeenCalled();
     expect(screen.getByText('Bộ câu hỏi mới')).toBeTruthy();
+  });
+});
+
+describe('Quiz de la semaine (D-079) — parent', () => {
+  const nextSunday = () => defaultDueOn(todayInTz(new Date(), 'Asia/Ho_Chi_Minh'));
+  const attempt = (over: Record<string, unknown>) => ({ id: 'a1', set_id: 's2', child_id: 'c-minh', status: 'in_progress', started_at: '2026-07-02T01:00:00Z', validated_at: null, score: null, total: null, ...over });
+
+  it('liste : statut par quiz publié — Chưa bắt đầu / Đang làm (n/N) / Đã nộp / Quá hạn ; aucun statut pour un brouillon', async () => {
+    mockSets = [
+      set({ id: 's1', title: 'Brouillon', status: 'draft', due_on: '2099-01-01' }),
+      set({ id: 's2', title: 'En cours', status: 'published', question_count: 20, due_on: '2099-01-01' }),
+      set({ id: 's3', title: 'Pas commencé', status: 'published', question_count: 20, due_on: '2099-01-01' }),
+      set({ id: 's4', title: 'Envoyé', status: 'published', question_count: 20, due_on: '2020-01-05' }),
+      set({ id: 's5', title: 'Retard', status: 'published', question_count: 20, due_on: '2020-01-05' }),
+      set({ id: 's6', title: 'Retard en cours', status: 'published', question_count: 20, due_on: '2020-01-05' }),
+    ];
+    mockChildAttempts = [attempt({ id: 'a1', set_id: 's2' }), attempt({ id: 'a4', set_id: 's4', status: 'submitted' }), attempt({ id: 'a6', set_id: 's6' })];
+    mockCounts = [{ attempt_id: 'a1', answered: 12 }, { attempt_id: 'a6', answered: 7 }];
+    await render(<ParentRevisions />);
+    expect(screen.getByRole('button', { name: 'En cours, Đã đăng, 20 câu hỏi, Đang làm (12/20)' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Pas commencé, Đã đăng, 20 câu hỏi, Chưa bắt đầu' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Envoyé, Đã đăng, 20 câu hỏi, Đã nộp' })).toBeTruthy(); // jamais « en retard » une fois envoyé
+    expect(screen.getByRole('button', { name: 'Retard, Đã đăng, 20 câu hỏi, Quá hạn' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Retard en cours, Đã đăng, 20 câu hỏi, Quá hạn (7/20)' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Brouillon, Bản nháp, 2 câu hỏi' })).toBeTruthy();
+    expect(screen.getAllByText(/Hoàn thành trước/).length).toBeGreaterThan(0); // la date limite est affichée
+  });
+
+  it('brouillon : la date proposée (dimanche suivant) est enregistrée avec la publication', async () => {
+    await render(<QuizEditor setId="s1" />);
+    expect(screen.getByText('Ngày gợi ý: Chủ nhật tới.')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Đăng cho bạn ấy' }));
+    expect(mockDue).toHaveBeenCalledWith({ setId: 's1', dueOn: nextSunday() });
+    expect(mockStatus).toHaveBeenCalledWith({ setId: 's1', status: 'published' });
+  });
+
+  it('brouillon : « Bỏ hạn chót » puis publication sans date limite (rien d\'enregistré)', async () => {
+    await render(<QuizEditor setId="s1" />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Bỏ hạn chót' }));
+    expect(screen.getByText('Không có hạn chót')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Đăng cho bạn ấy' }));
+    expect(mockDue).not.toHaveBeenCalled();
+    expect(mockStatus).toHaveBeenCalledWith({ setId: 's1', status: 'published' });
+  });
+
+  it('brouillon avec une date déjà fixée : elle est conservée telle quelle à la publication', async () => {
+    mockSet = set({ due_on: '2099-12-31' });
+    await render(<QuizEditor setId="s1" />);
+    expect(screen.queryByText('Ngày gợi ý: Chủ nhật tới.')).toBeNull();
+    await fireEvent.press(screen.getByRole('button', { name: 'Đăng cho bạn ấy' }));
+    expect(mockDue).not.toHaveBeenCalled();
+    expect(mockStatus).toHaveBeenCalledWith({ setId: 's1', status: 'published' });
+  });
+
+  it('jeu publié : la date limite reste modifiable (retirer, puis enregistrer)', async () => {
+    mockSet = set({ status: 'published', due_on: '2099-12-31' });
+    await render(<QuizEditor setId="s1" />);
+    expect(screen.queryByRole('button', { name: 'Lưu hạn chót' })).toBeNull(); // rien à enregistrer tant qu'on n'a pas changé
+    await fireEvent.press(screen.getByRole('button', { name: 'Bỏ hạn chót' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Lưu hạn chót' }));
+    expect(mockDue).toHaveBeenCalledWith({ setId: 's1', dueOn: null });
+  });
+
+  it('jeu publié sans date : on peut en fixer une (proposée : dimanche suivant)', async () => {
+    mockSet = set({ status: 'published', due_on: null });
+    await render(<QuizEditor setId="s1" />);
+    expect(screen.getByText('Không có hạn chót')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Hạn chót' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Lưu hạn chót' }));
+    expect(mockDue).toHaveBeenCalledWith({ setId: 's1', dueOn: nextSunday() });
+  });
+
+  it('éditeur d\'un quiz publié : statut « Đang làm (12/20) » ; en retard, jamais bloquant (publication/relance inchangées)', async () => {
+    mockSet = set({ status: 'published', due_on: '2020-01-05' });
+    mockQuestions = Array.from({ length: 20 }, (_, i) => question(`q${i}`, i, `Q${i}`));
+    mockAttempts = [{ id: 'a1', status: 'in_progress', started_at: '2026-07-02T01:00:00Z', score: null, total: null }];
+    mockCounts = [{ attempt_id: 'a1', answered: 12 }];
+    await render(<QuizEditor setId="s1" />);
+    expect(screen.getByText('Quá hạn (12/20)')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Gỡ xuống' })).toBeTruthy();
   });
 });

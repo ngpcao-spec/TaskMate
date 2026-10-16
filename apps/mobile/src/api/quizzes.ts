@@ -122,6 +122,18 @@ export async function setQuizStatus(setId: string, status: 'draft' | 'published'
   const { error } = await supabase.rpc('set_quiz_status', { p_set: setId, p_status: status });
   fail(error);
 }
+/** Date limite du quiz (D-079) : JOUR LOCAL `YYYY-MM-DD` (jamais un timestamp) ; `null` = sans date limite. Écrite par RPC seulement, jamais bloquante. */
+export async function setQuizDueOn(setId: string, dueOn: string | null): Promise<void> {
+  const { error } = await supabase.rpc('set_quiz_due_on', { p_set: setId, p_due: dueOn as string });
+  fail(error);
+}
+/** Nombre de réponses déjà données par tentative EN COURS (parent) : jamais le détail des réponses. */
+export type ProgressCount = { attempt_id: string; answered: number };
+export async function fetchQuizProgressCounts(): Promise<ProgressCount[]> {
+  const { data, error } = await supabase.rpc('quiz_progress_counts');
+  fail(error);
+  return (data ?? []) as ProgressCount[];
+}
 export async function copyQuizSet(source: string, newSet: string, childId: string): Promise<void> {
   const { error } = await supabase.rpc('copy_quiz_set', { p_source: source, p_new_set: newSet, p_child: childId });
   fail(error);
@@ -164,6 +176,10 @@ export type ChildQuizSet = {
   /** Support papier : écran « Phiếu trả lời ». « Feuille seule » : le serveur n'envoie que des lettres. */
   paper_support: boolean;
   answer_sheet_only: boolean;
+  /** Date limite (jour local, `YYYY-MM-DD`) : information seulement, ne bloque jamais l'enfant. */
+  due_on: string | null;
+  /** Réponses déjà enregistrées de la tentative en cours. */
+  answered_count: number;
 };
 export async function fetchChildQuizSets(): Promise<ChildQuizSet[]> {
   const { data, error } = await supabase.rpc('child_quiz_sets');
@@ -181,6 +197,19 @@ export async function fetchChildQuestions(attemptId: string): Promise<PlayQuesti
   const { data, error } = await supabase.rpc('child_quiz_questions', { p_attempt: attemptId });
   fail(error);
   return (data ?? []) as PlayQuestionRow[];
+}
+
+/** Réponses déjà enregistrées de SA tentative en cours (positions AFFICHÉES) : reprise sur cet appareil ou un autre. Aucune information de correction. */
+export type SavedAnswer = { question_id: string; choice: number };
+export async function fetchChildProgress(attemptId: string): Promise<SavedAnswer[]> {
+  const { data, error } = await supabase.rpc('child_quiz_progress', { p_attempt: attemptId });
+  fail(error);
+  return (data ?? []) as SavedAnswer[];
+}
+/** Enregistre (ou, avec `choice` null, efface) UNE réponse au fil de l'eau ; idempotent, refusé si la tentative est envoyée. */
+export async function saveQuizProgress(attemptId: string, questionId: string, choice: number | null): Promise<void> {
+  const { error } = await supabase.rpc('save_quiz_progress', { p_attempt: attemptId, p_question: questionId, p_choice: choice as number });
+  fail(error);
 }
 
 export async function startQuizEvaluation(setId: string, attemptId: string): Promise<void> {

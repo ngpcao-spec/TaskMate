@@ -12,6 +12,7 @@ jest.mock('expo-router', () => ({
   Redirect: () => null,
 }));
 jest.mock('react-native-safe-area-context', () => ({ SafeAreaView: ({ children }: { children: React.ReactNode }) => children }));
+jest.mock('@/hooks/useMe', () => ({ useMe: () => ({ data: { member: { role: 'child', id: 'm' }, family: { id: 'f', timezone: 'Asia/Ho_Chi_Minh' }, children: [] } }) }));
 let mockSeq = 0;
 jest.mock('@/api/ids', () => ({ newId: () => `id-${++mockSeq}` }));
 jest.mock('@/hooks/useDisplayedChild', () => ({
@@ -46,6 +47,8 @@ jest.mock('@/hooks/useQuizzes', () => ({
   useChildResult: () => ({ data: mockResult, isPending: false }),
   useStartQuizEvaluation: () => run(mockStartEval),
   useSubmitQuizEvaluation: () => run(mockSubmit),
+  useSaveQuizProgress: () => run(jest.fn()),
+  useChildProgress: () => ({ data: [], isPending: false }),
 }));
 
 beforeEach(() => {

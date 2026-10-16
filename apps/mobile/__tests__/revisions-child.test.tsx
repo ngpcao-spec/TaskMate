@@ -34,8 +34,8 @@ jest.mock('@/hooks/useDisplayedChild', () => ({
   }),
 }));
 
-type Info = { set_id: string; title: string; subject: string | null; question_count: number; evaluation_attempt_id: string | null; evaluation_status: string | null; can_start_evaluation: boolean };
-const info = (over: Partial<Info> = {}): Info => ({ set_id: 's1', title: 'Fractions', subject: 'Toán', question_count: 2, evaluation_attempt_id: null, evaluation_status: null, can_start_evaluation: true, ...over });
+type Info = { set_id: string; title: string; subject: string | null; question_count: number; evaluation_attempt_id: string | null; evaluation_status: string | null; can_start_evaluation: boolean; due_on: string | null; answered_count: number };
+const info = (over: Partial<Info> = {}): Info => ({ set_id: 's1', title: 'Fractions', subject: 'Toán', question_count: 2, evaluation_attempt_id: null, evaluation_status: null, can_start_evaluation: true, due_on: null, answered_count: 0, ...over });
 const questions = [
   { question_id: 'q1', position: 0, prompt: 'Un plus un ?', choices: ['1', '2', '3'] },
   { question_id: 'q2', position: 1, prompt: 'Deux plus deux ?', choices: ['3', '4', '5', '6'] },
@@ -46,6 +46,8 @@ let mockResult: unknown = null;
 let mockHistory: unknown[] = [];
 const mockStartEval = jest.fn();
 const mockSubmit = jest.fn();
+const mockSave = jest.fn();
+let mockProgress: { question_id: string; choice: number }[] = [];
 const run = (fn: jest.Mock) => ({ mutate: (v: unknown, o?: { onSuccess?: (r: unknown) => void }) => { fn(v); o?.onSuccess?.(undefined); }, isPending: false });
 jest.mock('@/hooks/useQuizzes', () => ({
   useChildQuizSets: () => ({ data: mockInfos, isPending: false }),
@@ -54,12 +56,14 @@ jest.mock('@/hooks/useQuizzes', () => ({
   useChildHistory: () => ({ data: mockHistory }),
   useStartQuizEvaluation: () => run(mockStartEval),
   useSubmitQuizEvaluation: () => run(mockSubmit),
+  useSaveQuizProgress: () => run(mockSave),
+  useChildProgress: () => ({ data: mockProgress, isPending: false }),
 }));
 
 beforeEach(() => {
   jest.clearAllMocks();
   mockSeq = 0;
-  mockRole = 'child'; mockInfos = [info()]; mockQuestions = questions; mockResult = null; mockHistory = [];
+  mockRole = 'child'; mockInfos = [info()]; mockQuestions = questions; mockResult = null; mockHistory = []; mockProgress = [];
 });
 
 describe('Ôn tập — liste de l\'enfant', () => {
@@ -212,5 +216,87 @@ describe('routes enfant : un parent est redirigé ; l\'écran d\'un jeu suit le 
   it('quiz/[id] pour un enfant : accueil de SON jeu', async () => {
     await render(<QuizScreen />);
     expect(screen.getByRole('button', { name: 'Làm bài kiểm tra' })).toBeTruthy();
+  });
+});
+
+describe('Quiz de la semaine (D-079) — enfant', () => {
+  it('chaque réponse est enregistrée au fil de l\'eau (position affichée), sans attendre l\'envoi', async () => {
+    await render(<EvaluationRun setId="s1" />);
+    await fireEvent.press(screen.getByRole('radio', { name: '2' }));
+    expect(mockSave).toHaveBeenCalledWith({ attemptId: 'id-1', questionId: 'q1', choice: 1 });
+    await fireEvent.press(screen.getByRole('radio', { name: '6' }));
+    expect(mockSave).toHaveBeenCalledWith({ attemptId: 'id-1', questionId: 'q2', choice: 3 });
+    expect(mockSubmit).not.toHaveBeenCalled();
+  });
+
+  it('reprise : les réponses déjà enregistrées sont restaurées, comptées, et envoyées avec le reste', async () => {
+    mockInfos = [info({ evaluation_status: 'in_progress', evaluation_attempt_id: 'a1', can_start_evaluation: false, answered_count: 1 })];
+    mockProgress = [{ question_id: 'q1', choice: 2 }];
+    await render(<EvaluationRun setId="s1" />);
+    expect(mockStartEval).not.toHaveBeenCalled(); // la tentative existe déjà : pas de nouveau démarrage
+    expect(screen.getByRole('radio', { name: '3', selected: true })).toBeTruthy();
+    expect(screen.getByText('Đã trả lời 1/2 câu')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('radio', { name: '4' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Nộp bài' }));
+    expect(mockSubmit).toHaveBeenCalledWith({ attemptId: 'a1', answers: [{ question_id: 'q1', choice: 2 }, { question_id: 'q2', choice: 1 }] });
+  });
+
+  it('une réponse donnée ici remplace celle du serveur', async () => {
+    mockInfos = [info({ evaluation_status: 'in_progress', evaluation_attempt_id: 'a1', can_start_evaluation: false, answered_count: 1 })];
+    mockProgress = [{ question_id: 'q1', choice: 2 }];
+    await render(<EvaluationRun setId="s1" />);
+    await fireEvent.press(screen.getByRole('radio', { name: '1' }));
+    expect(screen.getByRole('radio', { name: '1', selected: true })).toBeTruthy();
+    expect(screen.queryByRole('radio', { name: '3', selected: true })).toBeNull();
+    expect(mockSave).toHaveBeenCalledWith({ attemptId: 'a1', questionId: 'q1', choice: 0 });
+  });
+
+  it('une position enregistrée hors des choix (donnée altérée) est ignorée, sans erreur', async () => {
+    mockInfos = [info({ evaluation_status: 'in_progress', evaluation_attempt_id: 'a1', can_start_evaluation: false })];
+    mockProgress = [{ question_id: 'q1', choice: 9 }, { question_id: 'inconnue', choice: 0 }];
+    await render(<EvaluationRun setId="s1" />);
+    expect(screen.getByText('Đã trả lời 0/2 câu')).toBeTruthy();
+  });
+
+  it('date limite : « Hoàn thành trước … » dans la liste, l\'accueil du quiz et l\'écran des questions', async () => {
+    mockInfos = [info({ due_on: '2099-12-31' })];
+    await render(<RevisionsScreen />);
+    expect(screen.getByText(/Hoàn thành trước .*31\/12/)).toBeTruthy();
+  });
+
+  it('date limite passée : message sans reproche, et RIEN n\'est bloqué (démarrer, répondre, envoyer)', async () => {
+    mockInfos = [info({ due_on: '2020-01-05' })];
+    await render(<ChildSetHome setId="s1" />);
+    expect(screen.getByText(/Đã quá hạn .*05\/01.*vẫn có thể làm tiếp/)).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Làm bài kiểm tra' })).toBeTruthy();
+  });
+
+  it('date limite passée sur l\'écran des questions : on peut répondre et envoyer', async () => {
+    mockInfos = [info({ due_on: '2020-01-05' })];
+    await render(<EvaluationRun setId="s1" />);
+    expect(screen.getByText(/Đã quá hạn/)).toBeTruthy();
+    await fireEvent.press(screen.getByRole('radio', { name: '2' }));
+    await fireEvent.press(screen.getByRole('radio', { name: '4' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Nộp bài' }));
+    expect(mockSubmit).toHaveBeenCalled();
+  });
+
+  it('sans date limite : aucune mention', async () => {
+    mockInfos = [info()];
+    await render(<ChildSetHome setId="s1" />);
+    expect(screen.queryByText(/Hoàn thành trước|quá hạn/)).toBeNull();
+  });
+
+  it('liste : progression d\'un quiz en cours (« Đã trả lời 12/20 câu ») ; rien de tel une fois envoyé', async () => {
+    mockInfos = [info({ evaluation_status: 'in_progress', evaluation_attempt_id: 'a1', can_start_evaluation: false, answered_count: 1, question_count: 2 })];
+    await render(<RevisionsScreen />);
+    expect(screen.getByText('Đã trả lời 1/2 câu')).toBeTruthy();
+  });
+
+  it('accueil du quiz en cours : « Đã trả lời n/N câu » et reprise', async () => {
+    mockInfos = [info({ evaluation_status: 'in_progress', evaluation_attempt_id: 'a1', can_start_evaluation: false, answered_count: 1 })];
+    await render(<ChildSetHome setId="s1" />);
+    expect(screen.getByText('Đã trả lời 1/2 câu')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Làm tiếp bài kiểm tra' })).toBeTruthy();
   });
 });

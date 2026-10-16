@@ -384,7 +384,8 @@
       "attemptClosed": "This session is over",
       "notSubmitted": "The test hasn't been sent yet",
       "answersToVerify": "Some answers need checking: confirm them before publishing",
-      "answersNotConfirmed": "Confirm every answer of the exam before publishing"
+      "answersNotConfirmed": "Confirm every answer of the exam before publishing",
+      "invalidDueDate": "This due date is not valid."
     },
     "import": {
       "entry": "Create from a document",
@@ -548,6 +549,30 @@
       "paper": "Paper, questions on screen",
       "sheet": "Answer sheet only (numbers and letters)",
       "hint": "For an exam read on paper: questions follow the exam numbers and choices keep their letters A to D (never shuffled)."
+    },
+    "week": {
+      "dueChild": "Finish before {{day}}",
+      "duePast": "Past the due date ({{day}}) — you can still finish",
+      "dueParent": "Finish before {{day}}",
+      "noDue": "No due date",
+      "answered": "Answered: {{done}} of {{total}}",
+      "due": {
+        "title": "Due date",
+        "hint": "The day the quiz should be finished (the next Sunday is suggested). Your child can still finish after this date.",
+        "field": "Quiz due date",
+        "proposed": "Suggested date: the next Sunday.",
+        "save": "Save the due date",
+        "clear": "Remove the due date",
+        "saved": "Due date saved."
+      },
+      "state": {
+        "not_started": "Not started",
+        "in_progress": "In progress ({{done}} of {{total}})",
+        "submitted": "Sent",
+        "late": "Late",
+        "lateProgress": "Late ({{done}} of {{total}})",
+        "validated": "Validated"
+      }
     }
   },
   "sync": {

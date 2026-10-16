@@ -23,10 +23,12 @@ export const quizKeys = {
   attempts: (setId: string) => ['quiz', 'attempts', setId] as const,
   childAttempts: (childId: string) => ['quiz', 'child-attempts', childId] as const,
   pending: ['quiz', 'pending'] as const,
+  counts: ['quiz', 'progress-counts'] as const,
   detail: (attemptId: string) => ['quiz', 'detail', attemptId] as const,
   // côté enfant
   mine: ['quiz', 'mine'] as const,
   play: (attemptId: string) => ['quiz', 'play', attemptId] as const,
+  progress: (attemptId: string) => ['quiz', 'progress', attemptId] as const,
   result: (attemptId: string) => ['quiz', 'result', attemptId] as const,
   history: (setId: string) => ['quiz', 'history', setId] as const,
 };

@@ -1,18 +1,23 @@
 import { useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { newId } from '@/api/ids';
 import { AnswerSheet } from '@/components/quiz/AnswerSheet';
+import { DueLabel } from '@/components/quiz/DueLabel';
 import { ChoiceButton } from '@/components/quiz/ChoiceButton';
 import { Button, Card, Screen, ScreenHeader } from '@/components/ui';
 import { answeredCount, answersPayload, unansweredCount } from '@/domain/quiz';
-import { useChildQuestions, useChildQuizSets, useStartQuizEvaluation, useSubmitQuizEvaluation } from '@/hooks/useQuizzes';
+import { restoredAnswers } from '@/domain/quiz-week';
+import { useChildProgress, useChildQuestions, useChildQuizSets, useSaveQuizProgress, useStartQuizEvaluation, useSubmitQuizEvaluation } from '@/hooks/useQuizzes';
 import { colors, typography } from '@/theme/tokens';
 
 /**
  * Seul parcours de l'enfant : il répond à toutes les questions (ordre et choix mélangés par le serveur, jamais de retour juste/faux),
  * envoie ses réponses, puis attend la validation. L'envoi (mis en file hors ligne, rejeu idempotent) ne renvoie AUCUN résultat.
+ * Quiz de la semaine (D-079) : chaque réponse est enregistrée au fil de l'eau côté serveur (file d'écritures hors ligne, idempotente) ; en revenant,
+ * sur cet appareil ou un autre, l'écran restaure les réponses déjà données. La date limite est une information : elle ne bloque jamais.
+
  * Jeu « support papier » (D-062) : même parcours sur la « Phiếu trả lời » (numéros d'origine, lettres A à D, jamais mélangés).
  */
 export function EvaluationRun({ setId }: { setId: string }) {
@@ -21,6 +26,7 @@ export function EvaluationRun({ setId }: { setId: string }) {
   const sets = useChildQuizSets();
   const start = useStartQuizEvaluation();
   const submit = useSubmitQuizEvaluation();
+  const save = useSaveQuizProgress();
   const [freshId] = useState(newId);
   const startedRef = useRef(false);
   const [chosen, setChosen] = useState<Record<string, number | null>>({}); // positions AFFICHÉES
@@ -39,7 +45,11 @@ export function EvaluationRun({ setId }: { setId: string }) {
 
   // les questions ne sont demandées qu'une fois la tentative créée côté serveur (reprise, ou démarrage confirmé)
   const questions = useChildQuestions(attemptId ?? '', !!resuming || start.isSuccess);
-  const list = questions.data ?? [];
+  const list = useMemo(() => questions.data ?? [], [questions.data]);
+  // reprise : réponses déjà enregistrées (seulement pour une tentative existante) ; les réponses données ici priment sur celles du serveur
+  const progress = useChildProgress(attemptId ?? '', !!resuming);
+  const restored = useMemo(() => restoredAnswers(list, progress.data ?? []), [list, progress.data]);
+  const answers = useMemo(() => ({ ...restored, ...chosen }), [restored, chosen]);
 
   if (sets.isPending) return <ActivityIndicator />;
   if (!info) return null;
@@ -67,15 +77,15 @@ export function EvaluationRun({ setId }: { setId: string }) {
     );
   }
 
-  if (questions.isPending) return <ActivityIndicator />;
+  if (questions.isPending || (!!resuming && progress.isPending)) return <ActivityIndicator />;
 
-  const missing = unansweredCount(list, chosen);
+  const missing = unansweredCount(list, answers);
   const onSend = () => {
     if (missing > 0 && !warned) {
       setWarned(true);
       return;
     }
-    submit.mutate({ attemptId, answers: answersPayload(list, chosen) });
+    submit.mutate({ attemptId, answers: answersPayload(list, answers) });
     setSent(true);
   };
 
@@ -83,28 +93,32 @@ export function EvaluationRun({ setId }: { setId: string }) {
   const choose = (questionId: string, displayed: number) => {
     setChosen({ ...chosen, [questionId]: displayed });
     setWarned(false);
+    save.mutate({ attemptId, questionId, choice: displayed }); // enregistré au fil de l'eau, sans attendre l'envoi final
   };
+
 
   return (
     <Screen>
       <ScreenHeader title={info.title} />
+      <DueLabel dueOn={info.due_on} />
       {paper ? (
         <>
           <Text accessibilityRole="header" style={styles.sheetTitle}>{t('revisions.sheet.title')}</Text>
           <Text style={typography.secondary}>{info.answer_sheet_only ? t('revisions.sheet.intro') : t('revisions.sheet.introPaper')}</Text>
-          <Text accessibilityLiveRegion="polite" style={typography.secondary}>{t('revisions.sheet.progress', { done: answeredCount(list, chosen), total: list.length })}</Text>
-          <AnswerSheet questions={list} chosen={chosen} onChoose={choose} sheetOnly={info.answer_sheet_only} />
+          <Text accessibilityLiveRegion="polite" style={typography.secondary}>{t('revisions.sheet.progress', { done: answeredCount(list, answers), total: list.length })}</Text>
+          <AnswerSheet questions={list} chosen={answers} onChoose={choose} sheetOnly={info.answer_sheet_only} />
         </>
       ) : (
         <>
           <Text style={typography.secondary}>{t('revisions.child.evalIntro')}</Text>
+          <Text accessibilityLiveRegion="polite" style={typography.secondary}>{t('revisions.sheet.progress', { done: answeredCount(list, answers), total: list.length })}</Text>
           {list.map((q, i) => (
             <View key={q.question_id} style={styles.q}>
               <Text style={typography.secondary}>{t('revisions.child.questionOf', { n: i + 1, total: list.length })}</Text>
               <Text accessibilityRole="header" style={styles.prompt}>{q.prompt}</Text>
               <View style={styles.choices} accessibilityRole="radiogroup">
                 {q.choices.map((choice, displayed) => (
-                  <ChoiceButton key={displayed} label={choice} selected={chosen[q.question_id] === displayed} onPress={() => choose(q.question_id, displayed)} />
+                  <ChoiceButton key={displayed} label={choice} selected={answers[q.question_id] === displayed} onPress={() => choose(q.question_id, displayed)} />
                 ))}
               </View>
             </View>

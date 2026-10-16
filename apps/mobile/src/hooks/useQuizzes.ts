@@ -1,15 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { quizKeys } from '@/api/keys';
 import {
-  confirmQuizAnswers, copyQuizSet, deleteQuestion, deleteQuizSet, fetchAttemptDetail, fetchChildAttempts, fetchChildHistory, fetchChildQuestions, fetchChildQuizSets,
-  fetchChildResult, fetchParentQuestions, fetchPendingQuizAttempts, fetchQuizSet, fetchQuizSets, fetchSetAttempts, relaunchQuizEvaluation,
-  reorderQuestions, setQuizMaterialKind, setQuizPaperSupport, setQuizStatus, updateQuizSet, upsertQuestion, type QuestionInput,
+  confirmQuizAnswers, copyQuizSet, deleteQuestion, deleteQuizSet, fetchAttemptDetail, fetchChildAttempts, fetchChildHistory, fetchChildProgress, fetchChildQuestions, fetchChildQuizSets,
+  fetchChildResult, fetchParentQuestions, fetchPendingQuizAttempts, fetchQuizProgressCounts, fetchQuizSet, fetchQuizSets, fetchSetAttempts, relaunchQuizEvaluation,
+  reorderQuestions, setQuizDueOn, setQuizMaterialKind, setQuizPaperSupport, setQuizStatus, updateQuizSet, upsertQuestion, type QuestionInput,
 } from '@/api/quizzes';
 import { generateQuestions, type GenerateInput } from '@/api/generate';
 import { serverErrorCode } from '@/api/tasks';
 import { quizErrorKey } from '@/domain/quiz';
 import i18n from '@/i18n';
-import { mutationKeys, type CreateQuizSetVars, type StartEvaluationVars, type SubmitEvaluationVars, type ValidateAttemptVars } from '@/sync/mutations';
+import { mutationKeys, type CreateQuizSetVars, type SaveProgressVars, type StartEvaluationVars, type SubmitEvaluationVars, type ValidateAttemptVars } from '@/sync/mutations';
 import { useToastStore } from '@/store/toast';
 import type { QuizMaterialKind } from '@/types/models';
 
@@ -26,12 +26,18 @@ export const useAttemptDetail = (id: string) => useQuery({ queryKey: quizKeys.de
 export const useChildQuizSets = (enabled = true) => useQuery({ queryKey: quizKeys.mine, queryFn: fetchChildQuizSets, enabled, staleTime: 0 });
 /** Questions d'UNE tentative en cours (ordre et choix déjà mélangés par le serveur, sans clé) ; `enabled` = la tentative existe côté serveur. */
 export const useChildQuestions = (attemptId: string, enabled: boolean) => useQuery({ queryKey: quizKeys.play(attemptId), queryFn: () => fetchChildQuestions(attemptId), enabled: enabled && !!attemptId, staleTime: Infinity, gcTime: 0 });
+/** Réponses déjà enregistrées de SA tentative en cours ; `enabled` = reprise d'une tentative existante (une tentative qui vient de démarrer n'en a pas). */
+export const useChildProgress = (attemptId: string, enabled: boolean) => useQuery({ queryKey: quizKeys.progress(attemptId), queryFn: () => fetchChildProgress(attemptId), enabled: enabled && !!attemptId, staleTime: 0, refetchOnMount: 'always', refetchOnWindowFocus: false, gcTime: 0 });
+/** Parent : nombre de réponses déjà données par tentative en cours (« 12 / 20 »). */
+export const useQuizProgressCounts = (enabled = true) => useQuery({ queryKey: quizKeys.counts, queryFn: fetchQuizProgressCounts, enabled, staleTime: 0, refetchInterval: 30_000 });
 export const useChildResult = (attemptId: string) => useQuery({ queryKey: quizKeys.result(attemptId), queryFn: () => fetchChildResult(attemptId), enabled: !!attemptId, staleTime: 0 });
 export const useChildHistory = (setId: string) => useQuery({ queryKey: quizKeys.history(setId), queryFn: () => fetchChildHistory(setId), enabled: !!setId, staleTime: 0 });
 
 // ───────────── écritures mises en file (sync/mutations.ts : scope `writes`, rejeu idempotent) ─────────────
 export const useCreateQuizSet = () => useMutation<void, unknown, CreateQuizSetVars>({ mutationKey: mutationKeys.createQuizSet });
 export const useStartQuizEvaluation = () => useMutation<void, unknown, StartEvaluationVars>({ mutationKey: mutationKeys.startQuizEvaluation });
+/** Enregistrement d'UNE réponse au fil de l'eau : mis en file hors ligne (même portée `writes`, donc avant l'envoi), rejeu idempotent. */
+export const useSaveQuizProgress = () => useMutation<void, unknown, SaveProgressVars>({ mutationKey: mutationKeys.saveQuizProgress });
 export const useSubmitQuizEvaluation = () => useMutation<void, unknown, SubmitEvaluationVars>({ mutationKey: mutationKeys.submitQuizEvaluation });
 export const useValidateQuizAttempt = () => useMutation<void, unknown, ValidateAttemptVars>({ mutationKey: mutationKeys.validateQuizAttempt });
 
@@ -59,6 +65,7 @@ export const useUpdateQuizSet = () => useOnlineQuizMutation<{ id: string; patch:
 export const useDeleteQuizSet = () => useOnlineQuizMutation<string>(deleteQuizSet);
 export const useConfirmAnswers = () => useOnlineQuizMutation<{ setId: string; answers: { question_id: string; correct: number }[] }>(({ setId, answers }) => confirmQuizAnswers(setId, answers));
 export const useSetMaterialKind = () => useOnlineQuizMutation<{ setId: string; kind: QuizMaterialKind }>(({ setId, kind }) => setQuizMaterialKind(setId, kind));
+export const useSetQuizDueOn = () => useOnlineQuizMutation<{ setId: string; dueOn: string | null }>(({ setId, dueOn }) => setQuizDueOn(setId, dueOn));
 export const useSetPaperSupport = () => useOnlineQuizMutation<{ setId: string; paper: boolean; sheetOnly: boolean }>(({ setId, paper, sheetOnly }) => setQuizPaperSupport(setId, paper, sheetOnly));
 
 /** Génération par IA depuis un document : en ligne uniquement, jamais rejouée automatiquement (chaque appel consomme le quota du jour). */

@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { ChevronRight } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { DueLabel } from '@/components/quiz/DueLabel';
 import { Screen, ScreenHeader } from '@/components/ui';
 import { evaluationView } from '@/domain/quiz';
 import { useChildQuizSets } from '@/hooks/useQuizzes';
@@ -21,12 +22,15 @@ export function ChildRevisions() {
       {list.map((s) => {
         const view = evaluationView(s.evaluation_status);
         const note = view === 'waiting' ? t('revisions.child.waiting') : view === 'in_progress' ? t('revisions.child.resume') : null;
+        const done = view === 'in_progress' ? t('revisions.week.answered', { done: s.answered_count, total: s.question_count }) : null;
         const count = t('revisions.questionCount', { count: s.question_count });
         return (
-          <Pressable key={s.set_id} accessibilityRole="button" accessibilityLabel={[s.title, count, note].filter(Boolean).join(', ')} onPress={() => router.push({ pathname: '/quiz/[id]', params: { id: s.set_id } })} style={styles.card}>
+          <Pressable key={s.set_id} accessibilityRole="button" accessibilityLabel={[s.title, count, done, note].filter(Boolean).join(', ')} onPress={() => router.push({ pathname: '/quiz/[id]', params: { id: s.set_id } })} style={styles.card}>
             <View style={styles.flex}>
               <Text style={styles.title}>{s.title}</Text>
               <Text style={typography.secondary}>{[s.subject, count].filter(Boolean).join(' · ')}</Text>
+              {done ? <Text style={typography.secondary}>{done}</Text> : null}
+              {view === 'waiting' || view === 'validated' ? null : <DueLabel dueOn={s.due_on} />}
               {note ? <Text style={styles.note}>{note}</Text> : null}
             </View>
             <ChevronRight color={colors.textSecondary} />
