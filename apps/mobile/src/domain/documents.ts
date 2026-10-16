@@ -111,6 +111,8 @@ const SERVER_ERRORS: Record<string, string> = {
   instruction_too_long: 'revisions.import.errors.instructionTooLong',
   save_failed: 'revisions.import.errors.saveFailed',
   network: 'revisions.import.errors.network',
+  catalog_slot_taken: 'catalog.server.slotTaken',
+  invalid_catalog: 'catalog.server.invalidSlot',
 };
 
 /** Clé i18n du message pour un code d'erreur de `generate-questions` (repli : message générique). */

@@ -46,7 +46,7 @@ describe('Révisions — file d\'écritures hors ligne', () => {
     await act(async () => onlineManager.setOnline(true));
     await act(async () => client.resumePausedMutations());
     await waitFor(() => expect(mockSubmit).toHaveBeenCalledTimes(1));
-    expect(mockStart).toHaveBeenCalledWith('s1', 'att-1');
+    expect(mockStart).toHaveBeenCalledWith('s1', 'att-1', undefined); // sans source : jeu de famille (mutations déjà en file avant D-080)
     expect(mockSubmit).toHaveBeenCalledWith('att-1', [{ question_id: 'q1', choice: 1 }]);
     expect(mockStart.mock.invocationCallOrder[0]).toBeLessThan(mockSubmit.mock.invocationCallOrder[0] as number);
   });

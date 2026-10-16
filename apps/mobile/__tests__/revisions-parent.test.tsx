@@ -88,6 +88,18 @@ jest.mock('@/hooks/useQuizzes', () => ({
   useQuizProgressCounts: () => ({ data: mockCounts }),
 }));
 
+// D-080 : le catalogue (classe, matières, QCM distribués) a ses propres tests (catalog-parent.test.tsx) ; ici rien n'est distribué
+jest.mock('@/hooks/useCatalog', () => ({
+  useCatalogQuestions: () => ({ data: [], isPending: false }),
+  useUpsertCatalogQuestion: () => ({ mutate: jest.fn(), isPending: false }),
+  useChildSubjects: () => ({ data: [] }),
+  useParentCatalog: () => ({ data: [], isPending: false }),
+  useSetChildClass: () => ({ mutate: jest.fn(), isPending: false }),
+  useSetChildSubject: () => ({ mutate: jest.fn(), isPending: false }),
+  useShiftChildSubject: () => ({ mutate: jest.fn(), isPending: false }),
+  useRelaunchCatalogEvaluation: () => ({ mutate: jest.fn(), isPending: false }),
+}));
+
 beforeEach(() => {
   jest.clearAllMocks();
   mockRole = 'parent'; mockSets = []; mockPending = []; mockSet = set(); mockAttempts = []; mockDetail = null; mockCounts = []; mockChildAttempts = [];

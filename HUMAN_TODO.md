@@ -108,6 +108,20 @@ Même clé `OPENAI_API_KEY` que § 6 bis (aucun nouveau secret obligatoire) ; sa
 - **Vérifier** : Réglages → **Diagnostic** → « Edge Function generate-avatar : OK ». **Tester** sur l'iPhone installé en PWA : parent → Ảnh đại diện → autoriser → « Chọn ảnh chân dung » ; puis depuis le téléphone de l'enfant.
 - Non automatisable : le rendu de l'appareil photo avant (iOS, `capture="user"`) et la qualité réelle des dessins.
 
+## 6 quater. Espace administrateur du catalogue de QCM (D-080) — à faire UNE fois, après la fusion
+La migration `…000023_admin_catalog` ne crée **aucun administrateur** (aucun e-mail ni identifiant n'est dans git). Pour vous inscrire :
+1. Connectez-vous une fois à l'application avec **votre compte Google de parent** (celui que vous utilisez pour TaskMate).
+2. Supabase → **SQL Editor** → exécutez, en remplaçant le texte entre guillemets par l'adresse e-mail de ce compte Google :
+```sql
+insert into platform_admins (user_id)
+select id from auth.users where email = '<MON_EMAIL_GOOGLE>';
+```
+Si la requête affiche « INSERT 0 0 », l'adresse ne correspond à aucun compte (vérifiez l'orthographe). Pour retirer l'accès : `delete from platform_admins where user_id = (select id from auth.users where email = '<MON_EMAIL_GOOGLE>');`
+3. Rouvrez l'application : **Plus → Administration** apparaît (et seulement pour ce compte ; les autres parents et les enfants ne la voient pas, et les fonctions du serveur leur répondent « interdit »).
+- **Importer un QCM** : Administration → *Importer un QCM* → pays, classe, matière, semaine (« Tuần N ») → le document Word / PDF / photos (même clé `OPENAI_API_KEY` que § 6 bis ; le quota quotidien de votre famille s'applique) → relire les réponses (lettre touchée = confirmée) → fixer les dates (mise à disposition + échéance) → *Đăng*.
+- **Côté famille** : Révisions → choisir la classe de l'enfant et activer ses matières ; le QCM de la semaine arrive dans la liste de l'enfant le jour de sa mise à disposition (jour local de la famille).
+- Rien à déployer à la main : migration et fonctions partent à la fusion (§ 4).
+
 ## 7. Déclencheur des notifications (fait, D-065)
 Plus de Database Webhook à créer dans le tableau de bord : la migration `…000020_push_webhook` pose un déclencheur sur `public.activity_log` qui appelle `send-push` via `pg_net`. Il lit l'adresse de la fonction et le secret partagé dans le **coffre Supabase (Vault)** sous `push_webhook_url` et `push_webhook_secret` (posés en production le 2026-10-14) ; tant qu'ils sont absents (CI, base locale) il ne fait rien, et une erreur d'envoi n'empêche jamais l'enregistrement d'une activité.
 - **À faire par vous (secrets d'une fonction : saisie humaine uniquement)** : https://supabase.com/dashboard/project/olftkozksanvnzlsvwrp/functions/secrets → *Add new secrets* → `WEBHOOK_SECRET` = la **même** valeur que `push_webhook_secret` du coffre ; `VAPID_PUBLIC_KEY` = la clé publique, `VAPID_PRIVATE_KEY` = la clé privée (uniquement ici), `VAPID_SUBJECT` = `mailto:` + votre e-mail. La clé publique est déjà sur Vercel (`EXPO_PUBLIC_VAPID_PUBLIC_KEY`).

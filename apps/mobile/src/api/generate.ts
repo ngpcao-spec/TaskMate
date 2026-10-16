@@ -8,9 +8,16 @@ export class GenerateError extends Error {
   }
 }
 
+/** Case du catalogue de l'administrateur (D-080) : pays, classe, matière, semaine. */
+export type GenerateCatalogSlot = { country: string; grade: string; subject: string; week: string };
+
 export type GenerateInput = {
+  /** Mode famille : id du jeu. Mode catalogue : id du quiz du catalogue. */
   setId: string;
-  childId: string;
+  /** Mode famille : l'enfant visé. Absent en mode catalogue. */
+  childId?: string;
+  /** Mode catalogue (administrateur, vérifié côté serveur) : le brouillon est enregistré dans cette case. */
+  catalog?: GenerateCatalogSlot;
   title?: string;
   subject?: string;
   /** Type de support : « auto » (par défaut, l'IA détecte) ou un type précis. */

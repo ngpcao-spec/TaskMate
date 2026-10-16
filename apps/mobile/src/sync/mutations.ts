@@ -44,7 +44,7 @@ export type CreateVars = { familyId: string; memberId: string; tasks: NewTask[] 
 export type UpdateVars = { task: TaskRow; patch: TaskPatch };
 /** Révisions (D-055) : écritures mises en file hors ligne ; les ids sont fixés à la création → rejeu idempotent côté RPC. */
 export type CreateQuizSetVars = NewQuizSet;
-export type StartEvaluationVars = { setId: string; attemptId: string };
+export type StartEvaluationVars = { setId: string; attemptId: string; /** D-080 : absent = jeu de famille (mutations déjà en file avant la mise à jour). */ source?: 'family' | 'catalog' };
 /** Une réponse (position AFFICHÉE ; null = effacée) : écriture idempotente, enregistrée au fil de l'eau avant l'envoi final. */
 export type SaveProgressVars = { attemptId: string; questionId: string; choice: number | null };
 export type SubmitEvaluationVars = { attemptId: string; answers: { question_id: string; choice: number | null }[] };
@@ -219,7 +219,7 @@ export function registerMutationDefaults(
   });
   queryClient.setMutationDefaults(mutationKeys.startQuizEvaluation, {
     ...common,
-    mutationFn: ({ setId, attemptId }: StartEvaluationVars) => startQuizEvaluation(setId, attemptId),
+    mutationFn: ({ setId, attemptId, source }: StartEvaluationVars) => startQuizEvaluation(setId, attemptId, source),
     onError: () => toast(i18n.t('common.error'), 'error'),
     onSettled: refreshQuiz,
   });

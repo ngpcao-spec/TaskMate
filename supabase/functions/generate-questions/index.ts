@@ -82,6 +82,34 @@ Deno.serve(async (req) => {
       });
       return { error };
     },
+    targetAdmin: async () => {
+      const { data, error } = await asCaller.rpc('ai_target_admin');
+      return { data: (data as Target | null) ?? null, error };
+    },
+    saveCatalogDraft: async (quizId, slot, title, questions, kind, detected, replace) => {
+      const { error } = await asCaller.rpc('create_catalog_draft', {
+        p_quiz: quizId,
+        p_country: slot.country,
+        p_grade: slot.grade,
+        p_subject: slot.subject,
+        p_week: slot.week,
+        p_title: title,
+        p_questions: questions.map((q) => ({
+          prompt: q.prompt,
+          choices: q.choices,
+          correct: q.correct,
+          explanation: q.explanation,
+          number: q.number,
+          needs_figure: q.needsFigure,
+          to_verify: q.toVerify,
+          source: q.source,
+        })),
+        p_kind: kind,
+        p_kind_detected: detected,
+        p_replace: replace,
+      });
+      return { error };
+    },
     ai: apiKey ? realAiClient(apiKey, Deno.env.get('OPENAI_REASONING_EFFORT') ?? 'low') : null,
     model: Deno.env.get('OPENAI_MODEL') || DEFAULT_MODEL,
     dailyLimit: Number.isInteger(limit) && limit > 0 ? limit : LIMITS.defaultDailyLimit,

@@ -598,7 +598,8 @@
     "notifications": "Notification settings",
     "settings": "General settings",
     "revisions": "Review",
-    "avatar": "Avatar"
+    "avatar": "Avatar",
+    "admin": "Administration"
   },
   "taskList": {
     "upcoming": "Upcoming",
@@ -989,5 +990,110 @@
     "leaveBody": "You will lose access to this family's children, tasks and rewards. You can join again with a new code.",
     "left": "You left the family",
     "lastParent": "You are the only parent: to leave, delete the family (at the bottom of this page)."
+  },
+  "catalog": {
+    "country": "Country",
+    "countries": {
+      "VN": "Vietnam",
+      "FR": "France"
+    },
+    "grade": "Class",
+    "gradePlaceholder": "e.g. 5",
+    "gradeValue": "Class {{grade}}",
+    "subjectLabel": "Subject",
+    "week": "Week",
+    "weekPlaceholder": "e.g. Tuần 3",
+    "titleField": "Title",
+    "source": "Source (optional)",
+    "subject": {
+      "hist_geo": "History & Geography",
+      "maths": "Mathematics",
+      "langue_nationale": "National language",
+      "anglais": "English",
+      "sciences": "Science",
+      "civics": "Civics",
+      "technology": "Technology"
+    },
+    "state": {
+      "draft": "Draft",
+      "scheduled": "Scheduled",
+      "open": "Open",
+      "ended": "Ended"
+    },
+    "errors": {
+      "grade": "The class is at most 12 characters.",
+      "week": "The week is at most 40 characters."
+    },
+    "filters": {
+      "title": "Filters",
+      "all": "All"
+    },
+    "server": {
+      "slotTaken": "This slot (country, class, subject, week) already has a quiz.",
+      "invalidSlot": "Invalid country, class, subject, week or title.",
+      "invalidDates": "The release date must not be after the due date.",
+      "datesRequired": "A published quiz must have both dates.",
+      "invalidShift": "Cannot shift: one week at a time, four weeks at most either way.",
+      "subjectNotActive": "Turn this subject on first.",
+      "childNotFound": "Child not found.",
+      "forbidden": "Action not allowed."
+    },
+    "admin": {
+      "title": "Administration",
+      "intro": "Quizzes are prepared here by country, class, subject and week. Families create nothing: the child automatically receives the week’s quiz.",
+      "import": "Import a quiz",
+      "empty": "No quiz in this selection.",
+      "dates": "From {{from}} to {{to}}",
+      "noDates": "Dates to set",
+      "toVerify": "{{count}} answer(s) to check"
+    },
+    "import": {
+      "title": "Import into the catalog",
+      "intro": "Pick the catalog slot, then drop the document (Word, PDF or photos). The quiz is saved as a draft: review the answers, set the dates and publish.",
+      "continue": "Continue to import",
+      "manualTitle": "Or type it in",
+      "manualHelp": "Creates an empty quiz in this slot; you add the questions one by one.",
+      "manual": "Create an empty quiz"
+    },
+    "editor": {
+      "title": "Catalog quiz",
+      "notFound": "Quiz not found.",
+      "datesTitle": "Dates",
+      "datesHint": "Family local days. The quiz opens on the release date; the due date is information only and never blocks the child.",
+      "release": "Release date",
+      "due": "Due date",
+      "setRelease": "Set the release date",
+      "setDue": "Set the due date",
+      "saveDates": "Save dates",
+      "datesSaved": "Dates saved.",
+      "datesNeeded": "Set the release and due dates to publish.",
+      "published": "Quiz published.",
+      "unpublished": "Quiz unpublished.",
+      "unpublishHint": "Unpublishing removes the quiz from children’s lists without deleting any attempt.",
+      "attempts": "{{count}} attempt(s) by children.",
+      "choiceLabel": "{{letter}}: {{text}}, {{state}}",
+      "correct": "correct answer",
+      "setCorrect": "tap to set as the correct answer",
+      "source": "Source: {{source}}",
+      "delete": "Delete the draft",
+      "deleteTitle": "Delete this draft?",
+      "deleteBody": "The questions and their answers are deleted."
+    },
+    "parent": {
+      "classTitle": "Class",
+      "classHelp": "{{name}}’s country and class: they decide which quizzes are received.",
+      "saveClass": "Save the class",
+      "classSaved": "Class saved.",
+      "noClass": "Choose the country and class to receive the week’s quizzes.",
+      "subjectsTitle": "Subjects",
+      "subjectsHelp": "Turn on the subjects followed. The − and + buttons shift a subject’s quizzes by one week for this child (four weeks at most).",
+      "offsetNone": "Normal calendar",
+      "offsetLater": "Shifted by +{{count}} week(s): later",
+      "offsetEarlier": "Shifted by −{{count}} week(s): earlier",
+      "shiftEarlier": "{{subject}}: one week earlier",
+      "shiftLater": "{{subject}}: one week later",
+      "emptyCatalog": "No published quiz for this class and these subjects yet.",
+      "notYet": "Available on {{day}}"
+    }
   }
 }

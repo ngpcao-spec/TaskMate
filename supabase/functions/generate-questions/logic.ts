@@ -141,6 +141,7 @@ export const LIMITS = {
   maxPrompt: 500,
   maxChoice: 200,
   maxExplanation: 500,
+  maxSource: 200,
   maxIgnoredLabels: 60,
   maxIgnoredLabel: 16,
   // 30 questions de 4 choix avec explication ≈ 5 à 8 k jetons (jusqu'à ≈ 15 k au pire des longueurs permises) + raisonnement bas ; la facturation ne porte que sur les jetons produits
@@ -194,7 +195,10 @@ export class AiError extends Error {
 }
 
 /** Question prête à enregistrer en brouillon (RPC `create_quiz_draft`). */
-export type DraftQuestion = { prompt: string; choices: string[]; correct: number; explanation: string | null; number: number | null; needsFigure: boolean; toVerify: boolean };
+export type DraftQuestion = { prompt: string; choices: string[]; correct: number; explanation: string | null; number: number | null; needsFigure: boolean; toVerify: boolean; source: string | null };
+
+/** Case du catalogue de l'administrateur (D-080) : pays, classe, matière, semaine. Validée ici (forme) ET par la base (règles). */
+export type CatalogSlot = { country: string; grade: string; subject: string; week: string };
 
 export type Deps = {
   /** RPC `ai_target` avec le JWT de l'appelant : parent de la famille (et enfant de cette famille si demandé). */
@@ -205,6 +209,10 @@ export type Deps = {
   usageToday: (familyId: string) => Promise<number>;
   /** RPC `create_quiz_draft` avec le JWT de l'appelant ; `replace` : remplace le brouillon existant (relance). */
   saveDraft: (setId: string, childId: string, title: string, subject: string | null, questions: DraftQuestion[], kind: MaterialKind, detected: boolean, replace: boolean) => Promise<{ error: DbError }>;
+  /** RPC `ai_target_admin` avec le JWT de l'appelant (D-080) : l'appelant DOIT être administrateur de la plateforme (vérifié par la base) ET parent. */
+  targetAdmin: () => Promise<{ data: Target | null; error: DbError }>;
+  /** RPC `create_catalog_draft` avec le JWT de l'appelant (D-080) : brouillon du catalogue dans une case précise ; `replace` : relance sur le même brouillon. */
+  saveCatalogDraft: (quizId: string, slot: CatalogSlot, title: string, questions: DraftQuestion[], kind: MaterialKind, detected: boolean, replace: boolean) => Promise<{ error: DbError }>;
   /** null = secret OPENAI_API_KEY absent (IA non configurée). */
   ai: AiClient | null;
   model: string;
@@ -260,7 +268,10 @@ type Prepared = { content: AiContent[]; truncated: boolean; hint: SizeHint };
 type InputOk = {
   ok: true;
   setId: string;
-  childId: string;
+  /** Mode famille : l'enfant visé. Mode catalogue : null. */
+  childId: string | null;
+  /** Mode catalogue (administrateur) : la case visée ; null en mode famille. */
+  catalog: CatalogSlot | null;
   kind: RequestedKind;
   /** 'auto' ou un entier demandé à la main. */
   count: number | 'auto';
@@ -275,6 +286,22 @@ type InputOk = {
 };
 
 const str = (v: unknown): string | null => (typeof v === 'string' ? v.trim() : null);
+
+/** `catalog` absent → null (mode famille) ; présent mais mal formé → 'invalid'. Forme seulement : les règles (pays connus, unicité de la case…) sont dans la base. */
+export function parseCatalogSlot(v: unknown): CatalogSlot | null | 'invalid' {
+  if (v === undefined || v === null) return null;
+  if (typeof v !== 'object' || Array.isArray(v)) return 'invalid';
+  const c = v as Record<string, unknown>;
+  const country = str(c.country);
+  const grade = str(c.grade);
+  const subject = str(c.subject);
+  const week = str(c.week);
+  if (country === null || !['VN', 'FR'].includes(country)) return 'invalid';
+  if (grade === null || grade.length < 1 || grade.length > 12) return 'invalid';
+  if (subject === null || !/^[a-z][a-z_]{1,29}$/.test(subject)) return 'invalid';
+  if (week === null || week.length < 1 || week.length > 40) return 'invalid';
+  return { country, grade, subject, week };
+}
 /** Enlève les balises de délimitation que le texte d'un document pourrait contenir pour « fermer » son bloc. */
 const defang = (text: string): string => text.replace(/<\/?\s*(?:document|answer_key|parent_note)\s*>/gi, ' ');
 // eslint-disable-next-line no-control-regex
@@ -289,7 +316,9 @@ export async function prepareInput(body: unknown, maxQuestions: number = LIMITS.
   const bad = (code: string, extra: Record<string, unknown> = {}) => ({ ok: false as const, outcome: fail(422, code, extra) });
   if (typeof body !== 'object' || body === null) return bad('invalid_input');
   const b = body as Record<string, unknown>;
-  if (typeof b.childId !== 'string' || !UUID_RE.test(b.childId)) return bad('invalid_child');
+  const catalog = parseCatalogSlot(b.catalog);
+  if (catalog === 'invalid') return bad('invalid_catalog');
+  if (catalog === null && (typeof b.childId !== 'string' || !UUID_RE.test(b.childId))) return bad('invalid_child');
   if (typeof b.setId !== 'string' || !UUID_RE.test(b.setId)) return bad('invalid_input');
   const kind = b.kind === undefined ? 'auto' : b.kind;
   if (typeof kind !== 'string' || (kind !== 'auto' && !(KINDS as readonly string[]).includes(kind))) return bad('invalid_kind');
@@ -297,7 +326,7 @@ export async function prepareInput(body: unknown, maxQuestions: number = LIMITS.
   if (count !== 'auto' && (typeof count !== 'number' || !Number.isInteger(count) || count < LIMITS.minQuestions || count > maxQuestions)) return bad('invalid_count', { min: LIMITS.minQuestions, max: maxQuestions });
   const language = b.language === undefined ? 'auto' : b.language;
   if (typeof language !== 'string' || !LANGUAGES.includes(language as Language)) return bad('invalid_language');
-  const subject = b.subject === undefined || b.subject === null ? null : str(b.subject);
+  const subject = catalog !== null ? catalog.subject : b.subject === undefined || b.subject === null ? null : str(b.subject);
   if (b.subject !== undefined && b.subject !== null && subject === null) return bad('invalid_input');
   if (subject !== null && subject.length > LIMITS.maxSubject) return bad('invalid_input');
   const title = b.title === undefined || b.title === null ? null : str(b.title);
@@ -392,7 +421,8 @@ export async function prepareInput(body: unknown, maxQuestions: number = LIMITS.
   return {
     ok: true,
     setId: b.setId,
-    childId: b.childId,
+    childId: catalog === null ? (b.childId as string) : null,
+    catalog,
     kind: kind as RequestedKind,
     count: count as number | 'auto',
     language: language as Language,
@@ -439,13 +469,14 @@ export const QUESTIONS_SCHEMA: Record<string, unknown> = {
       items: {
         type: 'object',
         additionalProperties: false,
-        required: ['number', 'prompt', 'choices', 'correct_index', 'explanation', 'answer_source', 'depends_on_figure', 'needs_verification'],
+        required: ['number', 'prompt', 'choices', 'correct_index', 'explanation', 'source', 'answer_source', 'depends_on_figure', 'needs_verification'],
         properties: {
           number: { type: ['integer', 'null'], description: 'Exams: the ORIGINAL question number as printed (e.g. 5 for "Câu 5"). Other types: null.' },
           prompt: { type: 'string', description: `The question, at most ${LIMITS.maxPrompt} characters.` },
           choices: { type: 'array', description: `Exactly 3 or 4 distinct answer choices, each at most ${LIMITS.maxChoice} characters, WITHOUT the letter labels (no "A.", "b)").`, items: { type: 'string' } },
           correct_index: { type: 'integer', description: '0-based index, in "choices", of the single correct choice (0 = A, 1 = B, 2 = C, 3 = D).' },
           explanation: { type: ['string', 'null'], description: `Short explanation helpful for a child, at most ${LIMITS.maxExplanation} characters, or null. If the document prints an explanation for this question, copy it verbatim.` },
+          source: { type: ['string', 'null'], description: `Reference printed in the document for THIS question (e.g. the text after "Nguồn:", "Source:", a textbook page), copied verbatim, at most ${LIMITS.maxSource} characters, or null.` },
           answer_source: { type: 'string', enum: ['document_key', 'suggested', 'unknown'], description: 'document_key = the correct answer was read in the document (e.g. "Réponse : B") or in the answer key block; suggested = your own proposed answer; unknown = you could not determine it (best guess).' },
           depends_on_figure: { type: 'boolean', description: 'True when the question relies on a graph, table (variation/sign table), diagram, map or picture that the plain text does not contain, or refers to a figure/map of the paper sheet.' },
           needs_verification: { type: 'boolean', description: 'True when you are not sure the chosen answer is right, or the answer key does not cover this question.' },
@@ -523,6 +554,8 @@ export type ParsedQuestion = {
   choices: string[];
   correct: number;
   explanation: string | null;
+  /** Référence imprimée dans le document (« Nguồn: … »), recopiée telle quelle ; null si absente. */
+  reference: string | null;
   source: 'document_key' | 'suggested' | 'unknown';
   figure: boolean;
   verify: boolean;
@@ -596,7 +629,13 @@ export function parseGenerated(text: string, maxQuestions: number = LIMITS.maxRe
       if (e.length > LIMITS.maxExplanation) return invalid;
       explanation = e === '' ? null : e;
     }
-    questions.push({ number, prompt, choices, correct: idx, explanation, source: r.answer_source, figure: r.depends_on_figure, verify: r.needs_verification });
+    let reference: string | null = null;
+    if (r.source !== undefined && r.source !== null) {
+      if (typeof r.source !== 'string') return invalid;
+      const ref = r.source.replace(CONTROL, ' ').trim();
+      reference = ref === '' ? null : ref.slice(0, LIMITS.maxSource);
+    }
+    questions.push({ number, prompt, choices, correct: idx, explanation, reference, source: r.answer_source, figure: r.depends_on_figure, verify: r.needs_verification });
   }
   return { ok: true, detectedKind: o.detected_kind as MaterialKind, unsure: o.kind_unsure, title, found: o.qcm_found, ignored, questions };
 }
@@ -661,6 +700,7 @@ export function finalizeQuestions(parsed: Extract<Parsed, { ok: true }>, request
       choices,
       correct: q.correct,
       explanation: q.explanation,
+      source: q.reference,
       number: exam ? q.number : null,
       needsFigure: q.figure,
       // une question qui dépend d'une figure est TOUJOURS « à vérifier », quoi que dise l'IA
@@ -756,10 +796,28 @@ export async function handleStatus(deps: Deps): Promise<Outcome> {
   return { status: 200, body: { configured: deps.ai !== null, model: deps.model, usedToday: used, dailyLimit: deps.dailyLimit, maxQuestions: deps.maxQuestions } };
 }
 
+/** Mode catalogue (D-080) : l'autorisation vient de `ai_target_admin` (administrateur de la plateforme ET parent), vérifiée par la BASE avec le JWT de l'appelant. */
+async function authorizeAdmin(deps: Deps): Promise<{ ok: true; target: Target } | { ok: false; outcome: Outcome }> {
+  const { data, error } = await deps.targetAdmin();
+  if (error || !data) {
+    if (error?.code === '28000') return { ok: false, outcome: fail(401, 'not_authenticated') };
+    if (error?.code === '42501') return { ok: false, outcome: fail(403, 'forbidden') };
+    return { ok: false, outcome: fail(500, 'server_error') };
+  }
+  return { ok: true, target: data };
+}
+
 export async function handleGenerate(deps: Deps, body: unknown): Promise<Outcome> {
-  const childId = typeof body === 'object' && body !== null ? (body as Record<string, unknown>).childId : null;
-  if (typeof childId !== 'string' || !UUID_RE.test(childId)) return fail(422, 'invalid_child');
-  const auth = await authorize(deps, childId);
+  const rawBody = typeof body === 'object' && body !== null ? (body as Record<string, unknown>) : {};
+  const childId = rawBody.childId;
+  const catalogMode = rawBody.catalog !== undefined && rawBody.catalog !== null;
+  let auth: Awaited<ReturnType<typeof authorize>>;
+  if (catalogMode) {
+    auth = await authorizeAdmin(deps);
+  } else {
+    if (typeof childId !== 'string' || !UUID_RE.test(childId)) return fail(422, 'invalid_child');
+    auth = await authorize(deps, childId);
+  }
   if (!auth.ok) return auth.outcome;
   if (!deps.ai) return fail(503, 'ai_not_configured');
 
@@ -822,11 +880,17 @@ export async function handleGenerate(deps: Deps, body: unknown): Promise<Outcome
   }
   const result = finalizeQuestions(parsed, input.kind, input.hasKey, cap);
   const title = input.title ?? (parsed.title !== '' ? parsed.title : (input.subject ?? 'Quiz').slice(0, LIMITS.maxTitle));
-  let saved = await deps.saveDraft(input.setId, input.childId, title, input.subject, result.questions, result.kind, result.detected, input.retry);
+  const save = (replace: boolean) =>
+    input.catalog
+      ? deps.saveCatalogDraft(input.setId, input.catalog, title, result.questions, result.kind, result.detected, replace)
+      : deps.saveDraft(input.setId, input.childId as string, title, input.subject, result.questions, result.kind, result.detected, replace);
+  let saved = await save(input.retry);
   // relance sur un brouillon qui n'existe pas (la 1re tentative n'avait rien enregistré) : on enregistre normalement
-  if (saved.error?.code === 'P0002' && input.retry) saved = await deps.saveDraft(input.setId, input.childId, title, input.subject, result.questions, result.kind, result.detected, false);
+  if (saved.error?.code === 'P0002' && input.retry) saved = await save(false);
   if (saved.error) {
     await done('failed', 'save_failed', tokens);
+    // case du catalogue déjà prise : l'administrateur doit le savoir (la génération, elle, est comptée)
+    if (input.catalog && saved.error.message === 'catalog_slot_taken') return fail(409, 'catalog_slot_taken');
     return fail(saved.error.code === 'P0001' || saved.error.code === '42501' ? 409 : 500, 'save_failed');
   }
   await done('success', null, tokens);

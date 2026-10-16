@@ -46,7 +46,7 @@ const LONG = 'La photosynthèse transforme la lumière en énergie chimique dans
 const UUID_SET = '00000000-0000-0000-0000-000000000701';
 const UUID_CHILD = '00000000-0000-0000-0000-000000000201';
 const target: Target = { family_id: 'fam-1', member_id: 'mem-1', timezone: 'Asia/Ho_Chi_Minh', child_id: UUID_CHILD, child_name: 'Minh' };
-type AiQuestion = { number: number | null; prompt: string; choices: string[]; correct_index: number; explanation: string | null; answer_source: string; depends_on_figure: boolean; needs_verification: boolean };
+type AiQuestion = { number: number | null; prompt: string; choices: string[]; correct_index: number; explanation: string | null; source?: string | null; answer_source: string; depends_on_figure: boolean; needs_verification: boolean };
 const aiQuestion = (i: number, over: Partial<AiQuestion> = {}): AiQuestion => ({
   number: null, prompt: `Question ${i + 1} ?`, choices: ['a', 'b', 'c'], correct_index: i % 3, explanation: i === 0 ? 'Parce que' : null,
   answer_source: 'suggested', depends_on_figure: false, needs_verification: false, ...over,
@@ -55,9 +55,9 @@ const aiQuestion = (i: number, over: Partial<AiQuestion> = {}): AiQuestion => ({
 const goodJson = (n = 2, over: Record<string, unknown> = {}, qOver: Partial<AiQuestion> = {}) =>
   JSON.stringify({ detected_kind: 'course', kind_unsure: false, title: 'La photosynthèse', qcm_found: n, ignored: [], questions: Array.from({ length: n }, (_, i) => aiQuestion(i, qOver)), ...over });
 
-type Calls = { ai: AiRequest[]; reserve: unknown[][]; finish: unknown[][]; save: unknown[][] };
-function makeDeps(opts: { reply?: AiResponse | Error | (() => Promise<AiResponse>); targetError?: { code: string } | null; allowed?: boolean; configured?: boolean; saveError?: boolean; free?: boolean; maxQuestions?: number; saveCodes?: string[] } = {}) {
-  const calls: Calls = { ai: [], reserve: [], finish: [], save: [] };
+type Calls = { ai: AiRequest[]; reserve: unknown[][]; finish: unknown[][]; save: unknown[][]; saveCatalog: unknown[][]; admin: number };
+function makeDeps(opts: { reply?: AiResponse | Error | (() => Promise<AiResponse>); targetError?: { code: string } | null; allowed?: boolean; configured?: boolean; saveError?: boolean; free?: boolean; maxQuestions?: number; saveCodes?: string[]; adminError?: { code: string } | null; catalogSaveError?: { code: string; message?: string } | null } = {}) {
+  const calls: Calls = { ai: [], reserve: [], finish: [], save: [], saveCatalog: [], admin: 0 };
   const ai: AiClient = {
     complete: async (req) => {
       calls.ai.push(req);
@@ -75,6 +75,14 @@ function makeDeps(opts: { reply?: AiResponse | Error | (() => Promise<AiResponse
       calls.save.push(a);
       const code = opts.saveCodes?.[calls.save.length - 1];
       return { error: code ? { code } : opts.saveError ? { code: '23505' } : null };
+    },
+    targetAdmin: async () => {
+      calls.admin++;
+      return opts.adminError ? { data: null, error: opts.adminError } : { data: { ...target, child_id: undefined, child_name: undefined }, error: null };
+    },
+    saveCatalogDraft: async (...a) => {
+      calls.saveCatalog.push(a);
+      return { error: opts.catalogSaveError ?? null };
     },
     ai: opts.configured === false ? null : ai,
     model: 'gpt-5.4-mini',
@@ -101,8 +109,8 @@ describe('generate-questions — cas nominal', () => {
     expect(req.model).toBe('gpt-5.4-mini');
     expect(calls.reserve).toEqual([['fam-1', 'mem-1', 20, UUID_SET, false]]);
     expect(calls.save[0]).toEqual([UUID_SET, UUID_CHILD, 'La photosynthèse', 'Sinh học', [
-      { prompt: 'Question 1 ?', choices: ['a', 'b', 'c'], correct: 0, explanation: 'Parce que', number: null, needsFigure: false, toVerify: false },
-      { prompt: 'Question 2 ?', choices: ['a', 'b', 'c'], correct: 1, explanation: null, number: null, needsFigure: false, toVerify: false },
+      { prompt: 'Question 1 ?', choices: ['a', 'b', 'c'], correct: 0, explanation: 'Parce que', source: null, number: null, needsFigure: false, toVerify: false },
+      { prompt: 'Question 2 ?', choices: ['a', 'b', 'c'], correct: 1, explanation: null, source: null, number: null, needsFigure: false, toVerify: false },
     ], 'course', true, false]);
     expect(calls.finish).toEqual([['usage-1', 'success', null, 'gpt-5.4-mini', 1200, 700]]);
   });
@@ -377,7 +385,7 @@ describe('generate-questions — fournisseur OpenAI (requête et réponse, sans 
     expect(root.required).toEqual(['detected_kind', 'kind_unsure', 'title', 'qcm_found', 'ignored', 'questions']);
     expect(Object.keys(root.properties).sort()).toEqual([...root.required].sort());
     expect(q.additionalProperties).toBe(false);
-    expect(q.required).toEqual(['number', 'prompt', 'choices', 'correct_index', 'explanation', 'answer_source', 'depends_on_figure', 'needs_verification']);
+    expect(q.required).toEqual(['number', 'prompt', 'choices', 'correct_index', 'explanation', 'source', 'answer_source', 'depends_on_figure', 'needs_verification']);
     expect(Object.keys(q.properties).sort()).toEqual([...q.required].sort());
     expect(q.properties.choices?.description).toMatch(/3 or 4/);
   });
@@ -972,5 +980,97 @@ describe('QCM déjà rédigés dans le fichier (D-079) : reprise FIDÈLE, rien d
     const { deps, calls } = makeDeps({ reply: ok(readyMade(4)) });
     await handleGenerate(deps, body({ count: 10 }));
     expect(savedQuestions(calls)).toHaveLength(4);
+  });
+});
+
+// ───────────── D-080 : mode catalogue (administrateur) ─────────────
+const SLOT = { country: 'VN', grade: '5', subject: 'hist_geo', week: 'Tuần 3' };
+const catalogBody = (over: Record<string, unknown> = {}) => ({ setId: UUID_SET, catalog: SLOT, files: [{ name: 'w.jpg', mediaType: 'image/jpeg', data: b64(JPEG) }], ...over });
+
+describe('generate-questions — catalogue de l\'administrateur (D-080)', () => {
+  it('admin : autorisation par ai_target_admin (sans enfant), quota réservé, brouillon du catalogue enregistré avec la source', async () => {
+    const reply = { text: goodJson(2, {}, { source: 'SGK p.12' }), stopReason: null, inputTokens: 10, outputTokens: 5 } as AiResponse;
+    const { deps, calls } = makeDeps({ reply });
+    const out = await handleGenerate(deps, catalogBody({ title: 'Lịch sử' }));
+    expect(out.status).toBe(200);
+    expect(out.body).toMatchObject({ set_id: UUID_SET, title: 'Lịch sử', count: 2 });
+    expect(calls.admin).toBe(1);
+    expect(calls.save).toEqual([]);  // jamais le chemin « famille »
+    expect(calls.reserve).toEqual([['fam-1', 'mem-1', 20, UUID_SET, false]]);
+    const [quizId, slot, title, questions, kind, detected, replace] = calls.saveCatalog[0] as [string, unknown, string, DraftQuestion[], string, boolean, boolean];
+    expect([quizId, slot, title, kind, detected, replace]).toEqual([UUID_SET, SLOT, 'Lịch sử', 'course', true, false]);
+    expect(questions.map((q) => q.source)).toEqual(['SGK p.12', 'SGK p.12']);
+    expect(calls.finish[0]?.[1]).toBe('success');
+  });
+  it('non admin : 403 AVANT toute réservation de quota ou appel IA', async () => {
+    const { deps, calls } = makeDeps({ adminError: { code: '42501' } });
+    const out = await handleGenerate(deps, catalogBody());
+    expect(out.status).toBe(403);
+    expect(out.body).toMatchObject({ error: 'forbidden' });
+    expect(calls.ai).toEqual([]);
+    expect(calls.reserve).toEqual([]);
+    expect(calls.saveCatalog).toEqual([]);
+  });
+  it('non connecté : 401', async () => {
+    const { deps } = makeDeps({ adminError: { code: '28000' } });
+    expect((await handleGenerate(deps, catalogBody())).status).toBe(401);
+  });
+  it('un parent ordinaire ne peut pas contourner : le mode catalogue ne passe JAMAIS par ai_target', async () => {
+    const { deps, calls } = makeDeps({ adminError: { code: '42501' } });
+    await handleGenerate(deps, { ...catalogBody(), childId: UUID_CHILD });
+    expect(calls.admin).toBe(1);
+    expect(calls.save).toEqual([]);
+    expect(calls.saveCatalog).toEqual([]);
+  });
+  it.each([
+    ['pays inconnu', { country: 'XX' }],
+    ['classe vide', { grade: '' }],
+    ['classe trop longue', { grade: 'x'.repeat(13) }],
+    ['matière invalide', { subject: 'Maths!' }],
+    ['semaine vide', { week: ' ' }],
+    ['semaine trop longue', { week: 'w'.repeat(41) }],
+  ])('case mal formée (%s) : 422 invalid_catalog, aucun quota consommé', async (_n, over) => {
+    const { deps, calls } = makeDeps();
+    const out = await handleGenerate(deps, catalogBody({ catalog: { ...SLOT, ...over } }));
+    expect(out.status).toBe(422);
+    expect(out.body).toMatchObject({ error: 'invalid_catalog' });
+    expect(calls.reserve).toEqual([]);
+    expect(calls.ai).toEqual([]);
+  });
+  it('catalog non objet : 422', async () => {
+    const { deps } = makeDeps();
+    expect((await handleGenerate(deps, catalogBody({ catalog: 'VN' }))).status).toBe(422);
+    expect((await handleGenerate(deps, catalogBody({ catalog: [] }))).status).toBe(422);
+  });
+  it('case déjà prise : 409 catalog_slot_taken (la génération est journalisée en échec)', async () => {
+    const { deps, calls } = makeDeps({ catalogSaveError: { code: 'P0001', message: 'catalog_slot_taken' } });
+    const out = await handleGenerate(deps, catalogBody());
+    expect(out.status).toBe(409);
+    expect(out.body).toMatchObject({ error: 'catalog_slot_taken' });
+    expect(calls.finish[0]?.[1]).toBe('failed');
+  });
+  it('relance : même brouillon (replace) ; brouillon absent → enregistrement normal', async () => {
+    const { deps, calls } = makeDeps({ free: true });
+    deps.saveCatalogDraft = async (...a) => { calls.saveCatalog.push(a); return { error: calls.saveCatalog.length === 1 ? { code: 'P0002' } : null }; };
+    const out = await handleGenerate(deps, catalogBody({ retry: true }));
+    expect(out.status).toBe(200);
+    expect(calls.saveCatalog.map((c) => c[6])).toEqual([true, false]);
+    expect(out.body).toMatchObject({ free_retry: true });
+  });
+  it('mode famille inchangé : childId toujours obligatoire sans catalogue', async () => {
+    const { deps } = makeDeps();
+    const out = await handleGenerate(deps, { setId: UUID_SET, files: [{ data: b64(JPEG) }] });
+    expect(out.status).toBe(422);
+    expect(out.body).toMatchObject({ error: 'invalid_child' });
+  });
+  it('la référence « Nguồn » est recopiée (≤ 200 caractères) et la consigne IA la demande', async () => {
+    const parsed = parseGenerated(goodJson(1, {}, { source: '  Nguồn: SGK trang 12  ' }));
+    expect(parsed.ok && parsed.questions[0]?.reference).toBe('Nguồn: SGK trang 12');
+    const long = parseGenerated(goodJson(1, {}, { source: 'x'.repeat(500) }));
+    expect(long.ok && long.questions[0]?.reference?.length).toBe(200);
+    const absent = parseGenerated(goodJson(1));
+    expect(absent.ok && absent.questions[0]?.reference).toBeNull();
+    expect(parseGenerated(goodJson(1, {}, { source: 5 as unknown as string })).ok).toBe(false);
+    expect(JSON.stringify(QUESTIONS_SCHEMA)).toContain('Nguồn');
   });
 });

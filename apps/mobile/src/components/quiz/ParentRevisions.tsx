@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ProfilePills } from '@/components/ProfilePills';
 import { DueLabel } from '@/components/quiz/DueLabel';
+import { ParentCatalog } from '@/components/quiz/ParentCatalog';
 import { ScoreHistory } from '@/components/quiz/ScoreHistory';
 import { weekStatusLabel, WeekStatusBadge } from '@/components/quiz/WeekStatus';
 import { Card, Screen, ScreenHeader } from '@/components/ui';
@@ -49,6 +50,8 @@ export function ParentRevisions() {
           ))}
         </Card>
       ) : null}
+
+      <ParentCatalog child={d.child} today={today} />
 
       {list.length === 0 ? <Text style={[typography.secondary, styles.empty]}>{t('revisions.emptyParent')}</Text> : null}
       {list.map((s) => {

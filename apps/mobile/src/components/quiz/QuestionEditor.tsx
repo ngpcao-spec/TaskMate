@@ -5,17 +5,23 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-nati
 import { newId } from '@/api/ids';
 import { Button, Field, Screen, ScreenHeader } from '@/components/ui';
 import { MAX_CHOICES, nextPosition, normalizeQuestion, validateQuestion, type QuestionDraft } from '@/domain/quiz';
+import { useCatalogQuestions, useUpsertCatalogQuestion } from '@/hooks/useCatalog';
 import { useParentQuestions, useUpsertQuestion } from '@/hooks/useQuizzes';
 import { colors, MIN_TARGET, typography, line } from '@/theme/tokens';
 
 /** Ajout / modification d'une question (parent) : énoncé, 3 à 4 choix, bonne réponse, explication facultative. */
-export function QuestionEditor({ setId, questionId }: { setId: string; questionId?: string }) {
+export function QuestionEditor({ setId, questionId, catalog = false }: { setId: string; questionId?: string; /** D-080 : question d'un QCM du catalogue (administrateur) ; ajoute la « source ». */ catalog?: boolean }) {
   const { t } = useTranslation();
   const router = useRouter();
-  const questions = useParentQuestions(setId);
+  const familyQuestions = useParentQuestions(catalog ? '' : setId);
+  const catalogQuestions = useCatalogQuestions(catalog ? setId : '');
+  const questions = catalog ? catalogQuestions : familyQuestions;
   const upsert = useUpsertQuestion();
+  const upsertCatalog = useUpsertCatalogQuestion();
+  const [source, setSource] = useState<string | null>(null);
   const fixedId = useRef(questionId ?? newId()); // id fixé à la création : un rejeu ne crée jamais de doublon
   const existing = useMemo(() => (questions.data ?? []).find((q) => q.id === questionId), [questions.data, questionId]);
+  const existingSource = existing && 'source' in existing ? existing.source : null;
   const [draft, setDraft] = useState<QuestionDraft | null>(null);
   const [touched, setTouched] = useState(false);
 
@@ -35,6 +41,13 @@ export function QuestionEditor({ setId, questionId }: { setId: string; questionI
     const normalized = normalizeQuestion(value);
     if (!normalized) return;
     const position = existing ? existing.position : nextPosition((questions.data ?? []).map((q) => q.position));
+    if (catalog) {
+      upsertCatalog.mutate(
+        { id: fixedId.current, quizId: setId, position, prompt: normalized.prompt, choices: normalized.choices, correct: normalized.correct, explanation: normalized.explanation, source: (source ?? existingSource ?? '').trim() || null },
+        { onSuccess: () => router.back() },
+      );
+      return;
+    }
     upsert.mutate({ id: fixedId.current, setId, position, prompt: normalized.prompt, choices: normalized.choices, correct: normalized.correct, explanation: normalized.explanation }, { onSuccess: () => router.back() });
   };
 
@@ -66,7 +79,8 @@ export function QuestionEditor({ setId, questionId }: { setId: string; questionI
       {has('correctEmpty') ? <Text accessibilityRole="alert" style={styles.error}>{t('revisions.errors.correctEmpty')}</Text> : null}
       <Text style={typography.secondary}>{t('revisions.correctMark')}</Text>
       <Field label={t('revisions.explanation')} value={value.explanation} onChangeText={(explanation) => patch({ explanation })} multiline maxLength={600} style={styles.multiline} error={errors.includes('explanationTooLong') ? t('revisions.errors.explanationTooLong') : null} />
-      <Button label={t('revisions.save')} onPress={save} loading={upsert.isPending} />
+      {catalog ? <Field label={t('catalog.source')} value={source ?? existingSource ?? ''} onChangeText={setSource} maxLength={200} /> : null}
+      <Button label={t('revisions.save')} onPress={save} loading={upsert.isPending || upsertCatalog.isPending} />
     </Screen>
   );
 }

@@ -40,7 +40,7 @@ export function EvaluationRun({ setId }: { setId: string }) {
   useEffect(() => {
     if (!info || startedRef.current || resuming || !info.can_start_evaluation) return;
     startedRef.current = true;
-    start.mutate({ setId, attemptId: freshId });
+    start.mutate({ setId, attemptId: freshId, source: info.source });
   }, [info?.set_id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // les questions ne sont demandées qu'une fois la tentative créée côté serveur (reprise, ou démarrage confirmé)

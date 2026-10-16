@@ -1,4 +1,5 @@
 import type { QuizAttemptRow, QuizAttemptStatus, QuizMaterialKind, QuizQuestionRow, QuizSetRow } from '@/types/models';
+import { fetchChildCatalog } from './catalog';
 import { supabase } from './supabase';
 
 /** Révisions (D-055). Parent : lectures directes (RLS) + RPC ; enfant : RPC uniquement (jamais la clé des réponses). */
@@ -51,30 +52,67 @@ export async function fetchSetAttempts(setId: string): Promise<AttemptWithScore[
 
 export type ChildAttempt = AttemptWithScore & { set_title: string };
 
+/** Titres des quiz du catalogue pour des tentatives (la table du catalogue n'est lisible par personne : RPC `parent_catalog_attempts`, par enfant). */
+async function withCatalogTitles(rows: ChildAttempt[]): Promise<ChildAttempt[]> {
+  const children = [...new Set(rows.filter((r) => r.catalog_id !== null).map((r) => r.child_id))];
+  if (children.length === 0) return rows;
+  const lists = await Promise.all(children.map((c) => supabase.rpc('parent_catalog_attempts', { p_child: c })));
+  const titles = new Map<string, string>();
+  for (const l of lists) {
+    fail(l.error);
+    for (const a of (l.data ?? []) as unknown as { attempt_id: string; title: string; week_label: string }[]) titles.set(a.attempt_id, `${a.week_label} — ${a.title}`);
+  }
+  return rows.map((r) => (r.catalog_id !== null ? { ...r, set_title: titles.get(r.id) ?? '' } : r));
+}
+
 /** Historique de UN enfant (parent) : toutes ses tentatives, avec le titre du jeu. */
 export async function fetchChildAttempts(childId: string): Promise<ChildAttempt[]> {
   const { data, error } = await supabase.from('quiz_attempts').select('*, quiz_results(score, total), quiz_sets(title)').eq('child_id', childId).order('started_at', { ascending: false });
   fail(error);
-  return (data ?? []).map((row) => ({ ...withScore(row), set_title: ((Array.isArray(row.quiz_sets) ? row.quiz_sets[0] : row.quiz_sets) as { title: string } | null)?.title ?? '' }));
+  return withCatalogTitles((data ?? []).map((row) => ({ ...withScore(row), set_title: ((Array.isArray(row.quiz_sets) ? row.quiz_sets[0] : row.quiz_sets) as { title: string } | null)?.title ?? '' })));
 }
 
 /** Évaluations soumises, en attente de validation (toute la famille, parent). */
 export async function fetchPendingQuizAttempts(): Promise<ChildAttempt[]> {
   const { data, error } = await supabase.from('quiz_attempts').select('*, quiz_results(score, total), quiz_sets(title)').eq('status', 'submitted').order('submitted_at');
   fail(error);
-  return (data ?? []).map((row) => ({ ...withScore(row), set_title: ((Array.isArray(row.quiz_sets) ? row.quiz_sets[0] : row.quiz_sets) as { title: string } | null)?.title ?? '' }));
+  return withCatalogTitles((data ?? []).map((row) => ({ ...withScore(row), set_title: ((Array.isArray(row.quiz_sets) ? row.quiz_sets[0] : row.quiz_sets) as { title: string } | null)?.title ?? '' })));
 }
 
 export type AttemptDetail = {
   attempt: AttemptWithScore;
+  /** Jeu de la famille (null pour un quiz du catalogue : seul le titre est connu). */
   set: QuizSetRow | null;
+  title: string;
   questions: (ParentQuestion & { choice_index: number | null; is_correct: boolean })[];
 };
+
+/** Revue d'une tentative SOUMISE ou validée de SON enfant (RPC `parent_attempt_review`) : marche pour un quiz du catalogue comme pour un jeu de famille. */
+type ReviewRow = { question_id: string; position: number; number: number | null; needs_figure: boolean; prompt: string; choices: string[]; correct_index: number; explanation: string | null; choice_index: number | null; is_correct: boolean };
+
+async function fetchCatalogAttemptDetail(attempt: QuizAttemptRow & { quiz_results: unknown }): Promise<AttemptDetail | null> {
+  const { data, error } = await supabase.rpc('parent_attempt_review', { p_attempt: attempt.id });
+  if (error) {
+    if ((error as { message?: string }).message === 'not_submitted') return null;
+    throw error;
+  }
+  const review = data as unknown as { title: string; questions: ReviewRow[] };
+  return {
+    attempt: withScore(attempt),
+    set: null,
+    title: review.title,
+    questions: review.questions.map((q) => ({
+      id: q.question_id, set_id: attempt.catalog_id ?? '', family_id: attempt.family_id, position: q.position, prompt: q.prompt, choices: q.choices, origin_number: q.number, needs_figure: q.needs_figure,
+      created_at: attempt.created_at, updated_at: attempt.updated_at, correct_index: q.correct_index, explanation: q.explanation, to_verify: false, confirmed: true, choice_index: q.choice_index, is_correct: q.is_correct,
+    })),
+  };
+}
 
 export async function fetchAttemptDetail(attemptId: string): Promise<AttemptDetail | null> {
   const { data: attempt, error } = await supabase.from('quiz_attempts').select('*, quiz_results(score, total)').eq('id', attemptId).maybeSingle();
   fail(error);
   if (!attempt) return null;
+  if (attempt.set_id === null) return fetchCatalogAttemptDetail(attempt);
   const [questions, answers, set] = await Promise.all([
     fetchParentQuestions(attempt.set_id),
     supabase.from('quiz_answers').select('question_id, choice_index, is_correct').eq('attempt_id', attemptId),
@@ -85,6 +123,7 @@ export async function fetchAttemptDetail(attemptId: string): Promise<AttemptDeta
   return {
     attempt: withScore(attempt),
     set,
+    title: set?.title ?? '',
     questions: questions.map((q) => ({ ...q, choice_index: byQuestion.get(q.id)?.choice_index ?? null, is_correct: byQuestion.get(q.id)?.is_correct ?? false })),
   };
 }
@@ -167,6 +206,11 @@ export async function relaunchQuizEvaluation(setId: string, attemptId: string): 
 // ───────────── enfant (RPC uniquement) ─────────────
 export type ChildQuizSet = {
   set_id: string;
+  /** D-080 : `catalog` = quiz du catalogue de l'administrateur (démarrage par `start_catalog_evaluation`) ; `family` = jeu importé par la famille. */
+  source: 'family' | 'catalog';
+  /** Quiz du catalogue : clé de la matière (libellé i18n) et semaine ; null pour un jeu de famille. */
+  subject_key: string | null;
+  week_label: string | null;
   title: string;
   subject: string | null;
   question_count: number;
@@ -182,9 +226,19 @@ export type ChildQuizSet = {
   answered_count: number;
 };
 export async function fetchChildQuizSets(): Promise<ChildQuizSet[]> {
-  const { data, error } = await supabase.rpc('child_quiz_sets');
-  fail(error);
-  return (data ?? []) as ChildQuizSet[];
+  // pendant un déploiement, la fonction du catalogue peut ne pas encore exister : on n'ignore que CETTE erreur (jamais un refus ou un échec réseau)
+  const missingFunction = (e: unknown) => ['PGRST202', '42883'].includes((e as { code?: string } | null)?.code ?? '');
+  const [family, catalog] = await Promise.all([supabase.rpc('child_quiz_sets'), fetchChildCatalog().catch((e: unknown) => (missingFunction(e) ? [] : Promise.reject(e)))]);
+  fail(family.error);
+  const own = ((family.data ?? []) as unknown as Omit<ChildQuizSet, 'source' | 'subject_key' | 'week_label'>[]).map((s): ChildQuizSet => ({ ...s, source: 'family', subject_key: null, week_label: null }));
+  const shared = catalog.map(
+    (c): ChildQuizSet => ({
+      set_id: c.quiz_id, source: 'catalog', subject_key: c.subject, week_label: c.week_label, title: c.title, subject: null, question_count: c.question_count,
+      evaluation_attempt_id: c.evaluation_attempt_id, evaluation_status: c.evaluation_status, can_start_evaluation: c.can_start_evaluation, paper_support: c.paper_support,
+      answer_sheet_only: c.answer_sheet_only, due_on: c.due_on, answered_count: c.answered_count,
+    }),
+  );
+  return [...shared, ...own];
 }
 
 /**
@@ -212,8 +266,9 @@ export async function saveQuizProgress(attemptId: string, questionId: string, ch
   fail(error);
 }
 
-export async function startQuizEvaluation(setId: string, attemptId: string): Promise<void> {
-  const { error } = await supabase.rpc('start_quiz_evaluation', { p_set: setId, p_attempt: attemptId });
+/** `source` catalog (D-080) : quiz du catalogue ; absent = jeu de famille (les mutations déjà en file avant la mise à jour restent valides). */
+export async function startQuizEvaluation(setId: string, attemptId: string, source: 'family' | 'catalog' = 'family'): Promise<void> {
+  const { error } = source === 'catalog' ? await supabase.rpc('start_catalog_evaluation', { p_quiz: setId, p_attempt: attemptId }) : await supabase.rpc('start_quiz_evaluation', { p_set: setId, p_attempt: attemptId });
   fail(error);
 }
 export async function submitQuizEvaluation(attemptId: string, answers: { question_id: string; choice: number | null }[]): Promise<void> {

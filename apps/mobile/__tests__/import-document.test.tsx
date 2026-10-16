@@ -207,6 +207,23 @@ describe('Créer à partir d\'un document', () => {
     expect(mockReplace).toHaveBeenCalledWith({ pathname: '/quiz/[id]', params: { id: 'set-1' } });
   });
 
+  it('catalogue (admin, D-080) : pas d\'enfant ni de matière libre ; la case est envoyée à la place de childId ; le résultat ouvre l\'éditeur d\'administration', async () => {
+    mockPick.mockResolvedValue({ status: 'ok', files: [jpeg('tuan3.jpg')] });
+    mockMutate = jest.fn((_v, o?: Opts) => o?.onSuccess?.(result({ kind: 'exam' })));
+    const slot = { country: 'VN', grade: '5', subject: 'hist_geo', week: 'Tuần 3' };
+    await render(<ImportDocument catalog={slot} />);
+    expect(screen.queryByText('Cho bạn')).toBeNull();
+    expect(screen.queryByRole('radio', { name: 'Khang' })).toBeNull();
+    expect(screen.queryByLabelText('Môn học (không bắt buộc)')).toBeNull();
+    await fireEvent.press(screen.getByRole('button', { name: 'Chọn ảnh' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Tạo câu hỏi' }));
+    const sent = mockMutate.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(sent.catalog).toEqual(slot);
+    expect(sent).not.toHaveProperty('childId');
+    await fireEvent.press(screen.getByRole('button', { name: 'Xem lại câu hỏi' }));
+    expect(mockReplace).toHaveBeenCalledWith({ pathname: '/admin/[id]', params: { id: 'set-1' } });
+  });
+
   it('succès (examen) : « Détecté : examen papier » et ouverture de la grille Đáp án', async () => {
     await generateWith({ kind: 'exam' });
     expect(screen.getByRole('header', { name: 'Phát hiện: đề thi giấy' })).toBeTruthy();

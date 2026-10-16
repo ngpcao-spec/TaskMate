@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { newId } from '@/api/ids';
-import { GenerateError, type GenerateResult } from '@/api/generate';
+import { GenerateError, type GenerateCatalogSlot, type GenerateResult } from '@/api/generate';
 import { Chip } from '@/components/Chip';
 import { Button, Card, Field, Screen, ScreenHeader } from '@/components/ui';
 import {
@@ -27,7 +27,7 @@ type RoleFile = PickedFile & { role: FileRole };
  * Après la génération, le parent voit le type retenu (« Détecté : examen papier »), les avertissements (plafond, non-QCM ignorés, figures) et peut
  * corriger le type puis relancer sur le même brouillon. Le document est envoyé à un service d'IA externe sans être conservé (mention affichée).
  */
-export function ImportDocument() {
+export function ImportDocument({ catalog }: { /** D-080 : import de l'ADMINISTRATEUR dans une case du catalogue (pas d'enfant) ; absent = import d'une famille. */ catalog?: GenerateCatalogSlot } = {}) {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const d = useDisplayedChild();
@@ -84,10 +84,10 @@ export function ImportDocument() {
 
   const noteTooLong = instructionTooLong(instruction);
   const needsKey = activeKind === 'exam_key' && keyFiles.length === 0;
-  const canGenerate = examFiles.length > 0 && childId !== null && titleErrors.length === 0 && !noteTooLong && !needsKey && !generate.isPending && (!fixing || result !== null);
+  const canGenerate = examFiles.length > 0 && (catalog !== undefined || childId !== null) && titleErrors.length === 0 && !noteTooLong && !needsKey && !generate.isPending && (!fixing || result !== null);
 
   const submit = () => {
-    if (!canGenerate || !childId) return;
+    if (!canGenerate || (!catalog && !childId)) return;
     if (!onlineManager.isOnline()) {
       setError('revisions.import.needNetwork');
       return;
@@ -97,7 +97,7 @@ export function ImportDocument() {
     const sendFiles = files.filter((f) => f.role === 'exam' || allowsKey(sendKind));
     generate.mutate(
       {
-        setId, childId, title: title.trim() || undefined, subject: subject.trim() || undefined, kind: sendKind, count: precise ? count : 'auto',
+        setId, ...(catalog ? { catalog } : { childId: childId as string }), title: title.trim() || undefined, subject: catalog ? undefined : subject.trim() || undefined, kind: sendKind, count: precise ? count : 'auto',
         instruction: instruction.trim() || undefined, retry: result !== null, language: lang,
         files: sendFiles.map((f) => ({ name: f.name, mediaType: f.mediaType, data: f.data, role: f.role })),
       },
@@ -170,6 +170,8 @@ export function ImportDocument() {
   if (result && !fixing) {
     const notices = summaryNotices(result);
     const exam = reviewRoute(result.kind) === '/quiz/answers';
+    // catalogue : l'éditeur de l'admin contient la relecture des réponses (grille) ; famille : éditeur ou grille « Đáp án »
+    const openResult = () => (catalog ? router.replace({ pathname: '/admin/[id]', params: { id: result.set_id } }) : router.replace({ pathname: exam ? '/quiz/answers' : '/quiz/[id]', params: { id: result.set_id } }));
     return (
       <Screen>
         <ScreenHeader title={t('revisions.import.result.title')} />
@@ -182,7 +184,7 @@ export function ImportDocument() {
         {notices.map((n) => (
           <Text key={n.key} accessibilityRole="alert" style={styles.notice}>{t(n.key, n.values)}</Text>
         ))}
-        <Button label={t(exam ? 'revisions.import.result.openGrid' : 'revisions.import.result.open')} onPress={() => router.replace({ pathname: exam ? '/quiz/answers' : '/quiz/[id]', params: { id: result.set_id } })} />
+        <Button label={t(exam && !catalog ? 'revisions.import.result.openGrid' : 'revisions.import.result.open')} onPress={openResult} />
         <Button variant="secondary" label={t('revisions.import.result.fix')} onPress={() => { setFixKind(result.kind); setFixing(true); setError(null); }} />
       </Screen>
     );
@@ -216,7 +218,7 @@ export function ImportDocument() {
         <Text style={styles.notice2}>{t('revisions.import.intro')}</Text>
       </Card>
 
-      {d.children.length > 1 ? (
+      {!catalog && d.children.length > 1 ? (
         <>
           <Text style={typography.secondary}>{t('revisions.import.child')}</Text>
           <View style={styles.wrap}>
@@ -235,7 +237,7 @@ export function ImportDocument() {
       </View>
       <Text style={typography.secondary}>{t(`revisions.import.kinds.${kind}.help`)}</Text>
 
-      <Field label={t('revisions.import.subject')} value={subject} onChangeText={setSubject} maxLength={60} error={titleErrors.includes('subjectTooLong') ? t('revisions.errors.subjectTooLong') : null} />
+      {catalog ? null : <Field label={t('revisions.import.subject')} value={subject} onChangeText={setSubject} maxLength={60} error={titleErrors.includes('subjectTooLong') ? t('revisions.errors.subjectTooLong') : null} />}
       <Field label={t('revisions.import.titleField')} value={title} onChangeText={setTitle} maxLength={100} error={title.trim().length > 80 ? t('revisions.errors.titleTooLong') : null} />
 
       <Text style={typography.secondary}>{t('revisions.import.count')}</Text>
