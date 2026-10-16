@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet, Text } from 'react-native';
 import { DueLabel } from '@/components/quiz/DueLabel';
+import { subjectText } from '@/components/quiz/subject';
 import { ScoreHistory } from '@/components/quiz/ScoreHistory';
 import { Button, Card, Screen, ScreenHeader } from '@/components/ui';
 import { evaluationView, historySeries } from '@/domain/quiz';
@@ -25,7 +26,7 @@ export function ChildSetHome({ setId }: { setId: string }) {
   return (
     <Screen>
       <ScreenHeader title={info.title} />
-      <Text style={typography.secondary}>{[info.subject, t('revisions.questionCount', { count: info.question_count })].filter(Boolean).join(' · ')}</Text>
+      <Text style={typography.secondary}>{[info.week_label, info.subject_key ? subjectText(t, info.subject_key) : info.subject, t('revisions.questionCount', { count: info.question_count })].filter(Boolean).join(' · ')}</Text>
       {view === 'todo' || view === 'in_progress' ? <DueLabel dueOn={info.due_on} /> : null}
       {view === 'in_progress' ? <Text accessibilityLiveRegion="polite" style={typography.secondary}>{t('revisions.week.answered', { done: info.answered_count, total: info.question_count })}</Text> : null}
 

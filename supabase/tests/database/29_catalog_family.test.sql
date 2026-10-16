@@ -77,6 +77,9 @@ select throws_ok($$select public.shift_child_subject(tests.u(201), 'hist_geo', 1
 select throws_ok($$update public.children set country = 'VN', grade = '5' where id = tests.u(201)$$, '42501', null, 'enfant: pas d''écriture directe de la classe');
 select throws_ok($$insert into public.child_subjects (child_id, family_id, subject) values (tests.u(201), tests.u(1), 'hist_geo')$$, '42501', null, 'enfant: pas d''écriture directe des matières');
 
+select tests.login(11);
+select throws_ok($$update public.children set country = 'VN', grade = '5' where id = tests.u(201)$$, '42501', null, 'parent: pas d''écriture directe de la classe non plus (RPC seulement)');
+select throws_ok($$insert into public.child_subjects (child_id, family_id, subject) values (tests.u(201), tests.u(1), 'hist_geo')$$, '42501', null, 'parent: pas d''écriture directe des matières non plus');
 select tests.login(21);
 select throws_ok($$select public.set_child_class(tests.u(201), 'VN', '5')$$, 'P0002', 'child_not_found', 'autre famille: pas l''enfant d''autrui (classe)');
 select throws_ok($$select public.set_child_subject(tests.u(201), 'hist_geo', true)$$, 'P0002', 'child_not_found', 'autre famille: pas l''enfant d''autrui (matière)');

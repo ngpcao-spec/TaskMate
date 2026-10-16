@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { Bell, BookOpen, Camera, Check, ChevronRight, ListChecks, Plus, Settings, Star, Target } from 'lucide-react-native';
+import { Bell, BookOpen, Camera, Check, ChevronRight, ListChecks, Plus, Settings, ShieldCheck, Star, Target } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Avatar } from '@/components/Avatar';
@@ -7,17 +7,20 @@ import { GlassTile } from '@/components/GlassTile';
 import { Card, Screen, ScreenHeader } from '@/components/ui';
 import { ageFromBirthDate } from '@/domain/age';
 import { todayInTz } from '@/domain/family-time';
+import { useIsPlatformAdmin } from '@/hooks/useCatalog';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { childColor } from '@/theme/childColor';
 import { colors, MIN_TARGET, radius, shadow, shadowSmall, typography, line } from '@/theme/tokens';
 
-type Href = '/more/avatar' | '/more/tasks' | '/more/goals' | '/more/revisions' | '/more/points' | '/more/notification-settings' | '/more/settings';
+type Href = '/admin' | '/more/avatar' | '/more/tasks' | '/more/goals' | '/more/revisions' | '/more/points' | '/more/notification-settings' | '/more/settings';
 
 /** Hồ sơ : cartes des enfants (parent) / sa carte + celle du frère (enfant) et menu (SPEC §3.5). */
 export default function ProfileScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const d = useDisplayedChild();
+  // D-080 : l'entrée « Administration » n'existe que pour l'administrateur de la plateforme (la base répond ; chaque RPC revérifie)
+  const isAdmin = useIsPlatformAdmin().data === true && d?.viewer.role === 'parent';
   if (!d) return null;
   const today = todayInTz(new Date(), d.me.family.timezone);
   const menu: { key: string; label: string; href: Href; icon: typeof Star; tint?: string }[] = [
@@ -28,6 +31,7 @@ export default function ProfileScreen() {
     { key: 'points', label: t('profile.points'), href: '/more/points', icon: Star, tint: colors.warning },
     { key: 'notifications', label: t('profile.notifications'), href: '/more/notification-settings', icon: Bell },
     { key: 'settings', label: t('profile.settings'), href: '/more/settings', icon: Settings },
+    ...(isAdmin ? [{ key: 'admin', label: t('profile.admin'), href: '/admin' as Href, icon: ShieldCheck }] : []),
   ];
 
   return (

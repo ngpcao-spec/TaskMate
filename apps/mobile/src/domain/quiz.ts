@@ -160,6 +160,19 @@ const SERVER_ERRORS: Record<string, string> = {
   invalid_choices: 'revisions.errors.choicesCount',
   invalid_question: 'revisions.errors.promptRequired',
   invalid_correct: 'revisions.errors.correctRequired',
+  // catalogue (D-080)
+  catalog_slot_taken: 'catalog.server.slotTaken',
+  invalid_country: 'catalog.server.invalidSlot',
+  invalid_grade: 'catalog.server.invalidSlot',
+  invalid_subject: 'catalog.server.invalidSlot',
+  invalid_week: 'catalog.server.invalidSlot',
+  invalid_title: 'catalog.server.invalidSlot',
+  invalid_dates: 'catalog.server.invalidDates',
+  dates_required: 'catalog.server.datesRequired',
+  invalid_shift: 'catalog.server.invalidShift',
+  subject_not_active: 'catalog.server.subjectNotActive',
+  child_not_found: 'catalog.server.childNotFound',
+  forbidden: 'catalog.server.forbidden',
 };
 
 /** Clé i18n du message pour un code d'erreur renvoyé par une RPC de révisions (repli : message générique). */

@@ -31,7 +31,15 @@ export const quizKeys = {
   progress: (attemptId: string) => ['quiz', 'progress', attemptId] as const,
   result: (attemptId: string) => ['quiz', 'result', attemptId] as const,
   history: (setId: string) => ['quiz', 'history', setId] as const,
+  // catalogue (D-080) : sous `quiz` pour être invalidé avec le reste des révisions
+  catalogList: ['quiz', 'catalog', 'list'] as const,
+  catalogQuiz: (id: string) => ['quiz', 'catalog', 'quiz', id] as const,
+  catalogQuestions: (id: string) => ['quiz', 'catalog', 'questions', id] as const,
+  childSubjects: (childId: string) => ['quiz', 'catalog', 'subjects', childId] as const,
+  parentCatalog: (childId: string) => ['quiz', 'catalog', 'overview', childId] as const,
 };
+/** Statut d'administrateur de l'appelant (D-080) : seulement pour afficher l'entrée de menu ; jamais une autorisation (la base décide). */
+export const platformKeys = { isAdmin: ['platform', 'is-admin'] as const };
 
 /** Avatars des enfants (D-071) : la liste visible par l'utilisateur (parent : toute la famille ; enfant : lui seul). */
 export const avatarKeys = { all: ['avatars'] as const };

@@ -26,6 +26,8 @@ jest.mock('@/hooks/useDisplayedChild', () => ({
   },
 }));
 jest.mock('@/hooks/useMe', () => ({ useMe: () => ({ data: mockMe() }) }));
+let mockAdmin = false;
+jest.mock('@/hooks/useCatalog', () => ({ useIsPlatformAdmin: () => ({ data: mockAdmin }) }));
 jest.mock('@/hooks/useFamilyAdmin', () => ({
   useUpdateChild: () => ({ mutate: jest.fn(), isPending: false }),
   useDeleteChild: () => ({ mutate: jest.fn(), isPending: false }),
@@ -46,7 +48,25 @@ describe('Hồ sơ : cartes enfants + « Ajouter un enfant »', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
     mockRole = 'parent';
+    mockAdmin = false;
     await i18n.changeLanguage('fr');
+  });
+
+  it('entrée « Administration » : seulement pour l\'administrateur de la plateforme (D-080)', async () => {
+    await wrap(<ProfileScreen />);
+    expect(screen.queryByRole('button', { name: 'Administration' })).toBeNull();
+  });
+  it('administrateur (parent) : l\'entrée ouvre le catalogue', async () => {
+    mockAdmin = true;
+    await wrap(<ProfileScreen />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Administration' }));
+    expect(mockPush).toHaveBeenCalledWith('/admin');
+  });
+  it('un enfant ne voit jamais l\'entrée, même si le statut remonté est vrai', async () => {
+    mockRole = 'child';
+    mockAdmin = true;
+    await wrap(<ProfileScreen />);
+    expect(screen.queryByRole('button', { name: 'Administration' })).toBeNull();
   });
 
   it('parent : une carte sélectionnable par enfant (3 enfants) et la carte « Ajouter un enfant »', async () => {

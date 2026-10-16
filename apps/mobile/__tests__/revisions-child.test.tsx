@@ -34,8 +34,8 @@ jest.mock('@/hooks/useDisplayedChild', () => ({
   }),
 }));
 
-type Info = { set_id: string; title: string; subject: string | null; question_count: number; evaluation_attempt_id: string | null; evaluation_status: string | null; can_start_evaluation: boolean; due_on: string | null; answered_count: number };
-const info = (over: Partial<Info> = {}): Info => ({ set_id: 's1', title: 'Fractions', subject: 'Toán', question_count: 2, evaluation_attempt_id: null, evaluation_status: null, can_start_evaluation: true, due_on: null, answered_count: 0, ...over });
+type Info = { set_id: string; source: 'family' | 'catalog'; subject_key: string | null; week_label: string | null; title: string; subject: string | null; question_count: number; evaluation_attempt_id: string | null; evaluation_status: string | null; can_start_evaluation: boolean; due_on: string | null; answered_count: number };
+const info = (over: Partial<Info> = {}): Info => ({ set_id: 's1', source: 'family', subject_key: null, week_label: null, title: 'Fractions', subject: 'Toán', question_count: 2, evaluation_attempt_id: null, evaluation_status: null, can_start_evaluation: true, due_on: null, answered_count: 0, ...over });
 const questions = [
   { question_id: 'q1', position: 0, prompt: 'Un plus un ?', choices: ['1', '2', '3'] },
   { question_id: 'q2', position: 1, prompt: 'Deux plus deux ?', choices: ['3', '4', '5', '6'] },
@@ -118,10 +118,37 @@ describe('Ôn tập — accueil d\'un jeu', () => {
   });
 });
 
+describe('Ôn tập — quiz du catalogue (D-080)', () => {
+  const catalog = (over: Partial<Info> = {}) => info({ set_id: 'z1', source: 'catalog', subject_key: 'maths', week_label: 'Tuần 3', subject: null, title: 'Phân số', ...over });
+  it('liste : semaine et matière traduite, mêmes états que les jeux de famille', async () => {
+    mockInfos = [catalog({ due_on: '2099-09-13' }), info()];
+    await render(<ChildRevisions />);
+    expect(screen.getByRole('button', { name: 'Phân số, 2 câu hỏi' })).toBeTruthy();
+    expect(screen.getByText('Tuần 3 · Toán · 2 câu hỏi')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Fractions, 2 câu hỏi' })).toBeTruthy();
+  });
+  it('accueil du quiz : semaine · matière, évaluation à faire', async () => {
+    mockInfos = [catalog()];
+    await render(<ChildSetHome setId="z1" />);
+    expect(screen.getByText('Tuần 3 · Toán · 2 câu hỏi')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Làm bài kiểm tra' })).toBeTruthy();
+  });
+  it('le démarrage indique la SOURCE du catalogue (RPC dédiée), sinon jeu de famille', async () => {
+    mockInfos = [catalog()];
+    await render(<EvaluationRun setId="z1" />);
+    expect(mockStartEval).toHaveBeenCalledWith({ setId: 'z1', attemptId: 'id-1', source: 'catalog' });
+  });
+  it('un retard ne bloque jamais l\'enfant : date passée, le bouton reste actif', async () => {
+    mockInfos = [catalog({ due_on: '2020-01-05' })];
+    await render(<ChildSetHome setId="z1" />);
+    expect(screen.getByRole('button', { name: 'Làm bài kiểm tra' }).props.accessibilityState).toMatchObject({ disabled: false });
+  });
+});
+
 describe('Ôn tập — évaluation', () => {
   it('démarre, ne montre aucun retour, envoie les positions affichées, puis « chờ phụ huynh duyệt »', async () => {
     await render(<EvaluationRun setId="s1" />);
-    expect(mockStartEval).toHaveBeenCalledWith({ setId: 's1', attemptId: 'id-1' });
+    expect(mockStartEval).toHaveBeenCalledWith({ setId: 's1', attemptId: 'id-1', source: 'family' });
     await fireEvent.press(screen.getByRole('radio', { name: '2' }));
     await fireEvent.press(screen.getByRole('radio', { name: '4' }));
     expect(screen.queryByText('Đúng rồi!')).toBeNull();

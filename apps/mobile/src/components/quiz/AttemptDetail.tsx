@@ -27,14 +27,14 @@ export function AttemptDetail({ attemptId }: { attemptId: string }) {
   if (detail.isPending) return <ActivityIndicator />;
   const data = detail.data;
   if (!data) return null;
-  const { attempt, set, questions } = data;
+  const { attempt, title, questions } = data;
   const childName = d.children.find((c) => c.id === attempt.child_id)?.name ?? '';
   const day = formatShortDate(todayInTz(new Date(attempt.started_at), d.me.family.timezone));
   const answer = (q: (typeof questions)[number], index: number | null) => (index === null ? t('revisions.noAnswer') : (q.choices[index] ?? t('revisions.noAnswer')));
 
   return (
     <Screen>
-      <ScreenHeader title={set?.title ?? t('revisions.results')} />
+      <ScreenHeader title={title || t('revisions.results')} />
       <Text style={typography.secondary}>{`${childName} · ${day} · ${t(`revisions.status.${attempt.status}`)}`}</Text>
       {attempt.score !== null && attempt.total !== null ? <Text accessibilityRole="header" style={styles.score}>{t('revisions.score', { score: attempt.score, total: attempt.total })}</Text> : null}
 

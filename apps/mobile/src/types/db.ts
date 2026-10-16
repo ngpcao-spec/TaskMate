@@ -185,15 +185,70 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"children": {
+                },"catalog_answer_keys": {
                   Row: {
-                    "avatar": string | null,"birth_date": string,"color": string | null,"created_at": string,"deleted_at": string | null,"family_id": string,"id": string,"label": string | null,"name": string,"sort_order": number,"updated_at": string
+                    "confirmed": boolean,"correct_index": number,"explanation": string | null,"question_id": string,"to_verify": boolean
                   }
                   Insert: {
-                    "avatar"?: string | null,"birth_date": string,"color"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"family_id": string,"id"?: string,"label"?: string | null,"name": string,"sort_order"?: number,"updated_at"?: string
+                    "confirmed"?: boolean,"correct_index": number,"explanation"?: string | null,"question_id": string,"to_verify"?: boolean
                   }
                   Update: {
-                    "avatar"?: string | null,"birth_date"?: string,"color"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"family_id"?: string,"id"?: string,"label"?: string | null,"name"?: string,"sort_order"?: number,"updated_at"?: string
+                    "confirmed"?: boolean,"correct_index"?: number,"explanation"?: string | null,"question_id"?: string,"to_verify"?: boolean
+                  }
+                  Relationships: []
+                },"catalog_questions": {
+                  Row: {
+                    "choices": (string)[],"created_at": string,"id": string,"needs_figure": boolean,"origin_number": number | null,"position": number,"prompt": string,"quiz_id": string,"source": string | null,"updated_at": string
+                  }
+                  Insert: {
+                    "choices": (string)[],"created_at"?: string,"id"?: string,"needs_figure"?: boolean,"origin_number"?: number | null,"position": number,"prompt": string,"quiz_id": string,"source"?: string | null,"updated_at"?: string
+                  }
+                  Update: {
+                    "choices"?: (string)[],"created_at"?: string,"id"?: string,"needs_figure"?: boolean,"origin_number"?: number | null,"position"?: number,"prompt"?: string,"quiz_id"?: string,"source"?: string | null,"updated_at"?: string
+                  }
+                  Relationships: []
+                },"catalog_quizzes": {
+                  Row: {
+                    "answer_sheet_only": boolean,"country": string,"created_at": string,"created_by": string | null,"due_on": string | null,"grade": string,"id": string,"kind_detected": boolean,"material_kind": Database["public"]['Enums']["quiz_material_kind"],"paper_support": boolean,"release_on": string | null,"status": Database["public"]['Enums']["quiz_status"],"subject": string,"title": string,"updated_at": string,"week_label": string
+                  }
+                  Insert: {
+                    "answer_sheet_only"?: boolean,"country": string,"created_at"?: string,"created_by"?: string | null,"due_on"?: string | null,"grade": string,"id"?: string,"kind_detected"?: boolean,"material_kind"?: Database["public"]['Enums']["quiz_material_kind"],"paper_support"?: boolean,"release_on"?: string | null,"status"?: Database["public"]['Enums']["quiz_status"],"subject": string,"title": string,"updated_at"?: string,"week_label": string
+                  }
+                  Update: {
+                    "answer_sheet_only"?: boolean,"country"?: string,"created_at"?: string,"created_by"?: string | null,"due_on"?: string | null,"grade"?: string,"id"?: string,"kind_detected"?: boolean,"material_kind"?: Database["public"]['Enums']["quiz_material_kind"],"paper_support"?: boolean,"release_on"?: string | null,"status"?: Database["public"]['Enums']["quiz_status"],"subject"?: string,"title"?: string,"updated_at"?: string,"week_label"?: string
+                  }
+                  Relationships: []
+                },"child_subjects": {
+                  Row: {
+                    "child_id": string,"created_at": string,"family_id": string,"subject": string,"week_offset": number
+                  }
+                  Insert: {
+                    "child_id": string,"created_at"?: string,"family_id": string,"subject": string,"week_offset"?: number
+                  }
+                  Update: {
+                    "child_id"?: string,"created_at"?: string,"family_id"?: string,"subject"?: string,"week_offset"?: number
+                  }
+                  Relationships: []
+                },"platform_admins": {
+                  Row: {
+                    "created_at": string,"user_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"user_id"?: string
+                  }
+                  Relationships: []
+                },"children": {
+                  Row: {
+                    "avatar": string | null,"birth_date": string,"color": string | null,"country": string | null,"created_at": string,"deleted_at": string | null,"family_id": string,"grade": string | null,"id": string,"label": string | null,"name": string,"sort_order": number,"updated_at": string
+                  }
+                  Insert: {
+                    "avatar"?: string | null,"birth_date": string,"color"?: string | null,"country"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"family_id": string,"grade"?: string | null,"id"?: string,"label"?: string | null,"name": string,"sort_order"?: number,"updated_at"?: string
+                  }
+                  Update: {
+                    "avatar"?: string | null,"birth_date"?: string,"color"?: string | null,"country"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"family_id"?: string,"grade"?: string | null,"id"?: string,"label"?: string | null,"name"?: string,"sort_order"?: number,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -517,13 +572,13 @@ isOneToOne: false
                   ]
                 },"quiz_attempts": {
                   Row: {
-                    "child_id": string,"created_at": string,"family_id": string,"id": string,"relaunched_by": string | null,"set_id": string,"show_correction": boolean,"started_at": string,"status": Database["public"]['Enums']["quiz_attempt_status"],"submitted_at": string | null,"updated_at": string,"validated_at": string | null,"validated_by": string | null
+                    "catalog_id": string | null,"child_id": string,"created_at": string,"family_id": string,"id": string,"relaunched_by": string | null,"set_id": string | null,"show_correction": boolean,"started_at": string,"status": Database["public"]['Enums']["quiz_attempt_status"],"submitted_at": string | null,"updated_at": string,"validated_at": string | null,"validated_by": string | null
                   }
                   Insert: {
-                    "child_id": string,"created_at"?: string,"family_id": string,"id"?: string,"relaunched_by"?: string | null,"set_id": string,"show_correction"?: boolean,"started_at"?: string,"status"?: Database["public"]['Enums']["quiz_attempt_status"],"submitted_at"?: string | null,"updated_at"?: string,"validated_at"?: string | null,"validated_by"?: string | null
+                    "catalog_id"?: string | null,"child_id": string,"created_at"?: string,"family_id": string,"id"?: string,"relaunched_by"?: string | null,"set_id"?: string | null,"show_correction"?: boolean,"started_at"?: string,"status"?: Database["public"]['Enums']["quiz_attempt_status"],"submitted_at"?: string | null,"updated_at"?: string,"validated_at"?: string | null,"validated_by"?: string | null
                   }
                   Update: {
-                    "child_id"?: string,"created_at"?: string,"family_id"?: string,"id"?: string,"relaunched_by"?: string | null,"set_id"?: string,"show_correction"?: boolean,"started_at"?: string,"status"?: Database["public"]['Enums']["quiz_attempt_status"],"submitted_at"?: string | null,"updated_at"?: string,"validated_at"?: string | null,"validated_by"?: string | null
+                    "catalog_id"?: string | null,"child_id"?: string,"created_at"?: string,"family_id"?: string,"id"?: string,"relaunched_by"?: string | null,"set_id"?: string | null,"show_correction"?: boolean,"started_at"?: string,"status"?: Database["public"]['Enums']["quiz_attempt_status"],"submitted_at"?: string | null,"updated_at"?: string,"validated_at"?: string | null,"validated_by"?: string | null
                   }
                   Relationships: [
                     {
@@ -858,6 +913,126 @@ isOneToOne: false
                            },
 "ai_usage_today":
 { Args: { "p_family": string,"p_now"?: string }; Returns: number
+                           },
+"ai_target_admin":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"catalog_confirm_answers":
+{ Args: { "p_answers": Json,"p_quiz": string }; Returns: undefined
+                           },
+"catalog_create_quiz":
+{ Args: { "p_country": string,"p_grade": string,"p_quiz": string,"p_subject": string,"p_title": string,"p_week": string }; Returns: undefined
+                           },
+"catalog_delete_question":
+{ Args: { "p_id": string }; Returns: undefined
+                           },
+"catalog_delete_quiz":
+{ Args: { "p_quiz": string }; Returns: undefined
+                           },
+"catalog_get":
+{ Args: { "p_quiz": string }; Returns: Json
+                           },
+"catalog_list":
+{ Args: { "p_country"?: string,"p_grade"?: string,"p_subject"?: string }; Returns: {
+              "attempts_count": number,"country": string,"due_on": string,"grade": string,"id": string,"material_kind": Database["public"]['Enums']["quiz_material_kind"],"question_count": number,"release_on": string,"status": Database["public"]['Enums']["quiz_status"],"subject": string,"title": string,"to_verify_count": number,"week_label": string
+            }[]
+                           },
+"catalog_questions_admin":
+{ Args: { "p_quiz": string }; Returns: {
+              "choices": (string)[],"confirmed": boolean,"correct_index": number,"explanation": string,"id": string,"needs_figure": boolean,"origin_number": number,"position": number,"prompt": string,"source": string,"to_verify": boolean
+            }[]
+                           },
+"catalog_reorder_questions":
+{ Args: { "p_ids": (string)[],"p_quiz": string }; Returns: undefined
+                           },
+"catalog_set_dates":
+{ Args: { "p_due": string,"p_quiz": string,"p_release": string }; Returns: undefined
+                           },
+"catalog_set_kind":
+{ Args: { "p_kind": Database["public"]['Enums']["quiz_material_kind"],"p_quiz": string }; Returns: undefined
+                           },
+"catalog_set_paper":
+{ Args: { "p_paper": boolean,"p_quiz": string,"p_sheet_only": boolean }; Returns: undefined
+                           },
+"catalog_set_status":
+{ Args: { "p_quiz": string,"p_status": Database["public"]['Enums']["quiz_status"] }; Returns: undefined
+                           },
+"catalog_update_info":
+{ Args: { "p_quiz": string,"p_title": string,"p_week": string }; Returns: undefined
+                           },
+"catalog_upsert_question":
+{ Args: { "p_choices": (string)[],"p_correct": number,"p_explanation": string,"p_id": string,"p_position": number,"p_prompt": string,"p_quiz": string,"p_source"?: string }; Returns: undefined
+                           },
+"child_catalog_quizzes":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "answer_sheet_only": boolean,"answered_count": number,"can_start_evaluation": boolean,"due_on": string,"evaluation_attempt_id": string,"evaluation_status": Database["public"]['Enums']["quiz_attempt_status"],"paper_support": boolean,"question_count": number,"quiz_id": string,"subject": string,"title": string,"week_label": string
+            }[]
+                           },
+"create_catalog_draft":
+{ Args: { "p_country": string,"p_grade": string,"p_kind"?: Database["public"]['Enums']["quiz_material_kind"],"p_kind_detected"?: boolean,"p_questions": Json,"p_quiz": string,"p_replace"?: boolean,"p_subject": string,"p_title": string,"p_week": string }; Returns: undefined
+                           },
+"is_platform_admin":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"parent_attempt_review":
+{ Args: { "p_attempt": string }; Returns: Json
+                           },
+"parent_catalog_attempts":
+{ Args: { "p_child": string }; Returns: {
+              "attempt_id": string,"quiz_id": string,"score": number,"started_at": string,"status": Database["public"]['Enums']["quiz_attempt_status"],"subject": string,"submitted_at": string,"title": string,"total": number,"validated_at": string,"week_label": string
+            }[]
+                           },
+"parent_catalog_overview":
+{ Args: { "p_child": string }; Returns: {
+              "answered_count": number,"attempt_id": string,"attempt_status": Database["public"]['Enums']["quiz_attempt_status"],"available": boolean,"due_on": string,"question_count": number,"quiz_id": string,"release_on": string,"score": number,"subject": string,"title": string,"total": number,"week_label": string
+            }[]
+                           },
+"parent_child_subjects":
+{ Args: { "p_child": string }; Returns: {
+              "subject": string,"week_offset": number
+            }[]
+                           },
+"relaunch_catalog_evaluation":
+{ Args: { "p_attempt": string,"p_child": string,"p_quiz": string }; Returns: undefined
+                           },
+"set_child_class":
+{ Args: { "p_child": string,"p_country": string,"p_grade": string }; Returns: undefined
+                           },
+"set_child_subject":
+{ Args: { "p_active": boolean,"p_child": string,"p_subject": string }; Returns: undefined
+                           },
+"shift_child_subject":
+{ Args: { "p_child": string,"p_delta": number,"p_subject": string }; Returns: undefined
+                           },
+"start_catalog_evaluation":
+{ Args: { "p_attempt": string,"p_quiz": string }; Returns: undefined
+                           },
+"catalog_check_slot":
+{ Args: { "p_country": string,"p_grade": string,"p_subject": string,"p_title": string,"p_week": string }; Returns: {
+              "grade": string,"title": string,"week_label": string
+            }[]
+                           },
+"catalog_editable":
+{ Args: { "p_quiz": string }; Returns: Json
+                           },
+"catalog_for_child":
+{ Args: { "p_child": string }; Returns: {
+              "answer_sheet_only": boolean,"available": boolean,"due_on": string,"paper_support": boolean,"question_count": number,"quiz_id": string,"release_on": string,"subject": string,"title": string,"week_label": string
+            }[]
+                           },
+"catalog_make_layout":
+{ Args: { "p_quiz": string }; Returns: Json
+                           },
+"catalog_new_attempt":
+{ Args: { "p_attempt": string,"p_child": string,"p_family": string,"p_quiz": string,"p_relaunched_by": string }; Returns: undefined
+                           },
+"catalog_require_admin":
+{ Args: Record<PropertyKey, never>; Returns: string
+                           },
+"quiz_attempt_items":
+{ Args: { "p_attempt": string }; Returns: {
+              "choices": (string)[],"correct_index": number,"explanation": string,"needs_figure": boolean,"origin_number": number,"paper": boolean,"position": number,"prompt": string,"question_id": string,"sheet_only": boolean,"source_id": string
+            }[]
                            },
 "approve_reward_request":
 { Args: { "p_request_id": string,"p_tx_id": string }; Returns: undefined

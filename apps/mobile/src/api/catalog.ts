@@ -1,0 +1,208 @@
+import type { QuizAttemptStatus, QuizMaterialKind, QuizStatus } from '@/types/models';
+import { supabase } from './supabase';
+
+/**
+ * Catalogue de QCM (D-080). TOUT passe par des RPC : les tables du catalogue ne sont lisibles ni modifiables par aucun client (RLS sans politique).
+ * L'administrateur de la plateforme est vérifié PAR LA BASE dans chaque RPC `catalog_*` ; ces fonctions ne décident de rien.
+ */
+const fail = (error: { message: string } | null): void => {
+  if (error) throw error;
+};
+
+/** Le caller est-il administrateur ? (ne révèle que SON propre statut). Sert seulement à afficher l'entrée de menu : jamais une autorisation. */
+export async function fetchIsPlatformAdmin(): Promise<boolean> {
+  const { data, error } = await supabase.rpc('is_platform_admin');
+  fail(error);
+  return data === true;
+}
+
+// ───────────── administrateur ─────────────
+export type AdminQuizRow = {
+  id: string;
+  country: string;
+  grade: string;
+  subject: string;
+  week_label: string;
+  title: string;
+  status: QuizStatus;
+  release_on: string | null;
+  due_on: string | null;
+  material_kind: QuizMaterialKind;
+  question_count: number;
+  to_verify_count: number;
+  attempts_count: number;
+};
+export async function fetchCatalogList(): Promise<AdminQuizRow[]> {
+  const { data, error } = await supabase.rpc('catalog_list', {});
+  fail(error);
+  return (data ?? []) as unknown as AdminQuizRow[];
+}
+
+export type AdminQuiz = {
+  id: string;
+  country: string;
+  grade: string;
+  subject: string;
+  week_label: string;
+  title: string;
+  status: QuizStatus;
+  release_on: string | null;
+  due_on: string | null;
+  material_kind: QuizMaterialKind;
+  kind_detected: boolean;
+  paper_support: boolean;
+  answer_sheet_only: boolean;
+  attempts_count: number;
+};
+export async function fetchCatalogQuiz(id: string): Promise<AdminQuiz | null> {
+  const { data, error } = await supabase.rpc('catalog_get', { p_quiz: id });
+  if (error) {
+    if (error.code === 'P0002') return null;
+    throw error;
+  }
+  return data as unknown as AdminQuiz;
+}
+
+/** Question vue par l'ADMIN : énoncé, source, clé (réponse, explication, « à vérifier », confirmée). */
+export type AdminQuestion = {
+  id: string;
+  position: number;
+  prompt: string;
+  choices: string[];
+  origin_number: number | null;
+  needs_figure: boolean;
+  source: string | null;
+  correct_index: number;
+  explanation: string | null;
+  to_verify: boolean;
+  confirmed: boolean;
+};
+export async function fetchCatalogQuestions(quizId: string): Promise<AdminQuestion[]> {
+  const { data, error } = await supabase.rpc('catalog_questions_admin', { p_quiz: quizId });
+  fail(error);
+  return (data ?? []) as unknown as AdminQuestion[];
+}
+
+export type NewCatalogQuiz = { id: string; country: string; grade: string; subject: string; week: string; title: string };
+export async function createCatalogQuiz(v: NewCatalogQuiz): Promise<void> {
+  const { error } = await supabase.rpc('catalog_create_quiz', { p_quiz: v.id, p_country: v.country, p_grade: v.grade, p_subject: v.subject, p_week: v.week, p_title: v.title });
+  fail(error);
+}
+export type CatalogQuestionInput = { id: string; quizId: string; position: number; prompt: string; choices: string[]; correct: number; explanation: string | null; source: string | null };
+export async function upsertCatalogQuestion(q: CatalogQuestionInput): Promise<void> {
+  const { error } = await supabase.rpc('catalog_upsert_question', {
+    p_id: q.id, p_quiz: q.quizId, p_position: q.position, p_prompt: q.prompt, p_choices: q.choices, p_correct: q.correct, p_explanation: q.explanation ?? '', p_source: q.source ?? '',
+  });
+  fail(error);
+}
+export async function deleteCatalogQuestion(id: string): Promise<void> {
+  const { error } = await supabase.rpc('catalog_delete_question', { p_id: id });
+  fail(error);
+}
+export async function reorderCatalogQuestions(quizId: string, ids: string[]): Promise<void> {
+  const { error } = await supabase.rpc('catalog_reorder_questions', { p_quiz: quizId, p_ids: ids });
+  fail(error);
+}
+/** L'admin confirme les réponses (grille « Đáp án ») : la réponse choisie devient la clé, confirmée, et « à vérifier » est levé. */
+export async function confirmCatalogAnswers(quizId: string, answers: { question_id: string; correct: number }[]): Promise<void> {
+  const { error } = await supabase.rpc('catalog_confirm_answers', { p_quiz: quizId, p_answers: answers });
+  fail(error);
+}
+export async function updateCatalogInfo(quizId: string, week: string, title: string): Promise<void> {
+  const { error } = await supabase.rpc('catalog_update_info', { p_quiz: quizId, p_week: week, p_title: title });
+  fail(error);
+}
+export async function setCatalogKind(quizId: string, kind: QuizMaterialKind): Promise<void> {
+  const { error } = await supabase.rpc('catalog_set_kind', { p_quiz: quizId, p_kind: kind });
+  fail(error);
+}
+export async function setCatalogPaper(quizId: string, paper: boolean, sheetOnly: boolean): Promise<void> {
+  const { error } = await supabase.rpc('catalog_set_paper', { p_quiz: quizId, p_paper: paper, p_sheet_only: sheetOnly });
+  fail(error);
+}
+/** Mise à disposition et échéance : JOURS LOCAUX `YYYY-MM-DD` (jamais un timestamp). */
+export async function setCatalogDates(quizId: string, releaseOn: string | null, dueOn: string | null): Promise<void> {
+  const { error } = await supabase.rpc('catalog_set_dates', { p_quiz: quizId, p_release: releaseOn as string, p_due: dueOn as string });
+  fail(error);
+}
+/** Publier / dépublier. Dépublier ne supprime aucune tentative. */
+export async function setCatalogStatus(quizId: string, status: QuizStatus): Promise<void> {
+  const { error } = await supabase.rpc('catalog_set_status', { p_quiz: quizId, p_status: status });
+  fail(error);
+}
+export async function deleteCatalogQuiz(quizId: string): Promise<void> {
+  const { error } = await supabase.rpc('catalog_delete_quiz', { p_quiz: quizId });
+  fail(error);
+}
+
+// ───────────── parent : classe, matières, décalage ─────────────
+export async function setChildClass(childId: string, country: string, grade: string): Promise<void> {
+  const { error } = await supabase.rpc('set_child_class', { p_child: childId, p_country: country, p_grade: grade });
+  fail(error);
+}
+export async function setChildSubject(childId: string, subject: string, active: boolean): Promise<void> {
+  const { error } = await supabase.rpc('set_child_subject', { p_child: childId, p_subject: subject, p_active: active });
+  fail(error);
+}
+/** Décale d'UNE semaine (−1 ou +1) la matière d'UN enfant (borné à ±4 par le serveur). */
+export async function shiftChildSubject(childId: string, subject: string, delta: -1 | 1): Promise<void> {
+  const { error } = await supabase.rpc('shift_child_subject', { p_child: childId, p_subject: subject, p_delta: delta });
+  fail(error);
+}
+export type ChildSubject = { subject: string; week_offset: number };
+export async function fetchChildSubjects(childId: string): Promise<ChildSubject[]> {
+  const { data, error } = await supabase.rpc('parent_child_subjects', { p_child: childId });
+  fail(error);
+  return (data ?? []) as ChildSubject[];
+}
+
+/** Quiz du catalogue de SON enfant (parent) : dates décalées, disponibilité, dernière tentative. Jamais les réponses (voir `parent_attempt_review`). */
+export type ParentCatalogRow = {
+  quiz_id: string;
+  subject: string;
+  week_label: string;
+  title: string;
+  question_count: number;
+  release_on: string;
+  due_on: string;
+  available: boolean;
+  attempt_id: string | null;
+  attempt_status: QuizAttemptStatus | null;
+  answered_count: number;
+  score: number | null;
+  total: number | null;
+};
+export async function fetchParentCatalog(childId: string): Promise<ParentCatalogRow[]> {
+  const { data, error } = await supabase.rpc('parent_catalog_overview', { p_child: childId });
+  fail(error);
+  return (data ?? []) as unknown as ParentCatalogRow[];
+}
+export async function relaunchCatalogEvaluation(quizId: string, childId: string, attemptId: string): Promise<void> {
+  const { error } = await supabase.rpc('relaunch_catalog_evaluation', { p_quiz: quizId, p_child: childId, p_attempt: attemptId });
+  fail(error);
+}
+
+// ───────────── enfant ─────────────
+export type ChildCatalogRow = {
+  quiz_id: string;
+  subject: string;
+  week_label: string;
+  title: string;
+  question_count: number;
+  evaluation_attempt_id: string | null;
+  evaluation_status: QuizAttemptStatus | null;
+  can_start_evaluation: boolean;
+  paper_support: boolean;
+  answer_sheet_only: boolean;
+  due_on: string | null;
+  answered_count: number;
+};
+export async function fetchChildCatalog(): Promise<ChildCatalogRow[]> {
+  const { data, error } = await supabase.rpc('child_catalog_quizzes');
+  fail(error);
+  return (data ?? []) as unknown as ChildCatalogRow[];
+}
+export async function startCatalogEvaluation(quizId: string, attemptId: string): Promise<void> {
+  const { error } = await supabase.rpc('start_catalog_evaluation', { p_quiz: quizId, p_attempt: attemptId });
+  fail(error);
+}

@@ -598,7 +598,8 @@
     "notifications": "Réglages des notifications",
     "settings": "Réglages généraux",
     "revisions": "Révisions",
-    "avatar": "Avatar"
+    "avatar": "Avatar",
+    "admin": "Administration"
   },
   "taskList": {
     "upcoming": "À venir",
@@ -989,5 +990,110 @@
     "leaveBody": "Vous n'aurez plus accès aux enfants, tâches et récompenses de cette famille. Vous pourrez la rejoindre de nouveau avec un nouveau code.",
     "left": "Vous avez quitté la famille",
     "lastParent": "Vous êtes le seul parent : pour partir, supprimez la famille (en bas de cette page)."
+  },
+  "catalog": {
+    "country": "Pays",
+    "countries": {
+      "VN": "Việt Nam",
+      "FR": "France"
+    },
+    "grade": "Classe",
+    "gradePlaceholder": "ex. 5",
+    "gradeValue": "Classe {{grade}}",
+    "subjectLabel": "Matière",
+    "week": "Semaine",
+    "weekPlaceholder": "ex. Tuần 3",
+    "titleField": "Titre",
+    "source": "Source (facultative)",
+    "subject": {
+      "hist_geo": "Histoire-Géographie",
+      "maths": "Mathématiques",
+      "langue_nationale": "Langue nationale",
+      "anglais": "Anglais",
+      "sciences": "Sciences",
+      "civics": "Éducation civique",
+      "technology": "Technologie"
+    },
+    "state": {
+      "draft": "Brouillon",
+      "scheduled": "Planifié",
+      "open": "En cours",
+      "ended": "Terminé"
+    },
+    "errors": {
+      "grade": "La classe fait 12 caractères au plus.",
+      "week": "La semaine fait 40 caractères au plus."
+    },
+    "filters": {
+      "title": "Filtres",
+      "all": "Tous"
+    },
+    "server": {
+      "slotTaken": "Cette case (pays, classe, matière, semaine) contient déjà un QCM.",
+      "invalidSlot": "Pays, classe, matière, semaine ou titre invalide.",
+      "invalidDates": "La date de mise à disposition doit précéder l’échéance (ou être le même jour).",
+      "datesRequired": "Un QCM publié doit avoir ses deux dates.",
+      "invalidShift": "Décalage impossible : une semaine à la fois, quatre semaines au plus de chaque côté.",
+      "subjectNotActive": "Activez d’abord cette matière.",
+      "childNotFound": "Enfant introuvable.",
+      "forbidden": "Action réservée."
+    },
+    "admin": {
+      "title": "Administration",
+      "intro": "Les QCM sont préparés ici, par pays, classe, matière et semaine. Les familles ne créent rien : l’enfant reçoit automatiquement le QCM de la semaine.",
+      "import": "Importer un QCM",
+      "empty": "Aucun QCM dans cette sélection.",
+      "dates": "Du {{from}} au {{to}}",
+      "noDates": "Dates à fixer",
+      "toVerify": "{{count}} réponse(s) à vérifier"
+    },
+    "import": {
+      "title": "Importer dans le catalogue",
+      "intro": "Choisissez la case du catalogue, puis déposez le document (Word, PDF ou photos). Le QCM est enregistré en brouillon : relisez les réponses, fixez les dates et publiez.",
+      "continue": "Continuer vers l’import",
+      "manualTitle": "Ou saisir à la main",
+      "manualHelp": "Crée un QCM vide dans cette case ; vous ajoutez les questions une à une.",
+      "manual": "Créer un QCM vide"
+    },
+    "editor": {
+      "title": "QCM du catalogue",
+      "notFound": "QCM introuvable.",
+      "datesTitle": "Dates",
+      "datesHint": "Jours locaux de la famille. Le QCM s’ouvre à la mise à disposition ; l’échéance est une information et ne bloque jamais l’enfant.",
+      "release": "Mise à disposition",
+      "due": "Échéance",
+      "setRelease": "Fixer la mise à disposition",
+      "setDue": "Fixer l’échéance",
+      "saveDates": "Enregistrer les dates",
+      "datesSaved": "Dates enregistrées.",
+      "datesNeeded": "Fixez la mise à disposition et l’échéance pour publier.",
+      "published": "QCM publié.",
+      "unpublished": "QCM dépublié.",
+      "unpublishHint": "Dépublier retire le QCM de la liste des enfants sans supprimer aucune tentative.",
+      "attempts": "{{count}} tentative(s) d’enfants.",
+      "choiceLabel": "{{letter}} : {{text}}, {{state}}",
+      "correct": "bonne réponse",
+      "setCorrect": "toucher pour définir comme bonne réponse",
+      "source": "Source : {{source}}",
+      "delete": "Supprimer le brouillon",
+      "deleteTitle": "Supprimer ce brouillon ?",
+      "deleteBody": "Les questions et leurs réponses sont supprimées."
+    },
+    "parent": {
+      "classTitle": "Classe",
+      "classHelp": "Pays et classe de {{name}} : ils déterminent les QCM reçus.",
+      "saveClass": "Enregistrer la classe",
+      "classSaved": "Classe enregistrée.",
+      "noClass": "Choisissez le pays et la classe pour recevoir les QCM de la semaine.",
+      "subjectsTitle": "Matières",
+      "subjectsHelp": "Activez les matières suivies. Les boutons − et + décalent d’une semaine les QCM d’une matière pour cet enfant (quatre semaines au plus).",
+      "offsetNone": "Calendrier normal",
+      "offsetLater": "Décalé de +{{count}} semaine(s) : plus tard",
+      "offsetEarlier": "Décalé de −{{count}} semaine(s) : plus tôt",
+      "shiftEarlier": "{{subject}} : une semaine plus tôt",
+      "shiftLater": "{{subject}} : une semaine plus tard",
+      "emptyCatalog": "Aucun QCM publié pour cette classe et ces matières pour le moment.",
+      "notYet": "Disponible le {{day}}"
+    }
   }
 }

@@ -232,3 +232,6 @@ Plus de marge de sécurité du bas en double (liste jusqu'à la barre sur tous l
 
 ### Quiz de la semaine (D-079) — 2026-10-15
 Progression de l'enfant enregistrée au fil de l'eau (table fermée + RPC, file hors ligne) et reprise sur tout appareil ; date limite en jour local (dimanche suivant proposé, jamais bloquante) avec statut parent (Chưa bắt đầu / Đang làm n/N / Đã nộp / Quá hạn) ; import fidèle d'un QCM déjà rédigé. PR ouverte, NON fusionnée (exception à D-068 demandée par Teo : fusion sur son autorisation explicite).
+
+### Espace administrateur et catalogue de QCM (D-080) — 2026-10-16
+`platform_admins` (+ `is_platform_admin()`), catalogue `catalog_*` (RLS fermée, RPC), classe / matières / décalage par enfant, distribution automatique à l'enfant, parent qui voit les réponses d'un QCM envoyé par SON enfant, import admin par `generate-questions` (mode catalogue). L'import par famille est inchangé. PR ouverte, NON fusionnée (demande de Teo : relire la migration avant la fusion). À faire par Teo après la fusion : HUMAN_TODO § 6 quater (requête SQL d'inscription de l'administrateur).

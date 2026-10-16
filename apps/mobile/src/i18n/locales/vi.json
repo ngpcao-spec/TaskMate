@@ -598,7 +598,8 @@
     "notifications": "Cài đặt thông báo",
     "settings": "Cài đặt chung",
     "revisions": "Ôn tập",
-    "avatar": "Ảnh đại diện"
+    "avatar": "Ảnh đại diện",
+    "admin": "Quản trị"
   },
   "taskList": {
     "upcoming": "Sắp tới",
@@ -989,5 +990,110 @@
     "leaveBody": "Bạn sẽ không còn truy cập được con, công việc và phần thưởng của gia đình này. Bạn có thể tham gia lại bằng mã mới.",
     "left": "Bạn đã rời gia đình",
     "lastParent": "Bạn là phụ huynh duy nhất: muốn rời đi, hãy xóa gia đình (ở cuối trang này)."
+  },
+  "catalog": {
+    "country": "Quốc gia",
+    "countries": {
+      "VN": "Việt Nam",
+      "FR": "Pháp"
+    },
+    "grade": "Lớp",
+    "gradePlaceholder": "vd. 5",
+    "gradeValue": "Lớp {{grade}}",
+    "subjectLabel": "Môn học",
+    "week": "Tuần",
+    "weekPlaceholder": "vd. Tuần 3",
+    "titleField": "Tiêu đề",
+    "source": "Nguồn (không bắt buộc)",
+    "subject": {
+      "hist_geo": "Lịch sử và Địa lý",
+      "maths": "Toán",
+      "langue_nationale": "Ngôn ngữ quốc gia",
+      "anglais": "Tiếng Anh",
+      "sciences": "Khoa học",
+      "civics": "Giáo dục công dân",
+      "technology": "Công nghệ"
+    },
+    "state": {
+      "draft": "Bản nháp",
+      "scheduled": "Đã lên lịch",
+      "open": "Đang mở",
+      "ended": "Đã kết thúc"
+    },
+    "errors": {
+      "grade": "Lớp tối đa 12 ký tự.",
+      "week": "Tuần tối đa 40 ký tự."
+    },
+    "filters": {
+      "title": "Bộ lọc",
+      "all": "Tất cả"
+    },
+    "server": {
+      "slotTaken": "Ô này (quốc gia, lớp, môn, tuần) đã có một bài trắc nghiệm.",
+      "invalidSlot": "Quốc gia, lớp, môn, tuần hoặc tiêu đề không hợp lệ.",
+      "invalidDates": "Ngày mở không được sau hạn nộp.",
+      "datesRequired": "Bài đã xuất bản phải có đủ hai ngày.",
+      "invalidShift": "Không dời được: mỗi lần một tuần, tối đa bốn tuần mỗi bên.",
+      "subjectNotActive": "Hãy bật môn này trước.",
+      "childNotFound": "Không tìm thấy bé.",
+      "forbidden": "Không được phép."
+    },
+    "admin": {
+      "title": "Quản trị",
+      "intro": "Bài trắc nghiệm được soạn ở đây theo quốc gia, lớp, môn và tuần. Gia đình không tạo gì cả: bé tự động nhận bài của tuần.",
+      "import": "Nhập bài trắc nghiệm",
+      "empty": "Không có bài nào trong lựa chọn này.",
+      "dates": "Từ {{from}} đến {{to}}",
+      "noDates": "Chưa đặt ngày",
+      "toVerify": "{{count}} đáp án cần kiểm tra"
+    },
+    "import": {
+      "title": "Nhập vào danh mục",
+      "intro": "Chọn ô trong danh mục, rồi tải tài liệu (Word, PDF hoặc ảnh). Bài được lưu dưới dạng bản nháp: xem lại đáp án, đặt ngày rồi xuất bản.",
+      "continue": "Tiếp tục nhập",
+      "manualTitle": "Hoặc nhập tay",
+      "manualHelp": "Tạo một bài trống trong ô này; bạn thêm từng câu hỏi.",
+      "manual": "Tạo bài trống"
+    },
+    "editor": {
+      "title": "Bài trắc nghiệm trong danh mục",
+      "notFound": "Không tìm thấy bài.",
+      "datesTitle": "Ngày",
+      "datesHint": "Ngày theo giờ địa phương của gia đình. Bài mở vào ngày bắt đầu; hạn nộp chỉ để tham khảo và không bao giờ chặn bé.",
+      "release": "Ngày mở",
+      "due": "Hạn nộp",
+      "setRelease": "Đặt ngày mở",
+      "setDue": "Đặt hạn nộp",
+      "saveDates": "Lưu ngày",
+      "datesSaved": "Đã lưu ngày.",
+      "datesNeeded": "Hãy đặt ngày mở và hạn nộp để xuất bản.",
+      "published": "Đã xuất bản.",
+      "unpublished": "Đã gỡ xuất bản.",
+      "unpublishHint": "Gỡ xuất bản sẽ ẩn bài khỏi danh sách của bé nhưng không xóa lượt làm nào.",
+      "attempts": "{{count}} lượt làm của các bé.",
+      "choiceLabel": "{{letter}}: {{text}}, {{state}}",
+      "correct": "đáp án đúng",
+      "setCorrect": "chạm để chọn làm đáp án đúng",
+      "source": "Nguồn: {{source}}",
+      "delete": "Xóa bản nháp",
+      "deleteTitle": "Xóa bản nháp này?",
+      "deleteBody": "Các câu hỏi và đáp án sẽ bị xóa."
+    },
+    "parent": {
+      "classTitle": "Lớp",
+      "classHelp": "Quốc gia và lớp của {{name}}: quyết định bài nào bé nhận được.",
+      "saveClass": "Lưu lớp",
+      "classSaved": "Đã lưu lớp.",
+      "noClass": "Hãy chọn quốc gia và lớp để nhận bài của tuần.",
+      "subjectsTitle": "Môn học",
+      "subjectsHelp": "Bật các môn đang học. Nút − và + dời bài của một môn đi một tuần cho bé này (tối đa bốn tuần).",
+      "offsetNone": "Theo lịch chung",
+      "offsetLater": "Dời +{{count}} tuần: muộn hơn",
+      "offsetEarlier": "Dời −{{count}} tuần: sớm hơn",
+      "shiftEarlier": "{{subject}}: sớm hơn một tuần",
+      "shiftLater": "{{subject}}: muộn hơn một tuần",
+      "emptyCatalog": "Chưa có bài nào được xuất bản cho lớp và các môn này.",
+      "notYet": "Mở vào {{day}}"
+    }
   }
 }
