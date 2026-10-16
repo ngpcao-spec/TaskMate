@@ -238,3 +238,6 @@ Progression de l'enfant enregistrée au fil de l'eau (table fermée + RPC, file 
 
 ### Import d'administration « un seul fichier » (D-081) — 2026-10-16
 Un fichier Word / PDF avec des blocs `[QUIZ]` suffit : lecture déterministe sans IA, validation tout ou rien (bloc et ligne en cas d'erreur), bilan, brouillons atomiques avec dates, « Publier tout », case occupée jamais écrasée en silence. Classes en liste fermée par pays (VN 1–12, FR CP…TERM), validées par la base. Repli IA conservé pour un fichier non structuré. PR ouverte, NON fusionnée (demande de Teo).
+
+### Connexion de l'enfant lisible côté parent (D-082) — 2026-10-16
+E-mail de connexion du parent sous son nom (Réglages), bloc « Connexion de l'enfant » avec les 3 éléments à saisir et boutons « Copier » (e-mail, identifiant) ; jamais de mot de passe, jamais d'adresse interne. Sans migration.

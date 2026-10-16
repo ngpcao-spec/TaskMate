@@ -951,6 +951,19 @@
       "forbidden": "Only the family's parents can do this.",
       "not_authenticated": "Session expired. Sign in again.",
       "server_error": "Something went wrong. Try again."
+    },
+    "login": {
+      "title": "{{name}}’s sign-in",
+      "intro": "On {{name}}’s phone, enter these 3 things:",
+      "email": "1. Signed-in parent’s email",
+      "id": "2. Child’s ID",
+      "password": "3. Password",
+      "passwordValue": "The password you set",
+      "copy": "Copy",
+      "copyEmail": "Copy the parent’s email",
+      "copyId": "Copy {{name}}’s ID",
+      "copied": "Copied",
+      "copyFailed": "Could not copy"
     }
   },
   "addChild": {
@@ -989,7 +1002,8 @@
     "leaveTitle": "Leave the family?",
     "leaveBody": "You will lose access to this family's children, tasks and rewards. You can join again with a new code.",
     "left": "You left the family",
-    "lastParent": "You are the only parent: to leave, delete the family (at the bottom of this page)."
+    "lastParent": "You are the only parent: to leave, delete the family (at the bottom of this page).",
+    "loginEmail": "Signed in as: {{email}}"
   },
   "catalog": {
     "country": "Country",
