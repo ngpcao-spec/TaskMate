@@ -66,6 +66,8 @@ export const EXPECTED_FUNCTIONS = [
   'catalog_list',
   'catalog_make_layout',
   'catalog_new_attempt',
+  'catalog_normalize_existing_grades',
+  'catalog_normalize_grade',
   'catalog_questions_admin',
   'catalog_reorder_questions',
   'catalog_require_admin',

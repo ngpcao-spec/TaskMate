@@ -88,6 +88,27 @@ export async function createCatalogQuiz(v: NewCatalogQuiz): Promise<void> {
   const { error } = await supabase.rpc('catalog_create_quiz', { p_quiz: v.id, p_country: v.country, p_grade: v.grade, p_subject: v.subject, p_week: v.week, p_title: v.title });
   fail(error);
 }
+/** Un QCM lu dans un fichier d'import : brouillon + dates écrits dans UNE transaction (`create_catalog_draft`), rejouable (id fixé), remplaçable seulement s'il est brouillon sans tentative. */
+export type CatalogDraftInput = {
+  id: string;
+  country: string;
+  grade: string;
+  subject: string;
+  week: string;
+  title: string;
+  questions: { prompt: string; choices: string[]; correct: number; explanation: string | null; source: string | null }[];
+  releaseOn: string | null;
+  dueOn: string | null;
+  replace: boolean;
+};
+export async function createCatalogDraft(v: CatalogDraftInput): Promise<void> {
+  const { error } = await supabase.rpc('create_catalog_draft', {
+    p_quiz: v.id, p_country: v.country, p_grade: v.grade, p_subject: v.subject, p_week: v.week, p_title: v.title, p_questions: v.questions, p_kind: 'course', p_kind_detected: false,
+    p_replace: v.replace, p_release: v.releaseOn ?? undefined, p_due: v.dueOn ?? undefined,
+  });
+  fail(error);
+}
+
 export type CatalogQuestionInput = { id: string; quizId: string; position: number; prompt: string; choices: string[]; correct: number; explanation: string | null; source: string | null };
 export async function upsertCatalogQuestion(q: CatalogQuestionInput): Promise<void> {
   const { error } = await supabase.rpc('catalog_upsert_question', {

@@ -7,7 +7,7 @@ import { AdminGate } from '@/components/admin/AdminGate';
 import { Chip } from '@/components/Chip';
 import { confirmDialog } from '@/components/confirm';
 import { PickerField } from '@/components/PickerField';
-import { subjectText } from '@/components/quiz/subject';
+import { gradeText, subjectText } from '@/components/quiz/subject';
 import { Button, Card, Field, Screen, ScreenHeader } from '@/components/ui';
 import { adminQuizState, suggestedDates } from '@/domain/catalog';
 import { MATERIAL_KINDS } from '@/domain/documents';
@@ -77,7 +77,7 @@ function Editor({ quizId }: { quizId: string }) {
   const state = adminQuizState({ status: q.status, releaseOn: release, dueOn: due }, today);
   const blockers = publishBlockers(q.material_kind, list);
   const exam = isExamSet(q.material_kind);
-  const place = [t(`catalog.countries.${q.country}`), t('catalog.gradeValue', { grade: q.grade }), subjectText(t, q.subject)].join(' · ');
+  const place = [t(`catalog.countries.${q.country}`), gradeText(t, q.country, q.grade), subjectText(t, q.subject)].join(' · ');
 
   const saveDates = () => setDates.mutateAsync({ quizId, releaseOn: release, dueOn: due }).then(() => { setReleaseEdit(undefined); setDueEdit(undefined); show(t('catalog.editor.datesSaved')); }, () => undefined);
   const chooseRelease = (value: string) => {

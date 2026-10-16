@@ -235,3 +235,6 @@ Progression de l'enfant enregistrée au fil de l'eau (table fermée + RPC, file 
 
 ### Espace administrateur et catalogue de QCM (D-080) — 2026-10-16
 `platform_admins` (+ `is_platform_admin()`), catalogue `catalog_*` (RLS fermée, RPC), classe / matières / décalage par enfant, distribution automatique à l'enfant, parent qui voit les réponses d'un QCM envoyé par SON enfant, import admin par `generate-questions` (mode catalogue). L'import par famille est inchangé. PR ouverte, NON fusionnée (demande de Teo : relire la migration avant la fusion). À faire par Teo après la fusion : HUMAN_TODO § 6 quater (requête SQL d'inscription de l'administrateur).
+
+### Import d'administration « un seul fichier » (D-081) — 2026-10-16
+Un fichier Word / PDF avec des blocs `[QUIZ]` suffit : lecture déterministe sans IA, validation tout ou rien (bloc et ligne en cas d'erreur), bilan, brouillons atomiques avec dates, « Publier tout », case occupée jamais écrasée en silence. Classes en liste fermée par pays (VN 1–12, FR CP…TERM), validées par la base. Repli IA conservé pour un fichier non structuré. PR ouverte, NON fusionnée (demande de Teo).

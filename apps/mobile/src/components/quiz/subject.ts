@@ -6,3 +6,6 @@ export const subjectText = (t: TFunction, key: string): string => {
   const k = subjectLabelKey(key);
   return k ? t(k) : key;
 };
+
+/** Libellé d'une classe : « Lớp 5 » (VN, numéro) ; « 5e », « CM2 », « Terminale »… (FR, libellés traduits). */
+export const gradeText = (t: TFunction, country: string, grade: string): string => (country === 'FR' ? t(`catalog.frGrades.${grade}`, { defaultValue: grade }) : t('catalog.gradeValue', { grade }));

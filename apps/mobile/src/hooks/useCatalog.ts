@@ -1,10 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  confirmCatalogAnswers, createCatalogQuiz, deleteCatalogQuestion, deleteCatalogQuiz, fetchCatalogList, fetchCatalogQuestions, fetchCatalogQuiz, fetchChildSubjects, fetchIsPlatformAdmin,
+  confirmCatalogAnswers, createCatalogDraft, createCatalogQuiz, deleteCatalogQuestion, deleteCatalogQuiz, fetchCatalogList, fetchCatalogQuestions, fetchCatalogQuiz, fetchChildSubjects, fetchIsPlatformAdmin,
   fetchParentCatalog, relaunchCatalogEvaluation, reorderCatalogQuestions, setCatalogDates, setCatalogKind, setCatalogPaper, setCatalogStatus, setChildClass, setChildSubject,
   shiftChildSubject, updateCatalogInfo, upsertCatalogQuestion, type CatalogQuestionInput, type NewCatalogQuiz,
 } from '@/api/catalog';
 import { platformKeys, queryKeys, quizKeys } from '@/api/keys';
+import { draftQuestions } from '@/domain/catalog-import';
+import type { ExistingQuiz, PublishResult, StepResult, WriteStep } from '@/domain/catalog-import-plan';
 import { serverErrorCode } from '@/api/tasks';
 import { quizErrorKey } from '@/domain/quiz';
 import i18n from '@/i18n';
@@ -54,3 +56,46 @@ export const useSetChildClass = () => useCatalogMutation<{ childId: string; coun
 export const useSetChildSubject = () => useCatalogMutation<{ childId: string; subject: string; active: boolean }>(({ childId, subject, active }) => setChildSubject(childId, subject, active));
 export const useShiftChildSubject = () => useCatalogMutation<{ childId: string; subject: string; delta: -1 | 1 }>(({ childId, subject, delta }) => shiftChildSubject(childId, subject, delta));
 export const useRelaunchCatalogEvaluation = () => useCatalogMutation<{ quizId: string; childId: string; attemptId: string }>(({ quizId, childId, attemptId }) => relaunchCatalogEvaluation(quizId, childId, attemptId));
+
+/**
+ * Import d'administration « un seul fichier » (D-081) : écritures SÉQUENTIELLES, une transaction par QCM côté base (brouillon + dates), rejouables (ids fixés par le plan).
+ * Une erreur sur un QCM n'empêche pas les suivants et n'annule pas les précédents ; elle est rapportée avec son code serveur. Rien ne passe hors des RPC d'administration.
+ */
+export function useCatalogBulk() {
+  const queryClient = useQueryClient();
+  const refresh = () => void queryClient.invalidateQueries({ queryKey: quizKeys.all });
+  const loadExisting = async (): Promise<ExistingQuiz[]> => {
+    const rows = await queryClient.fetchQuery({ queryKey: quizKeys.catalogList, queryFn: fetchCatalogList, staleTime: 0 });
+    return rows.map((r) => ({ id: r.id, country: r.country, grade: r.grade, subject: r.subject, week_label: r.week_label, status: r.status, attempts_count: r.attempts_count, title: r.title }));
+  };
+  const write = async (steps: readonly WriteStep[], onProgress?: (done: number, total: number) => void): Promise<StepResult[]> => {
+    const out: StepResult[] = [];
+    for (const { item, replace } of steps) {
+      const q = item.quiz;
+      try {
+        await createCatalogDraft({ id: item.id, country: q.country, grade: q.grade, subject: q.subject, week: q.week, title: q.title, questions: draftQuestions(q), releaseOn: q.releaseOn, dueOn: q.dueOn, replace });
+        out.push({ block: q.block, id: item.id, outcome: replace ? 'replaced' : 'created' });
+      } catch (error) {
+        out.push({ block: q.block, id: item.id, outcome: 'failed', error: serverErrorCode(error) });
+      }
+      onProgress?.(out.length, steps.length);
+    }
+    refresh();
+    return out;
+  };
+  const publish = async (items: readonly { block: number; id: string }[], onProgress?: (done: number, total: number) => void): Promise<PublishResult[]> => {
+    const out: PublishResult[] = [];
+    for (const it of items) {
+      try {
+        await setCatalogStatus(it.id, 'published'); // mêmes règles que la publication à la main (D-061 + dates) : refus = reste en brouillon, avec la raison
+        out.push({ block: it.block, id: it.id, outcome: 'published' });
+      } catch (error) {
+        out.push({ block: it.block, id: it.id, outcome: 'draft', error: serverErrorCode(error) });
+      }
+      onProgress?.(out.length, items.length);
+    }
+    refresh();
+    return out;
+  };
+  return { loadExisting, write, publish };
+}

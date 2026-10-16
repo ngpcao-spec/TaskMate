@@ -3,6 +3,7 @@ import '@/i18n';
 import { AdminCatalog } from '@/components/admin/AdminCatalog';
 import { AdminImport } from '@/components/admin/AdminImport';
 import { AdminQuizEditor } from '@/components/admin/AdminQuizEditor';
+import { AdminNewQuiz } from '@/components/admin/AdminNewQuiz';
 import AdminQuestionScreen from '../app/admin/question';
 
 const mockPush = jest.fn();
@@ -58,7 +59,9 @@ jest.mock('@/hooks/useCatalog', () => ({
   useDeleteCatalogQuiz: () => ok(mockDelete),
   useReorderCatalogQuestions: () => ok(jest.fn()),
   useCreateCatalogQuiz: () => ok(mockCreate),
+  useCatalogBulk: () => ({ loadExisting: async () => [], write: async () => [], publish: async () => [] }),
 }));
+jest.mock('@/services/documentText', () => ({ extractFileText: jest.fn() }));
 jest.mock('@/hooks/useQuizzes', () => ({ useParentQuestions: () => ({ data: [], isPending: false }), useUpsertQuestion: () => ok(jest.fn()), useGenerateQuestions: () => ({ mutate: jest.fn(), isPending: false, error: null }) }));
 jest.mock('@/hooks/useDisplayedChild', () => ({ useDisplayedChild: () => ({ me: { family: { id: 'f', timezone: 'Asia/Ho_Chi_Minh' } }, viewer: { role: 'parent' }, children: [], child: null, select: jest.fn() }) }));
 jest.mock('@/services/documents', () => ({ documentUploadSupported: true, pickDocuments: jest.fn() }));
@@ -84,7 +87,8 @@ describe('Administration — accès (D-080)', () => {
     await render(<AdminQuizEditor quizId="z1" />);
     await render(<AdminImport />);
     await render(<AdminQuestionScreen />);
-    expect(mockRedirect).toHaveBeenCalledTimes(3);
+    await render(<AdminNewQuiz />);
+    expect(mockRedirect).toHaveBeenCalledTimes(4);
   });
 });
 
@@ -102,6 +106,15 @@ describe('Administration — catalogue', () => {
     expect(screen.getByText('Semaine 1 — Fractions')).toBeTruthy();
     await fireEvent.press(screen.getAllByRole('radio', { name: 'Tất cả' })[0] as never);
     expect(screen.getByText('Tuần 3 — Lịch sử')).toBeTruthy();
+  });
+  it('filtre de classe : TOUTES les classes du pays, même sans QCM (liste fermée)', async () => {
+    mockList = [listRow()];
+    await render(<AdminCatalog />);
+    expect(screen.queryByRole('radio', { name: 'Lớp 7' })).toBeNull(); // aucun pays choisi
+    await fireEvent.press(screen.getByRole('radio', { name: 'Việt Nam' }));
+    expect(screen.getAllByRole('radio', { name: /^Lớp \d+$/ })).toHaveLength(12);
+    await fireEvent.press(screen.getByRole('radio', { name: 'Pháp' }));
+    expect(screen.getAllByRole('radio', { name: /^(CP|CE1|CE2|CM1|CM2|6e|5e|4e|3e|2de|1re|Terminale)$/ })).toHaveLength(12);
   });
   it('ouvrir un QCM et importer', async () => {
     mockList = [listRow()];
@@ -173,21 +186,39 @@ describe('Administration — éditeur', () => {
 });
 
 describe('Administration — import', () => {
-  it('la case doit être complète (classe et semaine) avant de continuer', async () => {
+  it('UN seul geste : choisir le fichier ; aucun formulaire (ni pays, ni classe, ni matière, ni semaine) avant le dépôt', async () => {
     await render(<AdminImport />);
+    expect(screen.getByRole('button', { name: 'Chọn tệp' })).toBeTruthy();
+    expect(screen.queryByLabelText('Tuần')).toBeNull();
+    expect(screen.queryByRole('radio', { name: 'Pháp' })).toBeNull();
+  });
+  it('repli sur l\'IA : la case se choisit par puces à liste FERMÉE (classes du pays), semaine obligatoire', async () => {
+    await render(<AdminImport />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Tài liệu tự do hoặc ảnh (AI)' }));
     expect(screen.getByRole('button', { name: 'Tiếp tục nhập' }).props.accessibilityState).toMatchObject({ disabled: true });
-    await fireEvent.changeText(screen.getByLabelText('Lớp'), '5');
+    expect(screen.getAllByRole('radio', { name: /^Lớp \d+$/ })).toHaveLength(12);
+    expect(screen.queryByLabelText('Lớp')).toBeNull(); // plus de saisie libre
+    await fireEvent.press(screen.getByRole('radio', { name: 'Lớp 5' }));
     await fireEvent.changeText(screen.getByLabelText('Tuần'), 'Tuần 3');
     expect(screen.getByRole('button', { name: 'Tiếp tục nhập' }).props.accessibilityState).toMatchObject({ disabled: false });
-  });
-  it('saisie à la main : crée un QCM vide dans la case avec un id fixé, puis ouvre l\'éditeur', async () => {
-    await render(<AdminImport />);
     await fireEvent.press(screen.getByRole('radio', { name: 'Pháp' }));
-    await fireEvent.changeText(screen.getByLabelText('Lớp'), '6e');
+    expect(screen.getByRole('button', { name: 'Tiếp tục nhập' }).props.accessibilityState).toMatchObject({ disabled: true }); // changer de pays efface la classe
+    expect(screen.getByRole('radio', { name: 'Terminale' })).toBeTruthy();
+    expect(screen.queryByRole('radio', { name: 'Lớp 5' })).toBeNull();
+  });
+  it('QCM vide depuis le catalogue : crée dans la case avec un id fixé, puis ouvre l\'éditeur', async () => {
+    await render(<AdminNewQuiz />);
+    await fireEvent.press(screen.getByRole('radio', { name: 'Pháp' }));
+    await fireEvent.press(screen.getByRole('radio', { name: '5e' }));
     await fireEvent.changeText(screen.getByLabelText('Tuần'), 'Semaine 1');
     await fireEvent.changeText(screen.getByLabelText('Tiêu đề'), 'Fractions');
     await fireEvent.press(screen.getByRole('button', { name: 'Tạo bài trống' }));
-    expect(mockCreate).toHaveBeenCalledWith({ id: 'id-1', country: 'FR', grade: '6E', subject: 'hist_geo', week: 'Semaine 1', title: 'Fractions' });
+    expect(mockCreate).toHaveBeenCalledWith({ id: 'id-1', country: 'FR', grade: '5E', subject: 'hist_geo', week: 'Semaine 1', title: 'Fractions' });
     expect(mockReplace).toHaveBeenCalledWith({ pathname: '/admin/[id]', params: { id: 'id-1' } });
+  });
+  it('le catalogue propose la création d\'un QCM vide', async () => {
+    await render(<AdminCatalog />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Tạo bài trống' }));
+    expect(mockPush).toHaveBeenCalledWith('/admin/new');
   });
 });

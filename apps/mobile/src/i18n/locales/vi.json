@@ -998,7 +998,6 @@
       "FR": "Pháp"
     },
     "grade": "Lớp",
-    "gradePlaceholder": "vd. 5",
     "gradeValue": "Lớp {{grade}}",
     "subjectLabel": "Môn học",
     "week": "Tuần",
@@ -1026,7 +1025,8 @@
     },
     "filters": {
       "title": "Bộ lọc",
-      "all": "Tất cả"
+      "all": "Tất cả",
+      "pickCountry": "Chọn quốc gia để lọc theo lớp."
     },
     "server": {
       "slotTaken": "Ô này (quốc gia, lớp, môn, tuần) đã có một bài trắc nghiệm.",
@@ -1045,13 +1045,12 @@
       "empty": "Không có bài nào trong lựa chọn này.",
       "dates": "Từ {{from}} đến {{to}}",
       "noDates": "Chưa đặt ngày",
-      "toVerify": "{{count}} đáp án cần kiểm tra"
+      "toVerify": "{{count}} đáp án cần kiểm tra",
+      "newEmpty": "Tạo bài trống"
     },
     "import": {
       "title": "Nhập vào danh mục",
-      "intro": "Chọn ô trong danh mục, rồi tải tài liệu (Word, PDF hoặc ảnh). Bài được lưu dưới dạng bản nháp: xem lại đáp án, đặt ngày rồi xuất bản.",
       "continue": "Tiếp tục nhập",
-      "manualTitle": "Hoặc nhập tay",
       "manualHelp": "Tạo một bài trống trong ô này; bạn thêm từng câu hỏi.",
       "manual": "Tạo bài trống"
     },
@@ -1094,6 +1093,101 @@
       "shiftLater": "{{subject}}: muộn hơn một tuần",
       "emptyCatalog": "Chưa có bài nào được xuất bản cho lớp và các môn này.",
       "notYet": "Mở vào {{day}}"
+    },
+    "frGrades": {
+      "CP": "CP",
+      "CE1": "CE1",
+      "CE2": "CE2",
+      "CM1": "CM1",
+      "CM2": "CM2",
+      "6E": "6e",
+      "5E": "5e",
+      "4E": "4e",
+      "3E": "3e",
+      "2DE": "2de",
+      "1RE": "1re",
+      "TERM": "Terminale"
+    },
+    "ai": {
+      "title": "Tài liệu tự do hoặc ảnh (AI)",
+      "intro": "Với tài liệu không có khối [QUIZ] hoặc ảnh, AI sẽ tạo câu hỏi. Hãy chọn ô trong danh mục, rồi tải tài liệu.",
+      "back": "Quay lại tệp có cấu trúc"
+    },
+    "new": {
+      "title": "Bài trống mới"
+    },
+    "bulk": {
+      "intro": "Chọn MỘT tệp Word hoặc PDF (có chữ) chứa các bài trắc nghiệm: quốc gia, lớp, môn, tuần, tiêu đề và ngày được đọc ngay trong tệp. Không dùng AI; chỉ ghi khi mọi thứ đều hợp lệ.",
+      "choose": "Chọn tệp",
+      "formats": "Mỗi bài bắt đầu bằng dòng [QUIZ], tiếp theo là Pays, Classe, Matière, Semaine, Titre, Ouverture, Échéance (AAAA-MM-JJ), rồi các câu hỏi đánh số với đáp án A đến D, “Đáp án” và “Giải thích”.",
+      "reading": "Đang đọc tệp…",
+      "noText": "Tệp này không có chữ đọc được (PDF quét ảnh?). Hãy dùng tệp Word hoặc chế độ AI.",
+      "unsupportedFile": "Loại tệp này không đọc được ở đây: hãy chọn tệp Word (.docx) hoặc PDF có chữ.",
+      "unstructuredTitle": "Tệp không có cấu trúc",
+      "unstructuredBody": "Không thấy dòng [QUIZ] nào. Với tài liệu tự do hoặc ảnh, AI có thể tạo câu hỏi; khi đó bạn chọn ô (quốc gia, lớp, môn, tuần).",
+      "useAi": "Tài liệu tự do hoặc ảnh (AI)",
+      "errorsTitle": "Cần sửa tệp",
+      "errorsBody": "{{count}} lỗi: chưa có gì được lưu. Hãy sửa tệp rồi chọn lại.",
+      "where": "Khối {{block}} · dòng {{line}}",
+      "otherFile": "Chọn tệp khác",
+      "keys": {
+        "country": "Quốc gia",
+        "grade": "Lớp",
+        "subject": "Môn",
+        "week": "Tuần",
+        "title": "Tiêu đề"
+      },
+      "errors": {
+        "unknown_header": "Dòng tiêu đề không nhận ra: “{{text}}”.",
+        "missing_header": "Thiếu trường trong phần đầu: {{key}}.",
+        "invalid_country": "Quốc gia không rõ: “{{value}}” (VN hoặc FR).",
+        "invalid_grade": "Lớp “{{value}}” không có ở quốc gia này ({{country}}).",
+        "invalid_subject": "Môn không rõ: “{{value}}”.",
+        "week_too_long": "Tuần tối đa {{max}} ký tự.",
+        "title_too_long": "Tiêu đề tối đa {{max}} ký tự.",
+        "invalid_date": "Ngày không hợp lệ: “{{value}}” (AAAA-MM-JJ, ngày có thật).",
+        "dates_pair": "Hãy điền cả ngày mở và hạn nộp, hoặc bỏ trống cả hai.",
+        "dates_order": "Hạn nộp ({{due}}) trước ngày mở ({{open}}).",
+        "no_questions": "Khối này không có câu hỏi.",
+        "too_many_questions": "{{found}} câu hỏi: tối đa 30 câu mỗi bài.",
+        "prompt_empty": "Câu {{n}}: đề bài trống.",
+        "prompt_too_long": "Câu {{n}}: đề bài dài hơn {{max}} ký tự.",
+        "choice_count": "Câu {{n}}: cần 4 đáp án A đến D theo thứ tự (tìm thấy {{found}}).",
+        "choice_empty": "Câu {{n}}: đáp án {{letter}} trống.",
+        "choice_too_long": "Câu {{n}}: đáp án {{letter}} dài hơn {{max}} ký tự.",
+        "duplicate_choice": "Câu {{n}}: hai đáp án giống nhau.",
+        "missing_answer": "Câu {{n}}: thiếu “Đáp án”.",
+        "invalid_answer": "Câu {{n}}: “Đáp án” phải là A, B, C hoặc D (đọc được: “{{value}}”).",
+        "explanation_too_long": "Câu {{n}}: lời giải thích dài hơn {{max}} ký tự.",
+        "source_too_long": "Câu {{n}}: nguồn dài hơn {{max}} ký tự.",
+        "duplicate_number": "Câu {{n}}: số thứ tự đã dùng trong khối này.",
+        "duplicate_slot": "Trùng ô (quốc gia, lớp, môn, tuần) với khối {{other}} (dòng {{otherLine}}).",
+        "unexpected_line": "Dòng không mong đợi: “{{text}}”."
+      },
+      "reviewTitle": "Tổng kết nhập",
+      "detected": "Tìm thấy {{count}} bài, {{questions}} câu hỏi",
+      "answersRead": "Đáp án đọc từ tệp",
+      "occupied": "Ô này đã có một bài: “{{title}}”.",
+      "skip": "Bỏ qua",
+      "replace": "Thay thế",
+      "cannotReplacePublished": "Bài này đã xuất bản: không thể thay thế (hãy gỡ xuất bản trước nếu chưa có lượt làm nào). Sẽ bỏ qua.",
+      "cannotReplaceAttempts": "Các bé đã làm bài này: không thể thay thế. Sẽ bỏ qua.",
+      "save": "Lưu {{count}} bản nháp",
+      "writing": "Đang lưu… {{done}} / {{total}}",
+      "publishing": "Đang xuất bản… {{done}} / {{total}}",
+      "resultTitle": "Kết quả nhập",
+      "summary": "{{created}} đã tạo, {{replaced}} đã thay, {{skipped}} bỏ qua, {{failed}} lỗi",
+      "result": {
+        "created": "Đã tạo bản nháp",
+        "replaced": "Đã thay bản nháp",
+        "skipped": "Bỏ qua",
+        "failed": "Lỗi",
+        "published": "Đã xuất bản",
+        "stayedDraft": "Vẫn là bản nháp"
+      },
+      "retry": "Thử lại {{count}} bài lỗi",
+      "publishAll": "Xuất bản tất cả ({{count}})",
+      "backToCatalog": "Về danh mục"
     }
   }
 }

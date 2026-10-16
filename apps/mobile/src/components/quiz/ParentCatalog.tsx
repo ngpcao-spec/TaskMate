@@ -5,11 +5,11 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { newId } from '@/api/ids';
 import { Chip } from '@/components/Chip';
-import { subjectText } from '@/components/quiz/subject';
+import { gradeText, subjectText } from '@/components/quiz/subject';
 import { weekStatusLabel, WeekStatusBadge } from '@/components/quiz/WeekStatus';
-import { Button, Card, Field } from '@/components/ui';
+import { Button, Card } from '@/components/ui';
 import { formatShortDate } from '@/domain/calendar';
-import { canShift, COUNTRIES, isCountry, normalizeGrade, SUBJECTS } from '@/domain/catalog';
+import { canShift, COUNTRIES, gradesFor, isCountry, isGradeOf, SUBJECTS } from '@/domain/catalog';
 import { quizWeekStatus } from '@/domain/quiz-week';
 import { useChildSubjects, useParentCatalog, useRelaunchCatalogEvaluation, useSetChildClass, useSetChildSubject, useShiftChildSubject } from '@/hooks/useCatalog';
 import { useToastStore } from '@/store/toast';
@@ -34,10 +34,10 @@ export function ParentCatalog({ child, today }: { child: ChildRow; today: string
   const [countryEdit, setCountry] = useState<string | null>(null);
   const [gradeEdit, setGrade] = useState<string | null>(null);
   const country = countryEdit ?? child.country ?? COUNTRIES[0];
-  const grade = gradeEdit ?? child.grade ?? '';
-  const normalized = normalizeGrade(grade);
-  const hasClass = isCountry(child.country) && !!child.grade;
-  const changed = country !== (child.country ?? null) || normalized !== (child.grade ?? null);
+  // classe en LISTE FERMÉE du pays : changer de pays efface la classe choisie (VN ≠ FR)
+  const grade = gradeEdit !== null ? gradeEdit : countryEdit === null || countryEdit === child.country ? child.grade : null;
+  const hasClass = isCountry(child.country) && isGradeOf(child.country, child.grade);
+  const changed = grade !== null && isGradeOf(country, grade) && (country !== (child.country ?? null) || grade !== (child.grade ?? null));
   const active = new Map((subjects.data ?? []).map((s) => [s.subject, s.week_offset]));
   const rows = overview.data ?? [];
 
@@ -50,16 +50,20 @@ export function ParentCatalog({ child, today }: { child: ChildRow; today: string
         <Text style={typography.secondary}>{t('catalog.parent.classHelp', { name: child.name })}</Text>
         <View style={styles.wrap}>
           {COUNTRIES.map((c) => (
-            <Chip key={c} label={t(`catalog.countries.${c}`)} selected={country === c} onPress={() => setCountry(c)} />
+            <Chip key={c} label={t(`catalog.countries.${c}`)} selected={country === c} onPress={() => { setCountry(c); setGrade(null); }} />
           ))}
         </View>
-        <Field label={t('catalog.grade')} value={grade} onChangeText={setGrade} maxLength={12} autoCapitalize="characters" placeholder={t('catalog.gradePlaceholder')} />
+        <Text style={typography.secondary}>{t('catalog.grade')}</Text>
+        <View style={styles.wrap}>
+          {gradesFor(country).map((g) => (
+            <Chip key={g} label={gradeText(t, country, g)} selected={grade === g} onPress={() => setGrade(g)} />
+          ))}
+        </View>
         {changed ? (
           <Button
             label={t('catalog.parent.saveClass')}
-            disabled={normalized === null}
             loading={setClass.isPending}
-            onPress={() => normalized && setClass.mutate({ childId: child.id, country, grade: normalized }, { onSuccess: () => { setCountry(null); setGrade(null); show(t('catalog.parent.classSaved')); } })}
+            onPress={() => grade && setClass.mutate({ childId: child.id, country, grade }, { onSuccess: () => { setCountry(null); setGrade(null); show(t('catalog.parent.classSaved')); } })}
           />
         ) : null}
       </Card>

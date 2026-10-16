@@ -38,19 +38,38 @@ beforeEach(() => {
 });
 
 describe('Catalogue — côté parent (D-080)', () => {
-  it('classe : pays + classe enregistrés en forme normalisée ; rien à enregistrer tant que rien ne change', async () => {
+  it('classe : puces à liste FERMÉE du pays ; rien à enregistrer tant que rien ne change', async () => {
     await render(<ParentCatalog child={minh} today="2026-09-08" />);
     expect(screen.queryByRole('button', { name: 'Lưu lớp' })).toBeNull();
-    await fireEvent.press(screen.getByRole('radio', { name: 'Pháp' }));
-    await fireEvent.changeText(screen.getByLabelText('Lớp'), ' 6e ');
+    expect(screen.queryByLabelText('Lớp')).toBeNull(); // plus de saisie libre
+    expect(screen.getAllByRole('radio', { name: /^Lớp \d+$/ })).toHaveLength(12);
+    expect(screen.getByRole('radio', { name: 'Lớp 5' }).props.accessibilityState).toMatchObject({ selected: true });
+    await fireEvent.press(screen.getByRole('radio', { name: 'Lớp 6' }));
     await fireEvent.press(screen.getByRole('button', { name: 'Lưu lớp' }));
-    expect(mockSetClass).toHaveBeenCalledWith({ childId: 'c-minh', country: 'FR', grade: '6E' });
+    expect(mockSetClass).toHaveBeenCalledWith({ childId: 'c-minh', country: 'VN', grade: '6' });
   });
-  it('classe vide : enregistrement impossible', async () => {
+  it('changer de pays : classes françaises, la classe choisie est effacée (VN ≠ FR) jusqu\'à un nouveau choix', async () => {
+    await render(<ParentCatalog child={minh} today="2026-09-08" />);
+    await fireEvent.press(screen.getByRole('radio', { name: 'Pháp' }));
+    expect(screen.queryByRole('radio', { name: 'Lớp 5' })).toBeNull();
+    expect(screen.getAllByRole('radio', { name: /^(CP|CE1|CE2|CM1|CM2|6e|5e|4e|3e|2de|1re|Terminale)$/ })).toHaveLength(12);
+    expect(screen.queryByRole('button', { name: 'Lưu lớp' })).toBeNull(); // pas de classe choisie
+    await fireEvent.press(screen.getByRole('radio', { name: '5e' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Lưu lớp' }));
+    expect(mockSetClass).toHaveBeenCalledWith({ childId: 'c-minh', country: 'FR', grade: '5E' });
+  });
+  it('sans classe : rien à enregistrer tant qu\'aucune puce n\'est choisie', async () => {
     await render(<ParentCatalog child={noClass} today="2026-09-08" />);
-    await fireEvent.changeText(screen.getByLabelText('Lớp'), '   ');
-    expect(screen.getByRole('button', { name: 'Lưu lớp' }).props.accessibilityState).toMatchObject({ disabled: true });
+    expect(screen.queryByRole('button', { name: 'Lưu lớp' })).toBeNull();
     expect(screen.getByText(/Hãy chọn quốc gia và lớp/)).toBeTruthy();
+    await fireEvent.press(screen.getByRole('radio', { name: 'Lớp 3' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Lưu lớp' }));
+    expect(mockSetClass).toHaveBeenCalledWith({ childId: 'c-minh', country: 'VN', grade: '3' });
+  });
+  it('une ancienne classe hors liste n\'est pas affichée comme choisie : le parent doit en choisir une', async () => {
+    await render(<ParentCatalog child={{ ...minh, grade: 'QUINTA' } as ChildRow} today="2026-09-08" />);
+    expect(screen.getAllByRole('radio', { name: /^Lớp \d+$/ }).every((c) => c.props.accessibilityState.selected === false)).toBe(true);
+    expect(screen.queryByRole('checkbox', { name: 'Toán' })).toBeNull(); // pas de matières tant que la classe n'est pas valide
   });
   it('sans classe : aucune matière proposée (pas de QCM à recevoir)', async () => {
     await render(<ParentCatalog child={noClass} today="2026-09-08" />);
