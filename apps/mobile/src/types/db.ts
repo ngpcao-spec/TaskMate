@@ -1048,6 +1048,12 @@ isOneToOne: false
 "catalog_new_attempt":
 { Args: { "p_attempt": string,"p_child": string,"p_family": string,"p_quiz": string,"p_relaunched_by": string }; Returns: undefined
                            },
+"catalog_normalize_existing_grades":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
+"catalog_normalize_grade":
+{ Args: { "p_country": string,"p_raw": string }; Returns: string
+                           },
 "catalog_questions_admin":
 { Args: { "p_quiz": string }; Returns: {
               "choices": (string)[],"confirmed": boolean,"correct_index": number,"explanation": string,"id": string,"needs_figure": boolean,"origin_number": number,"position": number,"prompt": string,"source": string,"to_verify": boolean
@@ -1139,7 +1145,7 @@ isOneToOne: false
 { Args: { "p_child": string,"p_new_set": string,"p_source": string }; Returns: undefined
                            },
 "create_catalog_draft":
-{ Args: { "p_country": string,"p_grade": string,"p_kind"?: Database["public"]['Enums']["quiz_material_kind"],"p_kind_detected"?: boolean,"p_questions": Json,"p_quiz": string,"p_replace"?: boolean,"p_subject": string,"p_title": string,"p_week": string }; Returns: undefined
+{ Args: { "p_country": string,"p_due"?: string,"p_grade": string,"p_kind"?: Database["public"]['Enums']["quiz_material_kind"],"p_kind_detected"?: boolean,"p_questions": Json,"p_quiz": string,"p_release"?: string,"p_replace"?: boolean,"p_subject": string,"p_title": string,"p_week": string }; Returns: undefined
                            },
 "create_family":
 { Args: { "p_display_name": string,"p_name": string,"p_timezone"?: string }; Returns: string
