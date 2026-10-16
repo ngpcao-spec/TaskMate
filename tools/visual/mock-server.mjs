@@ -35,6 +35,12 @@ function query(table, params) {
 function rpc(name, body) {
   if (name === 'quiz_progress_counts') return data.progressCounts;
   if (name === 'child_quiz_sets') return data.childQuizSets;
+  // espace administrateur (D-080 / D-081) : le faux serveur se comporte comme un administrateur, catalogue vide
+  if (name === 'is_platform_admin') return true;
+  if (name === 'child_catalog_quizzes') return [];
+  if (name === 'catalog_list') return globalThis.__catalog ?? [];
+  if (name === 'create_catalog_draft') { (globalThis.__calls ??= []).push({ name, body }); return null; }
+  if (name === 'catalog_set_status') { (globalThis.__calls ??= []).push({ name, body }); return null; }
   const now = new Date().toISOString();
   const t = data.tasks.find((x) => x.id === (body.p_task_id ?? ''));
   if (name === 'complete_task' && t && !t.completed_at) { t.completed_at = now; }

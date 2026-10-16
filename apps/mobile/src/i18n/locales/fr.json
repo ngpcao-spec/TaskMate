@@ -998,7 +998,6 @@
       "FR": "France"
     },
     "grade": "Classe",
-    "gradePlaceholder": "ex. 5",
     "gradeValue": "Classe {{grade}}",
     "subjectLabel": "Matière",
     "week": "Semaine",
@@ -1026,7 +1025,8 @@
     },
     "filters": {
       "title": "Filtres",
-      "all": "Tous"
+      "all": "Tous",
+      "pickCountry": "Choisissez un pays pour filtrer par classe."
     },
     "server": {
       "slotTaken": "Cette case (pays, classe, matière, semaine) contient déjà un QCM.",
@@ -1045,13 +1045,12 @@
       "empty": "Aucun QCM dans cette sélection.",
       "dates": "Du {{from}} au {{to}}",
       "noDates": "Dates à fixer",
-      "toVerify": "{{count}} réponse(s) à vérifier"
+      "toVerify": "{{count}} réponse(s) à vérifier",
+      "newEmpty": "Créer un QCM vide"
     },
     "import": {
       "title": "Importer dans le catalogue",
-      "intro": "Choisissez la case du catalogue, puis déposez le document (Word, PDF ou photos). Le QCM est enregistré en brouillon : relisez les réponses, fixez les dates et publiez.",
       "continue": "Continuer vers l’import",
-      "manualTitle": "Ou saisir à la main",
       "manualHelp": "Crée un QCM vide dans cette case ; vous ajoutez les questions une à une.",
       "manual": "Créer un QCM vide"
     },
@@ -1094,6 +1093,101 @@
       "shiftLater": "{{subject}} : une semaine plus tard",
       "emptyCatalog": "Aucun QCM publié pour cette classe et ces matières pour le moment.",
       "notYet": "Disponible le {{day}}"
+    },
+    "frGrades": {
+      "CP": "CP",
+      "CE1": "CE1",
+      "CE2": "CE2",
+      "CM1": "CM1",
+      "CM2": "CM2",
+      "6E": "6e",
+      "5E": "5e",
+      "4E": "4e",
+      "3E": "3e",
+      "2DE": "2de",
+      "1RE": "1re",
+      "TERM": "Terminale"
+    },
+    "ai": {
+      "title": "Document libre ou photos (IA)",
+      "intro": "Pour un document sans blocs [QUIZ] ou des photos, l’IA génère les questions. Indiquez la case du catalogue, puis déposez le document.",
+      "back": "Retour au fichier structuré"
+    },
+    "new": {
+      "title": "Nouveau QCM vide"
+    },
+    "bulk": {
+      "intro": "Choisissez UN fichier Word ou PDF (avec texte) contenant vos QCM : pays, classe, matière, semaine, titre et dates sont lus dans le fichier. Aucune IA n’est utilisée ; rien n’est écrit tant que tout n’est pas valide.",
+      "choose": "Choisir le fichier",
+      "formats": "Chaque QCM commence par une ligne [QUIZ], suivie de Pays, Classe, Matière, Semaine, Titre, Ouverture, Échéance (AAAA-MM-JJ), puis des questions numérotées avec les choix A à D, « Đáp án » et « Giải thích ».",
+      "reading": "Lecture du fichier…",
+      "noText": "Ce fichier ne contient pas de texte lisible (PDF scanné ?). Utilisez un fichier Word, ou le mode IA.",
+      "unsupportedFile": "Ce type de fichier n’est pas lu ici : choisissez un fichier Word (.docx) ou un PDF avec texte.",
+      "unstructuredTitle": "Fichier non structuré",
+      "unstructuredBody": "Aucune ligne [QUIZ] trouvée. Pour un document libre ou des photos, l’IA peut générer les questions ; vous indiquerez alors la case (pays, classe, matière, semaine).",
+      "useAi": "Document libre ou photos (IA)",
+      "errorsTitle": "Fichier à corriger",
+      "errorsBody": "{{count}} erreur(s) : rien n’a été enregistré. Corrigez le fichier puis choisissez-le à nouveau.",
+      "where": "Bloc {{block}} · ligne {{line}}",
+      "otherFile": "Choisir un autre fichier",
+      "keys": {
+        "country": "Pays",
+        "grade": "Classe",
+        "subject": "Matière",
+        "week": "Semaine",
+        "title": "Titre"
+      },
+      "errors": {
+        "unknown_header": "Ligne d’en-tête non reconnue : « {{text}} ».",
+        "missing_header": "Champ manquant dans l’en-tête : {{key}}.",
+        "invalid_country": "Pays inconnu : « {{value}} » (VN ou FR).",
+        "invalid_grade": "Classe « {{value}} » inexistante pour ce pays ({{country}}).",
+        "invalid_subject": "Matière inconnue : « {{value}} ».",
+        "week_too_long": "La semaine fait {{max}} caractères au plus.",
+        "title_too_long": "Le titre fait {{max}} caractères au plus.",
+        "invalid_date": "Date invalide : « {{value}} » (format AAAA-MM-JJ, jour réel).",
+        "dates_pair": "Renseignez l’ouverture ET l’échéance, ou aucune des deux.",
+        "dates_order": "L’échéance ({{due}}) précède l’ouverture ({{open}}).",
+        "no_questions": "Aucune question dans ce bloc.",
+        "too_many_questions": "{{found}} questions : 30 au plus par QCM.",
+        "prompt_empty": "Question {{n}} : énoncé vide.",
+        "prompt_too_long": "Question {{n}} : énoncé de plus de {{max}} caractères.",
+        "choice_count": "Question {{n}} : 4 choix A à D attendus, dans l’ordre ({{found}} trouvés).",
+        "choice_empty": "Question {{n}} : le choix {{letter}} est vide.",
+        "choice_too_long": "Question {{n}} : le choix {{letter}} dépasse {{max}} caractères.",
+        "duplicate_choice": "Question {{n}} : deux choix identiques.",
+        "missing_answer": "Question {{n}} : « Đáp án » manquant.",
+        "invalid_answer": "Question {{n}} : « Đáp án » doit être A, B, C ou D (lu : « {{value}} »).",
+        "explanation_too_long": "Question {{n}} : explication de plus de {{max}} caractères.",
+        "source_too_long": "Question {{n}} : source de plus de {{max}} caractères.",
+        "duplicate_number": "Question {{n}} : numéro déjà utilisé dans ce bloc.",
+        "duplicate_slot": "Même case (pays, classe, matière, semaine) que le bloc {{other}} (ligne {{otherLine}}).",
+        "unexpected_line": "Ligne inattendue : « {{text}} »."
+      },
+      "reviewTitle": "Bilan de l’import",
+      "detected": "{{count}} QCM détecté(s), {{questions}} questions",
+      "answersRead": "Réponses lues dans le fichier",
+      "occupied": "Cette case contient déjà un QCM : « {{title}} ».",
+      "skip": "Ignorer",
+      "replace": "Remplacer",
+      "cannotReplacePublished": "Ce QCM est publié : il ne peut pas être remplacé (dépubliez-le d’abord, s’il n’a aucune tentative). Il sera ignoré.",
+      "cannotReplaceAttempts": "Des enfants ont déjà passé ce QCM : il ne peut pas être remplacé. Il sera ignoré.",
+      "save": "Enregistrer {{count}} brouillon(s)",
+      "writing": "Enregistrement… {{done}} / {{total}}",
+      "publishing": "Publication… {{done}} / {{total}}",
+      "resultTitle": "Résultat de l’import",
+      "summary": "{{created}} créé(s), {{replaced}} remplacé(s), {{skipped}} ignoré(s), {{failed}} en échec",
+      "result": {
+        "created": "Brouillon créé",
+        "replaced": "Brouillon remplacé",
+        "skipped": "Ignoré",
+        "failed": "Échec",
+        "published": "Publié",
+        "stayedDraft": "Reste en brouillon"
+      },
+      "retry": "Réessayer les {{count}} échec(s)",
+      "publishAll": "Publier tout ({{count}})",
+      "backToCatalog": "Retour au catalogue"
     }
   }
 }

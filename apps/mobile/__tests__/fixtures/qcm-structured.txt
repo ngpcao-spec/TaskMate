@@ -1,0 +1,52 @@
+Bộ câu hỏi trắc nghiệm — tệp thử nghiệm (nội dung tự soạn)
+[QUIZ]
+Pays: VN
+Classe: Lớp 5
+Matière: Lịch sử và Địa lý
+Semaine: Tuần 7
+Titre: Bài 5. Văn Lang, Âu Lạc (truyền thuyết và Văn Lang)
+Ouverture: 2026-10-16
+Échéance: 2026-10-25
+1. Nhà nước Văn Lang ra đời vào khoảng thời gian nào?
+A. Thế kỉ VII TCN
+B. Thế kỉ VII sau CN
+C. Thế kỉ III TCN
+D. Thế kỉ I
+Đáp án: A
+Giải thích: Văn Lang ra đời vào khoảng thế kỉ VII TCN. Nguồn: Bài 5, mục 1
+2. Ai là người đứng đầu nhà nước Văn Lang?
+A. Thục Phán
+B. Vua Hùng
+C. Triệu Đà
+D. Hai Bà Trưng
+Đáp án: B
+Giải thích: Vua Hùng đứng đầu nhà nước Văn Lang. Nguồn: Bài 5, mục 2
+3. Kinh đô của nhà nước Văn Lang đặt ở đâu?
+A. Cổ Loa
+B. Phong Châu
+C. Thăng Long
+D. Hoa Lư
+Đáp án: B
+Giải thích: Kinh đô đặt ở Phong Châu.
+[QUIZ]
+Pays: FR
+Classe: 5ème
+Matière: Mathématiques
+Semaine: Semaine 3
+Titre: Les fractions
+Ouverture: 2026-10-19
+Échéance: 2026-10-25
+1. Combien font 1/2 + 1/2 ?
+A. 1/4
+B. 1
+C. 2
+D. 1/2
+Réponse: B
+Explication: Deux moitiés font un entier. Source: Chapitre 2
+2. Quelle fraction est égale à 0,5 ?
+A. 1/5
+B. 2/3
+C. 1/2
+D. 3/4
+Réponse: C
+Explication: 1/2 = 0,5.

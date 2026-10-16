@@ -998,7 +998,6 @@
       "FR": "France"
     },
     "grade": "Class",
-    "gradePlaceholder": "e.g. 5",
     "gradeValue": "Class {{grade}}",
     "subjectLabel": "Subject",
     "week": "Week",
@@ -1026,7 +1025,8 @@
     },
     "filters": {
       "title": "Filters",
-      "all": "All"
+      "all": "All",
+      "pickCountry": "Pick a country to filter by class."
     },
     "server": {
       "slotTaken": "This slot (country, class, subject, week) already has a quiz.",
@@ -1045,13 +1045,12 @@
       "empty": "No quiz in this selection.",
       "dates": "From {{from}} to {{to}}",
       "noDates": "Dates to set",
-      "toVerify": "{{count}} answer(s) to check"
+      "toVerify": "{{count}} answer(s) to check",
+      "newEmpty": "Create an empty quiz"
     },
     "import": {
       "title": "Import into the catalog",
-      "intro": "Pick the catalog slot, then drop the document (Word, PDF or photos). The quiz is saved as a draft: review the answers, set the dates and publish.",
       "continue": "Continue to import",
-      "manualTitle": "Or type it in",
       "manualHelp": "Creates an empty quiz in this slot; you add the questions one by one.",
       "manual": "Create an empty quiz"
     },
@@ -1094,6 +1093,101 @@
       "shiftLater": "{{subject}}: one week later",
       "emptyCatalog": "No published quiz for this class and these subjects yet.",
       "notYet": "Available on {{day}}"
+    },
+    "frGrades": {
+      "CP": "CP",
+      "CE1": "CE1",
+      "CE2": "CE2",
+      "CM1": "CM1",
+      "CM2": "CM2",
+      "6E": "6e",
+      "5E": "5e",
+      "4E": "4e",
+      "3E": "3e",
+      "2DE": "2de",
+      "1RE": "1re",
+      "TERM": "Terminale"
+    },
+    "ai": {
+      "title": "Free document or photos (AI)",
+      "intro": "For a document without [QUIZ] blocks, or for photos, the AI generates the questions. Give the catalog slot, then drop the document.",
+      "back": "Back to the structured file"
+    },
+    "new": {
+      "title": "New empty quiz"
+    },
+    "bulk": {
+      "intro": "Pick ONE Word or PDF file (with text) holding your quizzes: country, class, subject, week, title and dates are read from the file. No AI is used; nothing is written until everything is valid.",
+      "choose": "Choose the file",
+      "formats": "Each quiz starts with a [QUIZ] line, followed by Pays, Classe, Matière, Semaine, Titre, Ouverture, Échéance (YYYY-MM-DD), then numbered questions with choices A to D, “Đáp án” and “Giải thích”.",
+      "reading": "Reading the file…",
+      "noText": "This file has no readable text (scanned PDF?). Use a Word file, or the AI mode.",
+      "unsupportedFile": "This file type is not read here: choose a Word (.docx) file or a PDF with text.",
+      "unstructuredTitle": "Unstructured file",
+      "unstructuredBody": "No [QUIZ] line found. For a free document or photos, the AI can generate the questions; you will then give the slot (country, class, subject, week).",
+      "useAi": "Free document or photos (AI)",
+      "errorsTitle": "File to fix",
+      "errorsBody": "{{count}} error(s): nothing was saved. Fix the file, then choose it again.",
+      "where": "Block {{block}} · line {{line}}",
+      "otherFile": "Choose another file",
+      "keys": {
+        "country": "Country",
+        "grade": "Class",
+        "subject": "Subject",
+        "week": "Week",
+        "title": "Title"
+      },
+      "errors": {
+        "unknown_header": "Unrecognised header line: “{{text}}”.",
+        "missing_header": "Missing header field: {{key}}.",
+        "invalid_country": "Unknown country: “{{value}}” (VN or FR).",
+        "invalid_grade": "Class “{{value}}” does not exist for this country ({{country}}).",
+        "invalid_subject": "Unknown subject: “{{value}}”.",
+        "week_too_long": "The week is at most {{max}} characters.",
+        "title_too_long": "The title is at most {{max}} characters.",
+        "invalid_date": "Invalid date: “{{value}}” (YYYY-MM-DD, a real day).",
+        "dates_pair": "Give both the open and due dates, or neither.",
+        "dates_order": "The due date ({{due}}) is before the open date ({{open}}).",
+        "no_questions": "No question in this block.",
+        "too_many_questions": "{{found}} questions: 30 at most per quiz.",
+        "prompt_empty": "Question {{n}}: empty prompt.",
+        "prompt_too_long": "Question {{n}}: prompt over {{max}} characters.",
+        "choice_count": "Question {{n}}: 4 choices A to D expected, in order ({{found}} found).",
+        "choice_empty": "Question {{n}}: choice {{letter}} is empty.",
+        "choice_too_long": "Question {{n}}: choice {{letter}} is over {{max}} characters.",
+        "duplicate_choice": "Question {{n}}: two identical choices.",
+        "missing_answer": "Question {{n}}: “Đáp án” is missing.",
+        "invalid_answer": "Question {{n}}: “Đáp án” must be A, B, C or D (read: “{{value}}”).",
+        "explanation_too_long": "Question {{n}}: explanation over {{max}} characters.",
+        "source_too_long": "Question {{n}}: source over {{max}} characters.",
+        "duplicate_number": "Question {{n}}: number already used in this block.",
+        "duplicate_slot": "Same slot (country, class, subject, week) as block {{other}} (line {{otherLine}}).",
+        "unexpected_line": "Unexpected line: “{{text}}”."
+      },
+      "reviewTitle": "Import review",
+      "detected": "{{count}} quiz(zes) found, {{questions}} questions",
+      "answersRead": "Answers read from the file",
+      "occupied": "This slot already holds a quiz: “{{title}}”.",
+      "skip": "Skip",
+      "replace": "Replace",
+      "cannotReplacePublished": "This quiz is published: it cannot be replaced (unpublish it first, if it has no attempt). It will be skipped.",
+      "cannotReplaceAttempts": "Children have already taken this quiz: it cannot be replaced. It will be skipped.",
+      "save": "Save {{count}} draft(s)",
+      "writing": "Saving… {{done}} / {{total}}",
+      "publishing": "Publishing… {{done}} / {{total}}",
+      "resultTitle": "Import result",
+      "summary": "{{created}} created, {{replaced}} replaced, {{skipped}} skipped, {{failed}} failed",
+      "result": {
+        "created": "Draft created",
+        "replaced": "Draft replaced",
+        "skipped": "Skipped",
+        "failed": "Failed",
+        "published": "Published",
+        "stayedDraft": "Stays a draft"
+      },
+      "retry": "Retry the {{count}} failure(s)",
+      "publishAll": "Publish all ({{count}})",
+      "backToCatalog": "Back to the catalog"
     }
   }
 }
