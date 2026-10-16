@@ -951,6 +951,19 @@
       "forbidden": "Action réservée aux parents de la famille.",
       "not_authenticated": "Session expirée. Reconnectez-vous.",
       "server_error": "Une erreur est survenue. Réessayez."
+    },
+    "login": {
+      "title": "Connexion de {{name}}",
+      "intro": "Sur le téléphone de {{name}}, saisissez ces 3 éléments :",
+      "email": "1. E-mail du parent connecté",
+      "id": "2. Identifiant de l’enfant",
+      "password": "3. Mot de passe",
+      "passwordValue": "Le mot de passe que vous avez défini",
+      "copy": "Copier",
+      "copyEmail": "Copier l’e-mail du parent",
+      "copyId": "Copier l’identifiant de {{name}}",
+      "copied": "Copié",
+      "copyFailed": "Copie impossible"
     }
   },
   "addChild": {
@@ -989,7 +1002,8 @@
     "leaveTitle": "Quitter la famille ?",
     "leaveBody": "Vous n'aurez plus accès aux enfants, tâches et récompenses de cette famille. Vous pourrez la rejoindre de nouveau avec un nouveau code.",
     "left": "Vous avez quitté la famille",
-    "lastParent": "Vous êtes le seul parent : pour partir, supprimez la famille (en bas de cette page)."
+    "lastParent": "Vous êtes le seul parent : pour partir, supprimez la famille (en bas de cette page).",
+    "loginEmail": "Connecté avec : {{email}}"
   },
   "catalog": {
     "country": "Pays",

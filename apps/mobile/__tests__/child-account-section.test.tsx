@@ -3,7 +3,13 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react-nativ
 import { Alert } from 'react-native';
 import i18n from '@/i18n';
 import { ChildAccountSection } from '@/components/ChildAccountSection';
+import { useSessionStore } from '@/store/session';
+import { useToastStore } from '@/store/toast';
 import { createTestQueryClient } from '../test-utils/queryClient';
+
+const mockCopy = jest.fn();
+jest.mock('@/services/clipboard', () => ({ copyText: (...a: unknown[]) => mockCopy(...a) }));
+const sessionOf = (email: string | undefined) => ({ user: { id: 'u1', email } }) as never;
 
 const mockCreate = jest.fn();
 const mockReset = jest.fn();
@@ -34,6 +40,8 @@ describe('ChildAccountSection', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
     mockAccounts = [];
+    mockCopy.mockResolvedValue(true);
+    useSessionStore.setState({ session: sessionOf('ba@example.com') });
     mockCreate.mockResolvedValue(undefined);
     mockReset.mockResolvedValue(undefined);
     mockDelete.mockResolvedValue(undefined);
@@ -85,5 +93,56 @@ describe('ChildAccountSection', () => {
     await renderSection();
     await fireEvent.press(screen.getByRole('button', { name: 'Supprimer le compte Minh' }));
     await waitFor(() => expect(mockDelete).toHaveBeenCalledWith('c1'));
+  });
+
+  describe('bloc « Connexion de l\'enfant » (D-082)', () => {
+    beforeEach(() => { mockAccounts = [{ child_id: 'c1', login_id: 'tom' }]; });
+
+    it('récapitule les 3 éléments : e-mail du parent connecté, identifiant, « le mot de passe que vous avez défini »', async () => {
+      await renderSection();
+      expect(screen.getByRole('header', { name: 'Connexion de Minh' })).toBeTruthy();
+      expect(screen.getByText('1. E-mail du parent connecté')).toBeTruthy();
+      expect(screen.getByText('ba@example.com')).toBeTruthy();
+      expect(screen.getByText('2. Identifiant de l’enfant')).toBeTruthy();
+      expect(screen.getByText('tom')).toBeTruthy();
+      expect(screen.getByText('3. Mot de passe')).toBeTruthy();
+      expect(screen.getByText('Le mot de passe que vous avez défini')).toBeTruthy();
+    });
+
+    it('« Copier » l\'e-mail et l\'identifiant (cibles ≥ 44 pt, libellés d\'accessibilité) ; JAMAIS de mot de passe copiable', async () => {
+      await renderSection();
+      await fireEvent.press(screen.getByRole('button', { name: 'Copier l’e-mail du parent' }));
+      await waitFor(() => expect(mockCopy).toHaveBeenCalledWith('ba@example.com'));
+      await waitFor(() => expect(useToastStore.getState().toast).toMatchObject({ message: 'Copié', tone: 'info' }));
+      await fireEvent.press(screen.getByRole('button', { name: 'Copier l’identifiant de Minh' }));
+      await waitFor(() => expect(mockCopy).toHaveBeenLastCalledWith('tom'));
+      expect(mockCopy).toHaveBeenCalledTimes(2);
+      expect(screen.queryAllByRole('button').filter((b) => /^Copier/.test(String(b.props.accessibilityLabel)) && /mot de passe/i.test(String(b.props.accessibilityLabel)))).toHaveLength(0);
+      const copy = screen.getByRole('button', { name: 'Copier l’e-mail du parent' });
+      const style = [copy.props.style].flat(Infinity).reduce((a: Record<string, unknown>, b: unknown) => ({ ...a, ...(b as object) }), {}) as { minHeight?: number; minWidth?: number };
+      expect(style.minHeight).toBeGreaterThanOrEqual(44);
+      expect(style.minWidth).toBeGreaterThanOrEqual(44);
+    });
+
+    it('copie impossible : message, rien ne plante', async () => {
+      mockCopy.mockResolvedValue(false);
+      await renderSection();
+      await fireEvent.press(screen.getByRole('button', { name: 'Copier l’identifiant de Minh' }));
+      await waitFor(() => expect(useToastStore.getState().toast).toMatchObject({ message: 'Copie impossible', tone: 'error' }));
+    });
+
+    it('jamais l\'adresse INTERNE d\'un compte enfant : ligne et bouton « e-mail » absents', async () => {
+      useSessionStore.setState({ session: sessionOf('3f2a-uuid@child.taskmate.invalid') });
+      await renderSection();
+      expect(screen.queryByText(/child\.taskmate\.invalid/)).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Copier l’e-mail du parent' })).toBeNull();
+      expect(screen.getByRole('button', { name: 'Copier l’identifiant de Minh' })).toBeTruthy();
+    });
+
+    it('sans compte enfant : pas de bloc (rien à saisir encore)', async () => {
+      mockAccounts = [];
+      await renderSection();
+      expect(screen.queryByRole('header', { name: 'Connexion de Minh' })).toBeNull();
+    });
   });
 });

@@ -4,6 +4,7 @@ import { Alert } from 'react-native';
 import i18n from '@/i18n';
 import { ParentInviteCard } from '@/components/ParentInviteCard';
 import { ParentsCard } from '@/components/ParentsCard';
+import { useSessionStore } from '@/store/session';
 import { createTestQueryClient } from '../test-utils/queryClient';
 
 const mockReplace = jest.fn();
@@ -82,5 +83,17 @@ describe('ParentsCard', () => {
     await wrap(<ParentsCard myMemberId="m1" />);
     expect(screen.queryByRole('button', { name: 'Quitter la famille' })).toBeNull();
     expect(screen.getByText(/supprimez la famille/)).toBeTruthy();
+  });
+
+  it('affiche l\'e-mail de connexion du parent COURANT seulement (session déjà chargée) ; ni celui des autres parents ni une adresse interne', async () => {
+    mockParents = [{ id: 'm1', display_name: 'Ba' }, { id: 'm2', display_name: 'Mẹ' }];
+    useSessionStore.setState({ session: { user: { id: 'u1', email: 'ba@example.com' } } as never });
+    await wrap(<ParentsCard myMemberId="m1" />);
+    expect(screen.getByText('Connecté avec : ba@example.com')).toBeTruthy();
+    expect(screen.getAllByText(/Connecté avec/)).toHaveLength(1);
+    useSessionStore.setState({ session: { user: { id: 'u1', email: 'x@child.taskmate.invalid' } } as never });
+    await wrap(<ParentsCard myMemberId="m1" />);
+    expect(screen.queryByText(/child\.taskmate\.invalid/)).toBeNull();
+    useSessionStore.setState({ session: null });
   });
 });

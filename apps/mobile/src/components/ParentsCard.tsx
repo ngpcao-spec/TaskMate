@@ -1,10 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { confirmDialog } from '@/components/confirm';
 import { Button, Card } from '@/components/ui';
+import { parentLoginEmail } from '@/domain/login-info';
 import { useLeaveFamily, useParents } from '@/hooks/useFamilyAdmin';
+import { useSessionStore } from '@/store/session';
 import { useToastStore } from '@/store/toast';
 import { colors, typography } from '@/theme/tokens';
 
@@ -15,6 +17,8 @@ export function ParentsCard({ myMemberId }: { myMemberId: string }) {
   const queryClient = useQueryClient();
   const show = useToastStore((s) => s.show);
   const parents = useParents(true);
+  // e-mail de connexion du parent courant : celui de la session déjà chargée (aucun appel réseau) ; les e-mails des AUTRES parents ne sont pas fournis par la base
+  const myEmail = parentLoginEmail(useSessionStore((s) => s.session?.user.email));
   const leave = useLeaveFamily();
   const list = parents.data ?? [];
   const isLast = list.length <= 1;
@@ -40,10 +44,13 @@ export function ParentsCard({ myMemberId }: { myMemberId: string }) {
     <Card>
       <Text accessibilityRole="header" style={styles.section}>{t('parents.title')}</Text>
       {list.map((p) => (
-        <Text key={p.id} style={styles.row}>
-          {p.display_name}
-          {p.id === myMemberId ? ` ${t('parents.you')}` : ''}
-        </Text>
+        <View key={p.id}>
+          <Text style={styles.row}>
+            {p.display_name}
+            {p.id === myMemberId ? ` ${t('parents.you')}` : ''}
+          </Text>
+          {p.id === myMemberId && myEmail ? <Text accessibilityLabel={t('parents.loginEmail', { email: myEmail })} style={typography.secondary}>{t('parents.loginEmail', { email: myEmail })}</Text> : null}
+        </View>
       ))}
       {isLast ? (
         <Text style={typography.secondary}>{t('parents.lastParent')}</Text>

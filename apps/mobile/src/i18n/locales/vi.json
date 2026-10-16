@@ -951,6 +951,19 @@
       "forbidden": "Chỉ phụ huynh của gia đình mới thực hiện được.",
       "not_authenticated": "Phiên đã hết hạn. Hãy đăng nhập lại.",
       "server_error": "Đã xảy ra lỗi. Hãy thử lại."
+    },
+    "login": {
+      "title": "Đăng nhập của {{name}}",
+      "intro": "Trên điện thoại của {{name}}, nhập 3 thông tin này:",
+      "email": "1. E-mail của phụ huynh đang đăng nhập",
+      "id": "2. Tên đăng nhập của bé",
+      "password": "3. Mật khẩu",
+      "passwordValue": "Mật khẩu bạn đã đặt",
+      "copy": "Sao chép",
+      "copyEmail": "Sao chép e-mail của phụ huynh",
+      "copyId": "Sao chép tên đăng nhập của {{name}}",
+      "copied": "Đã sao chép",
+      "copyFailed": "Không sao chép được"
     }
   },
   "addChild": {
@@ -989,7 +1002,8 @@
     "leaveTitle": "Rời gia đình?",
     "leaveBody": "Bạn sẽ không còn truy cập được con, công việc và phần thưởng của gia đình này. Bạn có thể tham gia lại bằng mã mới.",
     "left": "Bạn đã rời gia đình",
-    "lastParent": "Bạn là phụ huynh duy nhất: muốn rời đi, hãy xóa gia đình (ở cuối trang này)."
+    "lastParent": "Bạn là phụ huynh duy nhất: muốn rời đi, hãy xóa gia đình (ở cuối trang này).",
+    "loginEmail": "Đang đăng nhập bằng: {{email}}"
   },
   "catalog": {
     "country": "Quốc gia",
