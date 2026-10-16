@@ -1,4 +1,4 @@
-import { adminQuizState, canShift, clampOffset, distinctGrades, effectiveDates, filterCatalog, isAvailable, isCountry, isSubject, MAX_WEEK_OFFSET, normalizeGrade, subjectLabelKey, SUBJECTS, suggestedDates } from '@/domain/catalog';
+import { adminQuizState, canShift, clampOffset, effectiveDates, filterCatalog, GRADES, gradesFor, isAvailable, isCountry, isGradeOf, isSubject, MAX_WEEK_OFFSET, normalizeGradeFor, subjectLabelKey, SUBJECTS, suggestedDates } from '@/domain/catalog';
 
 describe('domaine du catalogue (D-080)', () => {
   it('pays et matières connus ; clé i18n seulement pour une matière de la liste', () => {
@@ -13,13 +13,36 @@ describe('domaine du catalogue (D-080)', () => {
     expect(SUBJECTS.every((s) => /^[a-z][a-z_]{1,29}$/.test(s))).toBe(true);
   });
 
-  it('classe normalisée (majuscules, 12 caractères maximum)', () => {
-    expect(normalizeGrade(' 6e ')).toBe('6E');
-    expect(normalizeGrade('5')).toBe('5');
-    expect(normalizeGrade('')).toBeNull();
-    expect(normalizeGrade('   ')).toBeNull();
-    expect(normalizeGrade('x'.repeat(13))).toBeNull();
-    expect(normalizeGrade('x'.repeat(12))).toBe('X'.repeat(12));
+  it('classes : liste fermée par pays (VN 1 à 12 ; FR CP … TERM)', () => {
+    expect(GRADES.VN).toHaveLength(12);
+    expect(GRADES.FR).toEqual(['CP', 'CE1', 'CE2', 'CM1', 'CM2', '6E', '5E', '4E', '3E', '2DE', '1RE', 'TERM']);
+    expect(gradesFor('VN')[0]).toBe('1');
+    expect(gradesFor('FR')).toBe(GRADES.FR);
+    expect(gradesFor('XX')).toEqual([]);
+    expect(gradesFor(null)).toEqual([]);
+    expect(isGradeOf('VN', '5')).toBe(true);
+    expect(isGradeOf('FR', '5')).toBe(false); // VN ≠ FR
+    expect(isGradeOf('VN', '5E')).toBe(false);
+    expect(isGradeOf('VN', null)).toBe(false);
+  });
+
+  // MÊMES cas que le test pgTAP de `catalog_normalize_grade` (supabase/tests/database/30_catalog_grades.test.sql)
+  it.each([
+    ['VN', '5', '5'], ['VN', ' 5 ', '5'], ['VN', 'lớp 5', '5'], ['VN', 'Lớp 5', '5'], ['VN', 'lop 5', '5'], ['VN', 'Lớp5', '5'], ['VN', 'classe 5', '5'], ['VN', '05', '5'],
+    ['VN', '1', '1'], ['VN', '12', '12'], ['VN', 'Lớp 12', '12'],
+    ['VN', '0', null], ['VN', '13', null], ['VN', '', null], ['VN', 'abc', null], ['VN', '5e', null], ['VN', 'CM2', null], ['VN', 'lớp', null],
+    ['FR', '5e', '5E'], ['FR', '5E', '5E'], ['FR', '5ème', '5E'], ['FR', '5eme', '5E'], ['FR', '5°', '5E'], ['FR', ' 6 e ', '6E'], ['FR', 'classe 4e', '4E'], ['FR', '3EME', '3E'],
+    ['FR', 'cp', 'CP'], ['FR', 'CE1', 'CE1'], ['FR', 'ce2', 'CE2'], ['FR', 'CM1', 'CM1'], ['FR', 'cm2', 'CM2'],
+    ['FR', 'seconde', '2DE'], ['FR', '2nde', '2DE'], ['FR', '2DE', '2DE'], ['FR', 'première', '1RE'], ['FR', '1ère', '1RE'], ['FR', '1re', '1RE'], ['FR', 'terminale', 'TERM'], ['FR', 'Tle', 'TERM'], ['FR', 'TERM', 'TERM'],
+    ['FR', '5', null], ['FR', '12', null], ['FR', '2e', null], ['FR', '7e', null], ['FR', 'CE3', null], ['FR', 'lớp 5', null], ['FR', '', null],
+  ])('classe normalisée %s « %s » → %s', (country, raw, expected) => {
+    expect(normalizeGradeFor(country, raw)).toBe(expected);
+  });
+  it('pays inconnu ou valeur absente : aucune classe', () => {
+    expect(normalizeGradeFor('XX', '5')).toBeNull();
+    expect(normalizeGradeFor(null, '5')).toBeNull();
+    expect(normalizeGradeFor('VN', null)).toBeNull();
+    expect(normalizeGradeFor('VN', undefined)).toBeNull();
   });
 
   it('décalage borné à ±4 semaines, un pas à la fois', () => {
@@ -77,13 +100,7 @@ describe('domaine du catalogue (D-080)', () => {
     expect(filterCatalog(list, {}).map((q) => q.id)).toEqual([1, 2, 3]);
     expect(filterCatalog(list, { country: 'VN' }).map((q) => q.id)).toEqual([1, 2]);
     expect(filterCatalog(list, { country: 'VN', grade: '6' }).map((q) => q.id)).toEqual([2]);
-    expect(filterCatalog(list, { grade: '6e' }).map((q) => q.id)).toEqual([3]);
     expect(filterCatalog(list, { subject: 'anglais' }).map((q) => q.id)).toEqual([3]);
     expect(filterCatalog(list, { country: 'FR', subject: 'maths' })).toEqual([]);
-  });
-
-  it('classes distinctes : numériques en ordre numérique, puis le reste', () => {
-    expect(distinctGrades([{ grade: '10' }, { grade: '5' }, { grade: '6E' }, { grade: '5' }, { grade: 'CP' }, { grade: '2' }])).toEqual(['2', '5', '6E', '10', 'CP']);
-    expect(distinctGrades([])).toEqual([]);
   });
 });

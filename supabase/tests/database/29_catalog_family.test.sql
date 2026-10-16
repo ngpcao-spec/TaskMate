@@ -46,7 +46,7 @@ select lives_ok($$select public.create_catalog_draft(tests.u(701), 'VN', '5', 'h
   {"prompt":"Océan ?","choices":["Pacifique","Atlantique","Indien"],"correct":1}]'::jsonb)$$, '701 : VN / 5 / hist_geo (publié ensuite)');
 select lives_ok($$select public.create_catalog_draft(tests.u(702), 'VN', '5', 'maths', 'Tuần 1', 'Toán 1', '[{"prompt":"1+1","choices":["1","2","3"],"correct":1}]'::jsonb)$$, '702 : maths, futur');
 select lives_ok($$select public.create_catalog_draft(tests.u(703), 'VN', '5', 'hist_geo', 'Tuần 2', 'Brouillon', '[{"prompt":"x","choices":["a","b","c"],"correct":0}]'::jsonb)$$, '703 : brouillon');
-select lives_ok($$select public.create_catalog_draft(tests.u(704), 'FR', '5', 'hist_geo', 'Tuần 1', 'Autre pays', '[{"prompt":"x","choices":["a","b","c"],"correct":0}]'::jsonb)$$, '704 : FR');
+select lives_ok($$select public.create_catalog_draft(tests.u(704), 'FR', '5E', 'hist_geo', 'Tuần 1', 'Autre pays', '[{"prompt":"x","choices":["a","b","c"],"correct":0}]'::jsonb)$$, '704 : FR');
 select lives_ok($$select public.create_catalog_draft(tests.u(705), 'VN', '6', 'hist_geo', 'Tuần 1', 'Autre classe', '[{"prompt":"x","choices":["a","b","c"],"correct":0}]'::jsonb)$$, '705 : classe 6');
 select lives_ok($$select public.create_catalog_draft(tests.u(706), 'VN', '5', 'anglais', 'Tuần 1', 'English', '[{"prompt":"x","choices":["a","b","c"],"correct":0}]'::jsonb)$$, '706 : anglais (non activé)');
 select lives_ok($$select public.create_catalog_draft(tests.u(707), 'VN', '5', 'hist_geo', 'Tuần 3', 'Lịch sử 3', '[{"prompt":"y","choices":["a","b","c"],"correct":2}]'::jsonb)$$, '707 : hist_geo semaine 3 (futur)');
