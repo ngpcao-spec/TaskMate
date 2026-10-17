@@ -12,6 +12,7 @@ import { CalendarCard } from '@/components/CalendarCard';
 import { RoundButton } from '@/components/RoundButton';
 import { ScreenHeader } from '@/components/ui';
 import { safeEdgesFor, useHasBottomBar } from '@/components/TabInset';
+import { WeeklyDueCard } from '@/components/quiz/WeeklyQuizSection';
 import { WeekStrip } from '@/components/WeekStrip';
 import {
   formatDayTitle,
@@ -27,6 +28,8 @@ import { isOverdue, sortTasks } from '@/domain/task-time';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { useNow } from '@/hooks/useNow';
 import { useTasks } from '@/hooks/useTasks';
+import { useWeeklyQuizzes } from '@/hooks/useWeeklyQuizzes';
+import { dueByDay, dueMarkedDays } from '@/domain/weekly-quiz';
 import { colors, glass, MIN_TARGET, radius, spacing, typography } from '@/theme/tokens';
 
 const SWIPE_THRESHOLD = 60;
@@ -50,6 +53,7 @@ export default function CalendarScreen() {
   const first = days[0] ?? selected;
   const last = days[6] ?? selected;
   const tasksQuery = useTasks(d?.child?.id ?? null, first, last);
+  const weekly = useWeeklyQuizzes(today, false);
 
   const swipe = Gesture.Pan()
     .runOnJS(true)
@@ -71,6 +75,11 @@ export default function CalendarScreen() {
 
   const byDay = groupByDay(tasksQuery.data ?? [], days);
   const dayTasks = sortTasks(byDay[selected] ?? []);
+  const role = d.viewer.role === 'parent' ? 'parent' : 'child';
+  const dueBy = dueByDay(weekly.groups.flatMap((g) => g.items.map((item) => ({ ...item, childId: g.childId, childName: g.childName }))), days);
+  const marks = dueMarkedDays(dueBy);
+  const renderDue = (day: string) =>
+    (dueBy[day] ?? []).map((x) => <WeeklyDueCard key={`${x.childId}-${x.quizId}`} item={x} role={role} childId={x.childId} childName={x.childName} onSelectChild={d.select} />);
 
   const renderCard = (task: (typeof dayTasks)[number]) => {
     const perms = taskPermissions(d.viewer, task);
@@ -122,7 +131,7 @@ export default function CalendarScreen() {
 
           {d.viewer.role === 'parent' ? <Text style={typography.secondary}>{d.child.name}</Text> : null}
 
-          <WeekStrip days={days} selected={selected} today={today} lang={lang} onSelect={setPicked} />
+          <WeekStrip days={days} selected={selected} today={today} lang={lang} onSelect={setPicked} marks={marks} />
 
           {weekMode ? (
             <View style={styles.list}>
@@ -131,11 +140,12 @@ export default function CalendarScreen() {
                   <Text accessibilityRole="header" style={styles.dayHeading}>
                     {formatDayTitle(day, lang)}
                   </Text>
-                  {(byDay[day] ?? []).length === 0 ? (
+                  {(byDay[day] ?? []).length === 0 && (dueBy[day] ?? []).length === 0 ? (
                     <Text style={typography.secondary}>{t('calendar.empty')}</Text>
                   ) : (
                     sortTasks(byDay[day] ?? []).map(renderCard)
                   )}
+                  {renderDue(day)}
                 </View>
               ))}
             </View>
@@ -146,11 +156,12 @@ export default function CalendarScreen() {
               </Text>
               {tasksQuery.isPending ? (
                 <ActivityIndicator color={colors.primary} />
-              ) : dayTasks.length === 0 ? (
+              ) : dayTasks.length === 0 && (dueBy[selected] ?? []).length === 0 ? (
                 <Text style={[typography.secondary, styles.empty]}>{t('calendar.empty')}</Text>
               ) : (
                 dayTasks.map(renderCard)
               )}
+              {renderDue(selected)}
             </View>
           )}
 

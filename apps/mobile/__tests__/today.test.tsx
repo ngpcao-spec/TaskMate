@@ -1,6 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import '@/i18n';
 import TodayScreen from '../app/(tabs)/today';
+import type { WeeklyGroup } from '@/hooks/useWeeklyQuizzes';
+import type { WeeklyItem } from '@/domain/weekly-quiz';
 import type { ChildRow, TaskRow } from '@/types/models';
 
 const mockPush = jest.fn();
@@ -20,6 +22,8 @@ let mockRole: 'child' | 'parent' = 'child';
 let mockTasks: TaskRow[] = [];
 let mockCounts = { tasks: 0, requests: 0, total: 0 };
 const mockToggle = jest.fn();
+const mockSelect = jest.fn();
+let mockWeekly: WeeklyGroup[] = [];
 const mockValidate = jest.fn();
 const mockReject = jest.fn();
 jest.mock('@/hooks/useDisplayedChild', () => ({
@@ -27,9 +31,10 @@ jest.mock('@/hooks/useDisplayedChild', () => ({
     me: { family: { timezone: 'Asia/Ho_Chi_Minh' } },
     viewer: { role: mockRole, memberId: 'm', childId: mockRole === 'child' ? 'c-minh' : null },
     // liste VOLONTAIREMENT polluée (les deux enfants) : un enfant ne doit en voir aucun autre, quelle que soit la source des données
-    children: [minh, khang], child: minh, select: jest.fn(),
+    children: [minh, khang], child: minh, select: mockSelect,
   }),
 }));
+jest.mock('@/hooks/useWeeklyQuizzes', () => ({ useWeeklyQuizzes: () => ({ groups: mockWeekly, isPending: false }) }));
 jest.mock('@/hooks/useAvatars', () => ({ useAvatar: () => ({ allowed: false, uri: null, version: 0 }) }));
 let mockUnread = 0;
 jest.mock('@/hooks/useNotifications', () => ({ useUnreadNotifications: () => mockUnread }));
@@ -46,7 +51,7 @@ jest.mock('@/hooks/useTasks', () => ({
 }));
 
 describe('TodayScreen (SPEC v4)', () => {
-  beforeEach(() => { jest.clearAllMocks(); mockRole = 'child'; mockCounts = { tasks: 0, requests: 0, total: 0 }; mockTasks = [task({})]; });
+  beforeEach(() => { jest.clearAllMocks(); mockRole = 'child'; mockCounts = { tasks: 0, requests: 0, total: 0 }; mockTasks = [task({})]; mockWeekly = []; });
 
   it('enfant : pas de bouton +, coche → demande de coche en tant qu’enfant (asParent=false)', async () => {
     await render(<TodayScreen />);
@@ -170,3 +175,102 @@ describe('TodayScreen (SPEC v4)', () => {
     expect(screen.queryByText(/NaN/)).toBeNull();
   });
 });
+
+const item = (over: Partial<WeeklyItem> = {}): WeeklyItem => ({
+  quizId: 'q1', subject: 'maths', title: 'Phân số', weekLabel: 'Tuần 1', dueOn: '2026-10-25', attemptId: null, state: 'todo', late: false, progress: null, result: null, ...over,
+});
+const group = (items: WeeklyItem[], over: Partial<WeeklyGroup> = {}): WeeklyGroup => ({ childId: 'c-minh', childName: 'Minh', items, ...over });
+
+describe('TodayScreen : révision de la semaine (D-083)', () => {
+  beforeEach(() => { jest.clearAllMocks(); mockRole = 'child'; mockCounts = { tasks: 0, requests: 0, total: 0 }; mockTasks = [task({})]; mockWeekly = []; });
+
+  it('aucune révision : aucune ligne', async () => {
+    await render(<TodayScreen />);
+    expect(screen.queryByText(/^Ôn tập/)).toBeNull();
+  });
+
+  it('enfant : une ligne « Ôn tập : titre » avec échéance et état, au-dessus de la liste des tâches', async () => {
+    mockWeekly = [group([item()])];
+    await render(<TodayScreen />);
+    expect(screen.getByText('Ôn tập: Phân số')).toBeTruthy();
+    expect(screen.getByText('Cần làm')).toBeTruthy();
+    expect(screen.getByText(/Trước .*25\/10/)).toBeTruthy();
+    expect(screen.queryByText('Minh', { exact: true })).toBeNull();
+  });
+
+  it('enfant : en cours → progression n/16 ; la ligne reprend la tentative (évaluation)', async () => {
+    mockWeekly = [group([item({ state: 'in_progress', attemptId: 'a1', progress: { answered: 6, total: 16 } })])];
+    await render(<TodayScreen />);
+    expect(screen.getByText('Đang làm 6/16')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: /Ôn tập: Phân số/ }));
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/quiz/evaluate/[id]', params: { id: 'q1' } });
+  });
+
+  it('enfant : à faire → ouvre la page du quiz', async () => {
+    mockWeekly = [group([item()])];
+    await render(<TodayScreen />);
+    await fireEvent.press(screen.getByRole('button', { name: /Ôn tập: Phân số/ }));
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/quiz/[id]', params: { id: 'q1' } });
+  });
+
+  it('enfant : en retard → badge « Quá hạn » sans autre pénalité ; en attente de validation ; validé avec score', async () => {
+    mockWeekly = [group([item({ late: true })])];
+    const { unmount } = await render(<TodayScreen />);
+    expect(screen.getByText('Quá hạn')).toBeTruthy();
+    expect(screen.getByText('Cần làm')).toBeTruthy();
+    await unmount();
+    mockWeekly = [group([item({ state: 'waiting', attemptId: 'a1' })])];
+    const second = await render(<TodayScreen />);
+    expect(screen.getByText('Chờ phụ huynh duyệt')).toBeTruthy();
+    await second.unmount();
+    mockWeekly = [group([item({ state: 'validated', attemptId: 'a1', result: { score: 12, total: 16 } })])];
+    await render(<TodayScreen />);
+    expect(screen.getByText('Đã duyệt · 12/16')).toBeTruthy();
+  });
+
+  it('enfant : plusieurs matières → repliées sous « Ôn tập (n) », dépliables', async () => {
+    mockWeekly = [group([item(), item({ quizId: 'q2', subject: 'anglais', title: 'Unit 3' })])];
+    await render(<TodayScreen />);
+    expect(screen.getByRole('button', { name: /Ôn tập \(2\)/ }).props.accessibilityState).toMatchObject({ expanded: false });
+    expect(screen.queryByText('Ôn tập: Phân số')).toBeNull();
+    await fireEvent.press(screen.getByRole('button', { name: /Ôn tập \(2\)/ }));
+    expect(screen.getByText('Ôn tập: Phân số')).toBeTruthy();
+    expect(screen.getByText('Ôn tập: Unit 3')).toBeTruthy();
+  });
+
+  it('enfant (D-052) : jamais le prénom d\'un autre enfant dans la section', async () => {
+    mockWeekly = [group([item()])];
+    await render(<TodayScreen />);
+    expect(screen.queryByText(/Khang/)).toBeNull();
+  });
+
+  it('parent : un bloc par enfant, « Cần duyệt » → ouvre la validation existante de la tentative', async () => {
+    mockRole = 'parent';
+    mockWeekly = [group([item({ state: 'waiting', attemptId: 'a9' })]), group([item({ quizId: 'q3', title: 'Từ vựng' })], { childId: 'c-khang', childName: 'Khang' })];
+    await render(<TodayScreen />);
+    expect(screen.getAllByText('Khang').length).toBeGreaterThan(0);
+    expect(screen.getByText('Cần duyệt')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: /Ôn tập: Phân số/ }));
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/quiz/attempt/[id]', params: { id: 'a9' } });
+    expect(screen.queryByText(/hạng|rank|classement/i)).toBeNull();
+  });
+
+  it('parent : une autre ligne sélectionne l\'enfant puis ouvre ses révisions', async () => {
+    mockRole = 'parent';
+    mockWeekly = [group([item({ quizId: 'q3', title: 'Từ vựng' })], { childId: 'c-khang', childName: 'Khang' })];
+    await render(<TodayScreen />);
+    expect(screen.getByText('Chưa bắt đầu')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: /Ôn tập: Từ vựng/ }));
+    expect(mockSelect).toHaveBeenCalledWith('c-khang');
+    expect(mockPush).toHaveBeenCalledWith('/(tabs)/more/revisions');
+  });
+
+  it('cibles ≥ 44 pt et libellés d\'accessibilité sur la ligne', async () => {
+    mockWeekly = [group([item({ late: true })])];
+    await render(<TodayScreen />);
+    const line = screen.getByRole('button', { name: /Ôn tập: Phân số.*Quá hạn/ });
+    const flat = Object.assign({}, ...[line.props.style].flat(Infinity).filter(Boolean));
+    expect(flat.minHeight).toBeGreaterThanOrEqual(44);
+  });
+});
+

@@ -11,6 +11,7 @@ import { Mascot, TopOrnament } from '@/components/decor/Decor';
 import { Fab } from '@/components/Fab';
 import { ProfilePills } from '@/components/ProfilePills';
 import { ProgressRing } from '@/components/ProgressRing';
+import { WeeklyQuizSection } from '@/components/quiz/WeeklyQuizSection';
 import { RoundButton } from '@/components/RoundButton';
 import { StatTile } from '@/components/StatTile';
 import { TaskRow } from '@/components/TaskRow';
@@ -24,6 +25,7 @@ import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { useUnreadNotifications } from '@/hooks/useNotifications';
 import { useNow } from '@/hooks/useNow';
 import { useApprovalCounts } from '@/hooks/useApprovals';
+import { useWeeklyQuizzes } from '@/hooks/useWeeklyQuizzes';
 import { usePendingTaskIds } from '@/hooks/useSyncStatus';
 import { toggleVars, useDeleteTask, useRejectTask, useTasks, useToggleTask, useValidateTask, validateVars } from '@/hooks/useTasks';
 import { colors, glass, hasDecor, radius, spacing, typography, line } from '@/theme/tokens';
@@ -46,6 +48,7 @@ export default function TodayScreen() {
   const pendingIds = usePendingTaskIds();
   const isParent = d?.viewer.role === 'parent';
   const counts = useApprovalCounts(isParent);
+  const weekly = useWeeklyQuizzes(today);
 
   if (!d || !d.child) {
     return (
@@ -106,6 +109,8 @@ export default function TodayScreen() {
             <Text style={styles.bannerText}>{t('home.toApprove', { count: counts.requests })}</Text>
           </Pressable>
         ) : null}
+
+        <WeeklyQuizSection groups={weekly.groups} role={isParent ? 'parent' : 'child'} onSelectChild={d.select} />
 
         <Pressable accessibilityRole="button" accessibilityLabel={t('today.progress', { done: progress.done, total: progress.total })} onPress={() => router.push('/(tabs)/stats')}>
           <NavyPanel>

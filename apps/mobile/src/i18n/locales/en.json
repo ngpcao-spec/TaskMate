@@ -616,8 +616,9 @@
     "history": "Points history",
     "historyEmpty": "No point movements yet",
     "reason": {
-      "task_completed": "Task completed",
-      "task_uncompleted": "Task unchecked",
+      "task_validated": "Task validated",
+      "task_unvalidated": "Validation removed",
+      "quiz_validated": "Weekly quiz validated",
       "reward_redeemed": "Reward redeemed",
       "manual_adjust": "Parent adjustment"
     },
@@ -1202,6 +1203,25 @@
       "retry": "Retry the {{count}} failure(s)",
       "publishAll": "Publish all ({{count}})",
       "backToCatalog": "Back to the catalog"
+    }
+  },
+  "weekly": {
+    "title": "This week's review",
+    "line": "Review: {{title}}",
+    "group": "Review ({{count}})",
+    "late": "Late",
+    "dueBefore": "Before {{day}}",
+    "dueMark": "review due",
+    "dueCard": "Review due: {{title}}",
+    "dueCardParent": "{{name}} · review due: {{title}}",
+    "state": {
+      "todo": "To do",
+      "todoParent": "Not started",
+      "in_progress": "In progress · {{done}}/{{total}}",
+      "waiting": "Waiting for validation",
+      "toValidate": "To validate",
+      "validated": "Validated",
+      "validatedScore": "Validated · score {{score}}/{{total}}"
     }
   }
 }

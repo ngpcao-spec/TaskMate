@@ -126,6 +126,7 @@ export const EXPECTED_FUNCTIONS = [
   'quiz_editable_set',
   'quiz_make_layout',
   'quiz_new_attempt',
+  'quiz_points_for',
   'quiz_progress_counts',
   'quiz_require_child',
   'quiz_require_parent',
