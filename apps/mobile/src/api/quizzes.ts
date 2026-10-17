@@ -224,18 +224,24 @@ export type ChildQuizSet = {
   due_on: string | null;
   /** Réponses déjà enregistrées de la tentative en cours. */
   answered_count: number;
+  /** Quiz du catalogue : jour d'ouverture, et résultat (seulement APRÈS validation du parent) ; null pour un jeu de famille. */
+  release_on: string | null;
+  score: number | null;
+  total: number | null;
 };
 export async function fetchChildQuizSets(): Promise<ChildQuizSet[]> {
   // pendant un déploiement, la fonction du catalogue peut ne pas encore exister : on n'ignore que CETTE erreur (jamais un refus ou un échec réseau)
   const missingFunction = (e: unknown) => ['PGRST202', '42883'].includes((e as { code?: string } | null)?.code ?? '');
   const [family, catalog] = await Promise.all([supabase.rpc('child_quiz_sets'), fetchChildCatalog().catch((e: unknown) => (missingFunction(e) ? [] : Promise.reject(e)))]);
   fail(family.error);
-  const own = ((family.data ?? []) as unknown as Omit<ChildQuizSet, 'source' | 'subject_key' | 'week_label'>[]).map((s): ChildQuizSet => ({ ...s, source: 'family', subject_key: null, week_label: null }));
+  const own = ((family.data ?? []) as unknown as Omit<ChildQuizSet, 'source' | 'subject_key' | 'week_label' | 'release_on' | 'score' | 'total'>[]).map(
+    (s): ChildQuizSet => ({ ...s, source: 'family', subject_key: null, week_label: null, release_on: null, score: null, total: null }),
+  );
   const shared = catalog.map(
     (c): ChildQuizSet => ({
       set_id: c.quiz_id, source: 'catalog', subject_key: c.subject, week_label: c.week_label, title: c.title, subject: null, question_count: c.question_count,
       evaluation_attempt_id: c.evaluation_attempt_id, evaluation_status: c.evaluation_status, can_start_evaluation: c.can_start_evaluation, paper_support: c.paper_support,
-      answer_sheet_only: c.answer_sheet_only, due_on: c.due_on, answered_count: c.answered_count,
+      answer_sheet_only: c.answer_sheet_only, due_on: c.due_on, answered_count: c.answered_count, release_on: c.release_on, score: c.score, total: c.total,
     }),
   );
   return [...shared, ...own];

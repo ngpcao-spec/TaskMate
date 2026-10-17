@@ -217,6 +217,11 @@ export type ChildCatalogRow = {
   answer_sheet_only: boolean;
   due_on: string | null;
   answered_count: number;
+  /** Jour d'ouverture (jour local, déjà décalé par le parent). */
+  release_on: string;
+  /** Résultat : renseigné par le serveur SEULEMENT une fois la tentative validée par le parent (null avant). */
+  score: number | null;
+  total: number | null;
 };
 export async function fetchChildCatalog(): Promise<ChildCatalogRow[]> {
   const { data, error } = await supabase.rpc('child_catalog_quizzes');

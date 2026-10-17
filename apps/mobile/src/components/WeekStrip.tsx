@@ -3,21 +3,30 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { formatDayNumber, formatDayTitle, formatWeekdayLabel, type CalendarLanguage } from '@/domain/calendar';
 import { colors, MIN_TARGET, radius, shadowSmall, line } from '@/theme/tokens';
 
-type Props = { days: readonly string[]; selected: string; today: string; lang: CalendarLanguage; onSelect: (day: string) => void };
+type Props = {
+  days: readonly string[];
+  selected: string;
+  today: string;
+  lang: CalendarLanguage;
+  onSelect: (day: string) => void;
+  /** Jours portant un repère (date limite d'un quiz de la semaine, D-083). */
+  marks?: ReadonlySet<string>;
+};
 
 /** Bandeau semaine (maquette « Lịch ») : libellés T2…CN au-dessus, jour sélectionné dans un cercle bleu, aujourd'hui marqué. */
-export function WeekStrip({ days, selected, today, lang, onSelect }: Props) {
+export function WeekStrip({ days, selected, today, lang, onSelect, marks }: Props) {
   const { t } = useTranslation();
   return (
     <View style={styles.row}>
       {days.map((day) => {
         const active = day === selected;
         const isToday = day === today;
+        const marked = marks?.has(day) ?? false;
         return (
           <Pressable
             key={day}
             accessibilityRole="button"
-            accessibilityLabel={`${formatDayTitle(day, lang)}${isToday ? `, ${t('calendar.today')}` : ''}`}
+            accessibilityLabel={`${formatDayTitle(day, lang)}${isToday ? `, ${t('calendar.today')}` : ''}${marked ? `, ${t('weekly.dueMark')}` : ''}`}
             accessibilityState={{ selected: active }}
             aria-selected={active}
             onPress={() => onSelect(day)}
@@ -27,6 +36,7 @@ export function WeekStrip({ days, selected, today, lang, onSelect }: Props) {
             <View style={[styles.circle, active && styles.circleActive]}>
               <Text style={[styles.number, active && styles.numberActive, isToday && !active && styles.numberToday]}>{formatDayNumber(day)}</Text>
             </View>
+            <View style={[styles.mark, marked ? styles.markOn : null]} />
           </Pressable>
         );
       })}
@@ -42,5 +52,7 @@ const styles = StyleSheet.create({
   circleActive: { backgroundColor: colors.primary, borderWidth: line.width, borderColor: colors.ring, ...shadowSmall },
   number: { fontSize: 15, fontWeight: '600', color: colors.text },
   numberActive: { color: colors.onPrimary, fontWeight: '700' },
+  mark: { width: 6, height: 6, borderRadius: 3 },
+  markOn: { backgroundColor: colors.accent },
   numberToday: { color: colors.accent, fontWeight: '800' },
 });

@@ -115,7 +115,7 @@ select throws_ok($$select * from public.catalog_answer_keys$$, '42501', null, 'e
 select tests.login(13);
 select is((select array_agg(quiz_id order by quiz_id) from public.child_catalog_quizzes()), array[tests.u(701), tests.u(708)],
           'A: voit 701 et 708 SEULEMENT (ni futur, ni brouillon, ni autre pays, ni autre classe, ni matière non activée)');
-select ok(pg_get_function_result('public.child_catalog_quizzes()'::regprocedure) !~ '(correct|explanation|verify|confirmed|score|is_correct|key)', 'child_catalog_quizzes : aucune clé, aucun score, aucun drapeau');
+select ok(pg_get_function_result('public.child_catalog_quizzes()'::regprocedure) !~ '(correct|explanation|verify|confirmed|is_correct|key)', 'child_catalog_quizzes : aucune clé, aucun drapeau (score/total : seulement après validation, test 31)');
 select is((select count(*)::int from public.children where id = tests.u(202)), 0, 'A ne voit pas le profil de son frère');
 select tests.login(14);
 select is((select array_agg(quiz_id order by quiz_id) from public.child_catalog_quizzes()), array[tests.u(701), tests.u(708)], 'B: mêmes quiz (même classe, hist_geo)');

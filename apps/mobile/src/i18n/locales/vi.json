@@ -616,8 +616,9 @@
     "history": "Lịch sử điểm",
     "historyEmpty": "Chưa có biến động điểm nào",
     "reason": {
-      "task_completed": "Hoàn thành việc",
-      "task_uncompleted": "Bỏ chọn việc",
+      "task_validated": "Hoàn thành việc",
+      "task_unvalidated": "Bỏ duyệt việc",
+      "quiz_validated": "Quiz tuần đã duyệt",
       "reward_redeemed": "Đổi phần thưởng",
       "manual_adjust": "Điều chỉnh của phụ huynh"
     },
@@ -1202,6 +1203,25 @@
       "retry": "Thử lại {{count}} bài lỗi",
       "publishAll": "Xuất bản tất cả ({{count}})",
       "backToCatalog": "Về danh mục"
+    }
+  },
+  "weekly": {
+    "title": "Ôn tập trong tuần",
+    "line": "Ôn tập: {{title}}",
+    "group": "Ôn tập ({{count}})",
+    "late": "Quá hạn",
+    "dueBefore": "Trước {{day}}",
+    "dueMark": "có bài ôn tập đến hạn",
+    "dueCard": "Hạn nộp bài ôn tập: {{title}}",
+    "dueCardParent": "{{name}} · hạn nộp bài ôn tập: {{title}}",
+    "state": {
+      "todo": "Cần làm",
+      "todoParent": "Chưa bắt đầu",
+      "in_progress": "Đang làm {{done}}/{{total}}",
+      "waiting": "Chờ phụ huynh duyệt",
+      "toValidate": "Cần duyệt",
+      "validated": "Đã duyệt",
+      "validatedScore": "Đã duyệt · {{score}}/{{total}}"
     }
   }
 }

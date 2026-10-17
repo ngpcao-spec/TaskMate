@@ -210,7 +210,8 @@ select is(tests.n('select 1 from public.point_transactions'), 0::bigint, 'point_
 select tests.logout();
 select throws_ok($$update public.point_transactions set delta = 1 where id = tests.u(501)$$, '42501', 'immutable_journal', 'point_transactions: journal immuable même pour le propriétaire (UPDATE)');
 select throws_ok($$delete from public.point_transactions where id = tests.u(501)$$, '42501', 'immutable_journal', 'point_transactions: journal immuable (DELETE)');
-select throws_ok($$truncate public.point_transactions$$, '42501', 'immutable_journal', 'point_transactions: journal immuable (TRUNCATE)');
+select throws_ok($$truncate public.point_transactions$$, '0A000', null, 'point_transactions: TRUNCATE simple refusé (clé étrangère des tentatives créditées, D-083)');
+select throws_ok($$truncate public.point_transactions cascade$$, '42501', 'immutable_journal', 'point_transactions: journal immuable (TRUNCATE ... CASCADE)');
 
 -- ═══ reward_requests ═══
 select tests.login(13);

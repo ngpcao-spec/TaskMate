@@ -3,7 +3,8 @@ import '@/i18n';
 import CalendarScreen from '../app/(tabs)/calendar';
 import type { ChildRow, TaskRow } from '@/types/models';
 
-jest.mock('expo-router', () => ({ useRouter: () => ({ push: jest.fn() }) }));
+const mockPush = jest.fn();
+jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockPush }) }));
 jest.mock('react-native-safe-area-context', () => ({
   SafeAreaView: ({ children }: { children: React.ReactNode }) => children,
 }));
@@ -36,11 +37,16 @@ jest.mock('@/hooks/useDisplayedChild', () => ({
     select: jest.fn(),
   }),
 }));
+let mockWeekly: { childId: string; childName: string; items: Record<string, unknown>[] }[] = [];
+jest.mock('@/hooks/useWeeklyQuizzes', () => ({ useWeeklyQuizzes: () => ({ groups: mockWeekly, isPending: false }) }));
 const mockUseTasks = jest.fn();
 jest.mock('@/hooks/useTasks', () => ({ useTasks: (...a: unknown[]) => mockUseTasks(...a) }));
 
 describe('CalendarScreen', () => {
-  beforeEach(() => mockUseTasks.mockReturnValue({ data: [t1, t2], isPending: false }));
+  beforeEach(() => {
+    mockWeekly = [];
+    mockUseTasks.mockReturnValue({ data: [t1, t2], isPending: false });
+  });
 
   it('le balayage de semaine laisse le défilement vertical au navigateur (web : touch-action pan-y, sinon la liste ne défile plus au doigt)', async () => {
     await render(<CalendarScreen />);
@@ -82,5 +88,21 @@ describe('CalendarScreen', () => {
     await render(<CalendarScreen />);
     await fireEvent.press(screen.getByRole('button', { name: 'Tuần sau' }));
     expect(mockUseTasks).toHaveBeenLastCalledWith('c-minh', '2026-07-06', '2026-07-12');
+  });
+
+  it('date limite d\'un quiz (D-083) : repère sur le jour, carte sur ce jour seulement, ouverture de la validation', async () => {
+    mockWeekly = [{ childId: 'c-minh', childName: 'Minh', items: [{ quizId: 'q1', subject: 'maths', title: 'Phân số', weekLabel: 'Tuần 1', dueOn: '2026-07-03', attemptId: 'a1', state: 'waiting', late: false, progress: null, result: null }] }];
+    await render(<CalendarScreen />);
+    expect(screen.queryByText(/Minh · hạn nộp/)).toBeNull();
+    expect(screen.getByRole('button', { name: 'Thứ Sáu, 3 tháng 7, có bài ôn tập đến hạn' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Thứ Năm, 2 tháng 7, hôm nay' })).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: /Thứ Sáu, 3 tháng 7/ }));
+    await fireEvent.press(screen.getByRole('button', { name: /Minh · hạn nộp bài ôn tập: Phân số/ }));
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/quiz/attempt/[id]', params: { id: 'a1' } });
+  });
+
+  it('sans quiz : aucun repère', async () => {
+    await render(<CalendarScreen />);
+    expect(screen.queryByRole('button', { name: /có bài ôn tập đến hạn/ })).toBeNull();
   });
 });

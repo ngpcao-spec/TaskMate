@@ -241,3 +241,6 @@ Un fichier Word / PDF avec des blocs `[QUIZ]` suffit : lecture déterministe san
 
 ### Connexion de l'enfant lisible côté parent (D-082) — 2026-10-16
 E-mail de connexion du parent sous son nom (Réglages), bloc « Connexion de l'enfant » avec les 3 éléments à saisir et boutons « Copier » (e-mail, identifiant) ; jamais de mot de passe, jamais d'adresse interne. Sans migration.
+
+### Révision de la semaine dans Hôm nay + points (D-083) — 2026-10-17
+Ligne calculée (aucune tâche) « Révisions : <titre> » dans Hôm nay (enfant : le sien ; parent : un bloc par enfant, « À valider » ouvre la validation), repli « Révisions (n) », repères de date limite dans Lịch. Points crédités par le serveur à la validation d'un quiz du catalogue : ≥ 80 % → 8, ≥ 50 % → 5, sinon 0, une seule fois par tentative et par quiz. Migration 25 + pgTAP 31. PR ouverte, NON fusionnée (migration + points = production, demande de Teo).

@@ -616,8 +616,9 @@
     "history": "Historique des points",
     "historyEmpty": "Aucun mouvement de points",
     "reason": {
-      "task_completed": "Tâche terminée",
-      "task_uncompleted": "Tâche décochée",
+      "task_validated": "Tâche validée",
+      "task_unvalidated": "Validation retirée",
+      "quiz_validated": "Quiz de la semaine validé",
       "reward_redeemed": "Récompense échangée",
       "manual_adjust": "Ajustement d'un parent"
     },
@@ -1202,6 +1203,25 @@
       "retry": "Réessayer les {{count}} échec(s)",
       "publishAll": "Publier tout ({{count}})",
       "backToCatalog": "Retour au catalogue"
+    }
+  },
+  "weekly": {
+    "title": "Révisions de la semaine",
+    "line": "Révisions : {{title}}",
+    "group": "Révisions ({{count}})",
+    "late": "En retard",
+    "dueBefore": "Avant {{day}}",
+    "dueMark": "révision à rendre",
+    "dueCard": "Révision à rendre : {{title}}",
+    "dueCardParent": "{{name}} · révision à rendre : {{title}}",
+    "state": {
+      "todo": "À faire",
+      "todoParent": "Pas commencé",
+      "in_progress": "En cours · {{done}}/{{total}}",
+      "waiting": "En attente de validation",
+      "toValidate": "À valider",
+      "validated": "Validé",
+      "validatedScore": "Validé · score {{score}}/{{total}}"
     }
   }
 }
