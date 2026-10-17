@@ -594,13 +594,13 @@ isOneToOne: false
                   ]
                 },"quiz_attempts": {
                   Row: {
-                    "catalog_id": string | null,"child_id": string,"created_at": string,"family_id": string,"id": string,"relaunched_by": string | null,"set_id": string | null,"show_correction": boolean,"started_at": string,"status": Database["public"]['Enums']["quiz_attempt_status"],"submitted_at": string | null,"updated_at": string,"validated_at": string | null,"validated_by": string | null
+                    "catalog_id": string | null,"child_id": string,"created_at": string,"family_id": string,"id": string,"points_awarded": number | null,"points_tx_id": string | null,"relaunched_by": string | null,"set_id": string | null,"show_correction": boolean,"started_at": string,"status": Database["public"]['Enums']["quiz_attempt_status"],"submitted_at": string | null,"updated_at": string,"validated_at": string | null,"validated_by": string | null
                   }
                   Insert: {
-                    "catalog_id"?: string | null,"child_id": string,"created_at"?: string,"family_id": string,"id"?: string,"relaunched_by"?: string | null,"set_id"?: string | null,"show_correction"?: boolean,"started_at"?: string,"status"?: Database["public"]['Enums']["quiz_attempt_status"],"submitted_at"?: string | null,"updated_at"?: string,"validated_at"?: string | null,"validated_by"?: string | null
+                    "catalog_id"?: string | null,"child_id": string,"created_at"?: string,"family_id": string,"id"?: string,"points_awarded"?: number | null,"points_tx_id"?: string | null,"relaunched_by"?: string | null,"set_id"?: string | null,"show_correction"?: boolean,"started_at"?: string,"status"?: Database["public"]['Enums']["quiz_attempt_status"],"submitted_at"?: string | null,"updated_at"?: string,"validated_at"?: string | null,"validated_by"?: string | null
                   }
                   Update: {
-                    "catalog_id"?: string | null,"child_id"?: string,"created_at"?: string,"family_id"?: string,"id"?: string,"relaunched_by"?: string | null,"set_id"?: string | null,"show_correction"?: boolean,"started_at"?: string,"status"?: Database["public"]['Enums']["quiz_attempt_status"],"submitted_at"?: string | null,"updated_at"?: string,"validated_at"?: string | null,"validated_by"?: string | null
+                    "catalog_id"?: string | null,"child_id"?: string,"created_at"?: string,"family_id"?: string,"id"?: string,"points_awarded"?: number | null,"points_tx_id"?: string | null,"relaunched_by"?: string | null,"set_id"?: string | null,"show_correction"?: boolean,"started_at"?: string,"status"?: Database["public"]['Enums']["quiz_attempt_status"],"submitted_at"?: string | null,"updated_at"?: string,"validated_at"?: string | null,"validated_by"?: string | null
                   }
                   Relationships: [
                     {
@@ -626,6 +626,12 @@ isOneToOne: false
       columns: ["family_id"]
 isOneToOne: false
       referencedRelation: "families"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quiz_attempts_points_tx_id_fkey"
+      columns: ["points_tx_id"]
+isOneToOne: true
+      referencedRelation: "point_transactions"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "quiz_attempts_relaunched_by_fkey"
@@ -1091,7 +1097,7 @@ isOneToOne: false
                            },
 "child_catalog_quizzes":
 { Args: Record<PropertyKey, never>; Returns: {
-              "answer_sheet_only": boolean,"answered_count": number,"can_start_evaluation": boolean,"due_on": string,"evaluation_attempt_id": string,"evaluation_status": Database["public"]['Enums']["quiz_attempt_status"],"paper_support": boolean,"question_count": number,"quiz_id": string,"subject": string,"title": string,"week_label": string
+              "answer_sheet_only": boolean,"answered_count": number,"can_start_evaluation": boolean,"due_on": string,"evaluation_attempt_id": string,"evaluation_status": Database["public"]['Enums']["quiz_attempt_status"],"paper_support": boolean,"question_count": number,"quiz_id": string,"release_on": string,"score": number,"subject": string,"title": string,"total": number,"week_label": string
             }[]
                            },
 "child_login_check_password":
@@ -1269,6 +1275,9 @@ isOneToOne: false
 "quiz_new_attempt":
 { Args: { "p_attempt": string,"p_relaunched_by": string,"p_set": Database["public"]['Tables']["quiz_sets"]['Row'] }; Returns: undefined
                            },
+"quiz_points_for":
+{ Args: { "p_score": number,"p_total": number }; Returns: number
+                           },
 "quiz_progress_counts":
 { Args: Record<PropertyKey, never>; Returns: {
               "answered": number,"attempt_id": string
@@ -1438,7 +1447,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "member_role": "parent"|"child","point_reason": "task_validated"|"task_unvalidated"|"reward_redeemed"|"manual_adjust","quiz_attempt_status": "in_progress"|"submitted"|"validated","quiz_material_kind": "exam"|"exam_key"|"course"|"list","quiz_status": "draft"|"published","recurrence_rule": "daily"|"weekdays","request_status": "pending"|"approved"|"rejected"|"cancelled"|"expired","task_category": "study"|"sport"|"chores"|"personal"|"other","time_kind": "range"|"deadline"|"anytime"
+            "member_role": "parent"|"child","point_reason": "task_validated"|"task_unvalidated"|"reward_redeemed"|"manual_adjust"|"quiz_validated","quiz_attempt_status": "in_progress"|"submitted"|"validated","quiz_material_kind": "exam"|"exam_key"|"course"|"list","quiz_status": "draft"|"published","recurrence_rule": "daily"|"weekdays","request_status": "pending"|"approved"|"rejected"|"cancelled"|"expired","task_category": "study"|"sport"|"chores"|"personal"|"other","time_kind": "range"|"deadline"|"anytime"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -1558,7 +1567,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "member_role": ["parent", "child"],"point_reason": ["task_validated", "task_unvalidated", "reward_redeemed", "manual_adjust"],"quiz_attempt_status": ["in_progress", "submitted", "validated"],"quiz_material_kind": ["exam", "exam_key", "course", "list"],"quiz_status": ["draft", "published"],"recurrence_rule": ["daily", "weekdays"],"request_status": ["pending", "approved", "rejected", "cancelled", "expired"],"task_category": ["study", "sport", "chores", "personal", "other"],"time_kind": ["range", "deadline", "anytime"]
+            "member_role": ["parent", "child"],"point_reason": ["task_validated", "task_unvalidated", "reward_redeemed", "manual_adjust", "quiz_validated"],"quiz_attempt_status": ["in_progress", "submitted", "validated"],"quiz_material_kind": ["exam", "exam_key", "course", "list"],"quiz_status": ["draft", "published"],"recurrence_rule": ["daily", "weekdays"],"request_status": ["pending", "approved", "rejected", "cancelled", "expired"],"task_category": ["study", "sport", "chores", "personal", "other"],"time_kind": ["range", "deadline", "anytime"]
           }
         }
 } as const
