@@ -1206,22 +1206,43 @@
     }
   },
   "weekly": {
-    "title": "Ôn tập trong tuần",
-    "line": "Ôn tập: {{title}}",
-    "group": "Ôn tập ({{count}})",
     "late": "Quá hạn",
-    "dueBefore": "Trước {{day}}",
     "dueMark": "có bài ôn tập đến hạn",
     "dueCard": "Hạn nộp bài ôn tập: {{title}}",
     "dueCardParent": "{{name}} · hạn nộp bài ôn tập: {{title}}",
+    "banner": {
+      "title": "Ôn tập tuần {{week}} · {{done}}/{{total}} môn",
+      "done": "Ôn tập tuần {{week}} · xong",
+      "nearest": "Gần nhất: {{subject}}, {{day}}",
+      "toValidate": "Cần duyệt ({{count}})",
+      "waiting": "{{count}} bài đợi phụ huynh duyệt"
+    },
+    "review": {
+      "title": "Ôn tập",
+      "titleOf": "Ôn tập · {{name}}",
+      "prevWeek": "Tuần trước",
+      "nextWeek": "Tuần sau",
+      "week": "Tuần {{week}}",
+      "weekSub": "{{dates}} · {{done}}/{{total}} môn xong",
+      "weekA11y": "Tuần {{week}}, {{dates}}, {{done}} trên {{total}} môn xong",
+      "empty": "Tuần này chưa có bài ôn tập",
+      "due": "Hạn {{day}}",
+      "maxPoints": "tối đa {{points}} điểm",
+      "score": "Điểm: {{score}}/{{total}}",
+      "start": "Bắt đầu",
+      "resume": "Tiếp tục",
+      "seeResult": "Xem kết quả",
+      "validate": "Duyệt",
+      "seeWork": "Xem bài làm"
+    },
     "state": {
-      "todo": "Cần làm",
+      "todo": "Chưa làm",
       "todoParent": "Chưa bắt đầu",
       "in_progress": "Đang làm {{done}}/{{total}}",
-      "waiting": "Chờ phụ huynh duyệt",
+      "waiting": "Đợi phụ huynh duyệt",
       "toValidate": "Cần duyệt",
       "validated": "Đã duyệt",
-      "validatedScore": "Đã duyệt · {{score}}/{{total}}"
+      "validatedPoints": "Đã duyệt · +{{points}} điểm"
     }
   }
 }

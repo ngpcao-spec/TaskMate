@@ -1206,22 +1206,43 @@
     }
   },
   "weekly": {
-    "title": "Révisions de la semaine",
-    "line": "Révisions : {{title}}",
-    "group": "Révisions ({{count}})",
     "late": "En retard",
-    "dueBefore": "Avant {{day}}",
     "dueMark": "révision à rendre",
     "dueCard": "Révision à rendre : {{title}}",
     "dueCardParent": "{{name}} · révision à rendre : {{title}}",
+    "banner": {
+      "title": "Révisions semaine {{week}} · {{done}}/{{total}} matières",
+      "done": "Révisions semaine {{week}} · terminé",
+      "nearest": "Prochaine échéance : {{subject}}, {{day}}",
+      "toValidate": "À valider ({{count}})",
+      "waiting": "{{count}} en attente de validation"
+    },
+    "review": {
+      "title": "Révisions",
+      "titleOf": "Révisions · {{name}}",
+      "prevWeek": "Semaine précédente",
+      "nextWeek": "Semaine suivante",
+      "week": "Semaine {{week}}",
+      "weekSub": "{{dates}} · {{done}}/{{total}} matières terminées",
+      "weekA11y": "Semaine {{week}}, {{dates}}, {{done}} matières terminées sur {{total}}",
+      "empty": "Aucune révision cette semaine",
+      "due": "Échéance {{day}}",
+      "maxPoints": "jusqu'à {{points}} points",
+      "score": "Score : {{score}}/{{total}}",
+      "start": "Commencer",
+      "resume": "Reprendre",
+      "seeResult": "Voir le résultat",
+      "validate": "Valider",
+      "seeWork": "Voir la copie"
+    },
     "state": {
       "todo": "À faire",
       "todoParent": "Pas commencé",
-      "in_progress": "En cours · {{done}}/{{total}}",
-      "waiting": "En attente de validation",
+      "in_progress": "En cours {{done}}/{{total}}",
+      "waiting": "En attente du parent",
       "toValidate": "À valider",
       "validated": "Validé",
-      "validatedScore": "Validé · score {{score}}/{{total}}"
+      "validatedPoints": "Validé · +{{points}} points"
     }
   }
 }

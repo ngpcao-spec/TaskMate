@@ -192,6 +192,8 @@ export type ParentCatalogRow = {
   answered_count: number;
   score: number | null;
   total: number | null;
+  max_points: number;
+  points_awarded: number;
 };
 export async function fetchParentCatalog(childId: string): Promise<ParentCatalogRow[]> {
   const { data, error } = await supabase.rpc('parent_catalog_overview', { p_child: childId });
@@ -222,6 +224,9 @@ export type ChildCatalogRow = {
   /** Résultat : renseigné par le serveur SEULEMENT une fois la tentative validée par le parent (null avant). */
   score: number | null;
   total: number | null;
+  /** D-084 : maximum du barème (même fonction SQL que le crédit) et points déjà rapportés par ce quiz (0 si rien). */
+  max_points: number;
+  points_awarded: number;
 };
 export async function fetchChildCatalog(): Promise<ChildCatalogRow[]> {
   const { data, error } = await supabase.rpc('child_catalog_quizzes');

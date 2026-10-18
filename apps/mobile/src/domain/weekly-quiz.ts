@@ -26,6 +26,9 @@ export type WeeklyInput = {
   /** Résultat : seulement exploité une fois la tentative VALIDÉE. */
   score: number | null;
   scoreTotal: number | null;
+  /** Maximum du barème et points déjà rapportés par ce quiz : lus du SERVEUR (D-084), jamais recalculés ici. */
+  maxPoints: number;
+  pointsAwarded: number;
 };
 
 export type WeeklyItem = {
@@ -33,6 +36,7 @@ export type WeeklyItem = {
   subject: string;
   title: string;
   weekLabel: string;
+  releaseOn: string | null;
   dueOn: string | null;
   attemptId: string | null;
   state: WeeklyState;
@@ -40,6 +44,8 @@ export type WeeklyItem = {
   late: boolean;
   progress: { answered: number; total: number } | null;
   result: { score: number; total: number } | null;
+  maxPoints: number;
+  pointsAwarded: number;
 };
 
 /** Dernier jour d'affichage : le dimanche de la semaine qui SUIT la date limite. Sans date limite : repli sur le jour d'ouverture ; sans rien : null. */
@@ -68,12 +74,15 @@ export function weeklyItem(i: WeeklyInput, today: string, windowed = true): Week
     subject: i.subject,
     title: i.title,
     weekLabel: i.weekLabel,
+    releaseOn: i.releaseOn,
     dueOn: i.dueOn,
     attemptId: i.attemptId,
     state,
     late: isLate(i.dueOn, today, state),
     progress: state === 'in_progress' ? { answered, total: i.questionCount } : null,
     result: state === 'validated' && i.score !== null && i.scoreTotal !== null ? { score: i.score, total: i.scoreTotal } : null,
+    maxPoints: i.maxPoints,
+    pointsAwarded: state === 'validated' ? i.pointsAwarded : 0,
   };
 }
 
@@ -96,9 +105,6 @@ export function visibleWeekly(inputs: readonly WeeklyInput[], today: string, win
   return sortWeekly(inputs.map((i) => weeklyItem(i, today, windowed)).filter((x): x is WeeklyItem => x !== null));
 }
 
-/** Au-delà d'UNE ligne, les révisions se replient sous « Révisions (n) ». */
-export const shouldCollapse = (count: number): boolean => count > 1;
-
 // ───────────── adaptateurs (lignes serveur → entrée neutre) ─────────────
 export type ChildWeeklyRow = {
   source: 'family' | 'catalog';
@@ -114,6 +120,8 @@ export type ChildWeeklyRow = {
   answered_count: number;
   score: number | null;
   total: number | null;
+  max_points: number;
+  points_awarded: number;
 };
 /** Côté enfant : seulement les quiz du CATALOGUE (les jeux importés par la famille restent dans « Révisions »). */
 export const childWeeklyInputs = (rows: readonly ChildWeeklyRow[]): WeeklyInput[] =>
@@ -121,7 +129,7 @@ export const childWeeklyInputs = (rows: readonly ChildWeeklyRow[]): WeeklyInput[
     .filter((r) => r.source === 'catalog')
     .map((r) => ({
       quizId: r.set_id, subject: r.subject_key ?? '', title: r.title, weekLabel: r.week_label ?? '', releaseOn: r.release_on, dueOn: r.due_on,
-      attemptId: r.evaluation_attempt_id, attemptStatus: r.evaluation_status, answered: r.answered_count, questionCount: r.question_count, score: r.score, scoreTotal: r.total,
+      attemptId: r.evaluation_attempt_id, attemptStatus: r.evaluation_status, answered: r.answered_count, questionCount: r.question_count, score: r.score, scoreTotal: r.total, maxPoints: r.max_points, pointsAwarded: r.points_awarded,
     }));
 
 export type ParentWeeklyRow = {
@@ -138,13 +146,15 @@ export type ParentWeeklyRow = {
   answered_count: number;
   score: number | null;
   total: number | null;
+  max_points: number;
+  points_awarded: number;
 };
 export const parentWeeklyInputs = (rows: readonly ParentWeeklyRow[]): WeeklyInput[] =>
   rows
     .filter((r) => r.available)
     .map((r) => ({
       quizId: r.quiz_id, subject: r.subject, title: r.title, weekLabel: r.week_label, releaseOn: r.release_on, dueOn: r.due_on,
-      attemptId: r.attempt_id, attemptStatus: r.attempt_status, answered: r.answered_count, questionCount: r.question_count, score: r.score, scoreTotal: r.total,
+      attemptId: r.attempt_id, attemptStatus: r.attempt_status, answered: r.answered_count, questionCount: r.question_count, score: r.score, scoreTotal: r.total, maxPoints: r.max_points, pointsAwarded: r.points_awarded,
     }));
 
 // ───────────── calendrier ─────────────

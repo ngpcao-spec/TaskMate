@@ -12,7 +12,7 @@ import { CalendarCard } from '@/components/CalendarCard';
 import { RoundButton } from '@/components/RoundButton';
 import { ScreenHeader } from '@/components/ui';
 import { safeEdgesFor, useHasBottomBar } from '@/components/TabInset';
-import { WeeklyDueCard } from '@/components/quiz/WeeklyQuizSection';
+import { WeeklyDueCard } from '@/components/quiz/WeeklyDueCard';
 import { WeekStrip } from '@/components/WeekStrip';
 import {
   formatDayTitle,

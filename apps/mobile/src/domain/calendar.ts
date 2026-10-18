@@ -45,6 +45,9 @@ export function formatWeekdayLabel(date: string, lang: CalendarLanguage): string
 }
 
 /** Date courte neutre « 02/07/2026 » (résumés), identique dans les trois langues. */
+/** Jour et mois « 26/10 » (en-tête de semaine de l'écran Ôn tập), identique dans les trois langues. */
+export const formatShortDay = (date: string): string => format(parseISO(date), 'dd/MM');
+
 export const formatShortDate = (date: string): string => format(parseISO(date), 'dd/MM/yyyy');
 
 export const formatDayNumber = (date: string): string => format(parseISO(date), 'd');

@@ -1206,22 +1206,43 @@
     }
   },
   "weekly": {
-    "title": "This week's review",
-    "line": "Review: {{title}}",
-    "group": "Review ({{count}})",
     "late": "Late",
-    "dueBefore": "Before {{day}}",
     "dueMark": "review due",
     "dueCard": "Review due: {{title}}",
     "dueCardParent": "{{name}} · review due: {{title}}",
+    "banner": {
+      "title": "Review week {{week}} · {{done}}/{{total}} subjects",
+      "done": "Review week {{week}} · done",
+      "nearest": "Next due: {{subject}}, {{day}}",
+      "toValidate": "To validate ({{count}})",
+      "waiting": "{{count}} waiting for validation"
+    },
+    "review": {
+      "title": "Review",
+      "titleOf": "Review · {{name}}",
+      "prevWeek": "Previous week",
+      "nextWeek": "Next week",
+      "week": "Week {{week}}",
+      "weekSub": "{{dates}} · {{done}}/{{total}} subjects done",
+      "weekA11y": "Week {{week}}, {{dates}}, {{done}} of {{total}} subjects done",
+      "empty": "No review this week",
+      "due": "Due {{day}}",
+      "maxPoints": "up to {{points}} points",
+      "score": "Score: {{score}}/{{total}}",
+      "start": "Start",
+      "resume": "Resume",
+      "seeResult": "See result",
+      "validate": "Validate",
+      "seeWork": "See the work"
+    },
     "state": {
       "todo": "To do",
       "todoParent": "Not started",
-      "in_progress": "In progress · {{done}}/{{total}}",
-      "waiting": "Waiting for validation",
+      "in_progress": "In progress {{done}}/{{total}}",
+      "waiting": "Waiting for the parent",
       "toValidate": "To validate",
       "validated": "Validated",
-      "validatedScore": "Validated · score {{score}}/{{total}}"
+      "validatedPoints": "Validated · +{{points}} points"
     }
   }
 }

@@ -228,20 +228,23 @@ export type ChildQuizSet = {
   release_on: string | null;
   score: number | null;
   total: number | null;
+  /** Quiz du catalogue : maximum du barème et points déjà rapportés (serveur) ; 0 pour un jeu de famille. */
+  max_points: number;
+  points_awarded: number;
 };
 export async function fetchChildQuizSets(): Promise<ChildQuizSet[]> {
   // pendant un déploiement, la fonction du catalogue peut ne pas encore exister : on n'ignore que CETTE erreur (jamais un refus ou un échec réseau)
   const missingFunction = (e: unknown) => ['PGRST202', '42883'].includes((e as { code?: string } | null)?.code ?? '');
   const [family, catalog] = await Promise.all([supabase.rpc('child_quiz_sets'), fetchChildCatalog().catch((e: unknown) => (missingFunction(e) ? [] : Promise.reject(e)))]);
   fail(family.error);
-  const own = ((family.data ?? []) as unknown as Omit<ChildQuizSet, 'source' | 'subject_key' | 'week_label' | 'release_on' | 'score' | 'total'>[]).map(
-    (s): ChildQuizSet => ({ ...s, source: 'family', subject_key: null, week_label: null, release_on: null, score: null, total: null }),
+  const own = ((family.data ?? []) as unknown as Omit<ChildQuizSet, 'source' | 'subject_key' | 'week_label' | 'release_on' | 'score' | 'total' | 'max_points' | 'points_awarded'>[]).map(
+    (s): ChildQuizSet => ({ ...s, source: 'family', subject_key: null, week_label: null, release_on: null, score: null, total: null, max_points: 0, points_awarded: 0 }),
   );
   const shared = catalog.map(
     (c): ChildQuizSet => ({
       set_id: c.quiz_id, source: 'catalog', subject_key: c.subject, week_label: c.week_label, title: c.title, subject: null, question_count: c.question_count,
       evaluation_attempt_id: c.evaluation_attempt_id, evaluation_status: c.evaluation_status, can_start_evaluation: c.can_start_evaluation, paper_support: c.paper_support,
-      answer_sheet_only: c.answer_sheet_only, due_on: c.due_on, answered_count: c.answered_count, release_on: c.release_on, score: c.score, total: c.total,
+      answer_sheet_only: c.answer_sheet_only, due_on: c.due_on, answered_count: c.answered_count, release_on: c.release_on, score: c.score, total: c.total, max_points: c.max_points, points_awarded: c.points_awarded,
     }),
   );
   return [...shared, ...own];
