@@ -1,11 +1,11 @@
 import {
-  childWeeklyInputs, dueByDay, dueMarkedDays, isLate, lastVisibleDay, parentWeeklyInputs, shouldCollapse, sortWeekly, visibleWeekly, weeklyItem,
+  childWeeklyInputs, dueByDay, dueMarkedDays, isLate, lastVisibleDay, parentWeeklyInputs, sortWeekly, visibleWeekly, weeklyItem,
   type ChildWeeklyRow, type ParentWeeklyRow, type WeeklyInput,
 } from './weekly-quiz';
 
 const base = (o: Partial<WeeklyInput> = {}): WeeklyInput => ({
   quizId: 'q1', subject: 'maths', title: 'Phân số', weekLabel: 'Tuần 1', releaseOn: '2026-10-19', dueOn: '2026-10-25', attemptId: null, attemptStatus: null,
-  answered: 0, questionCount: 16, score: null, scoreTotal: null, ...o,
+  answered: 0, questionCount: 16, score: null, scoreTotal: null, maxPoints: 8, pointsAwarded: 0, ...o,
 });
 
 describe('fenêtre d’affichage', () => {
@@ -64,6 +64,10 @@ describe('états', () => {
   it('en attente de validation : jamais « en retard », ni score', () => {
     expect(weeklyItem(base({ attemptStatus: 'submitted', attemptId: 'a1', score: 12, scoreTotal: 16 }), '2026-10-28')).toMatchObject({ state: 'waiting', late: false, result: null, progress: null });
   });
+  it('points : maximum du serveur ; « +N » seulement une fois validé', () => {
+    expect(weeklyItem(base({ attemptStatus: 'validated', score: 14, scoreTotal: 16, pointsAwarded: 8 }), '2026-10-22')).toMatchObject({ maxPoints: 8, pointsAwarded: 8 });
+    expect(weeklyItem(base({ attemptStatus: 'in_progress', pointsAwarded: 8 }), '2026-10-22')).toMatchObject({ maxPoints: 8, pointsAwarded: 0 });
+  });
   it('validé : score affiché ; sans score reçu, pas de résultat', () => {
     expect(weeklyItem(base({ attemptStatus: 'validated', score: 12, scoreTotal: 16 }), '2026-10-28')).toMatchObject({ state: 'validated', late: false, result: { score: 12, total: 16 } });
     expect(weeklyItem(base({ attemptStatus: 'validated' }), '2026-10-28')?.result).toBeNull();
@@ -110,18 +114,12 @@ describe('plusieurs matières', () => {
     const due = weeklyItem(base({ quizId: 'd' }), '2026-10-20');
     expect(sortWeekly([nodue, due].filter((x) => x !== null)).map((x) => x.quizId)).toEqual(['d', 'n']);
   });
-  it('repli : plus d’une ligne → groupe « Révisions (n) »', () => {
-    expect(shouldCollapse(0)).toBe(false);
-    expect(shouldCollapse(1)).toBe(false);
-    expect(shouldCollapse(2)).toBe(true);
-    expect(shouldCollapse(5)).toBe(true);
-  });
 });
 
 describe('adaptateurs', () => {
   const child = (o: Partial<ChildWeeklyRow> = {}): ChildWeeklyRow => ({
     source: 'catalog', set_id: 'q1', subject_key: 'maths', title: 'T', week_label: 'Tuần 1', question_count: 16, evaluation_attempt_id: 'a1', evaluation_status: 'in_progress',
-    due_on: '2026-10-25', release_on: '2026-10-19', answered_count: 6, score: null, total: null, ...o,
+    due_on: '2026-10-25', release_on: '2026-10-19', answered_count: 6, score: null, total: null, max_points: 8, points_awarded: 0, ...o,
   });
   it('enfant : seulement le catalogue, champs reportés', () => {
     const out = childWeeklyInputs([child(), child({ source: 'family', set_id: 'f1' })]);
@@ -133,7 +131,7 @@ describe('adaptateurs', () => {
   });
   const parent = (o: Partial<ParentWeeklyRow> = {}): ParentWeeklyRow => ({
     quiz_id: 'q1', subject: 'maths', week_label: 'Tuần 1', title: 'T', question_count: 16, release_on: '2026-10-19', due_on: '2026-10-25', available: true, attempt_id: 'a1',
-    attempt_status: 'submitted', answered_count: 0, score: 12, total: 16, ...o,
+    attempt_status: 'submitted', answered_count: 0, score: 12, total: 16, max_points: 8, points_awarded: 0, ...o,
   });
   it('parent : seulement les quiz ouverts', () => {
     const out = parentWeeklyInputs([parent(), parent({ quiz_id: 'q2', available: false })]);

@@ -11,7 +11,7 @@ import { Mascot, TopOrnament } from '@/components/decor/Decor';
 import { Fab } from '@/components/Fab';
 import { ProfilePills } from '@/components/ProfilePills';
 import { ProgressRing } from '@/components/ProgressRing';
-import { WeeklyQuizSection } from '@/components/quiz/WeeklyQuizSection';
+import { WeeklyBanner } from '@/components/quiz/WeeklyBanner';
 import { RoundButton } from '@/components/RoundButton';
 import { StatTile } from '@/components/StatTile';
 import { TaskRow } from '@/components/TaskRow';
@@ -25,6 +25,7 @@ import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { useUnreadNotifications } from '@/hooks/useNotifications';
 import { useNow } from '@/hooks/useNow';
 import { useApprovalCounts } from '@/hooks/useApprovals';
+import { bannerModel } from '@/domain/weekly-review';
 import { useWeeklyQuizzes } from '@/hooks/useWeeklyQuizzes';
 import { usePendingTaskIds } from '@/hooks/useSyncStatus';
 import { toggleVars, useDeleteTask, useRejectTask, useTasks, useToggleTask, useValidateTask, validateVars } from '@/hooks/useTasks';
@@ -48,7 +49,7 @@ export default function TodayScreen() {
   const pendingIds = usePendingTaskIds();
   const isParent = d?.viewer.role === 'parent';
   const counts = useApprovalCounts(isParent);
-  const weekly = useWeeklyQuizzes(today);
+  const weekly = useWeeklyQuizzes(today, false);
 
   if (!d || !d.child) {
     return (
@@ -110,7 +111,10 @@ export default function TodayScreen() {
           </Pressable>
         ) : null}
 
-        <WeeklyQuizSection groups={weekly.groups} role={isParent ? 'parent' : 'child'} onSelectChild={d.select} />
+        {weekly.groups.map((g) => {
+          const banner = bannerModel(g.items, today);
+          return banner ? <WeeklyBanner key={g.childId} banner={banner} role={isParent ? 'parent' : 'child'} childId={g.childId} childName={g.childName} /> : null;
+        })}
 
         <Pressable accessibilityRole="button" accessibilityLabel={t('today.progress', { done: progress.done, total: progress.total })} onPress={() => router.push('/(tabs)/stats')}>
           <NavyPanel>

@@ -244,3 +244,6 @@ E-mail de connexion du parent sous son nom (Réglages), bloc « Connexion de l'e
 
 ### Révision de la semaine dans Hôm nay + points (D-083) — 2026-10-17
 Ligne calculée (aucune tâche) « Révisions : <titre> » dans Hôm nay (enfant : le sien ; parent : un bloc par enfant, « À valider » ouvre la validation), repli « Révisions (n) », repères de date limite dans Lịch. Points crédités par le serveur à la validation d'un quiz du catalogue : ≥ 80 % → 8, ≥ 50 % → 5, sinon 0, une seule fois par tentative et par quiz. Migration 25 + pgTAP 31. PR ouverte, NON fusionnée (migration + points = production, demande de Teo).
+
+### Révisions : bandeau + écran « Ôn tập » (D-084) — 2026-10-18
+Un bandeau fin dans Hôm nay (k/n môn, échéance la plus proche, « À valider (n) » côté parent, un par enfant) et un écran par semaine (cartes par matière, flèches de semaine, délai de grâce sans pénalité, points maximum et gagnés lus du serveur). Migration 26 d'information (deux colonnes) + pgTAP 32.
