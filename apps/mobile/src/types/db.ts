@@ -1097,7 +1097,7 @@ isOneToOne: false
                            },
 "child_catalog_quizzes":
 { Args: Record<PropertyKey, never>; Returns: {
-              "answer_sheet_only": boolean,"answered_count": number,"can_start_evaluation": boolean,"due_on": string,"evaluation_attempt_id": string,"evaluation_status": Database["public"]['Enums']["quiz_attempt_status"],"paper_support": boolean,"question_count": number,"quiz_id": string,"release_on": string,"score": number,"subject": string,"title": string,"total": number,"week_label": string
+              "answer_sheet_only": boolean,"answered_count": number,"can_start_evaluation": boolean,"due_on": string,"evaluation_attempt_id": string,"evaluation_status": Database["public"]['Enums']["quiz_attempt_status"],"max_points": number,"paper_support": boolean,"points_awarded": number,"question_count": number,"quiz_id": string,"release_on": string,"score": number,"subject": string,"title": string,"total": number,"week_label": string
             }[]
                            },
 "child_login_check_password":
@@ -1229,7 +1229,7 @@ isOneToOne: false
                            },
 "parent_catalog_overview":
 { Args: { "p_child": string }; Returns: {
-              "answered_count": number,"attempt_id": string,"attempt_status": Database["public"]['Enums']["quiz_attempt_status"],"available": boolean,"due_on": string,"question_count": number,"quiz_id": string,"release_on": string,"score": number,"subject": string,"title": string,"total": number,"week_label": string
+              "answered_count": number,"attempt_id": string,"attempt_status": Database["public"]['Enums']["quiz_attempt_status"],"available": boolean,"due_on": string,"max_points": number,"points_awarded": number,"question_count": number,"quiz_id": string,"release_on": string,"score": number,"subject": string,"title": string,"total": number,"week_label": string
             }[]
                            },
 "parent_child_subjects":
