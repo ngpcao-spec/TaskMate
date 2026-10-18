@@ -1,6 +1,6 @@
 import {
-  childWeeklyInputs, dueByDay, dueMarkedDays, isLate, lastVisibleDay, parentWeeklyInputs, sortWeekly, visibleWeekly, weeklyItem,
-  type ChildWeeklyRow, type ParentWeeklyRow, type WeeklyInput,
+  childWeeklyInputs, dueByDay, dueMarkedDays, isLate, lastVisibleDay, parentWeeklyInputs, sortWeekly, upcomingItems, visibleWeekly, weeklyItem,
+  type ChildWeeklyRow, type ParentWeeklyRow, type WeeklyInput, type WeeklyItem,
 } from './weekly-quiz';
 
 const base = (o: Partial<WeeklyInput> = {}): WeeklyInput => ({
@@ -140,6 +140,21 @@ describe('adaptateurs', () => {
   });
   it('parent : un quiz envoyé n’expose pas son score avant validation', () => {
     expect(weeklyItem(parentWeeklyInputs([parent()])[0] as WeeklyInput, '2026-10-22')?.result).toBeNull();
+  });
+});
+
+describe('quiz pas encore ouverts (D-086)', () => {
+  const row = { quiz_id: 'u1', subject: 'hist_geo', week_label: 'Tuần 8', title: 'Bài 2', release_on: '2026-10-26', due_on: '2026-11-01', max_points: 8 };
+  it('métadonnées seulement : état « upcoming », aucune tentative, aucun résultat, jamais en retard', () => {
+    expect(upcomingItems([row])).toEqual([
+      { quizId: 'u1', subject: 'hist_geo', title: 'Bài 2', weekLabel: 'Tuần 8', releaseOn: '2026-10-26', dueOn: '2026-11-01', attemptId: null, state: 'upcoming', late: false, progress: null, result: null, maxPoints: 8, pointsAwarded: 0 },
+    ]);
+    expect(upcomingItems([])).toEqual([]);
+  });
+  it('classés après les quiz ouverts', () => {
+    const open = weeklyItem(base({ quizId: 'o' }), '2026-10-21') as WeeklyItem;
+    const [up] = upcomingItems([row]) as [WeeklyItem];
+    expect(sortWeekly([up, open]).map((x) => x.quizId)).toEqual(['o', 'u1']);
   });
 });
 

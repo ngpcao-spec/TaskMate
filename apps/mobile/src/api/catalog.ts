@@ -200,6 +200,17 @@ export async function fetchParentCatalog(childId: string): Promise<ParentCatalog
   fail(error);
   return (data ?? []) as unknown as ParentCatalogRow[];
 }
+/**
+ * Quiz publiés pour l'enfant mais PAS ENCORE OUVERTS (D-086) : MÉTADONNÉES seulement (matière, semaine, titre, ouverture et échéance effectives,
+ * maximum du barème), jamais une question ni une réponse. Enfant : `childId` null (le serveur déduit SON identité, une semaine d'avance au plus) ;
+ * parent : l'enfant de SA famille.
+ */
+export type UpcomingCatalogRow = { quiz_id: string; subject: string; week_label: string; title: string; release_on: string; due_on: string; max_points: number };
+export async function fetchCatalogUpcoming(childId: string | null): Promise<UpcomingCatalogRow[]> {
+  const { data, error } = await supabase.rpc('catalog_upcoming_for_child', childId === null ? {} : { p_child: childId });
+  fail(error);
+  return (data ?? []) as unknown as UpcomingCatalogRow[];
+}
 export async function relaunchCatalogEvaluation(quizId: string, childId: string, attemptId: string): Promise<void> {
   const { error } = await supabase.rpc('relaunch_catalog_evaluation', { p_quiz: quizId, p_child: childId, p_attempt: attemptId });
   fail(error);

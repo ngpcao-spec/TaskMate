@@ -24,7 +24,7 @@ export function itemWeek(i: Dated): string | null {
 
 export const isUnfinished = (i: Pick<WeeklyItem, 'state'>): boolean => i.state === 'todo' || i.state === 'in_progress';
 
-const GROUP = { todo: 0, in_progress: 0, waiting: 1, validated: 2 } as const;
+const GROUP = { todo: 0, in_progress: 0, waiting: 1, validated: 2, upcoming: 3 } as const;
 const FAR = '9999-12-31';
 
 /** Cartes de l'écran : non terminées par échéance croissante, puis en attente de validation, puis validées. */
@@ -52,7 +52,7 @@ export function weekItems(items: readonly WeeklyItem[], start: string, today: st
   if (start !== weekStart(today)) return sortCards(own);
   const others = items.filter((i) => {
     const w = itemWeek(i);
-    if (!w || w === start) return false;
+    if (!w || w === start || i.state === 'upcoming') return false; // pas encore ouvert : seulement dans SA semaine
     if (w > start) return true;
     if (i.state === 'waiting') return true;
     if (!isUnfinished(i)) return false;
@@ -96,15 +96,20 @@ export function weekNumber(list: readonly WeeklyItem[], start: string): number {
 }
 
 export type WeekHeader = { start: string; end: string; weekNo: number; validated: number; total: number; canPrev: boolean; canNext: boolean };
-/** Bornes de navigation : de la plus ancienne semaine qui porte un quiz à la plus récente (la semaine courante est toujours atteignable). */
-export function weekBounds(items: readonly WeeklyItem[], today: string): { min: string; max: string } {
+/**
+ * Bornes de navigation : de la plus ancienne semaine qui porte un quiz à la plus récente, y compris les quiz pas encore ouverts (la semaine courante est
+ * toujours atteignable). `maxAheadWeeks` : avance maximale, en semaines, sur la semaine courante (enfant : 1 ; parent : `null` = sans limite).
+ */
+export function weekBounds(items: readonly WeeklyItem[], today: string, maxAheadWeeks: number | null = null): { min: string; max: string } {
   const current = weekStart(today);
-  const weeks = items.map(itemWeek).filter((w): w is string => w !== null);
-  return { min: [current, ...weeks].sort()[0] as string, max: [current, ...weeks].sort().reverse()[0] as string };
+  const weeks = [current, ...items.map(itemWeek).filter((w): w is string => w !== null)].sort();
+  const last = weeks[weeks.length - 1] as string;
+  const limit = maxAheadWeeks === null ? null : shiftDay(current, 7 * maxAheadWeeks);
+  return { min: weeks[0] as string, max: limit !== null && last > limit ? limit : last };
 }
-export function weekHeader(items: readonly WeeklyItem[], start: string, today: string): WeekHeader {
+export function weekHeader(items: readonly WeeklyItem[], start: string, today: string, maxAheadWeeks: number | null = null): WeekHeader {
   const list = weekItems(items, start, today);
-  const { min, max } = weekBounds(items, today);
+  const { min, max } = weekBounds(items, today, maxAheadWeeks);
   return { start, end: shiftDay(start, 6), weekNo: weekNumber(list, start), validated: weekStats(list).validated, total: list.length, canPrev: start > min, canNext: start < max };
 }
 
@@ -120,7 +125,8 @@ export type Banner = {
   nearest: NearestDue | null;
 };
 /** Bandeau de Hôm nay pour un enfant ; `null` s'il n'y a rien à montrer (aucun quiz cette semaine, ni en retard dans le délai de grâce, ni à valider). */
-export function bannerModel(items: readonly WeeklyItem[], today: string): Banner | null {
+export function bannerModel(all: readonly WeeklyItem[], today: string): Banner | null {
+  const items = all.filter((i) => i.state !== 'upcoming'); // un quiz pas encore ouvert n'entre jamais dans le bandeau
   const start = weekStart(today);
   const list = weekItems(items, start, today);
   const toValidate = items.filter((i) => i.state === 'waiting').length;

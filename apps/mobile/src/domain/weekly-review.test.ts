@@ -1,7 +1,7 @@
 import {
   bannerModel, daysUntil, isUnfinished, itemWeek, nearestDue, sortCards, URGENT_DAYS, weekBounds, weekHeader, weekItems, weekNumber, weekStats,
 } from './weekly-review';
-import type { WeeklyItem, WeeklyState } from './weekly-quiz';
+import { upcomingItems, type WeeklyItem, type WeeklyState } from './weekly-quiz';
 
 // Semaine courante : lundi 19/10/2026 → dimanche 25/10/2026 (fuseau Asia/Ho_Chi_Minh).
 let n = 0;
@@ -158,6 +158,47 @@ describe('navigation entre semaines', () => {
     expect(past).toMatchObject({ end: '2026-10-11', validated: 1, total: 1, canPrev: false, canNext: true });
     const last = weekHeader(items, '2026-10-26', TODAY);
     expect(last).toMatchObject({ canPrev: true, canNext: false, end: '2026-11-01' });
+  });
+});
+
+describe('semaines futures : quiz pas encore ouverts (D-086)', () => {
+  const up = (week: string, due: string, id = `u${week}`) =>
+    upcomingItems([{ quiz_id: id, subject: 'hist_geo', week_label: `Tuần ${week}`, title: 'Bài', release_on: due, due_on: due, max_points: 8 }])[0] as WeeklyItem;
+  // semaine courante : 19/10 ; +1 : 26/10 ; +2 : 2/11 ; +3 : 9/11
+  const w1 = up('8', '2026-11-01');
+  const w3 = up('10', '2026-11-15');
+  it('affichés dans LEUR semaine seulement, pas dans la semaine courante ni dans le bandeau', () => {
+    expect(weekItems([w1], '2026-10-26', TODAY).map((x) => x.quizId)).toEqual(['u8']);
+    expect(weekItems([w1], '2026-10-19', TODAY)).toEqual([]);
+    expect(bannerModel([w1], TODAY)).toBeNull();
+    expect(bannerModel([w1, item('todo')], TODAY)).toMatchObject({ total: 1 });
+  });
+  it('triés après les quiz ouverts de la même semaine', () => {
+    const open = item('todo', { quizId: 'open', dueOn: '2026-10-30', releaseOn: '2026-10-20' });
+    const late = up('8', '2026-10-27', 'later');
+    expect(weekItems([late, open], '2026-10-26', TODAY).map((x) => x.quizId)).toEqual(['open', 'later']);
+  });
+  it('bornes parent : jusqu’à la dernière semaine publiée', () => {
+    expect(weekBounds([w1, w3], TODAY)).toEqual({ min: '2026-10-19', max: '2026-11-09' });
+    expect(weekHeader([w1, w3], '2026-11-09', TODAY).canNext).toBe(false);
+    expect(weekHeader([w1, w3], '2026-11-02', TODAY).canNext).toBe(true);
+  });
+  it('semaine sans quiz au milieu : atteignable, vide ; les deux flèches restent actives', () => {
+    expect(weekItems([w1, w3], '2026-11-02', TODAY)).toEqual([]);
+    expect(weekHeader([w1, w3], '2026-11-02', TODAY)).toMatchObject({ canPrev: true, canNext: true, total: 0, start: '2026-11-02', end: '2026-11-08' });
+  });
+  it('bornes enfant : une semaine d’avance au plus, même si des quiz plus lointains existaient', () => {
+    expect(weekBounds([w1, w3], TODAY, 1)).toEqual({ min: '2026-10-19', max: '2026-10-26' });
+    expect(weekHeader([w1, w3], '2026-10-26', TODAY, 1).canNext).toBe(false);
+    expect(weekHeader([w1, w3], '2026-10-19', TODAY, 1).canNext).toBe(true);
+    expect(weekBounds([w1], TODAY, 1).max).toBe('2026-10-26');
+    expect(weekBounds([], TODAY, 1)).toEqual({ min: '2026-10-19', max: '2026-10-19' });
+  });
+  it('0 quiz : rien à parcourir, des deux côtés', () => {
+    expect(weekHeader([], '2026-10-19', TODAY, null)).toMatchObject({ canPrev: false, canNext: false, total: 0 });
+  });
+  it('compte dans « k/n môn » de SA semaine (n = quiz publiés de la semaine, ouverts ou non)', () => {
+    expect(weekHeader([w1, up('8', '2026-10-30', 'x')], '2026-10-26', TODAY)).toMatchObject({ total: 2, validated: 0, weekNo: 8 });
   });
 });
 

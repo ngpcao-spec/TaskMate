@@ -1233,7 +1233,10 @@
       "resume": "Reprendre",
       "seeResult": "Voir le résultat",
       "validate": "Valider",
-      "seeWork": "Voir la copie"
+      "seeWork": "Voir la copie",
+      "opensOn": "Ouvre le {{day}}",
+      "noPrevWeek": "Pas de semaine précédente",
+      "noNextWeek": "Pas de semaine suivante"
     },
     "state": {
       "todo": "À faire",
@@ -1242,7 +1245,8 @@
       "waiting": "En attente du parent",
       "toValidate": "À valider",
       "validated": "Validé",
-      "validatedPoints": "Validé · +{{points}} points"
+      "validatedPoints": "Validé · +{{points}} points",
+      "upcoming": "Bientôt"
     }
   }
 }

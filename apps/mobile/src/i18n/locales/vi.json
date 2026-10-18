@@ -1233,7 +1233,10 @@
       "resume": "Tiếp tục",
       "seeResult": "Xem kết quả",
       "validate": "Duyệt",
-      "seeWork": "Xem bài làm"
+      "seeWork": "Xem bài làm",
+      "opensOn": "Mở ngày {{day}}",
+      "noPrevWeek": "Không còn tuần trước",
+      "noNextWeek": "Không còn tuần sau"
     },
     "state": {
       "todo": "Chưa làm",
@@ -1242,7 +1245,8 @@
       "waiting": "Đợi phụ huynh duyệt",
       "toValidate": "Cần duyệt",
       "validated": "Đã duyệt",
-      "validatedPoints": "Đã duyệt · +{{points}} điểm"
+      "validatedPoints": "Đã duyệt · +{{points}} điểm",
+      "upcoming": "Sắp mở"
     }
   }
 }

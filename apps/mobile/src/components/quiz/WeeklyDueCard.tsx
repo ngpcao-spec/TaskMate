@@ -13,6 +13,8 @@ export function weeklyStateText(t: (key: string, o?: Record<string, unknown>) =>
       return t('weekly.state.in_progress', { done: item.progress?.answered ?? 0, total: item.progress?.total ?? 0 });
     case 'waiting':
       return t(role === 'parent' ? 'weekly.state.toValidate' : 'weekly.state.waiting');
+    case 'upcoming':
+      return t('weekly.state.upcoming');
     case 'validated':
       return item.pointsAwarded > 0 ? t('weekly.state.validatedPoints', { points: item.pointsAwarded }) : t('weekly.state.validated');
     default:
@@ -20,11 +22,11 @@ export function weeklyStateText(t: (key: string, o?: Record<string, unknown>) =>
   }
 }
 
-export type BadgeTone = 'warning' | 'success' | 'primary';
+export type BadgeTone = 'warning' | 'success' | 'primary' | 'neutral';
 /** Pastille d'état : fonds opaques du thème (D-076), texte jamais `text`. */
 export function Badge({ text, tone }: { text: string; tone: BadgeTone }) {
-  const bg = tone === 'warning' ? colors.warningTint : tone === 'success' ? colors.successTint : colors.primaryTint;
-  const fg = tone === 'warning' ? colors.warning : tone === 'success' ? colors.success : colors.accent;
+  const bg = tone === 'warning' ? colors.warningTint : tone === 'success' ? colors.successTint : tone === 'neutral' ? colors.cardStrong : colors.primaryTint;
+  const fg = tone === 'warning' ? colors.warning : tone === 'success' ? colors.success : tone === 'neutral' ? colors.textSecondary : colors.accent;
   return (
     <View style={[styles.badge, { backgroundColor: bg }]}>
       <Text style={[styles.badgeText, { color: fg }]}>{text}</Text>
@@ -32,7 +34,8 @@ export function Badge({ text, tone }: { text: string; tone: BadgeTone }) {
   );
 }
 
-export const toneOf = (item: WeeklyItem, role: 'parent' | 'child'): BadgeTone => (item.state === 'validated' ? 'success' : item.state === 'waiting' && role === 'parent' ? 'warning' : 'primary');
+export const toneOf = (item: WeeklyItem, role: 'parent' | 'child'): BadgeTone =>
+  item.state === 'upcoming' ? 'neutral' : item.state === 'validated' ? 'success' : item.state === 'waiting' && role === 'parent' ? 'warning' : 'primary';
 
 /** Ouverture depuis le calendrier. Enfant : reprise de la tentative en cours, sinon la page du quiz. Parent : « Cần duyệt » → la validation existante ; sinon l'écran Ôn tập de l'enfant. */
 export function useWeeklyOpen(role: 'parent' | 'child', onSelectChild?: (id: string) => void) {

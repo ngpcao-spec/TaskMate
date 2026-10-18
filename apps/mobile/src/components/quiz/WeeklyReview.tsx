@@ -33,7 +33,7 @@ export function WeeklyReview({ childId }: Props) {
   const now = useNow();
   const lang = (['vi', 'fr', 'en'].includes(i18n.language) ? i18n.language : 'vi') as CalendarLanguage;
   const today = todayInTz(now, d?.me.family.timezone ?? 'Asia/Ho_Chi_Minh');
-  const weekly = useWeeklyQuizzes(today, false);
+  const weekly = useWeeklyQuizzes(today, false, true);
   const [picked, setPicked] = useState<string | null>(null);
   if (!d) return <ActivityIndicator />;
 
@@ -42,7 +42,8 @@ export function WeeklyReview({ childId }: Props) {
   const group = weekly.groups.find((g) => g.childId === wanted) ?? null;
   const items = group?.items ?? [];
   const start = picked ?? weekStart(today);
-  const header = weekHeader(items, start, today);
+  // enfant : une semaine d'avance au plus (le serveur l'impose aussi) ; parent : jusqu'à la dernière semaine publiée
+  const header = weekHeader(items, start, today, role === 'child' ? 1 : null);
   const cards = weekItems(items, start, today);
   const title = role === 'parent' && group ? t('weekly.review.titleOf', { name: group.childName }) : t('weekly.review.title');
   const dates = `${formatShortDay(header.start)} – ${formatShortDay(header.end)}`;
@@ -51,14 +52,14 @@ export function WeeklyReview({ childId }: Props) {
     <Screen>
       <ScreenHeader title={title} />
       <View style={styles.weekRow}>
-        <RoundButton label={t('weekly.review.prevWeek')} disabled={!header.canPrev} onPress={() => setPicked(shiftWeek(start, -1))}>
+        <RoundButton label={t(header.canPrev ? 'weekly.review.prevWeek' : 'weekly.review.noPrevWeek')} disabled={!header.canPrev} onPress={() => setPicked(shiftWeek(start, -1))}>
           <ChevronLeft color={header.canPrev ? colors.text : colors.textSecondary} />
         </RoundButton>
         <View accessible accessibilityLabel={t('weekly.review.weekA11y', { week: header.weekNo, dates, done: header.validated, total: header.total })} style={styles.weekText}>
           <Text style={styles.weekTitle}>{t('weekly.review.week', { week: header.weekNo })}</Text>
           <Text style={typography.secondary}>{t('weekly.review.weekSub', { dates, done: header.validated, total: header.total })}</Text>
         </View>
-        <RoundButton label={t('weekly.review.nextWeek')} disabled={!header.canNext} onPress={() => setPicked(shiftWeek(start, 1))}>
+        <RoundButton label={t(header.canNext ? 'weekly.review.nextWeek' : 'weekly.review.noNextWeek')} disabled={!header.canNext} onPress={() => setPicked(shiftWeek(start, 1))}>
           <ChevronRight color={header.canNext ? colors.text : colors.textSecondary} />
         </RoundButton>
       </View>
@@ -88,10 +89,12 @@ function WeeklyCard({ item, role, today, lang, onOpen }: { item: WeeklyItem; rol
   const days = item.dueOn ? daysUntil(item.dueOn, today) : null;
   const urgent = unfinished && days !== null && days <= URGENT_DAYS;
   const due = item.dueOn ? t('weekly.review.due', { day: formatDueDay(item.dueOn, lang) }) : null;
-  const max = item.maxPoints > 0 && unfinished ? t('weekly.review.maxPoints', { points: item.maxPoints }) : null;
+  const upcoming = item.state === 'upcoming';
+  const max = item.maxPoints > 0 && (unfinished || upcoming) ? t('weekly.review.maxPoints', { points: item.maxPoints }) : null;
+  const opens = upcoming && item.releaseOn ? t('weekly.review.opensOn', { day: formatShortDay(item.releaseOn) }) : null;
   const score = item.state === 'validated' && item.result ? t('weekly.review.score', { score: item.result.score, total: item.result.total }) : null;
   const stateText = weeklyStateText(t, item, role);
-  const meta = [item.state === 'validated' ? null : due, max].filter(Boolean).join(' · ');
+  const meta = [opens, item.state === 'validated' ? null : due, max].filter(Boolean).join(' · ');
 
   let action: { label: string; variant: 'primary' | 'secondary'; run: () => void } | null = null;
   if (role === 'child') {
@@ -104,7 +107,11 @@ function WeeklyCard({ item, role, today, lang, onOpen }: { item: WeeklyItem; rol
   }
 
   return (
-    <View accessible={false} style={styles.card}>
+    <View
+      accessible={upcoming}
+      accessibilityLabel={upcoming ? [subject, item.title, stateText, meta].filter(Boolean).join(', ') : undefined}
+      style={[styles.card, upcoming && styles.cardUpcoming]}
+    >
       <View style={styles.cardTop}>
         <View style={styles.flex}>
           <Text style={styles.subject}>{subject}</Text>
@@ -127,6 +134,7 @@ const styles = StyleSheet.create({
   weekTitle: { fontSize: 18, fontWeight: '800', color: colors.text },
   empty: { textAlign: 'center', paddingVertical: 24 },
   card: { ...glass, borderRadius: radius.card, padding: 16, gap: 10 },
+  cardUpcoming: { opacity: 0.6 },
   cardTop: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 },
   subject: { fontSize: 18, fontWeight: '800', color: colors.text },
   meta: { fontSize: 13, fontWeight: '700', color: colors.textSecondary },

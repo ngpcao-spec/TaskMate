@@ -75,6 +75,7 @@ export const EXPECTED_FUNCTIONS = [
   'catalog_set_kind',
   'catalog_set_paper',
   'catalog_set_status',
+  'catalog_upcoming_for_child',
   'catalog_update_info',
   'catalog_upsert_question',
   'child_account_target',
