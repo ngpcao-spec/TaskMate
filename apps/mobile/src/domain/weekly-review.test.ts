@@ -194,6 +194,26 @@ describe('semaines futures : quiz pas encore ouverts (D-086)', () => {
     expect(weekBounds([w1], TODAY, 1).max).toBe('2026-10-26');
     expect(weekBounds([], TODAY, 1)).toEqual({ min: '2026-10-19', max: '2026-10-19' });
   });
+  it('cas réel : dimanche 18/10, quiz ouverts pour l’échéance du 25/10 → la « semaine suivante » de l’enfant est celle du 26/10 (Tuần 8)', () => {
+    const sunday = '2026-10-18';
+    const open = item('todo', { dueOn: '2026-10-25', releaseOn: '2026-10-16', weekLabel: 'Tuần 7' });
+    const week8 = up('8', '2026-11-01');
+    const week9 = up('9', '2026-11-08');
+    expect(weekBounds([open, week8, week9], sunday, 1)).toEqual({ min: '2026-10-12', max: '2026-10-26' });
+    expect(weekHeader([open, week8, week9], '2026-10-19', sunday, 1).canNext).toBe(true);
+    expect(weekHeader([open, week8, week9], '2026-10-26', sunday, 1)).toMatchObject({ canNext: false, canPrev: true, total: 1 });
+    expect(weekItems([open, week8, week9], '2026-10-26', sunday).map((x) => x.quizId)).toEqual(['u8']);
+  });
+  it('sans quiz ouvert pour la semaine d’après : plafond depuis la semaine du jour', () => {
+    const sunday = '2026-10-18';
+    expect(weekBounds([up('7', '2026-10-25'), up('8', '2026-11-01')], sunday, 1).max).toBe('2026-10-19');
+    const earlier = item('todo', { dueOn: '2026-10-16', releaseOn: '2026-10-12' });
+    expect(weekBounds([earlier, up('8', '2026-11-01')], sunday, 1).max).toBe('2026-10-19');
+  });
+  it('parent : jamais plafonné', () => {
+    const open = item('todo', { dueOn: '2026-10-25', releaseOn: '2026-10-16' });
+    expect(weekBounds([open, up('9', '2026-11-08'), up('12', '2026-11-29')], '2026-10-18', null).max).toBe('2026-11-23');
+  });
   it('0 quiz : rien à parcourir, des deux côtés', () => {
     expect(weekHeader([], '2026-10-19', TODAY, null)).toMatchObject({ canPrev: false, canNext: false, total: 0 });
   });

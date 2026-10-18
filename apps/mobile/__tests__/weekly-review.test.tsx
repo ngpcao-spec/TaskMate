@@ -10,7 +10,8 @@ jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockPush, back: jest
 jest.mock('react-native-safe-area-context', () => ({ SafeAreaView: ({ children }: { children: ReactNode }) => children }));
 jest.mock('@/api/supabase', () => ({ supabase: {} }));
 // Mercredi 21/10/2026, 10 h à Hô Chi Minh : semaine courante = lundi 19/10 → dimanche 25/10.
-jest.mock('@/hooks/useNow', () => ({ useNow: () => new Date('2026-10-21T03:00:00Z') }));
+let mockNow = new Date('2026-10-21T03:00:00Z');
+jest.mock('@/hooks/useNow', () => ({ useNow: () => mockNow }));
 
 let mockRole: 'parent' | 'child' = 'child';
 const minh = { id: 'c-minh', name: 'Minh', birth_date: '2009-03-01', color: '#1E88F5' };
@@ -53,7 +54,7 @@ async function show(props: { childId?: string | null } = {}) {
     </QueryClientProvider>,
   );
 }
-afterEach(() => { clients.splice(0).forEach((c) => c.clear()); jest.clearAllMocks(); mockRole = 'child'; });
+afterEach(() => { clients.splice(0).forEach((c) => c.clear()); jest.clearAllMocks(); mockRole = 'child'; mockNow = new Date('2026-10-21T03:00:00Z'); });
 
 const fourStates = [
   childRow({ set_id: 'qv', subject_key: 'hist_geo', title: 'Bài 2', evaluation_attempt_id: 'av', evaluation_status: 'validated', score: 12, total: 16, points_awarded: 5, due_on: '2026-10-20' }),
@@ -255,6 +256,8 @@ describe('Écran Ôn tập — semaines futures, quiz pas encore ouverts (D-086)
     const end = screen.getByRole('button', { name: 'Không còn tuần sau' });
     expect(end.props.accessibilityState).toMatchObject({ disabled: true });
     expect(flat(end).width).toBeGreaterThanOrEqual(44);
+    expect(flat(end).opacity).toBeLessThan(1); // visiblement atténuée
+    expect(flat(screen.getByRole('button', { name: 'Tuần trước' })).opacity).toBeUndefined();
     await fireEvent.press(end);
     expect(screen.queryByText('Bài 9')).toBeNull();
     expect(screen.getByText('Bài 2')).toBeTruthy();
@@ -305,6 +308,27 @@ describe('Écran Ôn tập — semaines futures, quiz pas encore ouverts (D-086)
     await waitFor(() => expect(mockUpcoming).toHaveBeenCalledTimes(2));
     expect(mockUpcoming).toHaveBeenCalledWith('c-minh');
     expect(mockUpcoming).toHaveBeenCalledWith('c-khang');
+  });
+
+  it('cas réel (dimanche 18/10) : la semaine en cours de l’enfant est celle de ses quiz ouverts (19–25/10) ; il atteint donc la semaine 8 (26/10 – 01/11), pas la 9', async () => {
+    mockNow = new Date('2026-10-18T10:00:00Z'); // dimanche 17 h à Hô Chi Minh
+    mockChildRows.mockResolvedValue([childRow({ set_id: 'o7', title: 'Bài 1', week_label: 'Tuần 7', release_on: '2026-10-16', due_on: '2026-10-25' })]);
+    mockUpcoming.mockResolvedValue([
+      upRow({ quiz_id: 'u8', title: 'Bài 2', week_label: 'Tuần 8', release_on: '2026-10-26', due_on: '2026-11-01' }),
+      upRow({ quiz_id: 'u9', title: 'Bài 3', week_label: 'Tuần 9', release_on: '2026-11-02', due_on: '2026-11-08' }),
+    ]);
+    await show();
+    await screen.findByText('Bài 1');
+    await fireEvent.press(screen.getByRole('button', { name: 'Tuần sau' })); // 19/10 – 25/10
+    expect(screen.getByText('Tuần 7')).toBeTruthy();
+    expect(screen.getByText('19/10 – 25/10 · 0/1 môn xong')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Tuần sau' }).props.accessibilityState).toMatchObject({ disabled: false });
+    await fireEvent.press(screen.getByRole('button', { name: 'Tuần sau' })); // 26/10 – 01/11
+    expect(screen.getByText('Tuần 8')).toBeTruthy();
+    expect(screen.getByText('Bài 2')).toBeTruthy();
+    expect(screen.getByText('Sắp mở')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Không còn tuần sau' }).props.accessibilityState).toMatchObject({ disabled: true });
+    expect(screen.queryByText('Bài 3')).toBeNull();
   });
 
   it('0 quiz : les deux flèches sont désactivées et nommées', async () => {

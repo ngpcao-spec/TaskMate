@@ -14,7 +14,7 @@ export function RoundButton({ label, onPress, children, size = MIN_TARGET, teal 
       accessibilityState={{ disabled }}
       disabled={disabled}
       onPress={onPress}
-      style={({ pressed }) => [styles.round, { width: box, height: box, borderRadius: box / 2 }, teal ? styles.teal : styles.glass, pressed && styles.pressed]}
+      style={({ pressed }) => [styles.round, { width: box, height: box, borderRadius: box / 2 }, teal ? styles.teal : styles.glass, disabled && styles.disabled, pressed && styles.pressed]}
     >
       {children}
     </Pressable>
@@ -26,4 +26,6 @@ const styles = StyleSheet.create({
   glass: { backgroundColor: colors.cardStrong, borderColor: colors.glassBorder },
   teal: { backgroundColor: colors.primary, borderColor: colors.ring },
   pressed: { opacity: 0.85 },
+  /** Désactivé = visiblement atténué (D-087) : on doit voir qu'il n'y a plus de semaine plus loin. */
+  disabled: { opacity: 0.35 },
 });
