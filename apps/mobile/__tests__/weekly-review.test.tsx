@@ -26,12 +26,13 @@ jest.mock('@/hooks/useDisplayedChild', () => ({
   }),
 }));
 
+type Row = Record<string, unknown>;
 const mockChildRows = jest.fn();
 jest.mock('@/api/quizzes', () => ({ ...jest.requireActual('@/api/quizzes'), fetchChildQuizSets: () => mockChildRows() }));
 const mockParentRows = jest.fn();
-jest.mock('@/api/catalog', () => ({ ...jest.requireActual('@/api/catalog'), fetchParentCatalog: (id: string) => mockParentRows(id) }));
+const mockUpcoming = jest.fn(async (_id: string | null): Promise<Row[]> => []);
+jest.mock('@/api/catalog', () => ({ ...jest.requireActual('@/api/catalog'), fetchParentCatalog: (id: string) => mockParentRows(id), fetchCatalogUpcoming: (id: string | null) => mockUpcoming(id) }));
 
-type Row = Record<string, unknown>;
 const childRow = (over: Row = {}): Row => ({
   source: 'catalog', set_id: 'q1', subject_key: 'maths', title: 'Bài 4', week_label: 'Tuần 8', subject: null, question_count: 16, evaluation_attempt_id: null, evaluation_status: null,
   can_start_evaluation: true, paper_support: false, answer_sheet_only: false, due_on: '2026-10-23', answered_count: 0, release_on: '2026-10-19', score: null, total: null,
@@ -117,13 +118,13 @@ describe('Écran Ôn tập — enfant (D-084)', () => {
     ]);
     await show();
     await screen.findByText('Tuần 8');
-    expect(screen.getByRole('button', { name: 'Tuần sau' }).props.accessibilityState).toMatchObject({ disabled: true });
+    expect(screen.getByRole('button', { name: 'Không còn tuần sau' }).props.accessibilityState).toMatchObject({ disabled: true });
     await fireEvent.press(screen.getByRole('button', { name: 'Tuần trước' }));
     expect(screen.getByText('Tuần 7')).toBeTruthy();
     expect(screen.getByText('12/10 – 18/10 · 1/1 môn xong')).toBeTruthy();
     expect(screen.getByText('Đã duyệt · +8 điểm')).toBeTruthy();
     expect(screen.getByText('Điểm: 14/16')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Tuần trước' }).props.accessibilityState).toMatchObject({ disabled: true });
+    expect(screen.getByRole('button', { name: 'Không còn tuần trước' }).props.accessibilityState).toMatchObject({ disabled: true });
     expect(screen.queryByText('Bài 4')).toBeNull();
     await fireEvent.press(screen.getByRole('button', { name: 'Tuần sau' }));
     expect(screen.getByText('Tuần 8')).toBeTruthy();
@@ -171,8 +172,8 @@ describe('Écran Ôn tập — enfant (D-084)', () => {
     await show();
     await screen.findByText('Tuần 8');
     const size = (n: { props: { style?: unknown } }) => Object.assign({}, ...[n.props.style].flat(Infinity).filter(Boolean));
-    expect(size(screen.getByRole('button', { name: 'Tuần trước' })).width).toBeGreaterThanOrEqual(44);
-    expect(size(screen.getByRole('button', { name: 'Tuần sau' })).height).toBeGreaterThanOrEqual(44);
+    expect(size(screen.getByRole('button', { name: 'Không còn tuần trước' })).width).toBeGreaterThanOrEqual(44);
+    expect(size(screen.getByRole('button', { name: 'Không còn tuần sau' })).height).toBeGreaterThanOrEqual(44);
     expect(screen.getByRole('button', { name: /^Bắt đầu: / })).toBeTruthy();
     expect(size(screen.getByRole('button', { name: /^Bắt đầu: / })).minHeight).toBeGreaterThanOrEqual(44);
   });
@@ -215,5 +216,103 @@ describe('Écran Ôn tập — parent, pour SON enfant (D-084)', () => {
     mockParentRows.mockResolvedValue([khangRows[3]]);
     await show();
     await waitFor(() => expect(screen.getByText('Ôn tập · Minh')).toBeTruthy());
+  });
+});
+
+const upRow = (over: Row = {}): Row => ({ quiz_id: 'u1', subject: 'hist_geo', week_label: 'Tuần 8', title: 'Bài 2', release_on: '2026-10-26', due_on: '2026-11-01', max_points: 8, ...over });
+
+describe('Écran Ôn tập — semaines futures, quiz pas encore ouverts (D-086)', () => {
+  const flat = (n: { props: { style?: unknown } }) => Object.assign({}, ...[n.props.style].flat(Infinity).filter(Boolean));
+  const childWithUpcoming = async (rows: Row[]) => {
+    mockChildRows.mockResolvedValue([childRow()]);
+    mockUpcoming.mockResolvedValue(rows);
+    await show();
+    await screen.findByText('Tuần 8');
+  };
+
+  it('enfant : la flèche › mène à la semaine suivante ; carte grisée « Sắp mở », ouverture, échéance, maximum, AUCUN bouton', async () => {
+    await childWithUpcoming([upRow()]);
+    await fireEvent.press(screen.getByRole('button', { name: 'Tuần sau' }));
+    expect(screen.getByText('Bài 2')).toBeTruthy();
+    expect(screen.getByText('Sắp mở')).toBeTruthy();
+    expect(screen.getByText(/Mở ngày 26\/10 · Hạn .*01\/11 · tối đa 8 điểm/)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Bắt đầu|Tiếp tục|Xem kết quả|Duyệt|Xem bài làm/ })).toBeNull();
+    const card = screen.getByLabelText(/Bài 2.*Sắp mở.*Mở ngày 26\/10/);
+    expect(flat(card).opacity).toBeLessThan(1);
+    expect(screen.getByText('26/10 – 01/11 · 0/1 môn xong')).toBeTruthy();
+  });
+
+  it('la carte grisée reste lisible aux lecteurs d’écran (libellé complet) et n’apparaît pas dans la semaine courante', async () => {
+    await childWithUpcoming([upRow()]);
+    expect(screen.queryByText('Sắp mở')).toBeNull();
+    expect(screen.queryByText('Bài 2')).toBeNull();
+  });
+
+  it('enfant : au-delà de la semaine suivante, › est DÉSACTIVÉE (non cachée), avec un libellé explicite — même si un quiz plus lointain était renvoyé', async () => {
+    await childWithUpcoming([upRow(), upRow({ quiz_id: 'u3', title: 'Bài 9', week_label: 'Tuần 10', release_on: '2026-11-09', due_on: '2026-11-15' })]);
+    expect(screen.getByRole('button', { name: 'Tuần sau' }).props.accessibilityState).toMatchObject({ disabled: false });
+    await fireEvent.press(screen.getByRole('button', { name: 'Tuần sau' }));
+    const end = screen.getByRole('button', { name: 'Không còn tuần sau' });
+    expect(end.props.accessibilityState).toMatchObject({ disabled: true });
+    expect(flat(end).width).toBeGreaterThanOrEqual(44);
+    await fireEvent.press(end);
+    expect(screen.queryByText('Bài 9')).toBeNull();
+    expect(screen.getByText('Bài 2')).toBeTruthy();
+  });
+
+  it('enfant : une seule lecture « à venir », SANS identifiant d’enfant (le serveur déduit le sien, D-052)', async () => {
+    await childWithUpcoming([]);
+    expect(mockUpcoming).toHaveBeenCalledTimes(1);
+    expect(mockUpcoming).toHaveBeenCalledWith(null);
+  });
+
+  it('une erreur de lecture des quiz à venir n’empêche pas d’afficher les quiz ouverts', async () => {
+    mockChildRows.mockResolvedValue([childRow()]);
+    mockUpcoming.mockRejectedValue(new Error('réseau'));
+    await show();
+    expect(await screen.findByText('Bài 4')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Không còn tuần sau' }).props.accessibilityState).toMatchObject({ disabled: true });
+  });
+
+  it('parent : parcourt jusqu’à la dernière semaine publiée, y compris une semaine vide au milieu', async () => {
+    mockRole = 'parent';
+    mockParentRows.mockResolvedValue([]);
+    mockUpcoming.mockImplementation(async (id) =>
+      id === 'c-khang'
+        ? [upRow(), upRow({ quiz_id: 'u3', title: 'Bài 9', week_label: 'Tuần 10', release_on: '2026-11-09', due_on: '2026-11-15' })]
+        : [],
+    );
+    await show({ childId: 'c-khang' });
+    await screen.findByText('Ôn tập · Khang');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Tuần sau' }).props.accessibilityState).toMatchObject({ disabled: false }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Tuần sau' })); // 26/10 : Bài 2
+    expect(screen.getByText('Bài 2')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Tuần sau' })); // 2/11 : aucun quiz
+    expect(screen.getByText('Tuần này chưa có bài ôn tập')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Tuần sau' }).props.accessibilityState).toMatchObject({ disabled: false });
+    await fireEvent.press(screen.getByRole('button', { name: 'Tuần sau' })); // 9/11 : Bài 9
+    expect(screen.getByText('Bài 9')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Không còn tuần sau' }).props.accessibilityState).toMatchObject({ disabled: true });
+    expect(screen.queryByRole('button', { name: /Bắt đầu|Duyệt/ })).toBeNull();
+  });
+
+  it('parent : une lecture « à venir » par enfant de la famille, avec son identifiant', async () => {
+    mockRole = 'parent';
+    mockParentRows.mockResolvedValue([]);
+    mockUpcoming.mockResolvedValue([]);
+    await show({ childId: 'c-minh' });
+    await screen.findByText('Ôn tập · Minh');
+    await waitFor(() => expect(mockUpcoming).toHaveBeenCalledTimes(2));
+    expect(mockUpcoming).toHaveBeenCalledWith('c-minh');
+    expect(mockUpcoming).toHaveBeenCalledWith('c-khang');
+  });
+
+  it('0 quiz : les deux flèches sont désactivées et nommées', async () => {
+    mockChildRows.mockResolvedValue([]);
+    mockUpcoming.mockResolvedValue([]);
+    await show();
+    await screen.findByText('Tuần này chưa có bài ôn tập');
+    expect(screen.getByRole('button', { name: 'Không còn tuần trước' }).props.accessibilityState).toMatchObject({ disabled: true });
+    expect(screen.getByRole('button', { name: 'Không còn tuần sau' }).props.accessibilityState).toMatchObject({ disabled: true });
   });
 });

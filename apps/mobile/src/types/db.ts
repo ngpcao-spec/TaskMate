@@ -1083,6 +1083,11 @@ isOneToOne: false
 "catalog_set_status":
 { Args: { "p_quiz": string,"p_status": Database["public"]['Enums']["quiz_status"] }; Returns: undefined
                            },
+"catalog_upcoming_for_child":
+{ Args: { "p_child"?: string }; Returns: {
+              "due_on": string,"max_points": number,"quiz_id": string,"release_on": string,"subject": string,"title": string,"week_label": string
+            }[]
+                           },
 "catalog_update_info":
 { Args: { "p_quiz": string,"p_title": string,"p_week": string }; Returns: undefined
                            },

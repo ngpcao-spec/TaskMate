@@ -7,7 +7,8 @@ import type { AttemptStatus } from '@/domain/quiz';
  * INFORMATION : il ne bloque jamais l'enfant et ne coûte aucun point.
  */
 
-export type WeeklyState = 'todo' | 'in_progress' | 'waiting' | 'validated';
+/** `upcoming` : quiz publié pour l'enfant mais PAS ENCORE OUVERT (D-086) : métadonnées seulement, jamais de bouton. */
+export type WeeklyState = 'todo' | 'in_progress' | 'waiting' | 'validated' | 'upcoming';
 
 /** Entrée neutre : bâtie par un adaptateur depuis la ligne enfant (`child_catalog_quizzes`) ou parent (`parent_catalog_overview`). */
 export type WeeklyInput = {
@@ -86,7 +87,7 @@ export function weeklyItem(i: WeeklyInput, today: string, windowed = true): Week
   };
 }
 
-const RANK: Record<WeeklyState, number> = { in_progress: 0, todo: 1, waiting: 2, validated: 3 };
+const RANK: Record<WeeklyState, number> = { in_progress: 0, todo: 1, waiting: 2, validated: 3, upcoming: 4 };
 
 /** Ordre stable : en cours, à faire (échéance la plus proche d'abord, donc les retards en tête), envoyés, validés. */
 export function sortWeekly<T extends WeeklyItem>(items: readonly T[]): T[] {
@@ -156,6 +157,15 @@ export const parentWeeklyInputs = (rows: readonly ParentWeeklyRow[]): WeeklyInpu
       quizId: r.quiz_id, subject: r.subject, title: r.title, weekLabel: r.week_label, releaseOn: r.release_on, dueOn: r.due_on,
       attemptId: r.attempt_id, attemptStatus: r.attempt_status, answered: r.answered_count, questionCount: r.question_count, score: r.score, scoreTotal: r.total, maxPoints: r.max_points, pointsAwarded: r.points_awarded,
     }));
+
+// ───────────── quiz pas encore ouverts (D-086) ─────────────
+/** Ligne de `catalog_upcoming_for_child` : MÉTADONNÉES seulement (ni question, ni choix, ni réponse). Dates déjà décalées par le serveur. */
+export type UpcomingRow = { quiz_id: string; subject: string; week_label: string; title: string; release_on: string; due_on: string; max_points: number };
+export const upcomingItems = (rows: readonly UpcomingRow[]): WeeklyItem[] =>
+  rows.map((r) => ({
+    quizId: r.quiz_id, subject: r.subject, title: r.title, weekLabel: r.week_label, releaseOn: r.release_on, dueOn: r.due_on, attemptId: null, state: 'upcoming' as const,
+    late: false, progress: null, result: null, maxPoints: r.max_points, pointsAwarded: 0,
+  }));
 
 // ───────────── calendrier ─────────────
 /** Quiz dont la date limite tombe dans `days` (jours locaux), regroupés par jour. Les quiz sans date limite n'ont pas de repère. */

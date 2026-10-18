@@ -1233,7 +1233,10 @@
       "resume": "Resume",
       "seeResult": "See result",
       "validate": "Validate",
-      "seeWork": "See the work"
+      "seeWork": "See the work",
+      "opensOn": "Opens {{day}}",
+      "noPrevWeek": "No earlier week",
+      "noNextWeek": "No later week"
     },
     "state": {
       "todo": "To do",
@@ -1242,7 +1245,8 @@
       "waiting": "Waiting for the parent",
       "toValidate": "To validate",
       "validated": "Validated",
-      "validatedPoints": "Validated · +{{points}} points"
+      "validatedPoints": "Validated · +{{points}} points",
+      "upcoming": "Opens soon"
     }
   }
 }
