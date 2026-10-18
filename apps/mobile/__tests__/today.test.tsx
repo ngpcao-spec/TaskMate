@@ -194,10 +194,10 @@ describe('TodayScreen : bandeau « Ôn tập » (D-084)', () => {
     expect(screen.queryByText(/Ôn tập tuần/)).toBeNull();
   });
 
-  it('masqué : quiz d’une autre semaine seulement', async () => {
-    mockWeekly = [group([item('todo', { releaseOn: '2026-10-20', dueOn: '2026-10-30' })])];
+  it('masqué : quiz pas encore ouvert pour cet enfant (rien dans la liste) ; ouvert d’avance pour la semaine suivante : affiché', async () => {
+    mockWeekly = [group([item('todo', { releaseOn: '2026-10-16', dueOn: '2026-10-30', weekLabel: 'Tuần 8' })])];
     await render(<TodayScreen />);
-    expect(screen.queryByText(/Ôn tập tuần/)).toBeNull();
+    expect(screen.getByText('Ôn tập tuần 8 · 0/1 môn')).toBeTruthy();
   });
 
   it('en cours : titre k/n, échéance la plus proche, UN seul bandeau (plus de ligne par quiz)', async () => {

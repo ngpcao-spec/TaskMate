@@ -73,8 +73,15 @@ describe('contenu d’une semaine', () => {
   const oldValidated = item('validated', { quizId: 'oldv', releaseOn: '2026-10-12', dueOn: '2026-10-16' });
   const all = [cur, nextWeek, lateInGrace, lateGone, oldWaiting, oldValidated];
 
-  it('semaine courante : ses quiz + le retard dans le délai de grâce + les quiz en attente (jamais le retard au-delà, ni les validés anciens)', () => {
-    expect(weekItems(all, '2026-10-19', TODAY).map((x) => x.quizId).sort()).toEqual(['cur', 'grace', 'oldw']);
+  it('semaine courante : ses quiz + le retard dans le délai de grâce + les quiz en attente + ce qui est déjà ouvert pour la suite (jamais le retard au-delà, ni les validés anciens)', () => {
+    expect(weekItems(all, '2026-10-19', TODAY).map((x) => x.quizId).sort()).toEqual(['cur', 'grace', 'next', 'oldw']);
+  });
+  it('quiz ouvert le vendredi pour le dimanche de la semaine d’après : visible dès le week-end (cas réel : ouverture 16/10, échéance 25/10, aujourd’hui dimanche 18/10)', () => {
+    const q = [item('todo', { quizId: 'ahead', releaseOn: '2026-10-16', dueOn: '2026-10-25', weekLabel: 'Tuần 7' })];
+    expect(weekItems(q, '2026-10-12', '2026-10-18').map((x) => x.quizId)).toEqual(['ahead']);
+    expect(weekItems(q, '2026-10-19', '2026-10-18').map((x) => x.quizId)).toEqual(['ahead']); // et dans sa propre semaine
+    expect(weekItems(q, '2026-10-12', '2026-10-17')).toHaveLength(1); // samedi
+    expect(weekItems(q, '2026-10-12', '2026-10-16')).toHaveLength(1); // le jour d’ouverture
   });
   it('délai de grâce : jusqu’au dimanche de la semaine qui suit l’échéance, inclus', () => {
     const q = [item('todo', { quizId: 'g', releaseOn: '2026-10-05', dueOn: '2026-10-09' })]; // semaine du 5/10 → grâce jusqu’au 18/10
@@ -146,7 +153,7 @@ describe('navigation entre semaines', () => {
   });
   it('en-tête : dates lundi → dimanche, k/n, flèches', () => {
     const h = weekHeader(items, '2026-10-19', TODAY);
-    expect(h).toMatchObject({ start: '2026-10-19', end: '2026-10-25', canPrev: true, canNext: true, total: 0 });
+    expect(h).toMatchObject({ start: '2026-10-19', end: '2026-10-25', canPrev: true, canNext: true, total: 1 }); // + le quiz de la semaine suivante déjà ouvert
     const past = weekHeader(items, '2026-10-05', TODAY);
     expect(past).toMatchObject({ end: '2026-10-11', validated: 1, total: 1, canPrev: false, canNext: true });
     const last = weekHeader(items, '2026-10-26', TODAY);
@@ -156,8 +163,14 @@ describe('navigation entre semaines', () => {
 
 describe('bandeau de Hôm nay', () => {
   it('masqué : aucun quiz', () => expect(bannerModel([], TODAY)).toBeNull());
-  it('masqué : quiz d’une autre semaine seulement, ou retard hors délai de grâce', () => {
-    expect(bannerModel([item('todo', { dueOn: '2026-10-30', releaseOn: '2026-10-20' })], TODAY)).toBeNull();
+  it('quiz déjà ouvert pour la semaine suivante : le bandeau le montre (n’attend pas le lundi)', () => {
+    const b = bannerModel([item('todo', { dueOn: '2026-10-25', releaseOn: '2026-10-16', weekLabel: 'Tuần 7' })], '2026-10-18');
+    expect(b).toMatchObject({ weekNo: 7, total: 1, validated: 0, done: false });
+    expect(b?.nearest).toMatchObject({ days: 7, urgent: false });
+    const c = bannerModel([item('todo', { dueOn: '2026-10-30', releaseOn: '2026-10-20' })], TODAY);
+    expect(c).toMatchObject({ total: 1, weekNo: 8 });
+  });
+  it('masqué : retard hors délai de grâce', () => {
     expect(bannerModel([item('todo', { releaseOn: '2026-10-05', dueOn: '2026-10-09' })], TODAY)).toBeNull();
     expect(bannerModel([item('validated', { releaseOn: '2026-10-05', dueOn: '2026-10-09' })], TODAY)).toBeNull();
   });
@@ -181,7 +194,7 @@ describe('bandeau de Hôm nay', () => {
   });
   it('parent : un quiz à valider reste signalé même sans quiz cette semaine', () => {
     const b = bannerModel([item('waiting', { releaseOn: '2026-10-26', dueOn: '2026-10-30' })], TODAY);
-    expect(b).toMatchObject({ toValidate: 1, total: 0, done: false });
+    expect(b).toMatchObject({ toValidate: 1, total: 1, validated: 0, done: false }); // envoyé pour la semaine suivante : compté, à valider
     expect(b?.weekNo).toBe(8);
   });
   it('6 matières', () => {

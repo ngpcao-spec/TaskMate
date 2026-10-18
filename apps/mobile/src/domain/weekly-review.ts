@@ -40,22 +40,26 @@ export function sortCards(items: readonly WeeklyItem[]): WeeklyItem[] {
 }
 
 /**
- * Quiz de la semaine `start` (un lundi). La semaine COURANTE reprend en plus ce qui reste à faire ou à valider des semaines passées : à faire / en cours
- * pendant le délai de grâce (jusqu'à la fin de la semaine qui suit l'échéance, sans pénalité), en attente de validation tant que le parent n'a pas validé.
- * Les semaines passées montrent l'historique, les semaines futures seulement ce qui est déjà ouvert (le serveur n'envoie que cela).
+ * Quiz de la semaine `start` (un lundi). La semaine COURANTE reprend en plus :
+ *  - ce qui reste des semaines passées : à faire / en cours pendant le délai de grâce (jusqu'à la fin de la semaine qui suit l'échéance, SANS pénalité),
+ *    en attente de validation tant que le parent n'a pas validé ;
+ *  - ce qui est DÉJÀ OUVERT pour les semaines suivantes (un quiz ouvert le vendredi pour un dimanche de la semaine d'après se fait dès maintenant :
+ *    il ne doit pas rester invisible jusqu'au lundi).
+ * Les semaines passées montrent l'historique, les semaines futures seulement ce qui est déjà ouvert (le serveur ne renvoie que cela).
  */
 export function weekItems(items: readonly WeeklyItem[], start: string, today: string): WeeklyItem[] {
   const own = items.filter((i) => itemWeek(i) === start);
   if (start !== weekStart(today)) return sortCards(own);
-  const carried = items.filter((i) => {
+  const others = items.filter((i) => {
     const w = itemWeek(i);
-    if (!w || w >= start) return false;
+    if (!w || w === start) return false;
+    if (w > start) return true;
     if (i.state === 'waiting') return true;
     if (!isUnfinished(i)) return false;
     const end = lastVisibleDay(i.releaseOn, i.dueOn);
     return !!end && today <= end;
   });
-  return sortCards([...own, ...carried]);
+  return sortCards([...own, ...others]);
 }
 
 export type WeekStats = { total: number; validated: number; waiting: number; unfinished: number };
@@ -120,10 +124,10 @@ export function bannerModel(items: readonly WeeklyItem[], today: string): Banner
   const start = weekStart(today);
   const list = weekItems(items, start, today);
   const toValidate = items.filter((i) => i.state === 'waiting').length;
-  if (list.length === 0 && toValidate === 0) return null;
+  if (list.length === 0) return null; // un quiz envoyé est toujours dans la liste (reporté ou ouvert d'avance) : rien à valider = rien à montrer
   const stats = weekStats(list);
   return {
-    weekNo: weekNumber(list.length > 0 ? list : items.filter((i) => i.state === 'waiting'), start),
+    weekNo: weekNumber(list, start),
     total: stats.total,
     validated: stats.validated,
     done: stats.total > 0 && stats.validated === stats.total,
