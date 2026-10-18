@@ -98,13 +98,17 @@ export function weekNumber(list: readonly WeeklyItem[], start: string): number {
 export type WeekHeader = { start: string; end: string; weekNo: number; validated: number; total: number; canPrev: boolean; canNext: boolean };
 /**
  * Bornes de navigation : de la plus ancienne semaine qui porte un quiz à la plus récente, y compris les quiz pas encore ouverts (la semaine courante est
- * toujours atteignable). `maxAheadWeeks` : avance maximale, en semaines, sur la semaine courante (enfant : 1 ; parent : `null` = sans limite).
+ * toujours atteignable). `maxAheadWeeks` : avance maximale, en semaines, sur la semaine de RÉFÉRENCE (enfant : 1 ; parent : `null` = sans limite).
+ * Référence = la plus tardive de la semaine du jour et de la semaine de l'échéance du dernier quiz DÉJÀ OUVERT : un quiz ouvert le week-end pour la
+ * semaine d'après fait de celle-ci la semaine en cours de l'enfant, sa « semaine suivante » est donc celle d'encore après (même règle que le serveur).
  */
 export function weekBounds(items: readonly WeeklyItem[], today: string, maxAheadWeeks: number | null = null): { min: string; max: string } {
   const current = weekStart(today);
   const weeks = [current, ...items.map(itemWeek).filter((w): w is string => w !== null)].sort();
   const last = weeks[weeks.length - 1] as string;
-  const limit = maxAheadWeeks === null ? null : shiftDay(current, 7 * maxAheadWeeks);
+  const openWeeks = items.filter((i) => i.state !== 'upcoming').map(itemWeek).filter((w): w is string => w !== null);
+  const reference = [current, ...openWeeks].sort().reverse()[0] as string;
+  const limit = maxAheadWeeks === null ? null : shiftDay(reference, 7 * maxAheadWeeks);
   return { min: weeks[0] as string, max: limit !== null && last > limit ? limit : last };
 }
 export function weekHeader(items: readonly WeeklyItem[], start: string, today: string, maxAheadWeeks: number | null = null): WeekHeader {

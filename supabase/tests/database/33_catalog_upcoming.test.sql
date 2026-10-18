@@ -45,10 +45,14 @@ insert into public.catalog_quizzes (id, country, grade, subject, week_label, tit
   (tests.u(704), 'VN', '7', 'hist_geo', 'Tuần 4', 'Brouillon',     'draft',     tests.m() + 7,  tests.m() + 13),
   (tests.u(705), 'VN', '6', 'hist_geo', 'Tuần 2', 'Autre classe',  'published', tests.m() + 7,  tests.m() + 13),
   (tests.u(706), 'VN', '7', 'hist_geo', 'Tuần 5', 'Sans question', 'published', tests.m() + 7,  tests.m() + 13),
-  (tests.u(707), 'VN', '7', 'maths',    'Tuần 2', 'Maths',         'published', tests.m() + 7,  tests.m() + 13);
+  (tests.u(707), 'VN', '7', 'maths',    'Tuần 2', 'Maths',         'published', tests.m() + 7,  tests.m() + 13),
+  -- ouvert depuis lundi pour l'échéance de la semaine d'APRÈS (cas réel : dimanche, « Tuần 7 » du 19 au 25) ; et une semaine encore plus loin
+  (tests.u(708), 'VN', '7', 'maths',    'Tuần 6', 'Maths ouvert',  'published', tests.m(),      tests.m() + 13),
+  (tests.u(709), 'VN', '7', 'maths',    'Tuần 9', 'Maths +3',      'published', tests.m() + 21, tests.m() + 27);
 insert into public.catalog_questions (quiz_id, position, prompt, choices) values
   (tests.u(701), 0, 'Q1', array['a','b','c','d']), (tests.u(702), 0, 'Q1', array['a','b','c','d']), (tests.u(703), 0, 'Q1', array['a','b','c','d']),
-  (tests.u(704), 0, 'Q1', array['a','b','c','d']), (tests.u(705), 0, 'Q1', array['a','b','c','d']), (tests.u(707), 0, 'Q1', array['a','b','c','d']);
+  (tests.u(704), 0, 'Q1', array['a','b','c','d']), (tests.u(705), 0, 'Q1', array['a','b','c','d']), (tests.u(707), 0, 'Q1', array['a','b','c','d']),
+  (tests.u(708), 0, 'Q1', array['a','b','c','d']), (tests.u(709), 0, 'Q1', array['a','b','c','d']);
 update public.children set country = 'VN', grade = '7' where id = tests.u(201);
 insert into public.child_subjects (child_id, family_id, subject) values (tests.u(201), tests.u(1), 'hist_geo');
 select * from no_plan();
@@ -59,7 +63,7 @@ select is((select array_agg(quiz_id order by release_on) from public.catalog_upc
 select is((select release_on from public.catalog_upcoming_for_child() where quiz_id = tests.u(702)), tests.m() + 7, '…ouverture effective');
 select is((select due_on from public.catalog_upcoming_for_child() where quiz_id = tests.u(702)), tests.m() + 13, '…échéance effective');
 select is((select max_points from public.catalog_upcoming_for_child() where quiz_id = tests.u(702)), tests.val('select public.quiz_points_for(16, 16)')::int, '…maximum du barème = même fonction que le crédit');
-select is((select count(*)::int from public.catalog_upcoming_for_child() where quiz_id in (tests.u(704), tests.u(705), tests.u(706), tests.u(707))), 0, 'ni brouillon, ni autre classe, ni sans question, ni matière non activée');
+select is((select count(*)::int from public.catalog_upcoming_for_child() where quiz_id in (tests.u(704), tests.u(705), tests.u(706), tests.u(707), tests.u(708), tests.u(709))), 0, 'ni brouillon, ni autre classe, ni sans question, ni matière non activée');
 select is((select count(*)::int from public.catalog_upcoming_for_child(tests.u(201))), 1, 'enfant : son propre identifiant accepté');
 select throws_ok($$select * from public.catalog_upcoming_for_child(tests.u(202))$$, 'P0002', 'child_not_found', 'enfant : l''identifiant d''un frère/sœur est refusé');
 select throws_ok($$select * from public.catalog_upcoming_for_child(tests.u(203))$$, 'P0002', 'child_not_found', 'enfant : l''identifiant d''une autre famille est refusé');
@@ -94,6 +98,18 @@ select tests.login(13);
 select is((select array_agg(quiz_id order by release_on) from public.catalog_upcoming_for_child()), array[tests.u(701)], 'enfant A avec décalage : 701 (échéance m+13) oui ; 702 (échéance m+20) au-delà de la semaine suivante : non');
 select tests.login(11);
 select lives_ok($$select public.shift_child_subject(tests.u(201), 'hist_geo', -1)$$, 'retour à 0');
+
+-- ───────────── semaine de référence : le quiz ouvert pour la semaine d'après avance le plafond de l'enfant ─────────────
+select lives_ok($$select public.set_child_subject(tests.u(201), 'maths', true)$$, 'parent : active maths pour A (708 est ouvert et échoit la semaine prochaine)');
+select tests.login(13);
+select is((select array_agg(quiz_id order by quiz_id) from public.catalog_upcoming_for_child()), array[tests.u(702), tests.u(703), tests.u(707)],
+          'enfant A : sa semaine en cours est celle de 708 (échéance m+13) → il voit aussi la semaine d''APRÈS (703 : échéance m+20), pas davantage');
+select is((select count(*)::int from public.catalog_upcoming_for_child() where quiz_id = tests.u(709)), 0, '…mais pas la semaine encore plus loin (709 : échéance m+27)');
+select tests.login(11);
+select is((select count(*)::int from public.catalog_upcoming_for_child(tests.u(201)) where quiz_id = tests.u(709)), 1, 'parent : toujours jusqu''à la dernière semaine publiée (709)');
+select lives_ok($$select public.set_child_subject(tests.u(201), 'maths', false)$$, 'retour : maths désactivée');
+select tests.login(13);
+select is((select array_agg(quiz_id order by quiz_id) from public.catalog_upcoming_for_child()), array[tests.u(702)], 'sans quiz ouvert pour la semaine d''après : plafond depuis la semaine du jour (702 seulement)');
 
 -- ───────────── autre famille ─────────────
 select tests.login(21);
