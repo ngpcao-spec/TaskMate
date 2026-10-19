@@ -1282,5 +1282,38 @@
       "validatedPoints": "Đã duyệt · +{{points}} điểm",
       "upcoming": "Sắp mở"
     }
+  },
+  "quizDetail": {
+    "status": {
+      "todo": "Chưa làm",
+      "in_progress": "Đang làm",
+      "waiting": "Cần duyệt",
+      "validated": "Đã duyệt"
+    },
+    "meta": "{{name}} · {{week}}",
+    "answered": "Đã trả lời {{done}}/{{total}}",
+    "score": "Điểm: {{score}}/{{total}}",
+    "points": "+{{points}} điểm",
+    "pointsNone": "Không được cộng điểm",
+    "preview": "Xem trước: con chưa làm bài. Bạn thấy đáp án đúng, con thì không.",
+    "inProgressNote": "Con đang làm bài. Đây là các câu trả lời đã lưu.",
+    "question": "Câu {{n}}",
+    "correct": "Đáp án đúng",
+    "childChoice": "Con chọn",
+    "childWrong": "Con chọn (sai)",
+    "childRight": "Con chọn (đúng)",
+    "notAnswered": "Con chưa trả lời",
+    "explanation": "Giải thích: {{text}}",
+    "needsFigure": "Cần hình",
+    "needsFigureA11y": "Câu này cần xem hình trong đề",
+    "needsCheck": "Cần kiểm tra",
+    "needsCheckA11y": "Đáp án cần kiểm tra lại",
+    "choiceA11y": "{{letter}}. {{text}}{{marks}}",
+    "questionsTitle": "Các câu hỏi",
+    "loading": "Đang tải…",
+    "error": "Không mở được bài ôn tập này.",
+    "forbidden": "Bài ôn tập này không dành cho bạn ấy.",
+    "retry": "Thử lại",
+    "openHint": "Mở chi tiết bài ôn tập"
   }
 }

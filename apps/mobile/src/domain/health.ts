@@ -123,6 +123,7 @@ export const EXPECTED_FUNCTIONS = [
   'parent_catalog_attempts',
   'parent_catalog_overview',
   'parent_child_subjects',
+  'parent_quiz_detail',
   'quiz_attempt_items',
   'quiz_choices_valid',
   'quiz_editable_set',

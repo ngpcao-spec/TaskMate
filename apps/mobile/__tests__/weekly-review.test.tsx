@@ -213,6 +213,57 @@ describe('Écran Ôn tập — parent, pour SON enfant (D-084)', () => {
     expect(screen.queryAllByRole('button', { name: /Duyệt|Xem bài làm|Bắt đầu|Tiếp tục/ })).toHaveLength(0);
   });
 
+  it('D-089 : chaque carte ouverte est un bouton « {matière}, {titre}, {statut} » qui ouvre le détail du quiz de CET enfant (même à faire ou en cours)', async () => {
+    mockParentRows.mockImplementation(async (id: string) => (id === 'c-khang' ? khangRows : []));
+    await show({ childId: 'c-khang' });
+    await screen.findByText('Unit 5');
+    for (const [name, quiz] of [['Tiếng Anh, Unit 5, Cần duyệt', 'qa'], ['Lịch sử và Địa lý, Bài 2, Đã duyệt · +5 điểm', 'qb'], ['Toán, Bài 4, Đang làm 6/16', 'qc'], ['francais, Bài 3, Chưa bắt đầu', 'qd']] as const) {
+      mockPush.mockClear();
+      await fireEvent.press(screen.getByRole('button', { name }));
+      expect(mockPush).toHaveBeenCalledTimes(1);
+      expect(mockPush).toHaveBeenCalledWith({ pathname: '/quiz/detail', params: { child: 'c-khang', quiz } });
+    }
+  });
+
+  it('D-089 : « Duyệt » ne déclenche PAS la navigation du détail (seulement la validation existante)', async () => {
+    mockParentRows.mockImplementation(async (id: string) => (id === 'c-khang' ? khangRows : []));
+    await show({ childId: 'c-khang' });
+    await screen.findByText('Unit 5');
+    await fireEvent.press(screen.getByRole('button', { name: /^Duyệt/ }));
+    expect(mockPush).toHaveBeenCalledTimes(1);
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/quiz/attempt/[id]', params: { id: 'a-wait' } });
+    expect(mockPush).not.toHaveBeenCalledWith(expect.objectContaining({ pathname: '/quiz/detail' }));
+    mockPush.mockClear();
+    await fireEvent.press(screen.getByRole('button', { name: /^Xem bài làm/ }));
+    expect(mockPush).toHaveBeenCalledTimes(1);
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/quiz/attempt/[id]', params: { id: 'a-val' } });
+  });
+
+  it('D-089 : cibles ≥ 44 pt, et aucune carte « grisée / à venir » n’est cliquable', async () => {
+    mockParentRows.mockImplementation(async (id: string) => (id === 'c-khang' ? khangRows : []));
+    mockUpcoming.mockResolvedValue([upRow({ quiz_id: 'u9', subject: 'sciences', title: 'Bài 9', release_on: '2026-10-26', due_on: '2026-10-30' })]);
+    await show({ childId: 'c-khang' });
+    await screen.findByText('Unit 5');
+    const card = screen.getByRole('button', { name: 'Tiếng Anh, Unit 5, Cần duyệt' });
+    const style = Object.assign({}, ...[card.props.style].flat(Infinity).filter(Boolean));
+    expect(style.minHeight).toBeGreaterThanOrEqual(44);
+    // la semaine suivante : la carte « Sắp mở » est lisible mais n'est pas un bouton
+    await fireEvent.press(screen.getByRole('button', { name: 'Tuần sau' }));
+    await screen.findByText('Bài 9');
+    expect(screen.queryByRole('button', { name: /Bài 9/ })).toBeNull();
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it('D-089 : un enfant n’a jamais de carte cliquable vers le détail', async () => {
+    mockRole = 'child';
+    mockChildRows.mockResolvedValue(fourStates);
+    await show();
+    await screen.findByText('Tuần 8');
+    expect(screen.queryByRole('button', { name: /^(Toán|Tiếng Anh|francais|Lịch sử và Địa lý), / })).toBeNull();
+    for (const b of screen.getAllByRole('button')) await fireEvent.press(b);
+    expect(mockPush).not.toHaveBeenCalledWith(expect.objectContaining({ pathname: '/quiz/detail' }));
+  });
+
   it('sans identifiant : le premier enfant de la liste', async () => {
     mockParentRows.mockResolvedValue([khangRows[3]]);
     await show();

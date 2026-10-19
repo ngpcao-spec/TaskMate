@@ -37,6 +37,8 @@ export const quizKeys = {
   catalogQuestions: (id: string) => ['quiz', 'catalog', 'questions', id] as const,
   childSubjects: (childId: string) => ['quiz', 'catalog', 'subjects', childId] as const,
   parentCatalog: (childId: string) => ['quiz', 'catalog', 'overview', childId] as const,
+  /** Détail d'un quiz pour le parent (D-089). */
+  parentDetail: (childId: string, quizId: string) => ['quiz', 'catalog', 'detail', childId, quizId] as const,
   /** Quiz pas encore ouverts (D-086) : `me` pour l'enfant connecté, l'identifiant de l'enfant pour un parent. */
   upcoming: (childId: string) => ['quiz', 'catalog', 'upcoming', childId] as const,
 };

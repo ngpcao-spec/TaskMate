@@ -285,11 +285,14 @@ export function buildMessages(
   groupedCount = 1,
 ): PushMessage[] {
   if (!textFor(activity, childName, groupedCount)) return [];
-  const p = (activity.payload ?? {}) as { request_id?: string; task_id?: string };
+  const p = (activity.payload ?? {}) as { request_id?: string; task_id?: string; quiz_id?: string; attempt_id?: string };
   const data: Record<string, unknown> = {
     type: activity.type,
     childId: activity.child_id,
     ...(p.request_id ? { requestId: p.request_id } : {}),
+    // D-089 : le parent ouvre le détail de CE quiz (D-088 : « Cần duyệt »)
+    ...(activity.type === 'quiz_submitted' && typeof p.quiz_id === 'string' ? { quizId: p.quiz_id } : {}),
+    ...(activity.type === 'quiz_submitted' && typeof p.attempt_id === 'string' ? { attemptId: p.attempt_id } : {}),
     // une seule tâche à valider → boutons Duyệt / Từ chối directement dans la notification
     ...(activity.type === 'task_completed' && groupedCount <= 1 && p.task_id ? { taskId: p.task_id } : {}),
   };
@@ -358,13 +361,18 @@ export type WebPushPayload = { title: string; body: string; data: Record<string,
 export type WebPushMessage = { subscription: WebPushSubscription; payload: WebPushPayload };
 
 /** Page ouverte au clic sur la notification (le service worker ne porte aucune session : pas de boutons d'action). */
-export function urlForType(type: string, childId: string | null = null): string {
+export function urlForType(type: string, childId: string | null = null, payload: Record<string, unknown> | null = null): string {
   switch (type) {
     case 'task_completed':
     case 'reward_requested':
       return '/approvals';
     case 'quiz_submitted':
-      // l'écran Ôn tập de CET enfant : c'est là que le parent valide (« Duyệt »)
+      // D-089 : le détail de CE quiz pour CET enfant (le parent y valide) ; l'écran retombe sur la validation d'une tentative d'un jeu de famille
+      // via `attempt`. Sans identifiant de quiz (ancienne ligne), l'écran Ôn tập de l'enfant.
+      if (childId && typeof payload?.quiz_id === 'string') {
+        const attempt = typeof payload.attempt_id === 'string' ? `&attempt=${encodeURIComponent(payload.attempt_id)}` : '';
+        return `/quiz/detail?child=${encodeURIComponent(childId)}&quiz=${encodeURIComponent(payload.quiz_id)}${attempt}`;
+      }
       return childId ? `/weekly?child=${encodeURIComponent(childId)}` : '/weekly';
     case 'quiz_validated':
       return '/weekly';
@@ -401,7 +409,7 @@ export function buildWebMessages(
         payload: {
           ...(textFor(activity, childName, groupedCount, toLocale(d.locale)) as Text),
           data,
-          url: urlForType(activity.type, activity.child_id),
+          url: urlForType(activity.type, activity.child_id, activity.payload),
           // les coches groupées d'un enfant se remplacent (même tag)
           ...(activity.type === 'task_completed' ? { tag: `tasks-${activity.child_id}` } : {}),
           ...(activity.type === 'quiz_submitted' ? { tag: `quizzes-${activity.child_id}` } : {}),

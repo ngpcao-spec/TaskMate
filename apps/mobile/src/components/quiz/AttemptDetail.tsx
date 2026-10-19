@@ -1,14 +1,13 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
 import { Check, X } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, StyleSheet, Switch, Text, View } from 'react-native';
-import { Button, Card, Screen, ScreenHeader } from '@/components/ui';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ValidateAttemptBar } from '@/components/quiz/ValidateAttemptBar';
+import { Card, Screen, ScreenHeader } from '@/components/ui';
 import { formatShortDate } from '@/domain/calendar';
 import { todayInTz } from '@/domain/family-time';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
-import { useAttemptDetail, useValidateQuizAttempt } from '@/hooks/useQuizzes';
-import { useToastStore } from '@/store/toast';
+import { useAttemptDetail } from '@/hooks/useQuizzes';
 import { colors, typography } from '@/theme/tokens';
 
 /**
@@ -20,9 +19,6 @@ export function AttemptDetail({ attemptId }: { attemptId: string }) {
   const router = useRouter();
   const d = useDisplayedChild();
   const detail = useAttemptDetail(attemptId);
-  const validate = useValidateQuizAttempt();
-  const show = useToastStore((s) => s.show);
-  const [showCorrection, setShowCorrection] = useState(false);
   if (!d) return null;
   if (detail.isPending) return <ActivityIndicator />;
   const data = detail.data;
@@ -53,22 +49,12 @@ export function AttemptDetail({ attemptId }: { attemptId: string }) {
       {attempt.status === 'validated' ? (
         <Text style={typography.secondary}>{t(attempt.show_correction ? 'revisions.correctionShown' : 'revisions.correctionHidden')}</Text>
       ) : null}
-      {attempt.status === 'submitted' ? (
-        <View style={styles.switchRow}>
-          <Text style={[typography.body, styles.flex]}>{t('revisions.showCorrection')}</Text>
-          <Switch accessibilityLabel={t('revisions.showCorrection')} value={showCorrection} onValueChange={setShowCorrection} />
-        </View>
-      ) : null}
-      {attempt.status === 'submitted' ? (
-        <Button label={t('revisions.validate')} loading={validate.isPending} onPress={() => validate.mutate({ attemptId, showCorrection }, { onSuccess: () => { show(t('revisions.validatedDone')); router.back(); } })} />
-      ) : null}
+      {attempt.status === 'submitted' ? <ValidateAttemptBar attemptId={attemptId} onDone={() => router.back()} /> : null}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  switchRow: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 44 },
-  flex: { flex: 1 },
   score: { fontSize: 28, fontWeight: '800', color: colors.text },
   section: { fontSize: 16, fontWeight: '700', color: colors.text },
   head: { flexDirection: 'row', gap: 8, alignItems: 'flex-start' },

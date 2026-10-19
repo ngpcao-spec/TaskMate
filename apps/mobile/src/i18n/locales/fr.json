@@ -1282,5 +1282,38 @@
       "validatedPoints": "Validé · +{{points}} points",
       "upcoming": "Bientôt"
     }
+  },
+  "quizDetail": {
+    "status": {
+      "todo": "Pas commencé",
+      "in_progress": "En cours",
+      "waiting": "À valider",
+      "validated": "Validé"
+    },
+    "meta": "{{name}} · {{week}}",
+    "answered": "{{done}}/{{total}} réponses données",
+    "score": "Score : {{score}}/{{total}}",
+    "points": "+{{points}} points",
+    "pointsNone": "Aucun point attribué",
+    "preview": "Aperçu : l’enfant n’a pas commencé. Vous voyez les bonnes réponses, pas lui.",
+    "inProgressNote": "L’enfant est en train de répondre. Voici les réponses déjà enregistrées.",
+    "question": "Question {{n}}",
+    "correct": "Bonne réponse",
+    "childChoice": "Choix de l’enfant",
+    "childWrong": "Choix de l’enfant (faux)",
+    "childRight": "Choix de l’enfant (juste)",
+    "notAnswered": "Pas de réponse de l’enfant",
+    "explanation": "Explication : {{text}}",
+    "needsFigure": "Figure requise",
+    "needsFigureA11y": "Cette question demande de voir une figure du sujet",
+    "needsCheck": "À vérifier",
+    "needsCheckA11y": "Réponse à vérifier",
+    "choiceA11y": "{{letter}}. {{text}}{{marks}}",
+    "questionsTitle": "Questions",
+    "loading": "Chargement…",
+    "error": "Impossible d’ouvrir ce quiz.",
+    "forbidden": "Ce quiz n’est pas attribué à cet enfant.",
+    "retry": "Réessayer",
+    "openHint": "Ouvre le détail du quiz"
   }
 }

@@ -1245,6 +1245,9 @@ isOneToOne: false
               "subject": string,"week_offset": number
             }[]
                            },
+"parent_quiz_detail":
+{ Args: { "p_catalog": string,"p_child": string }; Returns: Json
+                           },
 "quiz_attempt_items":
 { Args: { "p_attempt": string }; Returns: {
               "choices": (string)[],"correct_index": number,"explanation": string,"needs_figure": boolean,"origin_number": number,"paper": boolean,"position": number,"prompt": string,"question_id": string,"sheet_only": boolean,"source_id": string
