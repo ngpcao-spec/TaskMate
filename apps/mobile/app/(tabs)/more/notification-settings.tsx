@@ -67,8 +67,13 @@ function PrefsForm({ initial }: { initial: NotificationPrefs }) {
           <ToggleRow label={t('notifSettings.taskDone')} value={prefs.activity.taskDone} onChange={(taskDone) => setPrefs({ ...prefs, activity: { ...prefs.activity, taskDone } })} />
           <ToggleRow label={t('notifSettings.rewardRequested')} value={prefs.activity.rewardRequested} onChange={(rewardRequested) => setPrefs({ ...prefs, activity: { ...prefs.activity, rewardRequested } })} />
           <ToggleRow label={t('notifSettings.goalAchieved')} value={prefs.activity.goalAchieved} onChange={(goalAchieved) => setPrefs({ ...prefs, activity: { ...prefs.activity, goalAchieved } })} />
+          <ToggleRow label={t('notifSettings.quizSubmitted')} value={prefs.activity.quizSubmitted} onChange={(quizSubmitted) => setPrefs({ ...prefs, activity: { ...prefs.activity, quizSubmitted } })} />
         </Card>
-      ) : null}
+      ) : (
+        <Card>
+          <ToggleRow label={t('notifSettings.quizValidated')} value={prefs.activity.quizValidated} onChange={(quizValidated) => setPrefs({ ...prefs, activity: { ...prefs.activity, quizValidated } })} />
+        </Card>
+      )}
       <Button label={t('common.save')} onPress={submit} disabled={!valid} loading={save.isPending} />
       <Button variant="ghost" label={t('notifSettings.reset')} onPress={() => { setPrefs(DEFAULT_PREFS); setStartText('10'); setDeadlineText('30'); setTimeText('20:30'); }} />
     </Screen>

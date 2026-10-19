@@ -722,7 +722,9 @@
       "reward_expired": "Expired: {{title}}",
       "goal_achieved": "{{name}} reached a goal: {{title}}",
       "points_adjusted": "{{delta}} points adjustment for {{name}}",
-      "task_assigned": "New task for {{name}}: {{title}}"
+      "task_assigned": "New task for {{name}}: {{title}}",
+      "quiz_submitted": "{{name}} finished the quiz: {{title}} — to approve",
+      "quiz_validated": "{{name}}'s quiz approved: {{title}}"
     },
     "unread": "{{count}} unread"
   },
@@ -751,7 +753,31 @@
       "unsupported": "This browser does not support push notifications. They remain available in the app (bell icon).",
       "needsInstall": "On iPhone/iPad, add TaskMate to the Home Screen (Share → Add to Home Screen), then open it from that icon to turn notifications on.",
       "notConfigured": "Push notifications are not configured on the server.",
-      "failed": "Could not turn notifications on. Please try again."
+      "failed": "Could not turn notifications on. Please try again.",
+      "unsynced": "The browser has notifications on, but the server does not know this device for your account. Turn them on again to register it.",
+      "unverified": "Could not check the status with the server (offline?). Please try again.",
+      "resync": "Register this device again",
+      "recheck": "Check again",
+      "reason": {
+        "unsupported": "This browser does not support push notifications.",
+        "not-configured": "Push notifications are not configured: the public key is missing (EXPO_PUBLIC_VAPID_PUBLIC_KEY).",
+        "needs-install": "On iPhone/iPad (iOS 16.4 or later), add TaskMate to the Home Screen (Share → Add to Home Screen), then open it from that icon to turn notifications on.",
+        "denied": "You declined the notification permission. Allow it again in the browser or device settings.",
+        "no-service-worker": "The service worker is not ready (the app has not finished loading). Reload the page and try again.",
+        "subscribe-failed": "The browser could not create the subscription (invalid key or the push service refused).",
+        "invalid-subscription": "The subscription created by the browser is invalid.",
+        "server-failed": "The server did not register this device. Check your connection and try again."
+      }
+    },
+    "quizSubmitted": "When a child finishes a revision quiz (to approve)",
+    "quizValidated": "When a parent approves my revision quiz",
+    "test": {
+      "button": "Send a test notification",
+      "sent": "Test notification sent. It should appear on the device in a moment.",
+      "noDevice": "No device is registered for this account.",
+      "noVapid": "The server has no VAPID keys (VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT): cannot send.",
+      "error": "The test notification failed.",
+      "errorCode": "The test notification failed (code {{code}})."
     }
   },
   "settings": {
@@ -846,7 +872,8 @@
       "vapid": "Web Push key (VAPID)",
       "fn-generate-questions": "Edge Function generate-questions",
       "fn-generate-avatar": "Edge Function generate-avatar",
-      "ai": "Revision AI"
+      "ai": "Revision AI",
+      "push": "Notification sender"
     },
     "connection": {
       "ok": "The server answers ({{url}}).",
@@ -920,6 +947,13 @@
       "ok": "AI configured (OPENAI_API_KEY present). Today: {{used}}/{{limit}} generations used.",
       "notConfigured": "AI NOT configured: OPENAI_API_KEY secret is missing (Supabase → Edge Functions → Secrets). See HUMAN_TODO.",
       "unknown": "AI status can't be checked (the generate-questions function doesn't answer)."
+    },
+    "push": {
+      "unknown": "Cannot check the notification sender (send-push does not answer).",
+      "noVapid": "The server has no VAPID keys: add VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY and VAPID_SUBJECT in Supabase → Edge Functions → Secrets. See HUMAN_TODO.",
+      "noDevice": "No device of this account is registered for notifications. Turn them on in Settings → Notifications.",
+      "ok": "VAPID keys configured · {{count}} active device(s).",
+      "okLast": "VAPID keys configured · {{count}} active device(s) · last send: {{result}} ({{at}})."
     }
   },
   "childAccount": {

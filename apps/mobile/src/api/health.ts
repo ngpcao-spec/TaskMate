@@ -1,4 +1,5 @@
 import { config } from '@/config';
+import { parsePushServerStatus } from '@/domain/web-push';
 import { EDGE_FUNCTIONS, parseDiagnostics, type EdgeFunctionName, type Probes, type RealtimeStatus } from '@/domain/health';
 import { supabase } from './supabase';
 
@@ -97,14 +98,31 @@ async function aiStatus(deps: ProbeDeps, token: string | null): Promise<{ deploy
   }
 }
 
+/** `send-push` mode `status` : authentifié par la session de l'utilisateur ; ne renvoie que des booléens et des compteurs (jamais une valeur de secret). */
+async function pushStatus(deps: ProbeDeps, token: string | null): Promise<Probes['push']> {
+  if (!token) return null;
+  const res = await timedFetch(deps, `${deps.supabaseUrl}/functions/v1/send-push`, {
+    method: 'POST',
+    headers: { apikey: deps.anonKey, Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'status' }),
+  });
+  if (!res || !res.ok) return null;
+  try {
+    return parsePushServerStatus(await res.json());
+  } catch {
+    return null;
+  }
+}
+
 export async function runProbes(deps: ProbeDeps): Promise<Probes> {
   const token = await deps.getAccessToken();
   const plain = EDGE_FUNCTIONS.filter((name) => name !== 'generate-questions');
-  const [settings, diag, realtime, ai, ...fns] = await Promise.all([
+  const [settings, diag, realtime, ai, push, ...fns] = await Promise.all([
     authSettings(deps),
     diagnostics(deps),
     deps.realtime(TIMEOUT_MS),
     aiStatus(deps, token),
+    pushStatus(deps, token),
     ...plain.map((name) => functionDeployed(deps, name, token)),
   ]);
   return {
@@ -114,6 +132,7 @@ export async function runProbes(deps: ProbeDeps): Promise<Probes> {
     realtime,
     functions: { ...Object.fromEntries(plain.map((name, i) => [name, fns[i]])), 'generate-questions': ai.deployed } as Probes['functions'],
     ai: ai.ai,
+    push,
   };
 }
 

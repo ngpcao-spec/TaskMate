@@ -1,5 +1,5 @@
 import { DEFAULT_PREFS, normalizePrefs, type NotificationPrefs } from '@/domain/notification-prefs';
-import type { PushSubscriptionJson } from '@/domain/web-push';
+import { parseServerPushStatus, parseTestResponse, type PushSubscriptionJson, type ServerPushStatus, type TestResponse } from '@/domain/web-push';
 import type { ActivityLogRow, RewardRequestRow } from '@/types/models';
 import { loadLanguage } from '@/i18n/language';
 import type { Language } from '@/i18n';
@@ -79,4 +79,22 @@ export async function registerWebPush(subscription: PushSubscriptionJson): Promi
 export async function unregisterWebPush(endpoint: string): Promise<void> {
   const { error } = await supabase.rpc('unregister_web_push', { p_endpoint: endpoint });
   if (error) throw error;
+}
+
+/** État de CET appareil tel que la base le connaît (D-088) : lignes `devices` actives du membre et dernier envoi. `null` = base injoignable ou réponse illisible. */
+export async function fetchPushStatus(endpoint: string | null): Promise<ServerPushStatus | null> {
+  try {
+    const { data, error } = await supabase.rpc('my_push_status', endpoint ? { p_endpoint: endpoint } : {});
+    if (error) return null;
+    return parseServerPushStatus(data);
+  } catch {
+    return null;
+  }
+}
+
+/** Envoi de test vers les appareils du membre connecté (Edge Function `send-push`, mode `test`, authentifiée par la session). */
+export async function sendTestPush(endpoint: string | null): Promise<TestResponse | null> {
+  const { data, error } = await supabase.functions.invoke('send-push', { method: 'POST', body: endpoint ? { type: 'test', endpoint } : { type: 'test' } });
+  if (error) return null;
+  return parseTestResponse(data);
 }

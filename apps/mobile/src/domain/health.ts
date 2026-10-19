@@ -117,6 +117,7 @@ export const EXPECTED_FUNCTIONS = [
   'my_child_id',
   'my_family_id',
   'my_member_id',
+  'my_push_status',
   'my_role',
   'parent_attempt_review',
   'parent_catalog_attempts',
@@ -213,6 +214,8 @@ export type Probes = {
   functions: Record<EdgeFunctionName, boolean | null>;
   /** État de l'IA (GET sur `generate-questions`, parents) ; null si non vérifiable. */
   ai: { configured: boolean; usedToday: number | null; dailyLimit: number | null } | null;
+  /** État du serveur d'envoi (POST `send-push` mode `status`, D-088) : VAPID configurée (booléen), appareils actifs du membre, dernier envoi ; null si non vérifiable. */
+  push: { vapidConfigured: boolean; activeDevices: number; lastPushAt: string | null; lastPushResult: string | null } | null;
 };
 
 export type Env = { supabaseUrl: string; webUrl: string; vapidPublicKey: string };
@@ -289,6 +292,12 @@ export function evaluateHealth(p: Probes, env: Env): HealthItem[] {
   // 7. Web Push (facultatif)
   if (!env.vapidPublicKey) add('vapid', 'warn', 'health.vapid.missing');
   else add('vapid', 'ok', 'health.vapid.ok');
+
+  // 8. Serveur d'envoi des notifications (D-088) : clés VAPID côté fonctions (booléen seulement), appareils actifs du membre, dernier envoi
+  if (!p.push) add('push', 'warn', 'health.push.unknown');
+  else if (!p.push.vapidConfigured) add('push', 'warn', 'health.push.noVapid');
+  else if (p.push.activeDevices === 0) add('push', 'warn', 'health.push.noDevice');
+  else add('push', 'ok', p.push.lastPushResult ? 'health.push.okLast' : 'health.push.ok', { count: String(p.push.activeDevices), result: p.push.lastPushResult ?? '', at: p.push.lastPushAt ?? '' });
 
   return out;
 }

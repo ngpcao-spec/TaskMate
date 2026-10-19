@@ -722,7 +722,9 @@
       "reward_expired": "Hết hạn: {{title}}",
       "goal_achieved": "{{name}} đã đạt mục tiêu: {{title}}",
       "points_adjusted": "Điều chỉnh {{delta}} điểm cho {{name}}",
-      "task_assigned": "Việc mới cho {{name}}: {{title}}"
+      "task_assigned": "Việc mới cho {{name}}: {{title}}",
+      "quiz_submitted": "{{name}} đã làm xong bài ôn tập: {{title}} — cần duyệt",
+      "quiz_validated": "Đã duyệt bài ôn tập của {{name}}: {{title}}"
     },
     "unread": "{{count}} chưa đọc"
   },
@@ -751,7 +753,31 @@
       "unsupported": "Trình duyệt này không hỗ trợ thông báo đẩy. Thông báo vẫn có trong ứng dụng (biểu tượng chuông).",
       "needsInstall": "Trên iPhone/iPad, hãy thêm TaskMate vào Màn hình chính (Chia sẻ → Thêm vào Màn hình chính) rồi mở từ biểu tượng đó để bật thông báo.",
       "notConfigured": "Thông báo đẩy chưa được cấu hình trên máy chủ.",
-      "failed": "Không bật được thông báo. Vui lòng thử lại."
+      "failed": "Không bật được thông báo. Vui lòng thử lại.",
+      "unsynced": "Trình duyệt đã bật thông báo nhưng máy chủ chưa ghi nhận thiết bị này cho tài khoản của bạn. Hãy bật lại để đăng ký.",
+      "unverified": "Không kiểm tra được trạng thái với máy chủ (mất kết nối?). Hãy thử lại.",
+      "resync": "Đăng ký lại thiết bị",
+      "recheck": "Kiểm tra lại",
+      "reason": {
+        "unsupported": "Trình duyệt này không hỗ trợ thông báo đẩy.",
+        "not-configured": "Thông báo đẩy chưa được cấu hình: thiếu khóa công khai (EXPO_PUBLIC_VAPID_PUBLIC_KEY).",
+        "needs-install": "Trên iPhone/iPad (iOS 16.4 trở lên), hãy thêm TaskMate vào Màn hình chính (Chia sẻ → Thêm vào Màn hình chính) rồi mở từ biểu tượng đó để bật thông báo.",
+        "denied": "Bạn đã từ chối quyền thông báo. Hãy cho phép lại trong cài đặt của trình duyệt hoặc thiết bị.",
+        "no-service-worker": "Chưa có service worker (ứng dụng chưa tải xong). Hãy tải lại trang rồi thử lại.",
+        "subscribe-failed": "Trình duyệt không tạo được đăng ký thông báo (khóa không hợp lệ hoặc dịch vụ đẩy từ chối).",
+        "invalid-subscription": "Đăng ký thông báo của trình duyệt không hợp lệ.",
+        "server-failed": "Máy chủ chưa ghi nhận thiết bị này. Hãy kiểm tra kết nối rồi thử lại."
+      }
+    },
+    "quizSubmitted": "Khi con làm xong bài ôn tập (cần duyệt)",
+    "quizValidated": "Khi bố mẹ duyệt bài ôn tập của bạn",
+    "test": {
+      "button": "Gửi thông báo thử",
+      "sent": "Đã gửi thông báo thử. Thông báo sẽ hiện trên thiết bị trong giây lát.",
+      "noDevice": "Chưa có thiết bị nào được đăng ký cho tài khoản này.",
+      "noVapid": "Máy chủ chưa có khóa VAPID (VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT) nên không gửi được.",
+      "error": "Gửi thông báo thử không thành công.",
+      "errorCode": "Gửi thông báo thử không thành công (mã {{code}})."
     }
   },
   "settings": {
@@ -846,7 +872,8 @@
       "vapid": "Khóa Web Push (VAPID)",
       "fn-generate-questions": "Edge Function generate-questions",
       "fn-generate-avatar": "Edge Function generate-avatar",
-      "ai": "AI tạo câu hỏi (Ôn tập)"
+      "ai": "AI tạo câu hỏi (Ôn tập)",
+      "push": "Máy chủ gửi thông báo"
     },
     "connection": {
       "ok": "Máy chủ phản hồi ({{url}}).",
@@ -920,6 +947,13 @@
       "ok": "AI đã cấu hình (OPENAI_API_KEY có mặt). Hôm nay đã dùng {{used}}/{{limit}} lượt tạo câu hỏi.",
       "notConfigured": "AI CHƯA cấu hình: thiếu bí mật OPENAI_API_KEY (Supabase → Edge Functions → Secrets). Xem HUMAN_TODO.",
       "unknown": "Không kiểm tra được trạng thái AI (hàm generate-questions không trả lời)."
+    },
+    "push": {
+      "unknown": "Không kiểm tra được máy chủ gửi thông báo (send-push không trả lời).",
+      "noVapid": "Máy chủ chưa có khóa VAPID: thêm VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY và VAPID_SUBJECT vào Supabase → Edge Functions → Secrets. Xem HUMAN_TODO.",
+      "noDevice": "Tài khoản này chưa có thiết bị nào được đăng ký nhận thông báo. Bật thông báo ở Cài đặt → Thông báo.",
+      "ok": "Khóa VAPID đã cấu hình · {{count}} thiết bị đang hoạt động.",
+      "okLast": "Khóa VAPID đã cấu hình · {{count}} thiết bị đang hoạt động · lần gửi gần nhất: {{result}} ({{at}})."
     }
   },
   "childAccount": {

@@ -31,8 +31,8 @@ describe('sondes de diagnostic', () => {
     const p = await runProbes(d);
     expect(p).toMatchObject({ reachable: true, auth: { google: true, email: true }, realtime: 'SUBSCRIBED' });
     expect(p.functions).toEqual({ 'child-login': true, 'create-child': true, 'reset-child-password': true, 'delete-child': true, 'delete-account': true, 'send-push': true, 'generate-questions': true, 'generate-avatar': true });
-    // jamais de POST : delete-account supprime la famille, signup créerait un utilisateur
-    expect(d.calls.every((c) => c.method === 'GET')).toBe(true);
+    // jamais de POST sauf le mode `status` de send-push (lecture seule, D-088) : delete-account supprime la famille, signup créerait un utilisateur
+    expect(d.calls.filter((c) => c.method !== 'GET').map((c) => `${c.method} ${c.url}`)).toEqual(['POST https://x.supabase.co/functions/v1/send-push']);
     expect(d.calls.filter((c) => c.url.includes('/functions/v1/')).every((c) => c.auth === 'Bearer jwt-parent')).toBe(true);
   });
 
@@ -48,6 +48,27 @@ describe('sondes de diagnostic', () => {
     const absent = await runProbes(deps({}, { '/functions/v1/generate-questions': () => json({}, 404) }));
     expect(absent.functions['generate-questions']).toBe(false);
     expect(absent.ai).toBeNull();
+  });
+
+  it('push : le mode status de send-push renvoie VAPID (booléen), appareils actifs et dernier envoi', async () => {
+    let body: string | null = null;
+    const d = deps({}, { '/functions/v1/send-push': () => json({ vapidConfigured: true, activeDevices: 2, lastPushAt: '2026-10-19T08:00:00Z', lastPushResult: 'sent' }) });
+    const inner = d.fetch;
+    d.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (init?.method === 'POST') body = String(init.body);
+      return inner(input, init);
+    }) as typeof fetch;
+    const p = await runProbes(d);
+    expect(p.push).toEqual({ vapidConfigured: true, activeDevices: 2, lastPushAt: '2026-10-19T08:00:00Z', lastPushResult: 'sent' });
+    expect(JSON.parse(body ?? '{}')).toEqual({ type: 'status' });
+  });
+
+  it('push : réponse illisible, erreur serveur, pas de session ou réseau coupé = non vérifiable', async () => {
+    expect((await runProbes(deps({}, { '/functions/v1/send-push': () => json({ vapidConfigured: 'oui' }) }))).push).toBeNull();
+    expect((await runProbes(deps({}, { '/functions/v1/send-push': () => new Response('pas du json', { status: 200 }) }))).push).toBeNull();
+    expect((await runProbes(deps({}, { '/functions/v1/send-push': () => json({ error: 'unauthorized' }, 401) }))).push).toBeNull();
+    expect((await runProbes(deps({ getAccessToken: async () => null }))).push).toBeNull();
+    expect((await runProbes(deps({ fetch: (async () => { throw new TypeError('Failed to fetch'); }) as typeof fetch }))).push).toBeNull();
   });
 
   it('fonction absente = 404 ; réseau coupé = non vérifiable', async () => {

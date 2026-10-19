@@ -282,13 +282,13 @@ isOneToOne: false
                   ]
                 },"devices": {
                   Row: {
-                    "created_at": string,"expo_push_token": string | null,"id": string,"last_seen_at": string,"locale": string,"member_id": string,"platform": string | null,"revoked_at": string | null,"updated_at": string,"web_push_subscription": Json | null
+                    "created_at": string,"expo_push_token": string | null,"id": string,"last_push_at": string | null,"last_push_result": string | null,"last_seen_at": string,"locale": string,"member_id": string,"platform": string | null,"revoked_at": string | null,"updated_at": string,"web_push_subscription": Json | null
                   }
                   Insert: {
-                    "created_at"?: string,"expo_push_token"?: string | null,"id"?: string,"last_seen_at"?: string,"locale"?: string,"member_id": string,"platform"?: string | null,"revoked_at"?: string | null,"updated_at"?: string,"web_push_subscription"?: Json | null
+                    "created_at"?: string,"expo_push_token"?: string | null,"id"?: string,"last_push_at"?: string | null,"last_push_result"?: string | null,"last_seen_at"?: string,"locale"?: string,"member_id": string,"platform"?: string | null,"revoked_at"?: string | null,"updated_at"?: string,"web_push_subscription"?: Json | null
                   }
                   Update: {
-                    "created_at"?: string,"expo_push_token"?: string | null,"id"?: string,"last_seen_at"?: string,"locale"?: string,"member_id"?: string,"platform"?: string | null,"revoked_at"?: string | null,"updated_at"?: string,"web_push_subscription"?: Json | null
+                    "created_at"?: string,"expo_push_token"?: string | null,"id"?: string,"last_push_at"?: string | null,"last_push_result"?: string | null,"last_seen_at"?: string,"locale"?: string,"member_id"?: string,"platform"?: string | null,"revoked_at"?: string | null,"updated_at"?: string,"web_push_subscription"?: Json | null
                   }
                   Relationships: [
                     {
@@ -1220,6 +1220,9 @@ isOneToOne: false
                            },
 "my_member_id":
 { Args: Record<PropertyKey, never>; Returns: string
+                           },
+"my_push_status":
+{ Args: { "p_endpoint"?: string }; Returns: Json
                            },
 "my_role":
 { Args: Record<PropertyKey, never>; Returns: Database["public"]['Enums']["member_role"]

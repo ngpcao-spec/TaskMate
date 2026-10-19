@@ -130,6 +130,12 @@ Plus de Database Webhook à créer dans le tableau de bord : la migration `…00
 - **Vérifier** : avec un compte enfant, cocher une tâche ; *Edge Functions → send-push → Logs* montre un appel en **200** (`"sent":0` tant qu'aucun appareil n'a activé les notifications). Un 401 = secrets différents.
 - *(Facultatif, plus tard)* récap du soir des parents : tâche pg_cron appelant `send-push` avec `{"type":"evening_recap"}` et le même en-tête ; dites-le-moi et je prépare le SQL.
 
+### Notifications : vérifier que l'envoi est réellement configuré (D-088)
+Pour qu'une notification PARTE, il faut côté Supabase → *Edge Functions → Secrets* (noms exacts, valeurs saisies par vous seul) : `WEBHOOK_SECRET`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` ; et côté Vercel (variable lue au *build*, puis **Redeploy**) : `EXPO_PUBLIC_VAPID_PUBLIC_KEY` (la MÊME clé publique que `VAPID_PUBLIC_KEY`). Si l'un manque, l'app le dit maintenant :
+- **Réglages → Notifications → « Gửi thông báo thử »** : « Đã gửi » = tout est bon ; « thiếu khóa VAPID » = ajouter les trois `VAPID_*` ci-dessus ; « chưa có thiết bị » = l'appareil n'est pas enregistré pour ce compte (appuyez sur « Bật thông báo » / « Đăng ký lại thiết bị »).
+- **Réglages → Diagnostic → « Máy chủ gửi thông báo »** : indique si les clés VAPID sont configurées (oui/non, jamais la valeur), le nombre d'appareils actifs de votre compte et le dernier envoi.
+- Test complet : un enfant termine un quiz Ôn tập → le parent reçoit « … cần duyệt » ; le parent valide → l'enfant reçoit « … đã được duyệt · +N điểm ».
+
 ## Contrôle final
 App → **Réglages → Diagnostic** → « Relancer » : objectif **0 à corriger**. Les « à surveiller » acceptables : adresse publique vide (corrigée à l'étape 5), clé Web Push (facultative), pg_cron.
 Si **pg_cron** est signalé : Supabase → *Database → Extensions* → activer **pg_cron**, puis *SQL Editor* : `select public.schedule_cron_jobs();` → Run. Diagnostic → « Tâches planifiées : OK ».

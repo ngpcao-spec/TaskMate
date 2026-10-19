@@ -18,9 +18,29 @@ const healthy: Probes = {
   realtime: 'SUBSCRIBED',
   functions: { 'child-login': true, 'create-child': true, 'reset-child-password': true, 'delete-child': true, 'delete-account': true, 'send-push': true, 'generate-questions': true, 'generate-avatar': true },
   ai: { configured: true, usedToday: 2, dailyLimit: 20 },
+  push: { vapidConfigured: true, activeDevices: 2, lastPushAt: null, lastPushResult: null },
 };
 const env = { supabaseUrl: 'https://olftkozksanvnzlsvwrp.supabase.co', webUrl: 'https://taskmate-rho-nine.vercel.app', vapidPublicKey: 'KEY' };
 const find = (items: ReturnType<typeof evaluateHealth>, id: string) => items.find((i) => i.id === id);
+
+describe('serveur d’envoi des notifications (D-088)', () => {
+  it('VAPID configurée et appareils actifs : ok, sans dernier envoi connu', () => {
+    expect(find(evaluateHealth(healthy, env), 'push')).toMatchObject({ status: 'ok', messageKey: 'health.push.ok', params: { count: '2' } });
+  });
+  it('dernier envoi connu : repris dans le constat', () => {
+    const push = { vapidConfigured: true, activeDevices: 1, lastPushAt: '2026-10-19T08:00:00Z', lastPushResult: 'sent' };
+    expect(find(evaluateHealth({ ...healthy, push }, env), 'push')).toMatchObject({ status: 'ok', messageKey: 'health.push.okLast', params: { count: '1', result: 'sent', at: '2026-10-19T08:00:00Z' } });
+  });
+  it('VAPID absente côté fonctions : alerte (jamais la valeur)', () => {
+    expect(find(evaluateHealth({ ...healthy, push: { vapidConfigured: false, activeDevices: 2, lastPushAt: null, lastPushResult: null } }, env), 'push')).toMatchObject({ status: 'warn', messageKey: 'health.push.noVapid' });
+  });
+  it('aucun appareil actif pour ce membre : alerte', () => {
+    expect(find(evaluateHealth({ ...healthy, push: { vapidConfigured: true, activeDevices: 0, lastPushAt: null, lastPushResult: null } }, env), 'push')).toMatchObject({ status: 'warn', messageKey: 'health.push.noDevice' });
+  });
+  it('serveur injoignable : état inconnu', () => {
+    expect(find(evaluateHealth({ ...healthy, push: null }, env), 'push')).toMatchObject({ status: 'warn', messageKey: 'health.push.unknown' });
+  });
+});
 
 describe('diagnostic de production', () => {
   it('une installation complète n\'a ni alerte ni échec', () => {

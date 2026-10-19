@@ -247,3 +247,6 @@ Ligne calculée (aucune tâche) « Révisions : <titre> » dans Hôm nay (enfant
 
 ### Révisions : bandeau + écran « Ôn tập » (D-084) — 2026-10-18
 Un bandeau fin dans Hôm nay (k/n môn, échéance la plus proche, « À valider (n) » côté parent, un par enfant) et un écran par semaine (cartes par matière, flèches de semaine, délai de grâce sans pénalité, points maximum et gagnés lus du serveur). Migration 26 d'information (deux colonnes) + pgTAP 32.
+
+### Refonte des notifications (D-088) — 2026-10-19
+Le parent est prévenu quand un enfant termine un quiz « Ôn tập » (à valider), l'enfant quand le parent valide (points inclus). L'état « activé » vient désormais de la base (`my_push_status`), avec réparation silencieuse, raisons d'échec précises, bouton « Gửi thông báo thử » et sonde de diagnostic (VAPID configurée oui/non, appareils actifs, dernier envoi). Migration 29 + pgTAP 34. Cause de l'absence de ligne `devices` pour Ba : statut local trompeur (voir D-088, cause la plus probable, non confirmée sur l'appareil).

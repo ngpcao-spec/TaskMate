@@ -46,7 +46,29 @@ describe('NotificationSettingsScreen', () => {
     expect(screen.getByText('Hoạt động của các con')).toBeTruthy();
     await fireEvent(screen.getByLabelText('Khi con đánh dấu xong việc (cần duyệt)'), 'valueChange', false);
     await fireEvent.press(screen.getByRole('button', { name: 'Lưu' }));
-    expect(mockSave).toHaveBeenCalledWith(expect.objectContaining({ activity: { taskDone: false, rewardRequested: true, goalAchieved: true } }));
+    expect(mockSave).toHaveBeenCalledWith(expect.objectContaining({ activity: { taskDone: false, rewardRequested: true, goalAchieved: true, quizSubmitted: true, quizValidated: true } }));
     expect(screen.queryByLabelText('Nhắc trước giờ bắt đầu (phút)')).toBeNull();
+  });
+
+  it('parent : interrupteur « quiz terminé, à valider » (D-088), sans celui de l’enfant', async () => {
+    mockRole = 'parent';
+    await render(<NotificationSettingsScreen />);
+    expect(screen.queryByLabelText('Khi bố mẹ duyệt bài ôn tập của bạn')).toBeNull();
+    const toggle = screen.getByLabelText('Khi con làm xong bài ôn tập (cần duyệt)');
+    expect(toggle.props.value).toBe(true);
+    await fireEvent(toggle, 'valueChange', false);
+    await fireEvent.press(screen.getByRole('button', { name: 'Lưu' }));
+    expect(mockSave).toHaveBeenCalledWith(expect.objectContaining({ activity: expect.objectContaining({ quizSubmitted: false, quizValidated: true }) }));
+  });
+
+  it('enfant : interrupteur « mon quiz a été validé » (D-088), sans ceux du parent', async () => {
+    mockRole = 'child';
+    await render(<NotificationSettingsScreen />);
+    expect(screen.queryByLabelText('Khi con làm xong bài ôn tập (cần duyệt)')).toBeNull();
+    const toggle = screen.getByLabelText('Khi bố mẹ duyệt bài ôn tập của bạn');
+    expect(toggle.props.value).toBe(true);
+    await fireEvent(toggle, 'valueChange', false);
+    await fireEvent.press(screen.getByRole('button', { name: 'Lưu' }));
+    expect(mockSave).toHaveBeenCalledWith(expect.objectContaining({ activity: expect.objectContaining({ quizValidated: false, quizSubmitted: true }) }));
   });
 });
