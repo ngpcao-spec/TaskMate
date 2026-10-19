@@ -201,6 +201,36 @@ export async function fetchParentCatalog(childId: string): Promise<ParentCatalog
   return (data ?? []) as unknown as ParentCatalogRow[];
 }
 /**
+ * Détail d'un quiz du catalogue pour le PARENT (D-089) : questions, bonnes réponses, explications et réponses de l'enfant, choix dans l'ORDRE D'ORIGINE
+ * (la réponse de l'enfant est déjà convertie en indice d'origine par le serveur). Le serveur refuse (`forbidden`) tout quiz qui n'est pas attribuable à cet enfant.
+ */
+export type ParentQuizQuestion = {
+  question_id: string;
+  position: number;
+  number: number | null;
+  needs_figure: boolean;
+  prompt: string;
+  choices: string[];
+  correct_index: number;
+  explanation: string | null;
+  to_verify: boolean;
+  confirmed: boolean;
+  /** Indice d'ORIGINE de la réponse de l'enfant (null = pas de réponse). */
+  choice_index: number | null;
+  /** Justesse calculée par le serveur à l'envoi (null tant que la tentative est en cours ou absente). */
+  is_correct: boolean | null;
+};
+export type ParentQuizDetail = {
+  quiz: { id: string; subject: string; week_label: string; title: string; release_on: string; due_on: string; material_kind: QuizMaterialKind; paper_support: boolean; answer_sheet_only: boolean; question_count: number; max_points: number };
+  attempt: { id: string; status: QuizAttemptStatus; answered: number; started_at: string; submitted_at: string | null; validated_at: string | null; show_correction: boolean; score: number | null; total: number | null; points_awarded: number | null } | null;
+  questions: ParentQuizQuestion[];
+};
+export async function fetchParentQuizDetail(childId: string, quizId: string): Promise<ParentQuizDetail> {
+  const { data, error } = await supabase.rpc('parent_quiz_detail', { p_child: childId, p_catalog: quizId });
+  fail(error);
+  return data as unknown as ParentQuizDetail;
+}
+/**
  * Quiz publiés pour l'enfant mais PAS ENCORE OUVERTS (D-086) : MÉTADONNÉES seulement (matière, semaine, titre, ouverture et échéance effectives,
  * maximum du barème), jamais une question ni une réponse. Enfant : `childId` null (le serveur déduit SON identité, une semaine d'avance au plus) ;
  * parent : l'enfant de SA famille.

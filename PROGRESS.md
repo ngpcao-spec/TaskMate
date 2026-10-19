@@ -250,3 +250,6 @@ Un bandeau fin dans Hôm nay (k/n môn, échéance la plus proche, « À valider
 
 ### Refonte des notifications (D-088) — 2026-10-19
 Le parent est prévenu quand un enfant termine un quiz « Ôn tập » (à valider), l'enfant quand le parent valide (points inclus). L'état « activé » vient désormais de la base (`my_push_status`), avec réparation silencieuse, raisons d'échec précises, bouton « Gửi thông báo thử » et sonde de diagnostic (VAPID configurée oui/non, appareils actifs, dernier envoi). Migration 29 + pgTAP 34. Cause de l'absence de ligne `devices` pour Ba : statut local trompeur (voir D-088, cause la plus probable, non confirmée sur l'appareil).
+
+### Détail d'un quiz pour le parent (D-089) — 2026-10-19
+Depuis « Ôn tập · {enfant} », le parent ouvre un quiz : questions numérotées, 4 choix dans l'ordre d'origine, bonne réponse (✓), explication, réponse de l'enfant (marquée si fausse) — non commencé (aperçu), en cours (« đã trả lời N/total »), à valider (même flux de validation), validé (score, « +N điểm »). RPC `parent_quiz_detail` (migration 30, pgTAP 35) : parent de la famille seulement, quiz attribuable à l'enfant ; réponse en cours convertie par la disposition mélangée. La notification `quiz_submitted` ouvre ce détail. L'enfant n'y a jamais accès.

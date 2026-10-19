@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   confirmCatalogAnswers, createCatalogDraft, createCatalogQuiz, deleteCatalogQuestion, deleteCatalogQuiz, fetchCatalogList, fetchCatalogQuestions, fetchCatalogQuiz, fetchChildSubjects, fetchIsPlatformAdmin,
-  fetchParentCatalog, relaunchCatalogEvaluation, reorderCatalogQuestions, setCatalogDates, setCatalogKind, setCatalogPaper, setCatalogStatus, setChildClass, setChildSubject,
+  fetchParentCatalog, fetchParentQuizDetail, relaunchCatalogEvaluation, reorderCatalogQuestions, setCatalogDates, setCatalogKind, setCatalogPaper, setCatalogStatus, setChildClass, setChildSubject,
   shiftChildSubject, updateCatalogInfo, upsertCatalogQuestion, type CatalogQuestionInput, type NewCatalogQuiz,
 } from '@/api/catalog';
 import { platformKeys, queryKeys, quizKeys } from '@/api/keys';
@@ -23,6 +23,9 @@ export const useCatalogQuestions = (id: string) => useQuery({ queryKey: quizKeys
 
 // ───────────── parent : lectures ─────────────
 export const useChildSubjects = (childId: string | null) => useQuery({ queryKey: quizKeys.childSubjects(childId ?? 'none'), queryFn: () => fetchChildSubjects(childId as string), enabled: childId !== null, staleTime: 0 });
+/** Détail d'un quiz pour le parent (D-089) ; `staleTime: 0` : une tentative envoyée ou validée doit apparaître dès l'ouverture. */
+export const useParentQuizDetail = (childId: string | null, quizId: string | null) =>
+  useQuery({ queryKey: quizKeys.parentDetail(childId ?? 'none', quizId ?? 'none'), queryFn: () => fetchParentQuizDetail(childId as string, quizId as string), enabled: !!childId && !!quizId, staleTime: 0, retry: false });
 export const useParentCatalog = (childId: string | null) => useQuery({ queryKey: quizKeys.parentCatalog(childId ?? 'none'), queryFn: () => fetchParentCatalog(childId as string), enabled: childId !== null, staleTime: 0 });
 
 /** Écritures en ligne (comme l'édition des révisions) : message d'erreur traduit, rafraîchissement des révisions. */

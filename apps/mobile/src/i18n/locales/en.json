@@ -1282,5 +1282,38 @@
       "validatedPoints": "Validated · +{{points}} points",
       "upcoming": "Opens soon"
     }
+  },
+  "quizDetail": {
+    "status": {
+      "todo": "Not started",
+      "in_progress": "In progress",
+      "waiting": "To approve",
+      "validated": "Approved"
+    },
+    "meta": "{{name}} · {{week}}",
+    "answered": "{{done}}/{{total}} answered",
+    "score": "Score: {{score}}/{{total}}",
+    "points": "+{{points}} points",
+    "pointsNone": "No points awarded",
+    "preview": "Preview: your child has not started. You see the right answers, they do not.",
+    "inProgressNote": "Your child is answering. These are the answers saved so far.",
+    "question": "Question {{n}}",
+    "correct": "Right answer",
+    "childChoice": "Child’s choice",
+    "childWrong": "Child’s choice (wrong)",
+    "childRight": "Child’s choice (right)",
+    "notAnswered": "No answer from your child",
+    "explanation": "Explanation: {{text}}",
+    "needsFigure": "Figure needed",
+    "needsFigureA11y": "This question needs a figure from the paper",
+    "needsCheck": "To check",
+    "needsCheckA11y": "Answer to check",
+    "choiceA11y": "{{letter}}. {{text}}{{marks}}",
+    "questionsTitle": "Questions",
+    "loading": "Loading…",
+    "error": "Could not open this quiz.",
+    "forbidden": "This quiz is not assigned to this child.",
+    "retry": "Try again",
+    "openHint": "Opens the quiz details"
   }
 }

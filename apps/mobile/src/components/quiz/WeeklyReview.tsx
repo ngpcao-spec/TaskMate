@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Badge, toneOf, weeklyStateText } from '@/components/quiz/WeeklyDueCard';
 import { RoundButton } from '@/components/RoundButton';
 import { subjectText } from '@/components/quiz/subject';
@@ -74,6 +74,7 @@ export function WeeklyReview({ childId }: Props) {
           today={today}
           lang={lang}
           onOpen={(pathname, id) => router.push({ pathname, params: { id } })}
+          onOpenDetail={role === 'parent' && wanted ? () => router.push({ pathname: '/quiz/detail', params: { child: wanted, quiz: item.quizId } }) : undefined}
         />
       ))}
     </Screen>
@@ -82,7 +83,9 @@ export function WeeklyReview({ childId }: Props) {
 
 type Route = '/quiz/evaluate/[id]' | '/quiz/result/[id]' | '/quiz/attempt/[id]';
 
-function WeeklyCard({ item, role, today, lang, onOpen }: { item: WeeklyItem; role: 'parent' | 'child'; today: string; lang: CalendarLanguage; onOpen: (path: Route, id: string) => void }) {
+function WeeklyCard({
+  item, role, today, lang, onOpen, onOpenDetail,
+}: { item: WeeklyItem; role: 'parent' | 'child'; today: string; lang: CalendarLanguage; onOpen: (path: Route, id: string) => void; /** Parent : ouvre le détail du quiz (jamais pour une carte « à venir »). */ onOpenDetail?: () => void }) {
   const { t } = useTranslation();
   const subject = item.subject ? subjectText(t, item.subject) : item.title;
   const unfinished = item.state === 'todo' || item.state === 'in_progress';
@@ -106,12 +109,8 @@ function WeeklyCard({ item, role, today, lang, onOpen }: { item: WeeklyItem; rol
     else if (item.state === 'validated') action = { label: t('weekly.review.seeWork'), variant: 'secondary', run: () => onOpen('/quiz/attempt/[id]', item.attemptId as string) };
   }
 
-  return (
-    <View
-      accessible={upcoming}
-      accessibilityLabel={upcoming ? [subject, item.title, stateText, meta].filter(Boolean).join(', ') : undefined}
-      style={[styles.card, upcoming && styles.cardUpcoming]}
-    >
+  const head = (
+    <>
       <View style={styles.cardTop}>
         <View style={styles.flex}>
           <Text style={styles.subject}>{subject}</Text>
@@ -122,6 +121,30 @@ function WeeklyCard({ item, role, today, lang, onOpen }: { item: WeeklyItem; rol
       {meta ? <Text style={[styles.meta, urgent ? styles.urgent : null]}>{meta}</Text> : null}
       {item.late ? <Text style={styles.urgent}>{t('weekly.late')}</Text> : null}
       {score ? <Text style={styles.meta}>{score}</Text> : null}
+    </>
+  );
+  // Parent : la zone d'information ouvre le détail ; « Duyệt » / « Xem bài làm » est un FRÈRE de cette zone (jamais imbriqué) : l'appui ne déclenche donc pas la navigation du détail.
+  const opensDetail = !!onOpenDetail && !upcoming;
+
+  return (
+    <View
+      accessible={upcoming}
+      accessibilityLabel={upcoming ? [subject, item.title, stateText, meta].filter(Boolean).join(', ') : undefined}
+      style={[styles.card, upcoming && styles.cardUpcoming]}
+    >
+      {opensDetail ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`${subject}, ${item.title}, ${stateText}`}
+          accessibilityHint={t('quizDetail.openHint')}
+          onPress={onOpenDetail}
+          style={styles.detailArea}
+        >
+          {head}
+        </Pressable>
+      ) : (
+        head
+      )}
       {action ? <Button label={action.label} variant={action.variant} accessibilityLabel={`${action.label}: ${subject}`} onPress={action.run} /> : null}
     </View>
   );
@@ -135,6 +158,7 @@ const styles = StyleSheet.create({
   empty: { textAlign: 'center', paddingVertical: 24 },
   card: { ...glass, borderRadius: radius.card, padding: 16, gap: 10 },
   cardUpcoming: { opacity: 0.6 },
+  detailArea: { gap: 10, minHeight: MIN_TARGET },
   cardTop: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 },
   subject: { fontSize: 18, fontWeight: '800', color: colors.text },
   meta: { fontSize: 13, fontWeight: '700', color: colors.textSecondary },
