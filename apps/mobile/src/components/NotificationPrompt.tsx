@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { GlassTile } from '@/components/GlassTile';
 import { Button, ErrorText } from '@/components/ui';
+import type { EnableFailure } from '@/domain/web-push';
 import { parseSnooze, shouldPrompt, SNOOZE_KEY, SNOOZE_MS } from '@/domain/notification-prompt';
 import { enableWebPush, getWebPushStatus } from '@/services/webPush';
 import { kvStorage } from '@/sync/storage';
@@ -19,7 +20,7 @@ export function NotificationPrompt() {
   const { t } = useTranslation();
   const [phase, setPhase] = useState<Phase>('hidden');
   const [busy, setBusy] = useState(false);
-  const [failed, setFailed] = useState(false);
+  const [failure, setFailure] = useState<EnableFailure | null>(null);
 
   useEffect(() => {
     if (Platform.OS !== 'web') return;
@@ -42,12 +43,12 @@ export function NotificationPrompt() {
   };
   const enable = async () => {
     setBusy(true);
-    setFailed(false);
+    setFailure(null);
     try {
       const result = await enableWebPush();
-      if (result === 'on') setPhase('hidden');
-      else if (result === 'denied') setPhase('denied');
-      else setFailed(true);
+      if (result.ok) setPhase('hidden');
+      else if (result.reason === 'denied') setPhase('denied');
+      else setFailure(result.reason);
     } finally {
       setBusy(false);
     }
@@ -67,7 +68,7 @@ export function NotificationPrompt() {
           <>
             <Button label={t('notifPrompt.enable')} onPress={() => void enable()} loading={busy} />
             <Button variant="ghost" label={t('notifPrompt.later')} onPress={later} disabled={busy} />
-            <ErrorText>{failed ? t('notifSettings.webPush.failed') : null}</ErrorText>
+            <ErrorText>{failure ? t(`notifSettings.webPush.reason.${failure}`) : null}</ErrorText>
           </>
         ) : (
           <Button label={t('common.done')} onPress={() => setPhase('hidden')} />

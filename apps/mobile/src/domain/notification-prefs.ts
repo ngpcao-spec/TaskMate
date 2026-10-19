@@ -4,15 +4,18 @@ export type NotificationPrefs = {
   /** Minutes avant une échéance « avant HH:MM » ; `null` = désactivé. */
   reminderBeforeDeadlineMin: number | null;
   eveningRecap: { enabled: boolean; time: string };
-  /** Parent : activité des enfants, chacune activable (SPEC §3.9). */
-  activity: { taskDone: boolean; rewardRequested: boolean; goalAchieved: boolean };
+  /**
+   * Activité, chacune activable (SPEC §3.9). Parent : `taskDone`, `rewardRequested`, `goalAchieved`, `quizSubmitted` (un enfant a terminé un quiz Ôn tập : à valider).
+   * Enfant : `quizValidated` (le parent a validé son quiz). Clé absente (anciennes préférences) = activée.
+   */
+  activity: { taskDone: boolean; rewardRequested: boolean; goalAchieved: boolean; quizSubmitted: boolean; quizValidated: boolean };
 };
 
 export const DEFAULT_PREFS: NotificationPrefs = {
   reminderBeforeStartMin: 10,
   reminderBeforeDeadlineMin: 30,
   eveningRecap: { enabled: true, time: '20:30' },
-  activity: { taskDone: true, rewardRequested: true, goalAchieved: true },
+  activity: { taskDone: true, rewardRequested: true, goalAchieved: true, quizSubmitted: true, quizValidated: true },
 };
 
 export const MAX_REMINDER_MIN = 240;
@@ -40,6 +43,8 @@ export function normalizePrefs(raw: unknown): NotificationPrefs {
       taskDone: boolOrDefault(act.taskDone, DEFAULT_PREFS.activity.taskDone),
       rewardRequested: boolOrDefault(act.rewardRequested, DEFAULT_PREFS.activity.rewardRequested),
       goalAchieved: boolOrDefault(act.goalAchieved, DEFAULT_PREFS.activity.goalAchieved),
+      quizSubmitted: boolOrDefault(act.quizSubmitted, DEFAULT_PREFS.activity.quizSubmitted),
+      quizValidated: boolOrDefault(act.quizValidated, DEFAULT_PREFS.activity.quizValidated),
     },
   };
 }

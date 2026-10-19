@@ -4,15 +4,16 @@
 export const SNOOZE_MS = 24 * 60 * 60 * 1000;
 export const SNOOZE_KEY = 'taskmate-notif-prompt-snooze-until';
 
-type Status = 'unsupported' | 'needs-install' | 'not-configured' | 'denied' | 'ready' | 'off' | 'on';
+type Status = 'unsupported' | 'needs-install' | 'not-configured' | 'denied' | 'ready' | 'off' | 'on' | 'unsynced' | 'unverified';
 
 /**
  * Afficher l'invitation SEULEMENT quand activer est possible et utile : notifications disponibles sur l'appareil mais pas encore activées
- * (`off`/`ready`). Jamais si déjà activées, refusées par l'utilisateur (on ne harcèle pas : il les rouvre dans les réglages d'iOS),
+ * (`off`/`ready`/`unsynced`). Jamais si déjà activées, refusées par l'utilisateur (on ne harcèle pas : il les rouvre dans les réglages d'iOS),
  * non supportées, ou non configurées. `needs-install` (onglet Safari) est traité par la fiche des réglages, pas ici.
  */
 export function shouldPrompt(status: Status, snoozeUntil: number | null, now: number): boolean {
-  if (status !== 'off' && status !== 'ready') return false;
+  // `unsynced` (D-088) : abonnement local mais inconnu de la base pour ce membre (et la réparation silencieuse n'a pas suffi) : on propose de réactiver
+  if (status !== 'off' && status !== 'ready' && status !== 'unsynced') return false;
   return snoozeUntil === null || !(snoozeUntil > now);
 }
 

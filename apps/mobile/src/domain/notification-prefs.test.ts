@@ -16,7 +16,14 @@ describe('normalizePrefs', () => {
     expect(p.reminderBeforeStartMin).toBe(0);
     expect(p.reminderBeforeDeadlineMin).toBeNull();
     expect(p.eveningRecap).toEqual({ enabled: false, time: '19:15' });
-    expect(p.activity).toEqual({ taskDone: false, rewardRequested: true, goalAchieved: true });
+    expect(p.activity).toEqual({ taskDone: false, rewardRequested: true, goalAchieved: true, quizSubmitted: true, quizValidated: true });
+  });
+  it('quiz Ôn tập (D-088) : activés par défaut ; anciennes préférences sans ces clés = activées ; valeurs invalides = défaut', () => {
+    expect(DEFAULT_PREFS.activity.quizSubmitted).toBe(true);
+    expect(DEFAULT_PREFS.activity.quizValidated).toBe(true);
+    expect(normalizePrefs({ activity: { taskDone: false, rewardRequested: false, goalAchieved: false } }).activity).toMatchObject({ quizSubmitted: true, quizValidated: true });
+    expect(normalizePrefs({ activity: { quizSubmitted: false, quizValidated: false } }).activity).toMatchObject({ quizSubmitted: false, quizValidated: false });
+    expect(normalizePrefs({ activity: { quizSubmitted: 'non', quizValidated: 0 } }).activity).toMatchObject({ quizSubmitted: true, quizValidated: true });
   });
   it('borne les minutes', () => {
     expect(normalizePrefs({ reminderBeforeStartMin: 241 }).reminderBeforeStartMin).toBe(10);

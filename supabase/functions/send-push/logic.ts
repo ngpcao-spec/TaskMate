@@ -9,7 +9,7 @@ export const DEFAULT_LOCALE: Locale = 'vi';
 /** Toute valeur inconnue ou absente retombe sur le vietnamien (jamais d'erreur pour une notification). */
 export const toLocale = (v: unknown): Locale => (v === 'fr' || v === 'en' || v === 'vi' ? v : DEFAULT_LOCALE);
 
-type TextVars = { child: string; title: string; count: number; points: number; cost: number | string; delta: number; note: string };
+type TextVars = { child: string; title: string; count: number; points: number; cost: number | string; delta: number; note: string; subject: string };
 
 type Catalog = {
   taskDoneMany: (v: TextVars) => string;
@@ -23,9 +23,15 @@ type Catalog = {
   rewardExpired: (v: TextVars) => string;
   pointsAdjusted: (v: TextVars) => string;
   taskAssigned: (v: TextVars) => string;
+  quizDoneMany: (v: TextVars) => string;
+  quizDone: (v: TextVars) => string;
+  quizValidated: (v: TextVars) => string;
+  quizValidatedNoPoints: (v: TextVars) => string;
+  testNotification: string;
   recapTitle: string;
   recapLine: (name: string, done: number, total: number) => string;
   recapWaiting: (count: number) => string;
+  recapQuizzes: (count: number) => string;
 };
 
 const withNote = (note: string) => (note ? ` — ${note}` : '');
@@ -44,9 +50,15 @@ const CATALOGS: Record<Locale, Catalog> = {
     rewardExpired: (v) => `Yêu cầu đã hết hạn: ${v.title}`,
     pointsAdjusted: (v) => `Điểm của bạn được điều chỉnh ${signed(v.delta)}`,
     taskAssigned: (v) => `Việc mới: ${v.title}`,
+    quizDoneMany: (v) => `${v.child} đã làm xong ${v.count} bài ôn tập — cần duyệt`,
+    quizDone: (v) => `${v.child} đã làm xong bài ôn tập ${v.subject} — cần duyệt`,
+    quizValidated: (v) => `Bài ôn tập đã được duyệt · +${v.points} điểm`,
+    quizValidatedNoPoints: () => 'Bài ôn tập đã được duyệt',
+    testNotification: 'Thông báo thử — thiết bị này nhận được thông báo ✅',
     recapTitle: 'Tổng kết hôm nay',
     recapLine: (name, done, total) => `${name}: ${done}/${total} việc`,
     recapWaiting: (count) => `${count} mục chờ duyệt`,
+    recapQuizzes: (count) => `${count} bài ôn tập chờ duyệt`,
   },
   fr: {
     taskDoneMany: (v) => `${v.child} a terminé ${v.count} tâches — à valider`,
@@ -60,9 +72,15 @@ const CATALOGS: Record<Locale, Catalog> = {
     rewardExpired: (v) => `Demande expirée : ${v.title}`,
     pointsAdjusted: (v) => `Tes points ont été ajustés ${signed(v.delta)}`,
     taskAssigned: (v) => `Nouvelle tâche : ${v.title}`,
+    quizDoneMany: (v) => `${v.child} a terminé ${v.count} quiz — à valider`,
+    quizDone: (v) => `${v.child} a terminé le quiz « ${v.subject} » — à valider`,
+    quizValidated: (v) => `Quiz validé · +${v.points} points`,
+    quizValidatedNoPoints: () => 'Quiz validé',
+    testNotification: 'Notification de test — cet appareil reçoit bien les notifications ✅',
     recapTitle: "Bilan d'aujourd'hui",
     recapLine: (name, done, total) => `${name} : ${done}/${total} tâches`,
     recapWaiting: (count) => `${count} à valider`,
+    recapQuizzes: (count) => `${count} quiz à valider`,
   },
   en: {
     taskDoneMany: (v) => `${v.child} finished ${v.count} tasks — waiting for approval`,
@@ -76,13 +94,27 @@ const CATALOGS: Record<Locale, Catalog> = {
     rewardExpired: (v) => `Request expired: ${v.title}`,
     pointsAdjusted: (v) => `Your points were adjusted ${signed(v.delta)}`,
     taskAssigned: (v) => `New task: ${v.title}`,
+    quizDoneMany: (v) => `${v.child} finished ${v.count} quizzes — waiting for approval`,
+    quizDone: (v) => `${v.child} finished the ${v.subject} quiz — waiting for approval`,
+    quizValidated: (v) => `Review approved · +${v.points} points`,
+    quizValidatedNoPoints: () => 'Review approved',
+    testNotification: 'Test notification — this device receives notifications ✅',
     recapTitle: "Today's summary",
     recapLine: (name, done, total) => `${name}: ${done}/${total} tasks`,
     recapWaiting: (count) => `${count} waiting for approval`,
+    recapQuizzes: (count) => `${count} quizzes waiting for approval`,
   },
 };
 
 const catalogFor = (locale: Locale): Catalog => CATALOGS[locale];
+
+/** Matières du catalogue (clés stables, comme `domain/catalog.ts`) dans la langue de l'appareil ; une clé inconnue (jeu de la famille : texte libre) s'affiche telle quelle. */
+const SUBJECT_LABELS: Record<Locale, Record<string, string>> = {
+  vi: { hist_geo: 'Lịch sử và Địa lý', maths: 'Toán', langue_nationale: 'Ngôn ngữ quốc gia', anglais: 'Tiếng Anh', sciences: 'Khoa học', civics: 'Giáo dục công dân', technology: 'Công nghệ' },
+  fr: { hist_geo: 'Histoire-Géographie', maths: 'Mathématiques', langue_nationale: 'Langue nationale', anglais: 'Anglais', sciences: 'Sciences', civics: 'Éducation civique', technology: 'Technologie' },
+  en: { hist_geo: 'History & Geography', maths: 'Mathematics', langue_nationale: 'National language', anglais: 'English', sciences: 'Science', civics: 'Civics', technology: 'Technology' },
+};
+export const subjectLabel = (locale: Locale, key: string): string => SUBJECT_LABELS[locale][key] ?? key;
 
 // ───────────────────────── Destinataires et messages ─────────────────────────
 
@@ -103,7 +135,7 @@ export type MemberInfo = {
 };
 export type WebPushSubscription = { endpoint: string; keys: { p256dh: string; auth: string }; expirationTime?: number | null };
 /** `locale` : langue des notifications de l'appareil (D-063) ; absente ou inconnue = vietnamien. */
-export type DeviceInfo = { member_id: string; expo_push_token: string | null; web_push_subscription?: WebPushSubscription | null; locale?: string | null };
+export type DeviceInfo = { id?: string; member_id: string; expo_push_token: string | null; web_push_subscription?: WebPushSubscription | null; locale?: string | null };
 export type PushMessage = {
   to: string;
   title: string;
@@ -115,43 +147,67 @@ export type PushMessage = {
   collapseId?: string;
 };
 
-const PARENT_TYPES = new Set(['task_completed', 'reward_requested', 'goal_achieved']);
-const CHILD_TYPES = new Set(['task_validated', 'task_rejected', 'reward_approved', 'reward_rejected', 'reward_expired', 'points_adjusted', 'task_assigned']);
+const PARENT_TYPES = new Set(['task_completed', 'reward_requested', 'goal_achieved', 'quiz_submitted']);
+const CHILD_TYPES = new Set(['task_validated', 'task_rejected', 'reward_approved', 'reward_rejected', 'reward_expired', 'points_adjusted', 'task_assigned', 'quiz_validated']);
 
-const activityPref = (prefs: unknown, key: 'taskDone' | 'rewardRequested' | 'goalAchieved'): boolean => {
+type PrefKey = 'taskDone' | 'rewardRequested' | 'goalAchieved' | 'quizSubmitted' | 'quizValidated';
+/** Préférence absente (anciens `notification_prefs`) = activée. */
+const activityPref = (prefs: unknown, key: PrefKey): boolean => {
   const activity = (prefs as { activity?: Record<string, unknown> } | null)?.activity;
   return activity?.[key] !== false; // activé par défaut
 };
 
-const PARENT_PREF: Record<string, 'taskDone' | 'rewardRequested' | 'goalAchieved'> = {
+const PARENT_PREF: Record<string, PrefKey> = {
   task_completed: 'taskDone',
   reward_requested: 'rewardRequested',
   goal_achieved: 'goalAchieved',
+  quiz_submitted: 'quizSubmitted',
 };
+/** Seules préférences d'un ENFANT qui coupent une notification d'activité (les autres décisions du parent lui parviennent toujours). */
+const CHILD_PREF: Record<string, PrefKey> = { quiz_validated: 'quizValidated' };
+
+export type Skipped = { noRecipient: number; noDevice: number; prefOff: number; noVapid: number };
 
 /**
  * Destinataires d'une activité :
- *  - enfant → parent(s) : tâche faite, demande d'échange, objectif atteint (selon leurs préférences) ;
- *  - parent → enfant CONCERNÉ uniquement : décision sur une demande, points ajustés, nouvelle tâche.
+ *  - enfant → parent(s) : tâche faite, demande d'échange, objectif atteint, quiz terminé (selon leurs préférences) ;
+ *  - parent → enfant CONCERNÉ uniquement : décision sur une demande, points ajustés, nouvelle tâche, quiz validé (préférence de l'enfant).
  * Jamais de notification à un enfant à propos de l'activité de son frère (SPEC §5.6).
+ * ET pourquoi personne ne reçoit : `noRecipient` (aucun destinataire possible : par exemple l'acteur est le seul parent), `prefOff` (destinataires
+ * qui ont coupé ce type), `noDevice` (destinataires sans aucun appareil enregistré). `noVapid` est complété par la fonction (Web Push sans clés).
  */
-export function recipientsFor(activity: ActivityRecord, members: readonly MemberInfo[]): MemberInfo[] {
+export function explainDelivery(
+  activity: ActivityRecord,
+  members: readonly MemberInfo[],
+  devices: readonly DeviceInfo[] = [],
+): { recipients: MemberInfo[]; skipped: Omit<Skipped, 'noVapid'> } {
   const notActor = (m: MemberInfo) => m.id !== activity.actor_member_id;
+  let candidates: MemberInfo[] = [];
+  let wanted: (m: MemberInfo) => boolean = () => true;
   if (PARENT_TYPES.has(activity.type)) {
-    const key = PARENT_PREF[activity.type] as 'taskDone' | 'rewardRequested' | 'goalAchieved';
-    return members.filter((m) => m.role === 'parent' && notActor(m) && activityPref(m.prefs, key));
+    candidates = members.filter((m) => m.role === 'parent' && notActor(m));
+    const key = PARENT_PREF[activity.type] as PrefKey;
+    wanted = (m) => activityPref(m.prefs, key);
+  } else if (CHILD_TYPES.has(activity.type)) {
+    candidates = members.filter((m) => m.role === 'child' && m.child_id !== null && m.child_id === activity.child_id && notActor(m));
+    const key = CHILD_PREF[activity.type];
+    if (key) wanted = (m) => activityPref(m.prefs, key);
   }
-  if (CHILD_TYPES.has(activity.type)) {
-    return members.filter((m) => m.role === 'child' && m.child_id !== null && m.child_id === activity.child_id && notActor(m));
-  }
-  return [];
+  const recipients = candidates.filter(wanted);
+  const hasDevice = (m: MemberInfo) => devices.some((d) => d.member_id === m.id && (d.expo_push_token || d.web_push_subscription?.endpoint));
+  return {
+    recipients,
+    skipped: { noRecipient: candidates.length === 0 ? 1 : 0, prefOff: candidates.length - recipients.length, noDevice: recipients.filter((m) => !hasDevice(m)).length },
+  };
 }
+
+export const recipientsFor = (activity: ActivityRecord, members: readonly MemberInfo[]): MemberInfo[] => explainDelivery(activity, members).recipients;
 
 type Text = { title: string; body: string };
 
 /** Texte d'une activité dans la langue de l'appareil destinataire (vietnamien par défaut, D-063). */
 export function textFor(activity: ActivityRecord, childName: string, groupedCount = 1, locale: Locale = 'vi'): Text | null {
-  const p = (activity.payload ?? {}) as { title?: string; cost?: number; delta?: number; note?: string; points?: number };
+  const p = (activity.payload ?? {}) as { title?: string; cost?: number; delta?: number; note?: string; points?: number; subject?: string };
   const v: TextVars = {
     child: childName,
     title: p.title ?? '',
@@ -160,6 +216,7 @@ export function textFor(activity: ActivityRecord, childName: string, groupedCoun
     cost: p.cost ?? '',
     delta: p.delta ?? 0,
     note: p.note ?? '',
+    subject: p.subject ? subjectLabel(locale, p.subject) : (p.title ?? ''),
   };
   const c = catalogFor(locale);
   const body = (text: string): Text => ({ title: 'TaskMate', body: text });
@@ -185,6 +242,11 @@ export function textFor(activity: ActivityRecord, childName: string, groupedCoun
       return body(c.pointsAdjusted(v));
     case 'task_assigned':
       return body(c.taskAssigned(v));
+    case 'quiz_submitted':
+      // plusieurs quiz terminés d'affilée (10 min) → une seule notification groupée
+      return body(groupedCount > 1 ? c.quizDoneMany(v) : c.quizDone(v));
+    case 'quiz_validated':
+      return body(v.points > 0 ? c.quizValidated(v) : c.quizValidatedNoPoints(v));
     default:
       return null;
   }
@@ -193,13 +255,14 @@ export function textFor(activity: ActivityRecord, childName: string, groupedCoun
 /** Récap du soir : une ligne par enfant + éléments en attente, dans la langue donnée. `null` si rien à dire. */
 export function recapText(
   summary: readonly { name: string; done: number; total: number }[],
-  pending: { tasks: number; requests: number },
+  pending: { tasks: number; requests: number; quizzes?: number },
   locale: Locale = 'vi',
 ): Text | null {
   const c = catalogFor(locale);
   const lines = summary.filter((s) => s.total > 0).map((s) => c.recapLine(s.name, s.done, s.total));
   const waiting = pending.tasks + pending.requests;
   if (waiting > 0) lines.push(c.recapWaiting(waiting));
+  if ((pending.quizzes ?? 0) > 0) lines.push(c.recapQuizzes(pending.quizzes as number));
   if (lines.length === 0) return null;
   return { title: c.recapTitle, body: lines.join(' · ') };
 }
@@ -207,7 +270,7 @@ export function recapText(
 /** Fenêtre de regroupement des coches (SPEC §5.6). */
 export const GROUP_WINDOW_MS = 10 * 60 * 1000;
 
-/** Nombre de coches d'un enfant dans la fenêtre de 10 min (l'activité courante comprise). */
+/** Nombre d'événements du même type d'un enfant dans la fenêtre de 10 min (l'activité courante comprise) : coches de tâches ou quiz terminés. */
 export function countGroupedCompletions(activity: ActivityRecord & { created_at?: string }, recent: readonly { created_at: string }[]): number {
   const at = activity.created_at ? new Date(activity.created_at).getTime() : Date.now();
   const inWindow = recent.filter((r) => at - new Date(r.created_at).getTime() <= GROUP_WINDOW_MS && new Date(r.created_at).getTime() <= at);
@@ -246,6 +309,7 @@ export function buildMessages(
         ...(activity.type === 'task_completed' && groupedCount <= 1 ? { categoryId: 'task_validation' } : {}),
         // regroupement : la notification suivante remplace la précédente (iOS : collapse-id ; Android : même tag)
         ...(activity.type === 'task_completed' ? { collapseId: `tasks-${activity.child_id}` } : {}),
+        ...(activity.type === 'quiz_submitted' ? { collapseId: `quizzes-${activity.child_id}` } : {}),
       });
     }
   }
@@ -257,7 +321,7 @@ export function buildRecapMessages(
   parents: readonly MemberInfo[],
   devices: readonly DeviceInfo[],
   summary: readonly { name: string; done: number; total: number }[],
-  pending: { tasks: number; requests: number } = { tasks: 0, requests: 0 },
+  pending: { tasks: number; requests: number; quizzes?: number } = { tasks: 0, requests: 0 },
 ): PushMessage[] {
   const out: PushMessage[] = [];
   for (const parent of parents) {
@@ -294,11 +358,16 @@ export type WebPushPayload = { title: string; body: string; data: Record<string,
 export type WebPushMessage = { subscription: WebPushSubscription; payload: WebPushPayload };
 
 /** Page ouverte au clic sur la notification (le service worker ne porte aucune session : pas de boutons d'action). */
-export function urlForType(type: string): string {
+export function urlForType(type: string, childId: string | null = null): string {
   switch (type) {
     case 'task_completed':
     case 'reward_requested':
       return '/approvals';
+    case 'quiz_submitted':
+      // l'écran Ôn tập de CET enfant : c'est là que le parent valide (« Duyệt »)
+      return childId ? `/weekly?child=${encodeURIComponent(childId)}` : '/weekly';
+    case 'quiz_validated':
+      return '/weekly';
     case 'goal_achieved':
       return '/more/goals';
     case 'reward_approved':
@@ -332,9 +401,10 @@ export function buildWebMessages(
         payload: {
           ...(textFor(activity, childName, groupedCount, toLocale(d.locale)) as Text),
           data,
-          url: urlForType(activity.type),
+          url: urlForType(activity.type, activity.child_id),
           // les coches groupées d'un enfant se remplacent (même tag)
           ...(activity.type === 'task_completed' ? { tag: `tasks-${activity.child_id}` } : {}),
+          ...(activity.type === 'quiz_submitted' ? { tag: `quizzes-${activity.child_id}` } : {}),
         },
       });
     }
@@ -346,14 +416,14 @@ export function buildWebRecapMessages(
   parents: readonly MemberInfo[],
   devices: readonly DeviceInfo[],
   summary: readonly { name: string; done: number; total: number }[],
-  pending: { tasks: number; requests: number } = { tasks: 0, requests: 0 },
+  pending: { tasks: number; requests: number; quizzes?: number } = { tasks: 0, requests: 0 },
 ): WebPushMessage[] {
   const waiting = pending.tasks + pending.requests;
   return parents.flatMap((parent) =>
     webDevicesOf(devices, parent.id).flatMap((d) => {
       const text = recapText(summary, pending, toLocale(d.locale));
       if (!text) return [];
-      return [{ subscription: d.web_push_subscription as WebPushSubscription, payload: { ...text, data: { type: 'evening_recap' }, url: waiting > 0 ? '/approvals' : '/' } }];
+      return [{ subscription: d.web_push_subscription as WebPushSubscription, payload: { ...text, data: { type: 'evening_recap' }, url: waiting > 0 ? '/approvals' : (pending.quizzes ?? 0) > 0 ? '/weekly' : '/' } }];
     }),
   );
 }
@@ -361,4 +431,35 @@ export function buildWebRecapMessages(
 /** Abonnements à supprimer : le service push répond 404/410 (« Gone ») quand le navigateur s'est désabonné. */
 export function deadEndpoints(results: readonly { endpoint: string; statusCode?: number }[]): string[] {
   return [...new Set(results.filter((r) => r.statusCode === 404 || r.statusCode === 410).map((r) => r.endpoint))];
+}
+
+
+// ───────────────────────── Diagnostic d'envoi (D-088) ─────────────────────────
+
+/** Résultat d'un envoi Web Push, tel que mémorisé sur l'appareil (`devices.last_push_result`) : `sent`, `gone` (404/410) ou `failed:<code>`. */
+export function webResultLabel(statusCode?: number): string {
+  if (statusCode === undefined) return 'sent';
+  return statusCode === 404 || statusCode === 410 ? 'gone' : `failed:${statusCode}`;
+}
+/** Idem pour un jeton Expo : `sent` ou `error:<code>`. */
+export function expoResultLabel(ticket: ExpoTicket | undefined): string {
+  if (!ticket) return 'error:no_ticket';
+  return ticket.status === 'ok' ? 'sent' : `error:${ticket.details?.error ?? 'unknown'}`.slice(0, 80);
+}
+
+/** Message de test (« Gửi thông báo thử ») pour les appareils d'UN membre : un seul navigateur si `endpoint` est donné. Même langue que l'appareil. */
+export function buildTestMessages(devices: readonly DeviceInfo[], memberId: string, endpoint?: string | null): { expo: PushMessage[]; web: WebPushMessage[] } {
+  const mine = devices.filter((d) => d.member_id === memberId);
+  const expo = endpoint
+    ? []
+    : mine
+        .filter((d) => d.expo_push_token)
+        .map((d): PushMessage => ({ to: d.expo_push_token as string, title: 'TaskMate', body: catalogFor(toLocale(d.locale)).testNotification, data: { type: 'test' }, sound: 'default', channelId: 'default' }));
+  const web = mine
+    .filter((d) => d.web_push_subscription?.endpoint && (!endpoint || d.web_push_subscription.endpoint === endpoint))
+    .map((d): WebPushMessage => ({
+      subscription: d.web_push_subscription as WebPushSubscription,
+      payload: { title: 'TaskMate', body: catalogFor(toLocale(d.locale)).testNotification, data: { type: 'test' }, url: '/', tag: 'test' },
+    }));
+  return { expo, web };
 }

@@ -722,7 +722,9 @@
       "reward_expired": "Expirée : {{title}}",
       "goal_achieved": "{{name}} a atteint son objectif : {{title}}",
       "points_adjusted": "Ajustement de {{delta}} points pour {{name}}",
-      "task_assigned": "Nouvelle tâche pour {{name}} : {{title}}"
+      "task_assigned": "Nouvelle tâche pour {{name}} : {{title}}",
+      "quiz_submitted": "{{name}} a terminé le quiz : {{title}} — à valider",
+      "quiz_validated": "Quiz de {{name}} validé : {{title}}"
     },
     "unread": "{{count}} non lue(s)"
   },
@@ -751,7 +753,31 @@
       "unsupported": "Ce navigateur ne gère pas les notifications push. Elles restent disponibles dans l'application (icône cloche).",
       "needsInstall": "Sur iPhone/iPad, ajoutez TaskMate à l'écran d'accueil (Partager → Sur l'écran d'accueil) puis ouvrez-le depuis cette icône pour activer les notifications.",
       "notConfigured": "Les notifications push ne sont pas configurées sur le serveur.",
-      "failed": "Impossible d'activer les notifications. Réessayez."
+      "failed": "Impossible d'activer les notifications. Réessayez.",
+      "unsynced": "Le navigateur a les notifications activées, mais le serveur ne connaît pas cet appareil pour votre compte. Réactivez-les pour l'enregistrer.",
+      "unverified": "Impossible de vérifier l'état auprès du serveur (hors ligne ?). Réessayez.",
+      "resync": "Réenregistrer l'appareil",
+      "recheck": "Revérifier",
+      "reason": {
+        "unsupported": "Ce navigateur ne gère pas les notifications push.",
+        "not-configured": "Les notifications push ne sont pas configurées : clé publique absente (EXPO_PUBLIC_VAPID_PUBLIC_KEY).",
+        "needs-install": "Sur iPhone/iPad (iOS 16.4 ou plus), ajoutez TaskMate à l'écran d'accueil (Partager → Sur l'écran d'accueil) puis ouvrez-le depuis cette icône pour activer les notifications.",
+        "denied": "Vous avez refusé l'autorisation de notifier. Autorisez-la à nouveau dans les réglages du navigateur ou de l'appareil.",
+        "no-service-worker": "Le service worker n'est pas prêt (application pas entièrement chargée). Rechargez la page puis réessayez.",
+        "subscribe-failed": "Le navigateur n'a pas pu créer l'abonnement (clé invalide ou service push qui refuse).",
+        "invalid-subscription": "L'abonnement créé par le navigateur est invalide.",
+        "server-failed": "Le serveur n'a pas enregistré cet appareil. Vérifiez la connexion puis réessayez."
+      }
+    },
+    "quizSubmitted": "Quand un enfant termine un quiz d'Ôn tập (à valider)",
+    "quizValidated": "Quand un parent valide mon quiz d’Ôn tập",
+    "test": {
+      "button": "Envoyer une notification de test",
+      "sent": "Notification de test envoyée. Elle doit s'afficher sur l'appareil dans un instant.",
+      "noDevice": "Aucun appareil n'est enregistré pour ce compte.",
+      "noVapid": "Le serveur n'a pas de clés VAPID (VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT) : envoi impossible.",
+      "error": "L'envoi de test a échoué.",
+      "errorCode": "L'envoi de test a échoué (code {{code}})."
     }
   },
   "settings": {
@@ -846,7 +872,8 @@
       "vapid": "Clé Web Push (VAPID)",
       "fn-generate-questions": "Edge Function generate-questions",
       "fn-generate-avatar": "Edge Function generate-avatar",
-      "ai": "IA des révisions"
+      "ai": "IA des révisions",
+      "push": "Serveur d'envoi des notifications"
     },
     "connection": {
       "ok": "Le serveur répond ({{url}}).",
@@ -920,6 +947,13 @@
       "ok": "IA configurée (OPENAI_API_KEY présente). Aujourd'hui : {{used}}/{{limit}} générations utilisées.",
       "notConfigured": "IA NON configurée : secret OPENAI_API_KEY absent (Supabase → Edge Functions → Secrets). Voir HUMAN_TODO.",
       "unknown": "État de l'IA non vérifiable (la fonction generate-questions ne répond pas)."
+    },
+    "push": {
+      "unknown": "Serveur d'envoi des notifications non vérifiable (send-push ne répond pas).",
+      "noVapid": "Le serveur n'a pas de clés VAPID : ajoutez VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY et VAPID_SUBJECT dans Supabase → Edge Functions → Secrets. Voir HUMAN_TODO.",
+      "noDevice": "Aucun appareil de ce compte n'est enregistré pour les notifications. Activez-les dans Réglages → Notifications.",
+      "ok": "Clés VAPID configurées · {{count}} appareil(s) actif(s).",
+      "okLast": "Clés VAPID configurées · {{count}} appareil(s) actif(s) · dernier envoi : {{result}} ({{at}})."
     }
   },
   "childAccount": {

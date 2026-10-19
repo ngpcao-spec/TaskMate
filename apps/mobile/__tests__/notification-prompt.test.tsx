@@ -52,7 +52,7 @@ describe('NotificationPrompt (D-067)', () => {
   });
 
   it('activation réussie : l’invitation disparaît', async () => {
-    mockEnable.mockResolvedValue('on');
+    mockEnable.mockResolvedValue({ ok: true });
     await render(<NotificationPrompt />);
     await fireEvent.press(await screen.findByRole('button', { name: 'Bật thông báo' }));
     await waitFor(() => expect(screen.queryByRole('button', { name: 'Bật thông báo' })).toBeNull());
@@ -60,7 +60,7 @@ describe('NotificationPrompt (D-067)', () => {
   });
 
   it('permission refusée : explication pour réactiver dans iOS, sans insister', async () => {
-    mockEnable.mockResolvedValue('denied');
+    mockEnable.mockResolvedValue({ ok: false, reason: 'denied' });
     await render(<NotificationPrompt />);
     await fireEvent.press(await screen.findByRole('button', { name: 'Bật thông báo' }));
     expect(await screen.findByText(/Cài đặt của iPhone/)).toBeTruthy();
@@ -69,10 +69,34 @@ describe('NotificationPrompt (D-067)', () => {
   });
 
   it('échec technique : message d’erreur et l’invitation reste (on peut réessayer)', async () => {
-    mockEnable.mockResolvedValue('failed');
+    mockEnable.mockResolvedValue({ ok: false, reason: 'server-failed' });
     await render(<NotificationPrompt />);
     await fireEvent.press(await screen.findByRole('button', { name: 'Bật thông báo' }));
-    expect(await screen.findByText(/Không bật được thông báo/)).toBeTruthy();
+    expect(await screen.findByText(/Máy chủ chưa ghi nhận thiết bị này/)).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Bật thông báo' })).toBeTruthy();
+  });
+
+  it('chaque raison d’échec a son message (jamais un « erreur » générique)', async () => {
+    const cases: [string, RegExp][] = [
+      ['unsupported', /không hỗ trợ thông báo đẩy/],
+      ['not-configured', /EXPO_PUBLIC_VAPID_PUBLIC_KEY/],
+      ['needs-install', /iOS 16\.4/],
+      ['no-service-worker', /service worker/],
+      ['subscribe-failed', /không tạo được đăng ký/],
+      ['invalid-subscription', /không hợp lệ/],
+    ];
+    for (const [reason, text] of cases) {
+      mockEnable.mockResolvedValue({ ok: false, reason });
+      const { unmount } = await render(<NotificationPrompt />);
+      await fireEvent.press(await screen.findByRole('button', { name: 'Bật thông báo' }));
+      expect(await screen.findByText(text)).toBeTruthy();
+      await unmount();
+    }
+  });
+
+  it('abonnement du navigateur inconnu de la base : l’invitation propose de réactiver', async () => {
+    mockStatus = 'unsynced';
+    await render(<NotificationPrompt />);
+    expect(await screen.findByRole('button', { name: 'Bật thông báo' })).toBeTruthy();
   });
 });

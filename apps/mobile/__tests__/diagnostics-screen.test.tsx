@@ -19,6 +19,7 @@ const probes = (over: Partial<Probes> = {}): Probes => ({
   realtime: 'SUBSCRIBED',
   functions: { 'child-login': true, 'create-child': true, 'reset-child-password': true, 'delete-child': true, 'delete-account': false, 'send-push': null, 'generate-questions': true, 'generate-avatar': true },
   ai: { configured: false, usedToday: 0, dailyLimit: 20 },
+  push: { vapidConfigured: true, activeDevices: 1, lastPushAt: null, lastPushResult: null },
   ...over,
 });
 const build = (p: Probes) => {

@@ -7,6 +7,11 @@ describe('shouldPrompt', () => {
     expect(shouldPrompt('off', null, now)).toBe(true);
     expect(shouldPrompt('ready', null, now)).toBe(true);
   });
+  it('abonnement du navigateur inconnu de la base (D-088) : on propose de réactiver ; base injoignable : on n’affirme rien', () => {
+    expect(shouldPrompt('unsynced', null, now)).toBe(true);
+    expect(shouldPrompt('unsynced', now + SNOOZE_MS, now)).toBe(false);
+    expect(shouldPrompt('unverified', null, now)).toBe(false);
+  });
   it('ne propose jamais si déjà activées, refusées, non supportées, non configurées ou à installer d’abord', () => {
     for (const s of ['on', 'denied', 'unsupported', 'not-configured', 'needs-install'] as const) expect(shouldPrompt(s, null, now)).toBe(false);
   });

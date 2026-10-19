@@ -6,7 +6,7 @@ export type NotificationIntent =
   | { kind: 'reject'; requestId: string }
   | { kind: 'validate_task'; taskId: string }
   | { kind: 'reject_task'; taskId: string }
-  | { kind: 'navigate'; href: '/more/points' | '/(tabs)/today' | '/more/goals' | '/notifications' | '/approvals' }
+  | { kind: 'navigate'; href: '/more/points' | '/(tabs)/today' | '/more/goals' | '/notifications' | '/approvals' | '/weekly' }
   | { kind: 'none' };
 
 export const ACTION_APPROVE = 'approve';
@@ -34,6 +34,9 @@ export function intentFor(actionIdentifier: string, data: NotificationData): Not
       return { kind: 'navigate', href: '/more/points' };
     case 'goal_achieved':
       return { kind: 'navigate', href: '/more/goals' };
+    case 'quiz_submitted': // le parent ouvre « Ôn tập » (Cần duyệt) ; l'enfant, la validation de son quiz (D-088)
+    case 'quiz_validated':
+      return { kind: 'navigate', href: '/weekly' };
     case 'task_assigned':
     case 'task_validated':
     case 'task_rejected':
