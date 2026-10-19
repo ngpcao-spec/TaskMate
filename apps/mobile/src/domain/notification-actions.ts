@@ -1,12 +1,12 @@
 /** Données embarquées dans une notification (push ou locale). */
-export type NotificationData = { type?: string; requestId?: string; taskId?: string; childId?: string };
+export type NotificationData = { type?: string; requestId?: string; taskId?: string; childId?: string; quizId?: string; attemptId?: string };
 
 export type NotificationIntent =
   | { kind: 'approve'; requestId: string }
   | { kind: 'reject'; requestId: string }
   | { kind: 'validate_task'; taskId: string }
   | { kind: 'reject_task'; taskId: string }
-  | { kind: 'navigate'; href: '/more/points' | '/(tabs)/today' | '/more/goals' | '/notifications' | '/approvals' | '/weekly' }
+  | { kind: 'navigate'; href: '/more/points' | '/(tabs)/today' | '/more/goals' | '/notifications' | '/approvals' | '/weekly' | `/quiz/detail?${string}` }
   | { kind: 'none' };
 
 export const ACTION_APPROVE = 'approve';
@@ -34,8 +34,13 @@ export function intentFor(actionIdentifier: string, data: NotificationData): Not
       return { kind: 'navigate', href: '/more/points' };
     case 'goal_achieved':
       return { kind: 'navigate', href: '/more/goals' };
-    case 'quiz_submitted': // le parent ouvre « Ôn tập » (Cần duyệt) ; l'enfant, la validation de son quiz (D-088)
-    case 'quiz_validated':
+    case 'quiz_submitted': {
+      // D-089 : le parent ouvre le DÉTAIL de ce quiz (il y valide) ; sans identifiants (ancienne notification), l'écran Ôn tập
+      if (!data.childId || !data.quizId) return { kind: 'navigate', href: '/weekly' };
+      const attempt = data.attemptId ? `&attempt=${encodeURIComponent(data.attemptId)}` : '';
+      return { kind: 'navigate', href: `/quiz/detail?child=${encodeURIComponent(data.childId)}&quiz=${encodeURIComponent(data.quizId)}${attempt}` };
+    }
+    case 'quiz_validated': // l'enfant ouvre la validation de son quiz (D-088)
       return { kind: 'navigate', href: '/weekly' };
     case 'task_assigned':
     case 'task_validated':

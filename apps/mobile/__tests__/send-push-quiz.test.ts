@@ -123,6 +123,17 @@ describe('messages mobiles et web', () => {
     expect(buildWebMessages(VAL(), family, [web('m-tien', 'https://p/tien'), web('m-tuan', 'https://p/tuan')], 'Tien').map((m) => m.subscription.endpoint)).toEqual(['https://p/tien']);
     expect(buildWebMessages(VAL(), family, [web('m-tien', 'https://p/tien')], 'Tien')[0]?.payload.url).toBe('/weekly');
   });
+  it('D-089 : le lien d’un quiz terminé ouvre le DÉTAIL de ce quiz pour cet enfant (repli sur Ôn tập sans identifiant de quiz)', () => {
+    const withQuiz = SUB({ quiz_id: 'q 1', attempt_id: 'att/1' });
+    expect(buildWebMessages(withQuiz, family, devices, 'Tien')[0]?.payload.url).toBe('/quiz/detail?child=c-tien&quiz=q%201&attempt=att%2F1');
+    expect(buildMessages(withQuiz, family, devices, 'Tien')[0]?.data).toMatchObject({ type: 'quiz_submitted', childId: 'c-tien', quizId: 'q 1', attemptId: 'att/1' });
+    expect(urlForType('quiz_submitted', 'c-tien', { quiz_id: 'q1' })).toBe('/quiz/detail?child=c-tien&quiz=q1');
+    expect(urlForType('quiz_submitted', null, { quiz_id: 'q1' })).toBe('/weekly');
+    expect(urlForType('quiz_submitted', 'c-tien', { quiz_id: 42 })).toBe('/weekly?child=c-tien');
+    expect(buildWebMessages(SUB(), family, devices, 'Tien')[0]?.payload.url).toBe('/weekly?child=c-tien');
+    // l'enfant ne reçoit jamais ce lien : sa notification de validation reste « Ôn tập »
+    expect(buildWebMessages(VAL({ quiz_id: 'q1' }), family, [web('m-tien', 'https://p/tien')], 'Tien')[0]?.payload.url).toBe('/weekly');
+  });
   it('liens', () => {
     expect(urlForType('quiz_submitted', 'c tien/é')).toBe('/weekly?child=c%20tien%2F%C3%A9');
     expect(urlForType('quiz_submitted')).toBe('/weekly');

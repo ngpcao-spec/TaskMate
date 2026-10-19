@@ -21,7 +21,9 @@ describe('intentFor', () => {
     expect(intentFor('approve', { type: 'task_completed' })).toEqual({ kind: 'navigate', href: '/approvals' });
   });
   it('tâche validée / refusée (enfant) : ouvre l’accueil', () => {
-    expect(intentFor('default', { type: 'quiz_submitted', childId: 'c1' })).toEqual({ kind: 'navigate', href: '/weekly' }); // D-088
+    expect(intentFor('default', { type: 'quiz_submitted', childId: 'c1' })).toEqual({ kind: 'navigate', href: '/weekly' }); // D-088 : ancienne notification, sans quiz
+    expect(intentFor('default', { type: 'quiz_submitted', childId: 'c 1', quizId: 'q1', attemptId: 'a/1' })).toEqual({ kind: 'navigate', href: '/quiz/detail?child=c%201&quiz=q1&attempt=a%2F1' }); // D-089
+    expect(intentFor('default', { type: 'quiz_submitted', childId: 'c1', quizId: 'q1' })).toEqual({ kind: 'navigate', href: '/quiz/detail?child=c1&quiz=q1' });
     expect(intentFor('default', { type: 'quiz_validated' })).toEqual({ kind: 'navigate', href: '/weekly' });
     expect(intentFor('approve', { type: 'quiz_submitted' })).toEqual({ kind: 'navigate', href: '/weekly' }); // pas de bouton Duyệt sur un quiz
     expect(intentFor('default', { type: 'task_validated' })).toEqual({ kind: 'navigate', href: '/(tabs)/today' });
