@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { fetchMe } from '@/api/family';
 import { queryKeys } from '@/api/keys';
 import { supabase } from '@/api/supabase';
-import { resolveEntryRoute, type EntryRoute } from '@/domain/entry-route';
+import { meSettled, meStaleTime, resolveEntryRoute, type EntryRoute } from '@/domain/entry-route';
 import { shouldResetCache } from '@/domain/cache-owner';
 import { persister } from '@/sync/persister';
 import { kvStorage } from '@/sync/storage';
@@ -41,6 +41,8 @@ export function useMe() {
     queryKey: [...queryKeys.me, userId],
     queryFn: () => fetchMe(userId as string),
     enabled: userId !== null,
+    // « aucun enfant » jamais servi par le cache persisté (voir `meStaleTime`)
+    staleTime: (query) => meStaleTime(query.state.data?.children.length),
   });
 }
 
@@ -50,7 +52,7 @@ export function useEntryRoute(): EntryRoute {
   return resolveEntryRoute({
     authReady,
     hasSession: session !== null,
-    memberLoaded: !me.isPending,
+    memberLoaded: meSettled(me.isPending, me.data?.children.length ?? 0, me.isFetching),
     member: me.data ? { role: me.data.member.role } : null,
     childrenCount: me.data?.children.length ?? 0,
     isChildAccount: session?.user.app_metadata?.account_type === 'child',
