@@ -129,7 +129,7 @@ export function Button({ label, onPress, variant = 'primary', disabled = false, 
   );
 }
 
-type FieldProps = TextInputProps & { label: string; error?: string | null };
+export type FieldProps = TextInputProps & { label: string; error?: string | null };
 
 export function Field({ label, error, style, ...props }: FieldProps) {
   return (

@@ -3,6 +3,8 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AuthFlowError, signInChild } from '@/api/auth';
+import { PasswordField } from '@/components/PasswordField';
+import { SignedOutOnly } from '@/components/SignedOutOnly';
 import { Button, ErrorText, Field, Screen, Subtitle, Title } from '@/components/ui';
 
 /**
@@ -35,39 +37,38 @@ export default function ChildLoginScreen() {
   };
 
   return (
-    <Screen>
-      <Title>{t('onboarding.childLogin.title')}</Title>
-      <Subtitle>{t('onboarding.childLogin.subtitle')}</Subtitle>
-      <Field
-        label={t('onboarding.childLogin.parentEmail')}
-        placeholder={t('onboarding.auth.emailPlaceholder')}
-        value={parentEmail}
-        onChangeText={setParentEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoCorrect={false}
-        autoComplete="email"
-      />
-      <Field
-        label={t('onboarding.childLogin.loginId')}
-        value={loginId}
-        onChangeText={setLoginId}
-        autoCapitalize="none"
-        autoCorrect={false}
-        autoComplete="username"
-        maxLength={60}
-      />
-      <Field
-        label={t('onboarding.childLogin.password')}
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        autoCapitalize="none"
-        autoCorrect={false}
-        autoComplete="current-password"
-      />
-      <ErrorText>{error}</ErrorText>
-      <Button label={t('onboarding.childLogin.submit')} onPress={() => void submit()} loading={busy} disabled={parentEmail.trim() === '' || loginId.trim() === '' || password === ''} />
-    </Screen>
+    <SignedOutOnly>
+      <Screen>
+        <Title>{t('onboarding.childLogin.title')}</Title>
+        <Subtitle>{t('onboarding.childLogin.subtitle')}</Subtitle>
+        <Field
+          label={t('onboarding.childLogin.parentEmail')}
+          placeholder={t('onboarding.auth.emailPlaceholder')}
+          value={parentEmail}
+          onChangeText={setParentEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoCorrect={false}
+          autoComplete="off"
+        />
+        <Field
+          label={t('onboarding.childLogin.loginId')}
+          value={loginId}
+          onChangeText={setLoginId}
+          autoCapitalize="none"
+          autoCorrect={false}
+          autoComplete="username"
+          maxLength={60}
+        />
+        <PasswordField
+          label={t('onboarding.childLogin.password')}
+          value={password}
+          onChangeText={setPassword}
+          autoComplete="current-password"
+        />
+        <ErrorText>{error}</ErrorText>
+        <Button label={t('onboarding.childLogin.submit')} onPress={() => void submit()} loading={busy} disabled={parentEmail.trim() === '' || loginId.trim() === '' || password === ''} />
+      </Screen>
+    </SignedOutOnly>
   );
 }

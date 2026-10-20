@@ -102,4 +102,12 @@ describe('AddChildScreen', () => {
     expect(screen.queryByText(/Mot de passe : secret1/)).toBeNull();
     expect(screen.getByLabelText('Prénom de l\'enfant').props.value).toBe('Cam');
   });
+
+  it('D-093 : identifiant « off », mot de passe « new-password » (jamais la proposition du mot de passe du parent)', async () => {
+    await renderScreen();
+    expect(screen.getByLabelText('Identifiant (lettres, chiffres, . _ -)').props.autoComplete).toBe('off');
+    const password = screen.getByLabelText('Mot de passe (6 caractères minimum)');
+    expect(password.props.autoComplete).toBe('new-password');
+    expect(password.props.secureTextEntry).toBe(true);
+  });
 });

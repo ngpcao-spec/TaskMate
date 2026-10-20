@@ -7,6 +7,8 @@ import { useSessionStore } from '@/store/session';
 import { useToastStore } from '@/store/toast';
 import { createTestQueryClient } from '../test-utils/queryClient';
 
+// hors navigation : l'écran est toujours « affiché » (D-093)
+jest.mock('expo-router', () => ({ useIsFocused: () => true }));
 const mockCopy = jest.fn();
 jest.mock('@/services/clipboard', () => ({ copyText: (...a: unknown[]) => mockCopy(...a) }));
 const sessionOf = (email: string | undefined) => ({ user: { id: 'u1', email } }) as never;
@@ -144,5 +146,22 @@ describe('ChildAccountSection', () => {
       await renderSection();
       expect(screen.queryByRole('header', { name: 'Connexion de Minh' })).toBeNull();
     });
+  });
+
+  // D-093 : iOS ne doit jamais proposer « le mot de passe de l'e-mail du parent » sur un formulaire de compte enfant
+  it('création : identifiant sans sémantique « username » (off), mot de passe new-password, secureTextEntry', async () => {
+    await renderSection();
+    expect(screen.getByLabelText('Identifiant (lettres, chiffres, . _ -)').props.autoComplete).toBe('off');
+    const password = screen.getByLabelText('Mot de passe (6 caractères minimum)');
+    expect(password.props.autoComplete).toBe('new-password');
+    expect(password.props.secureTextEntry).toBe(true);
+  });
+
+  it('réinitialisation : le nouveau mot de passe est new-password (jamais current-password)', async () => {
+    mockAccounts = [{ child_id: 'c1', login_id: 'minh.test' }];
+    await renderSection();
+    const password = screen.getByLabelText('Nouveau mot de passe');
+    expect(password.props.autoComplete).toBe('new-password');
+    expect(password.props.secureTextEntry).toBe(true);
   });
 });
