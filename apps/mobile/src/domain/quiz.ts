@@ -173,6 +173,8 @@ const SERVER_ERRORS: Record<string, string> = {
   subject_not_active: 'catalog.server.subjectNotActive',
   child_not_found: 'catalog.server.childNotFound',
   forbidden: 'catalog.server.forbidden',
+  confirm_mismatch: 'catalog.server.confirmMismatch',
+  attempt_not_found: 'revisions.server.gone',
 };
 
 /** Clé i18n du message pour un code d'erreur renvoyé par une RPC de révisions (repli : message générique). */

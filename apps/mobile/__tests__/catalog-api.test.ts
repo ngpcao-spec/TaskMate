@@ -1,4 +1,4 @@
-import { confirmCatalogAnswers, fetchIsPlatformAdmin, setCatalogDates, setChildClass, shiftChildSubject, upsertCatalogQuestion } from '@/api/catalog';
+import { confirmCatalogAnswers, fetchCatalogQuizImpact, fetchIsPlatformAdmin, purgeCatalogQuiz, setCatalogDates, setChildClass, shiftChildSubject, upsertCatalogQuestion } from '@/api/catalog';
 import { fetchAttemptDetail, fetchChildQuizSets, startQuizEvaluation } from '@/api/quizzes';
 
 const mockRpc = jest.fn();
@@ -83,5 +83,30 @@ describe('Détail d\'une tentative du catalogue (parent)', () => {
     mockMaybeSingle.mockResolvedValue({ data: { ...attempt, status: 'in_progress' }, error: null });
     mockRpc.mockResolvedValue({ data: null, error: { message: 'not_submitted' } });
     expect(await fetchAttemptDetail('a1')).toBeNull();
+  });
+});
+
+describe('Suppression définitive d\'un QCM du catalogue (D-091)', () => {
+  it('impact : RPC catalog_quiz_impact, compteurs lus tels que le serveur les compte', async () => {
+    mockRpc.mockResolvedValue({ data: { quiz_id: 'z1', title: 'Ngữ văn 7', subject: 'langue_nationale', country: 'VN', grade: '7', week_label: 'Tuần 7', status: 'published', families: 2, children: 3, attempts: 3, in_progress: 1, submitted: 1, validated: 1, points: 8, questions: 12, answers: 20 }, error: null });
+    const impact = await fetchCatalogQuizImpact('z1');
+    expect(mockRpc).toHaveBeenCalledWith('catalog_quiz_impact', { p_quiz: 'z1' });
+    expect(impact).toMatchObject({ title: 'Ngữ văn 7', children: 3, attempts: 3, validated: 1, points: 8 });
+  });
+  it('purge : RPC catalog_purge_quiz avec le titre saisi comme confirmation (la base compare)', async () => {
+    mockRpc.mockResolvedValue({ data: { purged: true, title: 'Ngữ văn 7', families: 2, children: 3, attempts: 3, validated: 1, points: 8, questions: 12 }, error: null });
+    const result = await purgeCatalogQuiz('z1', 'Ngữ văn 7');
+    expect(mockRpc).toHaveBeenCalledWith('catalog_purge_quiz', { p_quiz: 'z1', p_confirm: 'Ngữ văn 7' });
+    expect(result).toEqual({ purged: true, title: 'Ngữ văn 7', counts: { families: 2, children: 3, attempts: 3, validated: 1, points: 8, questions: 12 } });
+  });
+  it('rejeu : un QCM déjà supprimé répond purged:false, sans erreur', async () => {
+    mockRpc.mockResolvedValue({ data: { purged: false }, error: null });
+    expect((await purgeCatalogQuiz('z1', 'x')).purged).toBe(false);
+  });
+  it('mauvais titre ou non administrateur : l\'erreur du serveur est remontée telle quelle (code lu par l\'écran)', async () => {
+    mockRpc.mockResolvedValue({ data: null, error: { message: 'confirm_mismatch', code: 'P0001' } });
+    await expect(purgeCatalogQuiz('z1', 'faux')).rejects.toMatchObject({ message: 'confirm_mismatch' });
+    mockRpc.mockResolvedValue({ data: null, error: { message: 'forbidden', code: '42501' } });
+    await expect(fetchCatalogQuizImpact('z1')).rejects.toMatchObject({ message: 'forbidden' });
   });
 });

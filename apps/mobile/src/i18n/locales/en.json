@@ -517,7 +517,8 @@
       "notSubmitted": "The test hasn't been sent yet",
       "answersToVerify": "Some answers need checking: confirm them before publishing",
       "answersNotConfirmed": "Confirm every answer of the exam before publishing",
-      "invalidDueDate": "This due date is not valid."
+      "invalidDueDate": "This due date is not valid.",
+      "gone": "This quiz no longer exists."
     },
     "import": {
       "entry": "Create from a document",
@@ -705,7 +706,9 @@
         "lateProgress": "Late ({{done}} of {{total}})",
         "validated": "Validated"
       }
-    }
+    },
+    "gone": "This quiz no longer exists.",
+    "goneBody": "It was deleted by the administrator. Points already earned are kept."
   },
   "sync": {
     "offline": "Offline — changes will sync when you are back online",
@@ -1220,7 +1223,8 @@
       "invalidShift": "Cannot shift: one week at a time, four weeks at most either way.",
       "subjectNotActive": "Turn this subject on first.",
       "childNotFound": "Child not found.",
-      "forbidden": "Action not allowed."
+      "forbidden": "Action not allowed.",
+      "confirmMismatch": "The title does not match: the quiz was not deleted."
     },
     "admin": {
       "title": "Administration",
@@ -1372,6 +1376,23 @@
       "retry": "Retry the {{count}} failure(s)",
       "publishAll": "Publish all ({{count}})",
       "backToCatalog": "Back to the catalog"
+    },
+    "purge": {
+      "action": "Delete permanently",
+      "actionFor": "Delete permanently: {{title}}",
+      "title": "Delete this quiz permanently?",
+      "loading": "Loading the impact…",
+      "loadError": "Could not read the impact of the deletion. Try again.",
+      "retry": "Try again",
+      "noAttempts": "No child has started this quiz.",
+      "impact": "{{children}} child(ren), {{attempts}} attempt(s) of which {{validated}} validated, {{points}} point(s) already awarded (kept).",
+      "breakdown": "{{families}} family(ies) · {{inProgress}} in progress · {{submitted}} to validate · {{validated}} validated",
+      "warning": "This cannot be undone. The questions, answers, attempts and results are deleted; points already earned stay in the points history. The slot becomes free for a new import.",
+      "typeTitle": "Type the exact title “{{title}}” to confirm",
+      "confirm": "Delete permanently",
+      "confirmFor": "Delete “{{title}}” permanently",
+      "done": "“{{title}}” deleted: {{attempts}} attempt(s) by {{children}} child(ren); {{points}} point(s) kept. The slot is free.",
+      "alreadyGone": "This quiz was already deleted."
     }
   },
   "weekly": {
@@ -1447,7 +1468,7 @@
     "questionsTitle": "Questions",
     "loading": "Loading…",
     "error": "Could not open this quiz.",
-    "forbidden": "This quiz is not assigned to this child.",
+    "forbidden": "This quiz is not assigned to this child, or no longer exists.",
     "retry": "Try again",
     "openHint": "Opens the quiz details"
   }

@@ -517,7 +517,8 @@
       "notSubmitted": "Bài chưa được nộp",
       "answersToVerify": "Còn đáp án cần kiểm tra: hãy xác nhận trước khi đăng",
       "answersNotConfirmed": "Hãy xác nhận từng đáp án của đề trước khi đăng",
-      "invalidDueDate": "Hạn chót này không hợp lệ."
+      "invalidDueDate": "Hạn chót này không hợp lệ.",
+      "gone": "Bài ôn tập này không còn nữa."
     },
     "import": {
       "entry": "Tạo từ tài liệu",
@@ -705,7 +706,9 @@
         "lateProgress": "Quá hạn ({{done}}/{{total}})",
         "validated": "Đã duyệt"
       }
-    }
+    },
+    "gone": "Bài ôn tập này không còn nữa.",
+    "goneBody": "Bài đã được quản trị viên xóa. Điểm đã cộng (nếu có) vẫn được giữ."
   },
   "sync": {
     "offline": "Đang offline — thay đổi sẽ được đồng bộ khi có mạng",
@@ -1220,7 +1223,8 @@
       "invalidShift": "Không dời được: mỗi lần một tuần, tối đa bốn tuần mỗi bên.",
       "subjectNotActive": "Hãy bật môn này trước.",
       "childNotFound": "Không tìm thấy bé.",
-      "forbidden": "Không được phép."
+      "forbidden": "Không được phép.",
+      "confirmMismatch": "Tiêu đề không khớp: bài chưa bị xóa."
     },
     "admin": {
       "title": "Quản trị",
@@ -1372,6 +1376,23 @@
       "retry": "Thử lại {{count}} bài lỗi",
       "publishAll": "Xuất bản tất cả ({{count}})",
       "backToCatalog": "Về danh mục"
+    },
+    "purge": {
+      "action": "Xóa vĩnh viễn",
+      "actionFor": "Xóa vĩnh viễn: {{title}}",
+      "title": "Xóa vĩnh viễn bài này?",
+      "loading": "Đang tải tác động…",
+      "loadError": "Không đọc được tác động của việc xóa. Hãy thử lại.",
+      "retry": "Thử lại",
+      "noAttempts": "Chưa có bé nào làm bài này.",
+      "impact": "{{children}} bé, {{attempts}} lượt làm trong đó {{validated}} đã duyệt, {{points}} điểm đã cộng (được giữ nguyên).",
+      "breakdown": "{{families}} gia đình · {{inProgress}} đang làm · {{submitted}} chờ duyệt · {{validated}} đã duyệt",
+      "warning": "Không thể hoàn tác. Câu hỏi, đáp án, bài làm và kết quả của các bé sẽ bị xóa; điểm đã cộng được giữ nguyên trong lịch sử điểm. Ô này sẽ trống để nhập lại.",
+      "typeTitle": "Gõ đúng tiêu đề «{{title}}» để xác nhận",
+      "confirm": "Xóa vĩnh viễn",
+      "confirmFor": "Xóa vĩnh viễn «{{title}}»",
+      "done": "Đã xóa «{{title}}»: {{attempts}} lượt làm của {{children}} bé; {{points}} điểm được giữ nguyên. Ô đã trống.",
+      "alreadyGone": "Bài này đã được xóa từ trước."
     }
   },
   "weekly": {
@@ -1447,7 +1468,7 @@
     "questionsTitle": "Các câu hỏi",
     "loading": "Đang tải…",
     "error": "Không mở được bài ôn tập này.",
-    "forbidden": "Bài ôn tập này không dành cho bạn ấy.",
+    "forbidden": "Bài ôn tập này không dành cho bạn ấy hoặc không còn nữa.",
     "retry": "Thử lại",
     "openHint": "Mở chi tiết bài ôn tập"
   }

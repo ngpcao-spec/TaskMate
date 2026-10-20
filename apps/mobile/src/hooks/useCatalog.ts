@@ -1,11 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   confirmCatalogAnswers, createCatalogDraft, createCatalogQuiz, deleteCatalogQuestion, deleteCatalogQuiz, fetchCatalogList, fetchCatalogQuestions, fetchCatalogQuiz, fetchChildSubjects, fetchIsPlatformAdmin,
-  fetchParentCatalog, fetchParentQuizDetail, relaunchCatalogEvaluation, reorderCatalogQuestions, setCatalogDates, setCatalogKind, setCatalogPaper, setCatalogStatus, setChildClass, setChildSubject,
+  fetchCatalogQuizImpact, fetchParentCatalog, fetchParentQuizDetail, purgeCatalogQuiz, relaunchCatalogEvaluation, reorderCatalogQuestions, setCatalogDates, setCatalogKind, setCatalogPaper, setCatalogStatus, setChildClass, setChildSubject,
   shiftChildSubject, updateCatalogInfo, upsertCatalogQuestion, type CatalogQuestionInput, type NewCatalogQuiz,
 } from '@/api/catalog';
 import { platformKeys, queryKeys, quizKeys } from '@/api/keys';
 import { draftQuestions } from '@/domain/catalog-import';
+import type { PurgeResult } from '@/domain/catalog-purge';
 import type { ExistingQuiz, PublishResult, StepResult, WriteStep } from '@/domain/catalog-import-plan';
 import { serverErrorCode } from '@/api/tasks';
 import { quizErrorKey } from '@/domain/quiz';
@@ -54,6 +55,33 @@ export const useSetCatalogPaper = () => useCatalogMutation<{ quizId: string; pap
 export const useSetCatalogDates = () => useCatalogMutation<{ quizId: string; releaseOn: string | null; dueOn: string | null }>(({ quizId, releaseOn, dueOn }) => setCatalogDates(quizId, releaseOn, dueOn));
 export const useSetCatalogStatus = () => useCatalogMutation<{ quizId: string; status: QuizStatus }>(({ quizId, status }) => setCatalogStatus(quizId, status));
 export const useDeleteCatalogQuiz = () => useCatalogMutation<string>(deleteCatalogQuiz);
+
+/**
+ * Impact d'une suppression définitive (D-091), lu à CHAQUE ouverture de la confirmation : jamais servi par le cache (`gcTime: 0`, `staleTime: 0`),
+ * un chiffre périmé ne doit pas rassurer l'administrateur.
+ */
+export const useCatalogQuizImpact = (quizId: string, enabled: boolean) =>
+  useQuery({ queryKey: quizKeys.catalogImpact(quizId), queryFn: () => fetchCatalogQuizImpact(quizId), enabled: enabled && !!quizId, staleTime: 0, gcTime: 0, retry: false });
+
+/**
+ * Suppression définitive : après succès, le QCM sort de toutes les lectures de révisions (liste admin, éditeur, vues parent, quiz de l'enfant) ; ses requêtes
+ * propres sont retirées du cache (une relecture renverrait « introuvable »). Les points ne bougent pas : rien à invalider côté points.
+ */
+export function usePurgeCatalogQuiz() {
+  const queryClient = useQueryClient();
+  const show = useToastStore((s) => s.show);
+  return useMutation<PurgeResult, unknown, { quizId: string; confirm: string }>({
+    networkMode: 'always',
+    mutationFn: ({ quizId, confirm }) => purgeCatalogQuiz(quizId, confirm),
+    onError: (error) => show(i18n.t(quizErrorKey(serverErrorCode(error))), 'error'),
+    onSuccess: (_result, { quizId }) => {
+      queryClient.removeQueries({ queryKey: quizKeys.catalogQuiz(quizId) });
+      queryClient.removeQueries({ queryKey: quizKeys.catalogQuestions(quizId) });
+      queryClient.removeQueries({ queryKey: quizKeys.catalogImpact(quizId) });
+    },
+    onSettled: () => void queryClient.invalidateQueries({ queryKey: quizKeys.all }),
+  });
+}
 
 export const useSetChildClass = () => useCatalogMutation<{ childId: string; country: string; grade: string }>(({ childId, country, grade }) => setChildClass(childId, country, grade), [queryKeys.me]);
 export const useSetChildSubject = () => useCatalogMutation<{ childId: string; subject: string; active: boolean }>(({ childId, subject, active }) => setChildSubject(childId, subject, active));

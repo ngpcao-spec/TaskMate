@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { AdminGate } from '@/components/admin/AdminGate';
+import { PurgeQuizDialog } from '@/components/admin/PurgeQuizDialog';
 import { Chip } from '@/components/Chip';
 import { confirmDialog } from '@/components/confirm';
 import { PickerField } from '@/components/PickerField';
@@ -50,6 +51,7 @@ function Editor({ quizId }: { quizId: string }) {
   const delQ = useDeleteCatalogQuestion();
   const reorder = useReorderCatalogQuestions();
   const del = useDeleteCatalogQuiz();
+  const [purging, setPurging] = useState(false);
   const [weekEdit, setWeek] = useState<string | null>(null);
   const [titleEdit, setTitle] = useState<string | null>(null);
   // dates : undefined = pas touchée (valeur du serveur) ; null = retirée
@@ -238,6 +240,9 @@ function Editor({ quizId }: { quizId: string }) {
         </>
       )}
       {isDraft && q.attempts_count === 0 ? <Button variant="secondary" label={t('catalog.editor.delete')} onPress={remove} loading={del.isPending} /> : null}
+      {/* suppression définitive (D-091) : même publié, même commencé ; confirmation par le titre exact, points conservés */}
+      <Button variant="danger" label={t('catalog.purge.action')} accessibilityLabel={t('catalog.purge.actionFor', { title: q.title })} onPress={() => setPurging(true)} />
+      <PurgeQuizDialog quizId={quizId} visible={purging} onClose={() => setPurging(false)} onPurged={() => { setPurging(false); router.back(); }} />
     </Screen>
   );
 }

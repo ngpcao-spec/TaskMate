@@ -1,9 +1,10 @@
 import { useRouter } from 'expo-router';
-import { ChevronRight, FilePlus, Plus } from 'lucide-react-native';
+import { ChevronRight, FilePlus, Plus, Trash2 } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { AdminGate } from '@/components/admin/AdminGate';
+import { PurgeQuizDialog } from '@/components/admin/PurgeQuizDialog';
 import { Chip } from '@/components/Chip';
 import { gradeText, subjectText } from '@/components/quiz/subject';
 import { Card, Screen, ScreenHeader } from '@/components/ui';
@@ -31,6 +32,7 @@ function Catalog() {
   const [country, setCountry] = useState<string | null>(null);
   const [grade, setGrade] = useState<string | null>(null);
   const [subject, setSubject] = useState<string | null>(null);
+  const [purgeId, setPurgeId] = useState<string | null>(null);
   const all = useMemo(() => list.data ?? [], [list.data]);
   const shown = useMemo(() => filterCatalog(all, { country, grade, subject }), [all, country, grade, subject]);
   if (!me) return null;
@@ -89,24 +91,30 @@ function Catalog() {
         const count = t('revisions.questionCount', { count: q.question_count });
         const verify = q.to_verify_count > 0 ? t('catalog.admin.toVerify', { count: q.to_verify_count }) : null;
         return (
-          <Pressable
-            key={q.id}
-            accessibilityRole="button"
-            accessibilityLabel={[`${q.week_label} — ${q.title}`, place, t(`catalog.state.${state}`), dates, count, verify].filter(Boolean).join(', ')}
-            onPress={() => router.push({ pathname: '/admin/[id]', params: { id: q.id } })}
-            style={styles.card}
-          >
-            <View style={styles.flex}>
-              <Text style={styles.title}>{`${q.week_label} — ${q.title}`}</Text>
-              <Text style={typography.secondary}>{place}</Text>
-              <Text style={typography.secondary}>{dates}</Text>
-              <Text style={typography.secondary}>{[count, verify].filter(Boolean).join(' · ')}</Text>
-            </View>
-            <Text style={[styles.badge, state === 'open' ? styles.badgeOn : null]}>{t(`catalog.state.${state}`)}</Text>
-            <ChevronRight color={colors.textSecondary} />
-          </Pressable>
+          <View key={q.id} style={styles.card}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={[`${q.week_label} — ${q.title}`, place, t(`catalog.state.${state}`), dates, count, verify].filter(Boolean).join(', ')}
+              onPress={() => router.push({ pathname: '/admin/[id]', params: { id: q.id } })}
+              style={styles.cardMain}
+            >
+              <View style={styles.flex}>
+                <Text style={styles.title}>{`${q.week_label} — ${q.title}`}</Text>
+                <Text style={typography.secondary}>{place}</Text>
+                <Text style={typography.secondary}>{dates}</Text>
+                <Text style={typography.secondary}>{[count, verify].filter(Boolean).join(' · ')}</Text>
+              </View>
+              <Text style={[styles.badge, state === 'open' ? styles.badgeOn : null]}>{t(`catalog.state.${state}`)}</Text>
+              <ChevronRight color={colors.textSecondary} />
+            </Pressable>
+            {/* suppression définitive (D-091) : bouton frère de la carte (jamais un bouton dans un bouton) */}
+            <Pressable accessibilityRole="button" accessibilityLabel={t('catalog.purge.actionFor', { title: q.title })} onPress={() => setPurgeId(q.id)} style={styles.trash}>
+              <Trash2 color={colors.danger} size={20} />
+            </Pressable>
+          </View>
         );
       })}
+      <PurgeQuizDialog quizId={purgeId ?? ''} visible={purgeId !== null} onClose={() => setPurgeId(null)} onPurged={() => setPurgeId(null)} />
     </Screen>
   );
 }
@@ -116,7 +124,9 @@ const styles = StyleSheet.create({
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   section: { fontSize: 16, fontWeight: '700', color: colors.text },
   empty: { textAlign: 'center', paddingVertical: 24 },
-  card: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: MIN_TARGET + 16, backgroundColor: colors.card, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12 },
+  card: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: colors.card, borderRadius: 16, paddingLeft: 16, paddingRight: 6, paddingVertical: 12 },
+  cardMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: MIN_TARGET + 16 },
+  trash: { width: MIN_TARGET, height: MIN_TARGET, alignItems: 'center', justifyContent: 'center' },
   title: { fontSize: 16, fontWeight: '600', color: colors.text },
   badge: { fontSize: 12, fontWeight: '700', color: colors.textSecondary, backgroundColor: colors.separator, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4, overflow: 'hidden' },
   badgeOn: { color: colors.primary, backgroundColor: colors.primaryTint },

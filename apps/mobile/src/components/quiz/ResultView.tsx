@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { Button, Card, Screen, ScreenHeader } from '@/components/ui';
 import { questionTag } from '@/domain/quiz';
+import { QuizGone } from '@/components/quiz/QuizGone';
+import { isGoneError } from '@/domain/catalog-purge';
 import { useChildResult } from '@/hooks/useQuizzes';
 import { colors, typography } from '@/theme/tokens';
 
@@ -18,7 +20,7 @@ export function ResultView({ attemptId }: { attemptId: string }) {
   const result = useChildResult(attemptId);
   if (result.isPending) return <ActivityIndicator />;
   const r = result.data;
-  if (!r) return null;
+  if (!r) return isGoneError(result.error) ? <QuizGone /> : null;
 
   if (r.status !== 'validated' || r.score === undefined || r.total === undefined) {
     return (
