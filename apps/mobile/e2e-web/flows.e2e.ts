@@ -1501,6 +1501,9 @@ test.describe('aucun champ mot de passe monté hors des écrans de connexion (D-
     console.log(`[mdp] ${where} — url=${page.url()} champs=${rows.length} sensibles=${JSON.stringify(sensitive)}`);
     return page.locator(SECRET).count();
   }
+  /** Champs sensibles présents dans le DOM mais CACHÉS (écran resté monté sous un autre) : ce que iOS propose de remplir en pleine utilisation. */
+  const hiddenSecrets = (page: Page) =>
+    page.$$eval('input[type=password], input[autocomplete*=password], input[autocomplete=username]', (els) => els.filter((e) => !(e.offsetWidth || e.offsetHeight || e.getClientRects().length)).length);
   async function everyTab(page: Page, who: string) {
     for (const tab of ['Lịch', 'Thống kê', 'Thêm', 'Hôm nay']) {
       await page.getByRole('tab', { name: new RegExp(`^${tab}`) }).click();
@@ -1530,8 +1533,12 @@ test.describe('aucun champ mot de passe monté hors des écrans de connexion (D-
     await page.getByRole('button', { name: 'Cài đặt chung' }).click();
     await page.getByRole('button', { name: 'Quản lý hồ sơ của các con' }).click();
     await expect(page.getByText('Mật khẩu mới').first().or(page.getByLabel('Mật khẩu').first())).toBeVisible({ timeout: 20_000 });
+    expect(await hiddenSecrets(page), 'gestion des enfants : aucun champ caché').toBe(0);
     await page.getByRole('button', { name: 'Thêm con' }).click();
     await expect(page.getByLabel('Mật khẩu').first()).toBeVisible({ timeout: 20_000 });
+    // le formulaire d'ajout est EMPILÉ sur la gestion des enfants (qui reste montée dessous) : celle-ci ne garde aucun champ caché
+    expect(await secretCount(page, 'parent · ajout d\'un enfant (par-dessus la gestion des enfants)')).toBe(1);
+    expect(await hiddenSecrets(page), 'ajout d\'un enfant : aucun champ caché dessous').toBe(0);
     await page.getByRole('tab', { name: /^Hôm nay/ }).click();
     expect(await secretCount(page, 'parent · Hôm nay après les formulaires d\'enfant'), 'parent : Hôm nay après les formulaires d\'enfant').toBe(0);
     await everyTab(page, 'parent (après formulaires)');
