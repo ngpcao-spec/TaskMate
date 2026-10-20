@@ -809,6 +809,7 @@ test.describe('parents Google, famille partagée, enfants rattachés à la famil
 
     // ── parent A invite un parent : code affiché une seule fois (haché en base)
     await open(pageA, '/more/settings');
+    await expectVisibleOrDump(pageA, pageA.getByRole('button', { name: 'Tạo mã' }).first(), 'parent-A-réglages', 30_000);
     await pageA.getByRole('button', { name: 'Tạo mã' }).first().click();
     const codeLocator = pageA.locator('[aria-label^="Mã mời: "]');
     await expect(codeLocator).toBeVisible({ timeout: 20_000 });
