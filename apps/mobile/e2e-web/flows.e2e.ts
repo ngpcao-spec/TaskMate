@@ -1503,7 +1503,7 @@ test.describe('aucun champ mot de passe monté hors des écrans de connexion (D-
   }
   /** Champs sensibles présents dans le DOM mais CACHÉS (écran resté monté sous un autre) : ce que iOS propose de remplir en pleine utilisation. */
   const hiddenSecrets = (page: Page) =>
-    page.$$eval('input[type=password], input[autocomplete*=password], input[autocomplete=username]', (els) => els.filter((e) => !(e.offsetWidth || e.offsetHeight || e.getClientRects().length)).length);
+    page.$$eval('input[type=password], input[autocomplete*=password], input[autocomplete=username]', (els) => (els as HTMLInputElement[]).filter((e) => !(e.offsetWidth || e.offsetHeight || e.getClientRects().length)).length);
   async function everyTab(page: Page, who: string) {
     for (const tab of ['Lịch', 'Thống kê', 'Thêm', 'Hôm nay']) {
       await page.getByRole('tab', { name: new RegExp(`^${tab}`) }).click();
