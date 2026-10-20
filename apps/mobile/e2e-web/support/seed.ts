@@ -138,6 +138,8 @@ async function sessionOf(person: Person): Promise<Session> {
 export async function signInContext(context: BrowserContext, person: Person): Promise<void> {
   const session = await sessionOf(person);
   await context.addInitScript(([key, value]) => window.localStorage.setItem(key as string, value as string), [sessionStorageKey(), JSON.stringify(session)]);
+  // D-090 : le mini-parcours enfant s'ouvre UNE fois au premier login d'un enfant sans appareil actif (marque locale à l'appareil) ; les tests qui n'en parlent pas l'ont « déjà vu »
+  if (person.childId) await context.addInitScript((key) => window.localStorage.setItem(key as string, '1'), `taskmate-child-setup-seen-${person.memberId}`);
 }
 
 /** Client service local (clé de service du Supabase LOCAL de test) : lecture/écriture directe pour préparer ou vérifier l'état serveur. */
