@@ -1,3 +1,4 @@
+import { parseImpact, parsePurgeResult, type PurgeImpact, type PurgeResult } from '@/domain/catalog-purge';
 import type { QuizAttemptStatus, QuizMaterialKind, QuizStatus } from '@/types/models';
 import { supabase } from './supabase';
 
@@ -154,6 +155,22 @@ export async function setCatalogStatus(quizId: string, status: QuizStatus): Prom
 export async function deleteCatalogQuiz(quizId: string): Promise<void> {
   const { error } = await supabase.rpc('catalog_delete_quiz', { p_quiz: quizId });
   fail(error);
+}
+
+/** Impact d'une suppression définitive (D-091) : familles, enfants, tentatives par état, points déjà attribués. Administrateur seulement (revérifié par la base). */
+export async function fetchCatalogQuizImpact(quizId: string): Promise<PurgeImpact> {
+  const { data, error } = await supabase.rpc('catalog_quiz_impact', { p_quiz: quizId });
+  fail(error);
+  return parseImpact(data);
+}
+/**
+ * Suppression DÉFINITIVE (D-091), même publiée et commencée. `confirm` = le titre exact : la BASE le compare (`confirm_mismatch` sinon). Les points déjà
+ * gagnés sont conservés. Rejouable : un QCM déjà supprimé répond `purged: false`.
+ */
+export async function purgeCatalogQuiz(quizId: string, confirm: string): Promise<PurgeResult> {
+  const { data, error } = await supabase.rpc('catalog_purge_quiz', { p_quiz: quizId, p_confirm: confirm });
+  fail(error);
+  return parsePurgeResult(data);
 }
 
 // ───────────── parent : classe, matières, décalage ─────────────

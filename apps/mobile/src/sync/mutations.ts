@@ -14,6 +14,7 @@ import {
 } from '@/api/tasks';
 import { createQuizSet, saveQuizProgress, startQuizEvaluation, submitQuizEvaluation, validateQuizAttempt, type NewQuizSet } from '@/api/quizzes';
 import { isTransientError } from '@/domain/errors';
+import { isGoneError } from '@/domain/catalog-purge';
 import { quizErrorKey } from '@/domain/quiz';
 import { dateInRange, optimisticTask } from '@/domain/optimistic-task';
 import { optimisticToggle } from '@/domain/task-state';
@@ -211,6 +212,12 @@ export function registerMutationDefaults(
   });
 
   const refreshQuiz = () => void queryClient.invalidateQueries({ queryKey: quizKeys.all });
+  // QCM supprimé définitivement par l'administrateur (D-091) alors qu'une écriture attendait dans la file (hors ligne) : le serveur répond « introuvable »,
+  // c'est définitif (aucun rejeu) → l'écriture est retirée de la file SANS message d'erreur, et les listes sont relues (le QCM n'y est plus).
+  const quizFailure = (error: unknown, message: () => string) => {
+    if (isGoneError(error)) refreshQuiz();
+    else toast(message(), 'error');
+  };
   queryClient.setMutationDefaults(mutationKeys.createQuizSet, {
     ...common,
     mutationFn: (v: CreateQuizSetVars) => createQuizSet(v),
@@ -220,25 +227,25 @@ export function registerMutationDefaults(
   queryClient.setMutationDefaults(mutationKeys.startQuizEvaluation, {
     ...common,
     mutationFn: ({ setId, attemptId, source }: StartEvaluationVars) => startQuizEvaluation(setId, attemptId, source),
-    onError: () => toast(i18n.t('common.error'), 'error'),
+    onError: (error: unknown) => quizFailure(error, () => i18n.t('common.error')),
     onSettled: refreshQuiz,
   });
   // Pas de rafraîchissement global à chaque réponse (une écriture par tap) ; refus du serveur (tentative envoyée…) : message précis
   queryClient.setMutationDefaults(mutationKeys.saveQuizProgress, {
     ...common,
     mutationFn: ({ attemptId, questionId, choice }: SaveProgressVars) => saveQuizProgress(attemptId, questionId, choice),
-    onError: (error: unknown) => toast(i18n.t(quizErrorKey(serverErrorCode(error))), 'error'),
+    onError: (error: unknown) => quizFailure(error, () => i18n.t(quizErrorKey(serverErrorCode(error)))),
   });
   queryClient.setMutationDefaults(mutationKeys.submitQuizEvaluation, {
     ...common,
     mutationFn: ({ attemptId, answers }: SubmitEvaluationVars) => submitQuizEvaluation(attemptId, answers),
-    onError: () => toast(i18n.t('common.error'), 'error'),
+    onError: (error: unknown) => quizFailure(error, () => i18n.t('common.error')),
     onSettled: refreshQuiz,
   });
   queryClient.setMutationDefaults(mutationKeys.validateQuizAttempt, {
     ...common,
     mutationFn: ({ attemptId, showCorrection }: ValidateAttemptVars) => validateQuizAttempt(attemptId, showCorrection ?? false),
-    onError: () => toast(i18n.t('common.error'), 'error'),
+    onError: (error: unknown) => quizFailure(error, () => i18n.t('common.error')),
     onSettled: refreshQuiz,
   });
 }

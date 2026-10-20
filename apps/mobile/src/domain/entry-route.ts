@@ -31,3 +31,15 @@ export function resolveEntryRoute(s: EntryState): EntryRoute {
   if (s.member.role === 'parent' && s.childrenCount === 0) return '/onboarding/setup';
   return '/(tabs)/today';
 }
+
+/** Durée de fraîcheur de `me` (identique au défaut du client de requêtes). */
+export const ME_STALE_MS = 30_000;
+
+/**
+ * Un « aucun enfant » peut venir du cache persisté, écrit AVANT la création du premier enfant (rechargement de la page juste après). On ne s'y fie pas :
+ * ce résultat-là est toujours périmé (relu à chaque montage). Sinon le parent retournerait dans l'assistant alors que son enfant existe.
+ */
+export const meStaleTime = (childrenCount: number | undefined): number => (childrenCount === 0 ? 0 : ME_STALE_MS);
+
+/** `me` est exploitable pour le routage : lu, et — s'il annonce zéro enfant — pas en cours de relecture. */
+export const meSettled = (isPending: boolean, childrenCount: number, isFetching: boolean): boolean => !isPending && !(childrenCount === 0 && isFetching);

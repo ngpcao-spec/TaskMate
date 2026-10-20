@@ -193,7 +193,7 @@ describe('Détail d’un quiz — parent (D-089)', () => {
   it('refus du serveur : message clair, jamais le contenu', async () => {
     mockFetch.mockRejectedValue({ code: '42501', message: 'forbidden' });
     await show();
-    expect(await screen.findByText('Bài ôn tập này không dành cho bạn ấy.')).toBeTruthy();
+    expect(await screen.findByText('Bài ôn tập này không dành cho bạn ấy hoặc không còn nữa.')).toBeTruthy();
     expect(screen.queryByText('Câu 1')).toBeNull();
     expect(mockRedirect).not.toHaveBeenCalled();
   });

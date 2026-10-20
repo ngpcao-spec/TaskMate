@@ -8,9 +8,10 @@ import AdminQuestionScreen from '../app/admin/question';
 
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
+const mockBack = jest.fn();
 const mockRedirect = jest.fn();
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockPush, back: jest.fn(), replace: mockReplace }),
+  useRouter: () => ({ push: mockPush, back: mockBack, replace: mockReplace }),
   useLocalSearchParams: () => ({ quiz: 'z1' }),
   Redirect: (props: { href: string }) => { mockRedirect(props.href); return null; },
 }));
@@ -42,6 +43,8 @@ const mockKind = jest.fn();
 const mockCreate = jest.fn();
 const mockDelete = jest.fn();
 const mockDelQ = jest.fn();
+const mockPurge = jest.fn();
+const impact = (over: Record<string, unknown> = {}) => ({ quiz_id: 'z1', title: 'Lịch sử', subject: 'hist_geo', country: 'VN', grade: '5', week_label: 'Tuần 3', status: 'published', families: 1, children: 2, attempts: 3, in_progress: 1, submitted: 1, validated: 1, points: 8, questions: 3, answers: 6, ...over });
 const ok = (fn: jest.Mock) => ({ mutate: (v: unknown, o?: { onSuccess?: () => void }) => { fn(v); o?.onSuccess?.(); }, isPending: false });
 jest.mock('@/hooks/useCatalog', () => ({
   useIsPlatformAdmin: () => ({ data: mockAdmin, isPending: mockAdmin === undefined }),
@@ -59,6 +62,8 @@ jest.mock('@/hooks/useCatalog', () => ({
   useDeleteCatalogQuiz: () => ok(mockDelete),
   useReorderCatalogQuestions: () => ok(jest.fn()),
   useCreateCatalogQuiz: () => ok(mockCreate),
+  useCatalogQuizImpact: () => ({ data: impact(), isPending: false, isFetching: false, isError: false, refetch: jest.fn() }),
+  usePurgeCatalogQuiz: () => ({ isPending: false, mutate: (v: unknown, o?: { onSuccess?: (r: unknown) => void }) => { mockPurge(v); o?.onSuccess?.({ purged: true, title: 'Lịch sử', counts: { families: 1, children: 2, attempts: 3, validated: 1, points: 8, questions: 3 } }); } }),
   useCatalogBulk: () => ({ loadExisting: async () => [], write: async () => [], publish: async () => [] }),
 }));
 jest.mock('@/services/documentText', () => ({ extractFileText: jest.fn() }));
@@ -128,6 +133,53 @@ describe('Administration — catalogue', () => {
     mockList = [listRow({ to_verify_count: 2 })];
     await render(<AdminCatalog />);
     expect(screen.getByText(/2 đáp án cần kiểm tra/)).toBeTruthy();
+  });
+});
+
+describe('Administration — suppression définitive (D-091)', () => {
+  it('liste : une action « Xóa vĩnh viễn » par QCM (publié ou non), nommée par son titre, à côté de la carte et jamais dedans', async () => {
+    mockList = [listRow(), listRow({ id: 'z2', title: 'Phân số', status: 'published' })];
+    await render(<AdminCatalog />);
+    expect(screen.getByRole('button', { name: 'Xóa vĩnh viễn: Lịch sử' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Xóa vĩnh viễn: Phân số' })).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Xóa vĩnh viễn: Phân số' }));
+    expect(mockPush).not.toHaveBeenCalled(); // elle n'ouvre pas l'éditeur
+  });
+  it('liste : impact en clair, puis le titre exact à retaper avant que le bouton rouge ne s\'active', async () => {
+    mockList = [listRow({ status: 'published' })];
+    await render(<AdminCatalog />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Xóa vĩnh viễn: Lịch sử' }));
+    expect(screen.getByText('2 bé, 3 lượt làm trong đó 1 đã duyệt, 8 điểm đã cộng (được giữ nguyên).')).toBeTruthy();
+    const confirm = () => screen.getByRole('button', { name: 'Xóa vĩnh viễn «Lịch sử»' });
+    expect(confirm().props.accessibilityState).toMatchObject({ disabled: true });
+    await fireEvent.changeText(screen.getByLabelText('Gõ đúng tiêu đề «Lịch sử» để xác nhận'), 'lịch sử');
+    expect(confirm().props.accessibilityState).toMatchObject({ disabled: true });
+    await fireEvent.changeText(screen.getByLabelText('Gõ đúng tiêu đề «Lịch sử» để xác nhận'), 'Lịch sử');
+    await fireEvent.press(confirm());
+    expect(mockPurge).toHaveBeenCalledWith({ quizId: 'z1', confirm: 'Lịch sử' });
+    expect(screen.queryByText('Xóa vĩnh viễn bài này?')).toBeNull(); // fermée après succès ; la liste est relue par la mutation
+  });
+  it('éditeur : un QCM PUBLIÉ avec tentatives reste verrouillé, mais se supprime définitivement ; retour à la liste ensuite', async () => {
+    mockQuiz = quiz({ status: 'published', attempts_count: 3 });
+    await render(<AdminQuizEditor quizId="z1" />);
+    expect(screen.queryByRole('button', { name: 'Xóa bản nháp' })).toBeNull();
+    await fireEvent.press(screen.getByRole('button', { name: 'Xóa vĩnh viễn: Lịch sử' }));
+    await fireEvent.changeText(screen.getByLabelText('Gõ đúng tiêu đề «Lịch sử» để xác nhận'), 'Lịch sử');
+    await fireEvent.press(screen.getByRole('button', { name: 'Xóa vĩnh viễn «Lịch sử»' }));
+    expect(mockPurge).toHaveBeenCalledWith({ quizId: 'z1', confirm: 'Lịch sử' });
+    expect(mockBack).toHaveBeenCalled();
+  });
+  it('éditeur : le brouillon garde aussi sa suppression simple, sans effacer ce garde-fou', async () => {
+    mockQuiz = quiz();
+    await render(<AdminQuizEditor quizId="z1" />);
+    expect(screen.getByRole('button', { name: 'Xóa bản nháp' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Xóa vĩnh viễn: Lịch sử' })).toBeTruthy();
+  });
+  it('un parent ordinaire ou un enfant ne voit jamais l\'action (garde de l\'écran, la base refuse de toute façon)', async () => {
+    mockRole = 'child'; mockAdmin = false;
+    mockList = [listRow()];
+    await render(<AdminCatalog />);
+    expect(screen.queryByRole('button', { name: /Xóa vĩnh viễn/ })).toBeNull();
   });
 });
 

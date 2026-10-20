@@ -9,6 +9,8 @@ import { ChoiceButton } from '@/components/quiz/ChoiceButton';
 import { Button, Card, Screen, ScreenHeader } from '@/components/ui';
 import { answeredCount, answersPayload, unansweredCount } from '@/domain/quiz';
 import { restoredAnswers } from '@/domain/quiz-week';
+import { QuizGone } from '@/components/quiz/QuizGone';
+import { isGoneError } from '@/domain/catalog-purge';
 import { useChildProgress, useChildQuestions, useChildQuizSets, useSaveQuizProgress, useStartQuizEvaluation, useSubmitQuizEvaluation } from '@/hooks/useQuizzes';
 import { colors, typography } from '@/theme/tokens';
 
@@ -52,7 +54,8 @@ export function EvaluationRun({ setId }: { setId: string }) {
   const answers = useMemo(() => ({ ...restored, ...chosen }), [restored, chosen]);
 
   if (sets.isPending) return <ActivityIndicator />;
-  if (!info) return null;
+  // QCM supprimé définitivement (D-091) : absent de la liste relue, ou tentative introuvable côté serveur
+  if (!info || isGoneError(questions.error) || isGoneError(progress.error)) return <QuizGone />;
 
   if (sent || info.evaluation_status === 'submitted') {
     return (

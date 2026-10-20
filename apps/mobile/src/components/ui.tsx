@@ -94,7 +94,7 @@ export function ErrorText({ children }: { children?: string | null }) {
 type ButtonProps = {
   label: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
   disabled?: boolean;
   loading?: boolean;
   /** Libellé lu par les lecteurs d'écran si différent du texte affiché (ex. « Duyệt » + titre de la tâche). */
@@ -115,14 +115,15 @@ export function Button({ label, onPress, variant = 'primary', disabled = false, 
         styles.button,
         variant === 'primary' && styles.buttonPrimary,
         variant === 'secondary' && styles.buttonSecondary,
+        variant === 'danger' && styles.buttonDanger,
         inactive && styles.buttonDisabled,
         pressed && styles.pressed,
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'primary' ? colors.onPrimary : colors.accent} />
+        <ActivityIndicator color={variant === 'primary' ? colors.onPrimary : variant === 'danger' ? colors.onSolid : colors.accent} />
       ) : (
-        <Text style={[styles.buttonLabel, variant !== 'primary' && styles.buttonLabelAlt]}>{label}</Text>
+        <Text style={[styles.buttonLabel, (variant === 'secondary' || variant === 'ghost') && styles.buttonLabelAlt, variant === 'danger' && styles.buttonLabelSolid]}>{label}</Text>
       )}
     </Pressable>
   );
@@ -194,10 +195,12 @@ const styles = StyleSheet.create({
   },
   buttonPrimary: { backgroundColor: colors.primary, borderWidth: line.width, borderColor: colors.ring, ...shadowSmall },
   buttonSecondary: { backgroundColor: colors.cardStrong, borderWidth: line.width, borderColor: colors.glassBorder, ...shadowSmall },
+  buttonDanger: { backgroundColor: colors.danger, borderWidth: line.width, borderColor: colors.danger, ...shadowSmall },
   buttonDisabled: { opacity: 0.5 },
   pressed: { opacity: 0.85 },
   buttonLabel: { color: colors.onPrimary, fontSize: 16, fontWeight: '600' },
   buttonLabelAlt: { color: colors.accent },
+  buttonLabelSolid: { color: colors.onSolid },
   field: { gap: spacing.xs },
   fieldLabel: { fontSize: 15, fontWeight: '600', color: colors.text },
   input: {

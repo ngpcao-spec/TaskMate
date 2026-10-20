@@ -7,6 +7,8 @@ import { Card, Screen, ScreenHeader } from '@/components/ui';
 import { formatShortDate } from '@/domain/calendar';
 import { todayInTz } from '@/domain/family-time';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
+import { QuizGone } from '@/components/quiz/QuizGone';
+import { isGoneError } from '@/domain/catalog-purge';
 import { useAttemptDetail } from '@/hooks/useQuizzes';
 import { colors, typography } from '@/theme/tokens';
 
@@ -22,7 +24,8 @@ export function AttemptDetail({ attemptId }: { attemptId: string }) {
   if (!d) return null;
   if (detail.isPending) return <ActivityIndicator />;
   const data = detail.data;
-  if (!data) return null;
+  // tentative supprimée avec son QCM (D-091) : ligne absente (lecture réussie, rien) ou refus « introuvable »
+  if (!data) return detail.isSuccess || isGoneError(detail.error) ? <QuizGone /> : null;
   const { attempt, title, questions } = data;
   const childName = d.children.find((c) => c.id === attempt.child_id)?.name ?? '';
   const day = formatShortDate(todayInTz(new Date(attempt.started_at), d.me.family.timezone));

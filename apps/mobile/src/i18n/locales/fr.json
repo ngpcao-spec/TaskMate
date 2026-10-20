@@ -517,7 +517,8 @@
       "notSubmitted": "L'évaluation n'a pas encore été envoyée",
       "answersToVerify": "Des réponses sont à vérifier : confirmez-les avant de publier",
       "answersNotConfirmed": "Confirmez chaque réponse de l'examen avant de publier",
-      "invalidDueDate": "Cette date limite n'est pas valable."
+      "invalidDueDate": "Cette date limite n'est pas valable.",
+      "gone": "Ce QCM n’existe plus."
     },
     "import": {
       "entry": "Créer à partir d'un document",
@@ -705,7 +706,9 @@
         "lateProgress": "En retard ({{done}} sur {{total}})",
         "validated": "Validé"
       }
-    }
+    },
+    "gone": "Ce QCM n’existe plus.",
+    "goneBody": "Il a été supprimé par l’administrateur. Les points déjà gagnés sont conservés."
   },
   "sync": {
     "offline": "Hors ligne — les changements seront synchronisés au retour du réseau",
@@ -1220,7 +1223,8 @@
       "invalidShift": "Décalage impossible : une semaine à la fois, quatre semaines au plus de chaque côté.",
       "subjectNotActive": "Activez d’abord cette matière.",
       "childNotFound": "Enfant introuvable.",
-      "forbidden": "Action réservée."
+      "forbidden": "Action réservée.",
+      "confirmMismatch": "Le titre ne correspond pas : le QCM n’est pas supprimé."
     },
     "admin": {
       "title": "Administration",
@@ -1372,6 +1376,23 @@
       "retry": "Réessayer les {{count}} échec(s)",
       "publishAll": "Publier tout ({{count}})",
       "backToCatalog": "Retour au catalogue"
+    },
+    "purge": {
+      "action": "Supprimer définitivement",
+      "actionFor": "Supprimer définitivement : {{title}}",
+      "title": "Supprimer définitivement ce QCM ?",
+      "loading": "Chargement de l’impact…",
+      "loadError": "Impossible de lire l’impact de la suppression. Réessayez.",
+      "retry": "Réessayer",
+      "noAttempts": "Aucun enfant n’a commencé ce QCM.",
+      "impact": "{{children}} enfant(s), {{attempts}} tentative(s) dont {{validated}} validée(s), {{points}} point(s) déjà attribué(s) (conservés).",
+      "breakdown": "{{families}} famille(s) · {{inProgress}} en cours · {{submitted}} à valider · {{validated}} validée(s)",
+      "warning": "Irréversible. Les questions, réponses, copies et résultats des enfants sont supprimés ; les points déjà gagnés restent dans l’historique des points. La case redevient libre pour un nouvel import.",
+      "typeTitle": "Retapez le titre exact « {{title}} » pour confirmer",
+      "confirm": "Supprimer définitivement",
+      "confirmFor": "Supprimer définitivement « {{title}} »",
+      "done": "« {{title}} » supprimé : {{attempts}} tentative(s) de {{children}} enfant(s) ; {{points}} point(s) conservés. La case est libre.",
+      "alreadyGone": "Ce QCM était déjà supprimé."
     }
   },
   "weekly": {
@@ -1447,7 +1468,7 @@
     "questionsTitle": "Questions",
     "loading": "Chargement…",
     "error": "Impossible d’ouvrir ce quiz.",
-    "forbidden": "Ce quiz n’est pas attribué à cet enfant.",
+    "forbidden": "Ce quiz n’est pas attribué à cet enfant, ou n’existe plus.",
     "retry": "Réessayer",
     "openHint": "Ouvre le détail du quiz"
   }

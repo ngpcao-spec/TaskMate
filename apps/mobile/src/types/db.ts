@@ -117,6 +117,19 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"catalog_admin_log": {
+                  Row: {
+                    "action": string,"admin_id": string,"counts": NonNullable<Json>,"created_at": string,"id": string,"quiz_id": string,"slot": NonNullable<Json>,"title": string
+                  }
+                  Insert: {
+                    "action": string,"admin_id": string,"counts"?: NonNullable<Json>,"created_at"?: string,"id"?: string,"quiz_id": string,"slot"?: NonNullable<Json>,"title": string
+                  }
+                  Update: {
+                    "action"?: string,"admin_id"?: string,"counts"?: NonNullable<Json>,"created_at"?: string,"id"?: string,"quiz_id"?: string,"slot"?: NonNullable<Json>,"title"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"catalog_answer_keys": {
                   Row: {
                     "confirmed": boolean,"correct_index": number,"explanation": string | null,"question_id": string,"to_verify": boolean
@@ -1085,10 +1098,19 @@ isOneToOne: false
 "catalog_normalize_grade":
 { Args: { "p_country": string,"p_raw": string }; Returns: string
                            },
+"catalog_purge_quiz":
+{ Args: { "p_confirm": string,"p_quiz": string }; Returns: Json
+                           },
 "catalog_questions_admin":
 { Args: { "p_quiz": string }; Returns: {
               "choices": (string)[],"confirmed": boolean,"correct_index": number,"explanation": string,"id": string,"needs_figure": boolean,"origin_number": number,"position": number,"prompt": string,"source": string,"to_verify": boolean
             }[]
+                           },
+"catalog_quiz_counts":
+{ Args: { "p_quiz": string }; Returns: Json
+                           },
+"catalog_quiz_impact":
+{ Args: { "p_quiz": string }; Returns: Json
                            },
 "catalog_reorder_questions":
 { Args: { "p_ids": (string)[],"p_quiz": string }; Returns: undefined

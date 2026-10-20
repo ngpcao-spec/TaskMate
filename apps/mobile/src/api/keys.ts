@@ -44,6 +44,8 @@ export const quizKeys = {
   parentDetail: (childId: string, quizId: string) => ['quiz', 'catalog', 'detail', childId, quizId] as const,
   /** Quiz pas encore ouverts (D-086) : `me` pour l'enfant connecté, l'identifiant de l'enfant pour un parent. */
   upcoming: (childId: string) => ['quiz', 'catalog', 'upcoming', childId] as const,
+  /** Impact d'une suppression définitive (D-091). */
+  catalogImpact: (id: string) => ['quiz', 'catalog', 'impact', id] as const,
 };
 /** Statut d'administrateur de l'appelant (D-080) : seulement pour afficher l'entrée de menu ; jamais une autorisation (la base décide). */
 export const platformKeys = { isAdmin: ['platform', 'is-admin'] as const };
