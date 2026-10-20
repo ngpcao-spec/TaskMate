@@ -37,7 +37,8 @@ export const useUpdateFamilyProfile = () =>
 export const useDeleteAccount = () => useAdminMutation<void>(() => deleteAccount(), []);
 
 // ───────────── plusieurs parents par famille ─────────────
-export const useActiveParentInvite = (enabled: boolean) => useQuery({ queryKey: ['parent-invite'], queryFn: fetchActiveParentInvite, enabled });
+/** `staleTime: 0` : l'état d'une invitation (active, utilisée, annulée) doit être relu à chaque ouverture, jamais servi par le cache persisté (30 s) : il est aussi affiché dans l'assistant (D-090) et dans Réglages. */
+export const useActiveParentInvite = (enabled: boolean) => useQuery({ queryKey: ['parent-invite'], queryFn: fetchActiveParentInvite, enabled, staleTime: 0 });
 export const useParents = (enabled: boolean) => useQuery({ queryKey: ['parents'], queryFn: fetchParents, enabled });
 export const useCreateParentInvite = () => useAdminMutation<void, string>(() => createParentInvite(), [['parent-invite']]);
 export const useRevokeParentInvite = () => useAdminMutation<void>(() => revokeParentInvite(), [['parent-invite']], 'parentInvite.revoked');

@@ -817,7 +817,7 @@ test.describe('parents Google, famille partagée, enfants rattachés à la famil
     await expect(pageA.getByText(/sẽ không hiển thị lại/)).toBeVisible();
     await open(pageA, '/more/settings'); // rechargé : le code n'est plus relisible
     await expect(pageA.getByText(code)).toHaveCount(0);
-    await expect(pageA.getByText(/Không thể hiện lại mã/)).toBeVisible({ timeout: 20_000 });
+    await expectVisibleOrDump(pageA, pageA.getByText(/Không thể hiện lại mã/), 'parent-A');
 
     // ── parent B (Google simulé) : « Tham gia một gia đình » ; un mauvais code est refusé
     const ctxB = await browser.newContext();
