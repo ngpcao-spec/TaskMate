@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AuthFlowError, signInParent } from '@/api/auth';
 import { startGoogleSignIn } from '@/api/googleAuth';
+import { PasswordField } from '@/components/PasswordField';
+import { SignedOutOnly } from '@/components/SignedOutOnly';
 import { Button, ErrorText, Field, Screen, Subtitle, Title } from '@/components/ui';
 import { isValidEmail } from '@/domain/child-account';
 
@@ -47,38 +49,37 @@ export default function ParentAuthScreen() {
   };
 
   return (
-    <Screen>
-      <Title>{t('onboarding.auth.title')}</Title>
-      <Subtitle>{t('onboarding.auth.subtitle')}</Subtitle>
-      <Button label={t('onboarding.auth.google')} onPress={() => void google()} loading={busy && !showEmail} />
-      {showEmail ? (
-        <>
-          <Subtitle>{t('onboarding.auth.existingHint')}</Subtitle>
-          <Field
-            label={t('onboarding.auth.email')}
-            placeholder={t('onboarding.auth.emailPlaceholder')}
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-            autoComplete="email"
-          />
-          <Field
-            label={t('onboarding.auth.password')}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoCapitalize="none"
-            autoCorrect={false}
-            autoComplete="current-password"
-          />
-          <Button variant="secondary" label={t('onboarding.auth.signIn')} onPress={() => void signIn()} loading={busy} disabled={email.trim() === '' || password === ''} />
-        </>
-      ) : (
-        <Button variant="ghost" label={t('onboarding.auth.existingToggle')} onPress={() => setShowEmail(true)} />
-      )}
-      <ErrorText>{error}</ErrorText>
-    </Screen>
+    <SignedOutOnly>
+      <Screen>
+        <Title>{t('onboarding.auth.title')}</Title>
+        <Subtitle>{t('onboarding.auth.subtitle')}</Subtitle>
+        <Button label={t('onboarding.auth.google')} onPress={() => void google()} loading={busy && !showEmail} />
+        {showEmail ? (
+          <>
+            <Subtitle>{t('onboarding.auth.existingHint')}</Subtitle>
+            <Field
+              label={t('onboarding.auth.email')}
+              placeholder={t('onboarding.auth.emailPlaceholder')}
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="email"
+            />
+            <PasswordField
+              label={t('onboarding.auth.password')}
+              value={password}
+              onChangeText={setPassword}
+              autoComplete="current-password"
+            />
+            <Button variant="secondary" label={t('onboarding.auth.signIn')} onPress={() => void signIn()} loading={busy} disabled={email.trim() === '' || password === ''} />
+          </>
+        ) : (
+          <Button variant="ghost" label={t('onboarding.auth.existingToggle')} onPress={() => setShowEmail(true)} />
+        )}
+        <ErrorText>{error}</ErrorText>
+      </Screen>
+    </SignedOutOnly>
   );
 }

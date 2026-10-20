@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ChildAccountError, createChildAccount, deleteChildAccount, resetChildPassword } from '@/api/childAccounts';
 import { confirmDialog } from '@/components/confirm';
+import { PasswordField } from '@/components/PasswordField';
 import { Button, ErrorText, Field } from '@/components/ui';
 import { CHILD_PASSWORD_MIN, validateChildPassword, validateLoginId } from '@/domain/child-account';
 import { parentLoginEmail } from '@/domain/login-info';
@@ -66,13 +67,10 @@ export function ChildAccountSection({ childId, childName }: { childId: string; c
               <Text style={styles.lineValue}>{t('childAccount.login.passwordValue')}</Text>
             </View>
           </View>
-          <Field
+          <PasswordField
             label={t('childAccount.newPassword')}
             value={password}
             onChangeText={setPassword}
-            secureTextEntry
-            autoCapitalize="none"
-            autoCorrect={false}
             autoComplete="new-password"
             error={passwordError ? t('childAccount.errors.weak_password', { min: CHILD_PASSWORD_MIN }) : null}
           />
@@ -109,16 +107,14 @@ export function ChildAccountSection({ childId, childName }: { childId: string; c
             onChangeText={setLoginId}
             autoCapitalize="none"
             autoCorrect={false}
+            autoComplete="off"
             maxLength={60}
             error={loginIdError ? t(`childAccount.loginIdErrors.${loginIdError}`) : null}
           />
-          <Field
+          <PasswordField
             label={t('childAccount.password')}
             value={password}
             onChangeText={setPassword}
-            secureTextEntry
-            autoCapitalize="none"
-            autoCorrect={false}
             autoComplete="new-password"
             error={passwordError ? t('childAccount.errors.weak_password', { min: CHILD_PASSWORD_MIN }) : null}
           />

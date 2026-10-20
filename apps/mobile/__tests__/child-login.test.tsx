@@ -71,4 +71,14 @@ describe('ChildLoginScreen (e-mail d\'un parent + identifiant + mot de passe)', 
     await fireEvent.press(screen.getByRole('button', { name: 'Se connecter' }));
     expect(await screen.findByText('Trop d\'essais. Réessaie dans quelques minutes.')).toBeTruthy();
   });
+
+  // D-093 : le formulaire enfant n'associe jamais le mot de passe à l'e-mail du parent
+  it('attributs : e-mail du parent « off » (jamais « email » / « username »), identifiant « username » propre au formulaire, mot de passe « current-password »', async () => {
+    await renderScreen();
+    expect(screen.getByLabelText('E-mail d\'un parent de la famille').props.autoComplete).toBe('off');
+    expect(screen.getByLabelText('Identifiant').props.autoComplete).toBe('username');
+    const password = screen.getByLabelText('Mot de passe');
+    expect(password.props.autoComplete).toBe('current-password');
+    expect(password.props.secureTextEntry).toBe(true);
+  });
 });

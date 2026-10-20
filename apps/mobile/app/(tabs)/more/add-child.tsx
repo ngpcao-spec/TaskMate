@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { addChildWithAccount, ChildAccountError } from '@/api/childAccounts';
 import { queryKeys } from '@/api/keys';
+import { PasswordField } from '@/components/PasswordField';
 import { ChildCredentialsCard } from '@/components/ChildCredentialsCard';
 import { CHILD_PALETTE, ChildProfileFields, isChildProfileValid } from '@/components/ChildProfileFields';
 import { Button, Card, ErrorText, Field, Screen, ScreenHeader } from '@/components/ui';
@@ -82,16 +83,14 @@ export default function AddChildScreen() {
           onChangeText={setLoginId}
           autoCapitalize="none"
           autoCorrect={false}
+          autoComplete="off"
           maxLength={60}
           error={loginIdError ? t(`childAccount.loginIdErrors.${loginIdError}`) : null}
         />
-        <Field
+        <PasswordField
           label={t('childAccount.password')}
           value={password}
           onChangeText={setPassword}
-          secureTextEntry
-          autoCapitalize="none"
-          autoCorrect={false}
           autoComplete="new-password"
           error={passwordError ? t('childAccount.errors.weak_password', { min: CHILD_PASSWORD_MIN }) : null}
         />

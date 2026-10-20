@@ -1485,3 +1485,84 @@ test.describe('assistant de première connexion (D-090)', () => {
     await expect(page.getByText(/Bước \d\/6/)).toHaveCount(0);
   });
 });
+
+/**
+ * D-093 : aucun champ mot de passe ne reste monté hors des écrans qui en ont besoin. iOS (PWA Safari) propose « Remplir le mot de passe » dès qu'un
+ * `<input type=password>` existe dans le DOM, même caché derrière un autre écran de la pile.
+ */
+test.describe('aucun champ mot de passe monté hors des écrans de connexion (D-093)', () => {
+  const SECRET = 'input[type=password], input[autocomplete*=password], input[autocomplete=username]';
+  /** Inventaire journalisé (visible dans la sortie CI) puis nombre de champs sensibles ; `where` dit où l'on est. */
+  async function secretCount(page: Page, where: string): Promise<number> {
+    const rows = await page.$$eval('input', (els) =>
+      els.map((e) => ({ type: e.getAttribute('type'), autocomplete: e.getAttribute('autocomplete'), label: e.getAttribute('aria-label'), visible: !!(e.offsetWidth || e.offsetHeight || e.getClientRects().length) })),
+    );
+    const sensitive = rows.filter((r) => r.type === 'password' || /password|username/.test(r.autocomplete ?? ''));
+    console.log(`[mdp] ${where} — url=${page.url()} champs=${rows.length} sensibles=${JSON.stringify(sensitive)}`);
+    return page.locator(SECRET).count();
+  }
+  /** Champs sensibles présents dans le DOM mais CACHÉS (écran resté monté sous un autre) : ce que iOS propose de remplir en pleine utilisation. */
+  const hiddenSecrets = (page: Page) =>
+    page.$$eval('input[type=password], input[autocomplete*=password], input[autocomplete=username]', (els) => (els as HTMLInputElement[]).filter((e) => !(e.offsetWidth || e.offsetHeight || e.getClientRects().length)).length);
+  /** `moreKeepsForm` : l'onglet « Thêm » rouvre le dernier écran visité (ici le formulaire d'ajout, dont le mot de passe est légitime) → seuls les champs CACHÉS comptent. */
+  async function everyTab(page: Page, who: string, moreKeepsForm = false) {
+    for (const tab of ['Lịch', 'Thống kê', 'Thêm', 'Hôm nay']) {
+      await page.getByRole('tab', { name: new RegExp(`^${tab}`) }).click();
+      const count = await secretCount(page, `${who} · onglet ${tab}`);
+      if (moreKeepsForm && tab === 'Thêm') expect(await hiddenSecrets(page), `${who} : onglet ${tab} (aucun champ caché)`).toBe(0);
+      else expect(count, `${who} : onglet ${tab}`).toBe(0);
+    }
+  }
+
+  test('parent connecté par e-mail + mot de passe : 0 champ mot de passe sur Hôm nay et les autres onglets, même après être passé par les formulaires d\'enfant', async ({ browser }) => {
+    test.setTimeout(180_000);
+    const family = await createFamily();
+    const ctx = await browser.newContext();
+    const page = await ctx.newPage();
+    await open(page);
+    await page.getByRole('button', { name: 'Bắt đầu' }).click();
+    await page.getByRole('button', { name: 'Tôi là phụ huynh' }).click();
+    await page.getByRole('button', { name: 'Tôi đã có tài khoản email và mật khẩu' }).click();
+    expect(await secretCount(page, 'parent · écran de connexion (ils y sont attendus)')).toBeGreaterThan(0);
+    await page.getByLabel('Email', { exact: true }).fill(family.parent.email);
+    await page.getByLabel('Mật khẩu', { exact: true }).fill(family.parent.password);
+    await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click();
+    await expect(page.getByRole('heading', { name: /^Chào / })).toBeVisible({ timeout: 30_000 });
+    expect(await secretCount(page, 'parent · Hôm nay juste après la connexion'), 'parent : Hôm nay juste après la connexion').toBe(0);
+    await everyTab(page, 'parent');
+
+    // passer par les formulaires qui ont un mot de passe (comptes enfants, ajout d'un enfant), puis revenir sur Hôm nay SANS recharger la page
+    await page.getByRole('tab', { name: /^Thêm/ }).click();
+    await page.getByRole('button', { name: 'Cài đặt chung' }).click();
+    await page.getByRole('button', { name: 'Quản lý hồ sơ của các con' }).click();
+    await expect(page.getByText('Mật khẩu mới').first().or(page.getByLabel('Mật khẩu').first())).toBeVisible({ timeout: 20_000 });
+    expect(await hiddenSecrets(page), 'gestion des enfants : aucun champ caché').toBe(0);
+    await page.getByRole('button', { name: 'Thêm con' }).click();
+    await expect(page.getByLabel('Mật khẩu').first()).toBeVisible({ timeout: 20_000 });
+    // le formulaire d'ajout est EMPILÉ sur la gestion des enfants (qui reste montée dessous) : celle-ci ne garde aucun champ caché
+    expect(await secretCount(page, 'parent · ajout d\'un enfant (par-dessus la gestion des enfants)')).toBe(1);
+    expect(await hiddenSecrets(page), 'ajout d\'un enfant : aucun champ caché dessous').toBe(0);
+    await page.getByRole('tab', { name: /^Hôm nay/ }).click();
+    expect(await secretCount(page, 'parent · Hôm nay après les formulaires d\'enfant'), 'parent : Hôm nay après les formulaires d\'enfant').toBe(0);
+    await everyTab(page, 'parent (après formulaires)', true);
+  });
+
+  test('enfant connecté (child-login) : 0 champ mot de passe sur Hôm nay et les autres onglets', async ({ browser }) => {
+    test.setTimeout(180_000);
+    const family = await createFamily();
+    await revokeChildMembers(family);
+    const token = await accessTokenOf(family.parent);
+    const loginId = `kid.${Math.random().toString(36).slice(2, 7)}`;
+    const create = await fetch(`${supabaseUrl()}/functions/v1/create-child`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: process.env.E2E_ANON_KEY as string, Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ childId: family.minh.childId, loginId, password: 'abc123' }),
+    });
+    expect(create.status).toBe(200);
+    const page = await childSignIn(browser, family.parent.email, loginId, 'abc123');
+    await dismissChildSetup(page);
+    await expect(page.getByText('Chào Minh!', { exact: true })).toBeVisible({ timeout: 20_000 });
+    expect(await secretCount(page, 'enfant · Hôm nay juste après la connexion'), 'enfant : Hôm nay juste après la connexion').toBe(0);
+    await everyTab(page, 'enfant');
+  });
+});

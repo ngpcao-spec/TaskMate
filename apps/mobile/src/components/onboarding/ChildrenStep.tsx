@@ -7,6 +7,7 @@ import { setChildClass } from '@/api/catalog';
 import { queryKeys } from '@/api/keys';
 import { Chip } from '@/components/Chip';
 import { CHILD_PALETTE, ChildProfileFields, isChildProfileValid } from '@/components/ChildProfileFields';
+import { PasswordField } from '@/components/PasswordField';
 import { ChildLoginSheet } from '@/components/onboarding/ChildLoginSheet';
 import { useStepNav } from '@/components/onboarding/useStepNav';
 import { WizardShell } from '@/components/onboarding/WizardShell';
@@ -124,16 +125,14 @@ export function ChildrenStep({ facts }: { facts: OnboardingFacts }) {
             onChangeText={(v) => setLoginId(v.replace(/\s/g, ''))}
             autoCapitalize="none"
             autoCorrect={false}
+            autoComplete="off"
             maxLength={60}
             error={loginIdError ? t(`childAccount.loginIdErrors.${loginIdError}`) : taken ? t('childAccount.errors.identifier_taken') : null}
           />
-          <Field
+          <PasswordField
             label={t('childAccount.password')}
             value={password}
             onChangeText={setPassword}
-            secureTextEntry
-            autoCapitalize="none"
-            autoCorrect={false}
             autoComplete="new-password"
             error={passwordError ? t('childAccount.errors.weak_password', { min: CHILD_PASSWORD_MIN }) : null}
           />
