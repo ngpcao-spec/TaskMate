@@ -124,7 +124,8 @@ select is(tests.val('select count(*)::int from public.catalog_admin_log'), '0', 
 
 -- ───────────── purge d'un QCM publié avec tentatives ─────────────
 select is(tests.val('select count(*)::int from public.point_transactions'), '2', 'avant : 2 écritures de points');
-select is(tests.val('select count(*)::int from public.activity_log'), '1', 'avant : 1 ligne d''activité');
+select set_config('tests.activity_before', tests.val('select count(*)::int from public.activity_log'), false);
+select cmp_ok(tests.val('select count(*)::int from public.activity_log')::int, '>=', 1, 'avant : la ligne d''activité du quiz validé existe');
 select is(public.catalog_purge_quiz(tests.u(701), 'Ngữ văn 7 · Ôn tập chung (bản thử)')->>'purged', 'true', 'admin : purge le QCM publié avec le titre exact');
 select is(tests.val('select count(*)::int from public.catalog_quizzes where id = ''' || tests.u(701) || ''''), '0', 'le QCM a disparu');
 select is(tests.val('select count(*)::int from public.catalog_questions where quiz_id = ''' || tests.u(701) || ''''), '0', '…ses questions');
@@ -142,7 +143,8 @@ select is(tests.val('select note from public.point_transactions where id = ''' |
 select is(tests.val('select count(*)::int from public.point_transactions where ref_id = ''' || tests.u(801) || ''''), '1', 'points : la ligne référence toujours la tentative disparue (sans clé étrangère)');
 reset role;
 select throws_ok($$delete from public.point_transactions where id = tests.u(901)$$, '42501', 'immutable_journal', 'points : le journal reste immuable');
-select is(tests.val('select count(*)::int from public.activity_log'), '1', 'activité : la ligne existante est conservée et la purge n''en écrit aucune (aucune notification)');
+select is(tests.val('select count(*)::int from public.activity_log'), current_setting('tests.activity_before'), 'activité : les lignes existantes sont conservées et la purge n''en écrit aucune (aucune notification)');
+select is(tests.val('select count(*)::int from public.activity_log where type = ''quiz_validated'' and payload->>''quiz_id'' = ''' || tests.u(701) || ''''), '1', 'activité : la ligne « quiz_validated » du QCM purgé reste lisible (son titre est dans la charge utile)');
 -- l'historique de l'enfant se lit toujours (même vue que l'écran des points)
 select tests.login(13);
 select is((select count(*)::int from public.point_transactions where child_id = tests.u(201)), 2, 'enfant A : lit toujours ses 2 lignes de points');
