@@ -70,9 +70,21 @@ describe('connexion parent', () => {
     mockSignInWithOAuth.mockResolvedValue({ error: null });
     Object.defineProperty(globalThis, 'window', { value: { location: { origin: 'https://taskmate.example' } }, configurable: true });
     await startGoogleSignInWeb();
-    expect(mockSignInWithOAuth).toHaveBeenCalledWith({ provider: 'google', options: { redirectTo: 'https://taskmate.example' } });
+    expect(mockSignInWithOAuth).toHaveBeenCalledWith({ provider: 'google', options: { redirectTo: 'https://taskmate.example', queryParams: { prompt: 'select_account' } } });
     mockSignInWithOAuth.mockResolvedValue({ error: { message: 'boom' } });
     await expect(startGoogleSignInWeb()).rejects.toBeInstanceOf(AuthFlowError);
+  });
+
+  it('Google (web) : le sélecteur de compte est TOUJOURS demandé (jamais de reconnexion silencieuse), y compris pour un 2e parent ou après déconnexion', async () => {
+    mockSignInWithOAuth.mockReset().mockResolvedValue({ error: null });
+    Object.defineProperty(globalThis, 'window', { value: { location: { origin: 'https://taskmate.example' } }, configurable: true });
+    await startGoogleSignInWeb();
+    await startGoogleSignInWeb(); // chaque tentative, pas seulement la première
+    expect(mockSignInWithOAuth).toHaveBeenCalledTimes(2);
+    for (const [arg] of mockSignInWithOAuth.mock.calls as [{ options: { queryParams: Record<string, string>; redirectTo: string } }][]) {
+      expect(arg.options.queryParams).toEqual({ prompt: 'select_account' });
+      expect(arg.options.redirectTo).toBe('https://taskmate.example'); // les autres paramètres sont inchangés
+    }
   });
 
   it('Google (natif) : indisponible, message clair', async () => {
