@@ -253,3 +253,6 @@ Le parent est prévenu quand un enfant termine un quiz « Ôn tập » (à valid
 
 ### Détail d'un quiz pour le parent (D-089) — 2026-10-19
 Depuis « Ôn tập · {enfant} », le parent ouvre un quiz : questions numérotées, 4 choix dans l'ordre d'origine, bonne réponse (✓), explication, réponse de l'enfant (marquée si fausse) — non commencé (aperçu), en cours (« đã trả lời N/total »), à valider (même flux de validation), validé (score, « +N điểm »). RPC `parent_quiz_detail` (migration 30, pgTAP 35) : parent de la famille seulement, quiz attribuable à l'enfant ; réponse en cours convertie par la disposition mélangée. La notification `quiz_submitted` ouvre ce détail. L'enfant n'y a jamais accès.
+
+### Assistant de première connexion (D-090) — 2026-10-20
+Famille neuve → assistant en six étapes (langue/famille, enfants obligatoire avec fiche de connexion, révisions, installation + notifications vérifiées en base, modèles de tâches et récompenses, 2e parent), tout le reste passable ; progression suivie côté serveur (table `onboarding_progress`, RLS, RPC) et « fait » calculé d'après les vraies données. Carte « Hoàn tất cài đặt n/6 » sur Hôm nay (masquable, jamais de classement des enfants), « Relancer l'assistant » dans Réglages, parent invité = assistant court, mini-parcours enfant (une fois, accessible depuis ses Réglages). Migration 31 + pgTAP 36.
