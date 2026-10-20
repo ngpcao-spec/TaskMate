@@ -59,7 +59,8 @@ describe('FamilyScreen : créer ou rejoindre', () => {
     await fireEvent.changeText(screen.getByLabelText('Code d\'invitation'), 'abcd-2345');
     await fireEvent.press(join());
     await waitFor(() => expect(mockJoin).toHaveBeenCalledWith('abcd-2345', 'Nguyễn'));
-    expect(mockReplace).toHaveBeenCalledWith('/');
+    // parent INVITÉ : assistant court (langue + notifications), pas l'accueil (D-090)
+    expect(mockReplace).toHaveBeenCalledWith('/onboarding/setup');
   });
 
   it.each([

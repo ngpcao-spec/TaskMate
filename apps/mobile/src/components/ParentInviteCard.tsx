@@ -6,6 +6,7 @@ import { Button, Card } from '@/components/ui';
 import { formatInviteCode } from '@/domain/parent-invite';
 import { useActiveParentInvite, useCreateParentInvite, useRevokeParentInvite } from '@/hooks/useFamilyAdmin';
 import { copyText } from '@/services/clipboard';
+import { shareText } from '@/services/share';
 import { colors, typography } from '@/theme/tokens';
 
 /**
@@ -39,6 +40,7 @@ export function ParentInviteCard() {
           <Text selectable accessibilityLabel={t('parentInvite.codeIs', { code: formatInviteCode(shown.code) })} style={styles.code}>{formatInviteCode(shown.code)}</Text>
           <Text accessibilityRole="alert" style={styles.warning}>{t('parentInvite.shownOnce', { date: format(shown.expiresAt, 'dd/MM HH:mm') })}</Text>
           <Button variant="secondary" label={t('parentInvite.copy')} onPress={() => void copyText(shown.code).then(setCopied)} />
+          <Button variant="secondary" label={t('parentInvite.share')} onPress={() => void shareText(t('parentInvite.shareTitle'), t('parentInvite.shareText', { code: formatInviteCode(shown.code) })).then((r) => setCopied(r !== 'failed'))} />
           {copied !== null ? <Text accessibilityLiveRegion="polite" style={copied ? styles.ok : styles.warning}>{copied ? t('parentInvite.copied') : t('parentInvite.copyFailed')}</Text> : null}
         </>
       ) : active ? (

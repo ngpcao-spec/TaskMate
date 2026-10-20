@@ -35,3 +35,9 @@ export async function updateFamilyTimezone(familyId: string, timezone: string): 
   const { error } = await supabase.from('families').update({ timezone }).eq('id', familyId);
   if (error) throw error;
 }
+
+/** Nom et fuseau de la famille (assistant de première connexion) : même droit de colonne que le fuseau seul (parent, RLS). */
+export async function updateFamilyProfile(familyId: string, patch: { name?: string; timezone?: string }): Promise<void> {
+  const { error } = await supabase.from('families').update(patch).eq('id', familyId);
+  if (error) throw error;
+}

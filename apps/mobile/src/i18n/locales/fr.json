@@ -149,6 +149,27 @@
         "invalid": "Date inexistante",
         "future": "Date dans le futur",
         "tooOld": "Trop âgé"
+      },
+      "wizardTitle": "Ajoutez vos enfants",
+      "wizardSubtitle": "Étape obligatoire : il faut au moins un enfant. Créez l’identifiant et le mot de passe qu’il utilisera sur son téléphone.",
+      "added": "Déjà ajoutés",
+      "addedA11y": "{{name}} est ajouté",
+      "another": "Ajouter un autre enfant",
+      "classHint": "Choisissez la classe pour recevoir les quiz de révision adaptés (modifiable plus tard).",
+      "classFailed": "L’enfant est créé mais sa classe n’a pas été enregistrée. Vous pourrez la choisir à l’étape Matières.",
+      "sheet": {
+        "title": "Fiche de connexion de {{name}}",
+        "intro": "Sur le téléphone de {{name}} : ouvrir TaskMate, choisir « {{button}} », puis saisir l’e-mail d’un parent, l’identifiant et le mot de passe ci-dessous.",
+        "emailLine": "E-mail du parent : {{email}}",
+        "idLine": "Identifiant : {{id}}",
+        "passwordLine": "Mot de passe : {{password}}",
+        "shareTitle": "Connexion TaskMate de {{name}}",
+        "shared": "Partage ouvert",
+        "show": "Afficher",
+        "hide": "Masquer",
+        "passwordHidden": "Mot de passe masqué",
+        "copy": "Copier les instructions",
+        "share": "Partager"
       }
     },
     "childLogin": {
@@ -166,6 +187,117 @@
         "network": "Pas de connexion. Réessaie.",
         "unknown": "Une erreur est survenue. Réessaie."
       }
+    },
+    "wizard": {
+      "stepOf": "Étape {{n}}/{{total}}",
+      "next": "Continuer",
+      "skip": "Passer cette étape",
+      "finish": "Terminer",
+      "loading": "Chargement…",
+      "error": "Impossible de charger l’assistant."
+    },
+    "steps": {
+      "language": "Langue et famille",
+      "children": "Ajouter les enfants",
+      "subjects": "Matières de révision",
+      "notifications": "Notifications",
+      "content": "Tâches et récompenses",
+      "coparent": "Deuxième parent"
+    },
+    "language": {
+      "title": "Bienvenue sur TaskMate",
+      "subtitle": "Vérifiez la langue, le nom de la famille et le fuseau horaire. Tout est prérempli : il suffit de confirmer.",
+      "familyName": "Nom de la famille",
+      "timezoneHint": "Le fuseau fixe le « jour local » de la famille, donc la date des tâches."
+    },
+    "subjects": {
+      "title": "Matières de révision",
+      "subtitle": "Activez les matières que l’enfant révisera chaque semaine. Seules celles qui ont du contenu pour sa classe sont activables.",
+      "tabs": "Choisir l’enfant",
+      "forChild": "{{name}} · {{grade}}",
+      "noneForClass": "Aucun contenu pour cette classe pour l’instant.",
+      "noContent": "Pas encore de contenu",
+      "needClass": "Choisissez la classe de {{name}} pour voir ses matières"
+    },
+    "notifications": {
+      "title": "Installer et notifier",
+      "subtitle": "Ajoutez TaskMate à l’écran d’accueil, puis activez les notifications pour savoir tout de suite quand un enfant a terminé.",
+      "installTitle": "Ajouter à l’écran d’accueil",
+      "installBody": "Touchez le bouton Partager (carré avec une flèche) → Sur l’écran d’accueil, puis ouvrez TaskMate depuis la nouvelle icône. iOS 16.4 ou plus requis.",
+      "installDone": "C’est fait",
+      "installStill": "Ouvrez TaskMate depuis l’icône de l’écran d’accueil (pas dans Safari), puis revenez à cette étape.",
+      "locked": "Faites d’abord l’étape 1",
+      "enableTitle": "Activer les notifications",
+      "enabledOn": "Activées sur cet appareil",
+      "testTitle": "Envoyer une notification de test",
+      "needEnable": "Activez d’abord les notifications",
+      "native": "Autorisez les notifications quand le système vous le demande."
+    },
+    "content": {
+      "title": "Tâches et récompenses",
+      "subtitle": "Cochez quelques modèles pour démarrer (facultatif). Les points sont modifiables, et vous pourrez tout changer ensuite.",
+      "tabs": "Choisir l’enfant",
+      "tasksFor": "Tâches pour {{name}}",
+      "tasksHint": "Chaque modèle crée une tâche récurrente.",
+      "daily": "Tous les jours",
+      "weekdays": "Jours : {{days}}",
+      "day": {
+        "1": "lun",
+        "2": "mar",
+        "3": "mer",
+        "4": "jeu",
+        "5": "ven",
+        "6": "sam",
+        "7": "dim"
+      },
+      "pointsFor": "Points pour {{title}}",
+      "costFor": "Coût de {{title}}",
+      "points": "points",
+      "rewardsTitle": "Récompenses",
+      "rewardsHint": "Récompenses communes à toute la famille. Le coût (en points) est modifiable.",
+      "failed": "Création impossible. Réessayez."
+    },
+    "templates": {
+      "tasks": {
+        "tidyRoom": "Ranger sa chambre",
+        "read20": "Lire 20 minutes",
+        "homework": "Faire ses devoirs",
+        "brushTeeth": "Se brosser les dents",
+        "clearTable": "Débarrasser la table",
+        "foldClothes": "Plier le linge",
+        "practiceMusic": "S’entraîner à la musique",
+        "waterPlants": "Arroser les plantes"
+      },
+      "rewards": {
+        "gameTime": "30 minutes de jeu vidéo",
+        "familyMovie": "Film en famille",
+        "iceCream": "Aller manger une glace",
+        "weekendMeal": "Choisir le repas du week-end"
+      }
+    },
+    "coparent": {
+      "title": "Inviter un deuxième parent",
+      "subtitle": "Générez un code d’invitation pour que l’autre parent gère la famille avec vous (facultatif)."
+    },
+    "card": {
+      "title": "Terminer la configuration",
+      "counter": "{{done}} étapes sur {{total}} terminées",
+      "done": "terminée",
+      "todo": "à faire",
+      "skipped": "passée",
+      "continue": "Continuer : {{step}}",
+      "hide": "Masquer"
+    },
+    "child": {
+      "title": "Salut {{name}} ! Installation rapide, 2 étapes",
+      "example": "Quiz validé · +5 points",
+      "exampleTitle": "Tu recevras des notifications comme celle-ci :",
+      "exampleA11y": "Exemple de notification : {{text}}",
+      "later": "Plus tard"
+    },
+    "settings": {
+      "restart": "Relancer l’assistant",
+      "childSetup": "Installation rapide (notifications)"
     }
   },
   "today": {
@@ -1028,7 +1160,10 @@
     "copied": "Code copié",
     "copyFailed": "Copie impossible : notez-le à la main",
     "active": "Une invitation est active jusqu'au {{date}}. Son code n'est plus affichable : générez-en un nouveau si besoin.",
-    "none": "Aucune invitation active."
+    "none": "Aucune invitation active.",
+    "share": "Partager le code",
+    "shareTitle": "Invitation TaskMate",
+    "shareText": "Code d’invitation à la famille sur TaskMate : {{code}} (valable 24 h)"
   },
   "parents": {
     "title": "Parents de la famille",

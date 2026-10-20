@@ -11,6 +11,12 @@ export function loadLanguage(): Language {
   return isLanguage(stored) ? stored : 'vi';
 }
 
+/** Langue explicitement enregistrée sur l'appareil, ou null (jamais choisie). */
+export function storedLanguage(): Language | null {
+  const stored = kvStorage.getItem(KEY);
+  return isLanguage(stored) ? stored : null;
+}
+
 export async function setLanguage(lang: Language): Promise<void> {
   kvStorage.setItem(KEY, lang);
   await i18n.changeLanguage(lang);

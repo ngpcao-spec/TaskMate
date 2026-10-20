@@ -1,5 +1,8 @@
 export const queryKeys = {
   me: ['me'] as const,
+  /** Assistant de première connexion (D-090) : état serveur ; l'état de CET appareil est `onboardingDevice`. */
+  onboarding: ['onboarding'] as const,
+  onboardingDevice: ['onboarding', 'device'] as const,
   children: (familyId: string) => ['children', familyId] as const,
 };
 
