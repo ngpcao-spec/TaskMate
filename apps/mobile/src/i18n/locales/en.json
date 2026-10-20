@@ -149,6 +149,27 @@
         "invalid": "Date does not exist",
         "future": "Date is in the future",
         "tooOld": "Too old"
+      },
+      "wizardTitle": "Add your children",
+      "wizardSubtitle": "Required step: at least one child. Create the login and password they will use on their own phone.",
+      "added": "Already added",
+      "addedA11y": "{{name}} added",
+      "another": "Add another child",
+      "classHint": "Pick the class to get matching revision quizzes (can be changed later).",
+      "classFailed": "The child was created but the class was not saved. You can pick it in the Revision subjects step.",
+      "sheet": {
+        "title": "{{name}}’s login sheet",
+        "intro": "On {{name}}’s phone: open TaskMate, choose “{{button}}”, then enter a parent’s e-mail, the login and the password below.",
+        "emailLine": "Parent’s e-mail: {{email}}",
+        "idLine": "Login: {{id}}",
+        "passwordLine": "Password: {{password}}",
+        "shareTitle": "{{name}}’s TaskMate login",
+        "shared": "Sharing opened",
+        "show": "Show",
+        "hide": "Hide",
+        "passwordHidden": "Password hidden",
+        "copy": "Copy instructions",
+        "share": "Share"
       }
     },
     "childLogin": {
@@ -166,6 +187,117 @@
         "network": "No connection. Try again.",
         "unknown": "Something went wrong. Try again."
       }
+    },
+    "wizard": {
+      "stepOf": "Step {{n}}/{{total}}",
+      "next": "Continue",
+      "skip": "Skip this step",
+      "finish": "Finish",
+      "loading": "Loading…",
+      "error": "Could not load the setup guide."
+    },
+    "steps": {
+      "language": "Language and family",
+      "children": "Add children",
+      "subjects": "Revision subjects",
+      "notifications": "Notifications",
+      "content": "Tasks and rewards",
+      "coparent": "Second parent"
+    },
+    "language": {
+      "title": "Welcome to TaskMate",
+      "subtitle": "Check the language, family name and time zone. Everything is prefilled: just confirm.",
+      "familyName": "Family name",
+      "timezoneHint": "The time zone sets the family’s “local day”, and so the date of tasks."
+    },
+    "subjects": {
+      "title": "Revision subjects",
+      "subtitle": "Turn on the subjects your child will revise each week. Only subjects with content for their class can be turned on.",
+      "tabs": "Choose a child",
+      "forChild": "{{name}} · {{grade}}",
+      "noneForClass": "No content for this class yet.",
+      "noContent": "No content yet",
+      "needClass": "Pick {{name}}’s class to see the subjects"
+    },
+    "notifications": {
+      "title": "Install and get notified",
+      "subtitle": "Add TaskMate to your home screen, then turn on notifications to know as soon as a child is done.",
+      "installTitle": "Add to Home Screen",
+      "installBody": "Tap the Share button (square with an arrow) → Add to Home Screen, then open TaskMate from the new icon. Requires iOS 16.4 or later.",
+      "installDone": "I have added it",
+      "installStill": "Open TaskMate from the Home Screen icon (not in Safari), then come back to this step.",
+      "locked": "Do step 1 first",
+      "enableTitle": "Turn on notifications",
+      "enabledOn": "On for this device",
+      "testTitle": "Send a test notification",
+      "needEnable": "Turn on notifications first",
+      "native": "Allow notifications when the system asks."
+    },
+    "content": {
+      "title": "Tasks and rewards",
+      "subtitle": "Tick a few templates to start (optional). Points can be edited, and you can change everything later.",
+      "tabs": "Choose a child",
+      "tasksFor": "Tasks for {{name}}",
+      "tasksHint": "Each template creates a recurring task.",
+      "daily": "Every day",
+      "weekdays": "Days: {{days}}",
+      "day": {
+        "1": "Mon",
+        "2": "Tue",
+        "3": "Wed",
+        "4": "Thu",
+        "5": "Fri",
+        "6": "Sat",
+        "7": "Sun"
+      },
+      "pointsFor": "Points for {{title}}",
+      "costFor": "Cost of {{title}}",
+      "points": "points",
+      "rewardsTitle": "Rewards",
+      "rewardsHint": "Rewards shared by the whole family. The cost (in points) can be edited.",
+      "failed": "Could not create them. Please try again."
+    },
+    "templates": {
+      "tasks": {
+        "tidyRoom": "Tidy the room",
+        "read20": "Read for 20 minutes",
+        "homework": "Do homework",
+        "brushTeeth": "Brush teeth",
+        "clearTable": "Clear the table",
+        "foldClothes": "Fold clothes",
+        "practiceMusic": "Practise music",
+        "waterPlants": "Water the plants"
+      },
+      "rewards": {
+        "gameTime": "30 minutes of video games",
+        "familyMovie": "Family movie",
+        "iceCream": "Go for ice cream",
+        "weekendMeal": "Pick the weekend meal"
+      }
+    },
+    "coparent": {
+      "title": "Invite a second parent",
+      "subtitle": "Create an invitation code so the other parent can manage the family with you (optional)."
+    },
+    "card": {
+      "title": "Finish setting up",
+      "counter": "{{done}} of {{total}} steps done",
+      "done": "done",
+      "todo": "to do",
+      "skipped": "skipped",
+      "continue": "Continue: {{step}}",
+      "hide": "Hide"
+    },
+    "child": {
+      "title": "Hi {{name}}! Quick setup, just 2 steps",
+      "example": "Revision quiz approved · +5 points",
+      "exampleTitle": "You will get notifications like this:",
+      "exampleA11y": "Example notification: {{text}}",
+      "later": "Later"
+    },
+    "settings": {
+      "restart": "Run the setup guide again",
+      "childSetup": "Quick setup (notifications)"
     }
   },
   "today": {
@@ -1028,7 +1160,10 @@
     "copied": "Code copied",
     "copyFailed": "Copy failed: write it down",
     "active": "An invitation is active until {{date}}. Its code can no longer be displayed: generate a new one if needed.",
-    "none": "No active invitation."
+    "none": "No active invitation.",
+    "share": "Share the code",
+    "shareTitle": "TaskMate invitation",
+    "shareText": "Invitation code to join the family on TaskMate: {{code}} (valid for 24 hours)"
   },
   "parents": {
     "title": "Parents in the family",

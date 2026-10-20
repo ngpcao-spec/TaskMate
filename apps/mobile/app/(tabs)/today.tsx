@@ -11,6 +11,8 @@ import { Mascot, TopOrnament } from '@/components/decor/Decor';
 import { Fab } from '@/components/Fab';
 import { ProfilePills } from '@/components/ProfilePills';
 import { ProgressRing } from '@/components/ProgressRing';
+import { ChildSetupGate } from '@/components/onboarding/ChildSetupGate';
+import { SetupCard } from '@/components/onboarding/SetupCard';
 import { WeeklyBanner } from '@/components/quiz/WeeklyBanner';
 import { RoundButton } from '@/components/RoundButton';
 import { StatTile } from '@/components/StatTile';
@@ -97,6 +99,10 @@ export default function TodayScreen() {
             ) : null}
           </RoundButton>
         </View>
+
+        {/* assistant de première connexion : au-dessus du reste, tant que des étapes manquent (parent) ; parcours enfant : une seule fois (D-090) */}
+        <SetupCard role={isParent ? 'parent' : 'child'} />
+        {isParent ? null : <ChildSetupGate />}
 
         {isParent && d.children.length > 1 ? <ProfilePills profiles={d.children} selectedId={child.id} onSelect={d.select} today={today} /> : null}
 

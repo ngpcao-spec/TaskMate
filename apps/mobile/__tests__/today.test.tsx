@@ -34,6 +34,9 @@ jest.mock('@/hooks/useDisplayedChild', () => ({
     children: [minh, khang], child: minh, select: mockSelect,
   }),
 }));
+// assistant de première connexion (D-090) : testé dans onboarding-card.test.tsx ; ici seulement sa PLACE sur Hôm nay
+jest.mock('@/components/onboarding/SetupCard', () => ({ SetupCard: ({ role }: { role: string }) => { const { Text } = jest.requireActual('react-native'); return <Text>{`setup-card:${role}`}</Text>; } }));
+jest.mock('@/components/onboarding/ChildSetupGate', () => ({ ChildSetupGate: () => { const { Text } = jest.requireActual('react-native'); return <Text>child-setup-gate</Text>; } }));
 let mockNow: Date | null = null;
 jest.mock('@/hooks/useNow', () => ({ useNow: () => mockNow ?? new Date() }));
 jest.mock('@/hooks/useWeeklyQuizzes', () => ({ useWeeklyQuizzes: () => ({ groups: mockWeekly, isPending: false }) }));
@@ -51,6 +54,21 @@ jest.mock('@/hooks/useTasks', () => ({
   toggleVars: (t: TaskRow, completed: boolean, asParent: boolean) => ({ task: t, completed, txId: 'tx', asParent }),
   validateVars: (t: TaskRow) => ({ task: t, txId: 'vtx' }),
 }));
+
+describe('TodayScreen : assistant de première connexion (D-090)', () => {
+  it('parent : la carte « Hoàn tất cài đặt » est montée (elle décide seule de s’afficher), pas le parcours enfant', async () => {
+    mockRole = 'parent';
+    await render(<TodayScreen />);
+    expect(screen.getByText('setup-card:parent')).toBeTruthy();
+    expect(screen.queryByText('child-setup-gate')).toBeNull();
+  });
+  it('enfant : jamais de carte parent exploitable ; le parcours enfant est proposé une seule fois par la porte dédiée', async () => {
+    mockRole = 'child';
+    await render(<TodayScreen />);
+    expect(screen.getByText('setup-card:child')).toBeTruthy();
+    expect(screen.getByText('child-setup-gate')).toBeTruthy();
+  });
+});
 
 describe('TodayScreen (SPEC v4)', () => {
   beforeEach(() => { jest.clearAllMocks(); mockRole = 'child'; mockCounts = { tasks: 0, requests: 0, total: 0 }; mockTasks = [task({})]; mockWeekly = []; });

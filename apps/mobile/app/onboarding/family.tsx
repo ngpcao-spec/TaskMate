@@ -35,7 +35,8 @@ export default function FamilyScreen() {
       else await joinFamilyWithCode(code, yourName.trim());
       // refetchType 'all' : la requête `me` est inactive sur cet écran ; sans cela l'accueil lirait le cache « pas de famille »
       await queryClient.invalidateQueries({ queryKey: queryKeys.me, refetchType: 'all' });
-      router.replace('/');
+      // parent INVITÉ : assistant court (langue + notifications) ; famille créée : l'entrée l'envoie à l'assistant complet (aucun enfant)
+      router.replace(mode === 'join' ? '/onboarding/setup' : '/');
     } catch (e) {
       const failure = e instanceof FamilyActionError ? e.failure : toJoinFailure((e as { message?: string } | null)?.message);
       setError(t(`onboarding.family.errors.${failure}`));

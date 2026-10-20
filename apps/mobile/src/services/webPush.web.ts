@@ -117,3 +117,13 @@ export async function sendTestNotification(): Promise<TestOutcome> {
   const res = await sendTestPush(subscription?.endpoint ?? null).catch(() => null);
   return res ? testOutcome(res) : { kind: 'error', code: null };
 }
+
+/** CET appareil/navigateur a-t-il une ligne `devices` active pour ce membre ? (état lu de la base, D-088) ; sert à l'étape « notifications » de l'assistant. */
+export async function thisDeviceRegistered(): Promise<boolean> {
+  return (await getWebPushStatus().catch(() => 'unverified' as const)) === 'on';
+}
+
+/** iOS hors PWA installée : les notifications exigent d'abord « Thêm vào Màn hình chính » (D-090). */
+export function installState(): { ios: boolean; standalone: boolean } {
+  return { ios: isIos(), standalone: isStandalone() };
+}

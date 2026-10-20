@@ -13,8 +13,10 @@ import { ThemeCard } from '@/components/ThemeCard';
 import { Button, Card, Field, Screen, ScreenHeader } from '@/components/ui';
 import { config } from '@/config';
 import { isValidTimeZone } from '@/domain/timezone';
+import { stepPath } from '@/domain/onboarding';
 import { useDeleteAccount, useUpdateTimezone } from '@/hooks/useFamilyAdmin';
 import { useMe } from '@/hooks/useMe';
+import { useRestartOnboarding } from '@/hooks/useOnboarding';
 import { SUPPORTED_LANGUAGES } from '@/i18n';
 import { setLanguage } from '@/i18n/language';
 import { colors, typography } from '@/theme/tokens';
@@ -27,6 +29,7 @@ export default function SettingsScreen() {
   const me = useMe().data;
   const deleteAccount = useDeleteAccount();
   const updateTz = useUpdateTimezone();
+  const restart = useRestartOnboarding();
   const [tz, setTz] = useState(me?.family.timezone ?? 'Asia/Ho_Chi_Minh');
   if (!me) return null;
   const isParent = me.member.role === 'parent';
@@ -69,6 +72,13 @@ export default function SettingsScreen() {
       </Card>
 
       <ThemeCard />
+
+      {/* D-090 : parent = rejouer l'assistant ; enfant = revoir l'installation et les notifications */}
+      {isParent ? (
+        <Button variant="secondary" label={t('onboarding.settings.restart')} loading={restart.isPending} onPress={() => restart.mutate(undefined, { onSuccess: () => router.push(stepPath('language')) })} />
+      ) : (
+        <Button variant="secondary" label={t('onboarding.settings.childSetup')} onPress={() => router.push('/onboarding/child-setup')} />
+      )}
 
       {isParent ? (
         <>

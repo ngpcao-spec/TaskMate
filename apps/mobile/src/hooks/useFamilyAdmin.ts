@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { deleteAccount, fetchDevices, revokeDevice, updateChild, updateFamilyTimezone } from '@/api/account';
+import { deleteAccount, fetchDevices, revokeDevice, updateChild, updateFamilyProfile, updateFamilyTimezone } from '@/api/account';
 import { deleteChildAccount, fetchChildAccounts } from '@/api/childAccounts';
 import { createParentInvite, fetchActiveParentInvite, fetchParents, leaveFamily, revokeParentInvite } from '@/api/family';
 import { queryKeys } from '@/api/keys';
@@ -32,10 +32,13 @@ export const useDeleteChild = () => useAdminMutation((id: string) => deleteChild
 export const useChildAccounts = (enabled: boolean) => useQuery({ queryKey: ['child-accounts'], queryFn: fetchChildAccounts, enabled });
 export const useUpdateTimezone = () =>
   useAdminMutation(({ familyId, timezone }: { familyId: string; timezone: string }) => updateFamilyTimezone(familyId, timezone), [queryKeys.me], 'taskForm.saved');
+export const useUpdateFamilyProfile = () =>
+  useAdminMutation(({ familyId, name, timezone }: { familyId: string; name?: string; timezone?: string }) => updateFamilyProfile(familyId, { ...(name !== undefined ? { name } : {}), ...(timezone !== undefined ? { timezone } : {}) }), [queryKeys.me]);
 export const useDeleteAccount = () => useAdminMutation<void>(() => deleteAccount(), []);
 
 // ───────────── plusieurs parents par famille ─────────────
-export const useActiveParentInvite = (enabled: boolean) => useQuery({ queryKey: ['parent-invite'], queryFn: fetchActiveParentInvite, enabled });
+/** `staleTime: 0` : l'état d'une invitation (active, utilisée, annulée) doit être relu à chaque ouverture, jamais servi par le cache persisté (30 s) : il est aussi affiché dans l'assistant (D-090) et dans Réglages. */
+export const useActiveParentInvite = (enabled: boolean) => useQuery({ queryKey: ['parent-invite'], queryFn: fetchActiveParentInvite, enabled, staleTime: 0 });
 export const useParents = (enabled: boolean) => useQuery({ queryKey: ['parents'], queryFn: fetchParents, enabled });
 export const useCreateParentInvite = () => useAdminMutation<void, string>(() => createParentInvite(), [['parent-invite']]);
 export const useRevokeParentInvite = () => useAdminMutation<void>(() => revokeParentInvite(), [['parent-invite']], 'parentInvite.revoked');

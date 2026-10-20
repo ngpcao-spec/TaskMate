@@ -149,6 +149,27 @@
         "invalid": "Ngày không tồn tại",
         "future": "Ngày sinh ở tương lai",
         "tooOld": "Quá lớn tuổi"
+      },
+      "wizardTitle": "Thêm con của bạn",
+      "wizardSubtitle": "Bước bắt buộc: cần ít nhất một bé. Tạo tên đăng nhập và mật khẩu để bé dùng trên điện thoại của mình.",
+      "added": "Đã thêm",
+      "addedA11y": "Đã thêm {{name}}",
+      "another": "Thêm con khác",
+      "classHint": "Chọn lớp để bé nhận bài ôn tập đúng lớp (có thể chọn sau).",
+      "classFailed": "Đã tạo bé nhưng chưa lưu được lớp. Bạn có thể chọn lại ở bước Môn ôn tập.",
+      "sheet": {
+        "title": "Phiếu đăng nhập của {{name}}",
+        "intro": "Trên điện thoại của {{name}}: mở TaskMate, chọn “{{button}}”, rồi nhập e-mail của bố mẹ, tên đăng nhập và mật khẩu dưới đây.",
+        "emailLine": "E-mail của bố mẹ: {{email}}",
+        "idLine": "Tên đăng nhập: {{id}}",
+        "passwordLine": "Mật khẩu: {{password}}",
+        "shareTitle": "Đăng nhập TaskMate của {{name}}",
+        "shared": "Đã mở chia sẻ",
+        "show": "Hiện",
+        "hide": "Ẩn",
+        "passwordHidden": "Mật khẩu đang ẩn",
+        "copy": "Sao chép hướng dẫn",
+        "share": "Chia sẻ"
       }
     },
     "childLogin": {
@@ -166,6 +187,117 @@
         "network": "Không có kết nối. Con hãy thử lại.",
         "unknown": "Đã xảy ra lỗi. Con hãy thử lại."
       }
+    },
+    "wizard": {
+      "stepOf": "Bước {{n}}/{{total}}",
+      "next": "Tiếp tục",
+      "skip": "Bỏ qua bước này",
+      "finish": "Hoàn tất",
+      "loading": "Đang tải…",
+      "error": "Không tải được trình hướng dẫn."
+    },
+    "steps": {
+      "language": "Ngôn ngữ và gia đình",
+      "children": "Thêm con",
+      "subjects": "Môn ôn tập",
+      "notifications": "Thông báo",
+      "content": "Việc và phần thưởng",
+      "coparent": "Phụ huynh thứ hai"
+    },
+    "language": {
+      "title": "Chào mừng đến với TaskMate",
+      "subtitle": "Kiểm tra ngôn ngữ, tên gia đình và múi giờ. Mọi thứ đã điền sẵn, bạn chỉ cần xác nhận.",
+      "familyName": "Tên gia đình",
+      "timezoneHint": "Múi giờ quyết định “hôm nay” của gia đình, kể cả ngày của các việc."
+    },
+    "subjects": {
+      "title": "Môn ôn tập",
+      "subtitle": "Bật những môn con sẽ ôn mỗi tuần. Chỉ các môn đã có nội dung cho lớp của bé mới bật được.",
+      "tabs": "Chọn bé",
+      "forChild": "{{name}} · {{grade}}",
+      "noneForClass": "Chưa có nội dung nào cho lớp này.",
+      "noContent": "Chưa có nội dung",
+      "needClass": "Chọn lớp cho {{name}} để xem các môn ôn tập"
+    },
+    "notifications": {
+      "title": "Cài đặt và thông báo",
+      "subtitle": "Thêm TaskMate vào màn hình chính, rồi bật thông báo để biết ngay khi con làm xong bài.",
+      "installTitle": "Thêm vào Màn hình chính",
+      "installBody": "Nhấn nút Chia sẻ (hình ô vuông có mũi tên) → Thêm vào Màn hình chính, rồi mở TaskMate từ biểu tượng mới. Cần iOS 16.4 trở lên.",
+      "installDone": "Tôi đã thêm xong",
+      "installStill": "Hãy mở TaskMate từ biểu tượng trên Màn hình chính (không mở trong Safari), rồi quay lại bước này.",
+      "locked": "Cần làm bước 1 trước",
+      "enableTitle": "Bật thông báo",
+      "enabledOn": "Đã bật trên thiết bị này",
+      "testTitle": "Gửi thông báo thử",
+      "needEnable": "Bật thông báo trước",
+      "native": "Hãy cho phép thông báo khi hệ thống hỏi."
+    },
+    "content": {
+      "title": "Việc và phần thưởng",
+      "subtitle": "Chọn vài mẫu để bắt đầu (không bắt buộc). Điểm có thể sửa và bạn luôn thay đổi được sau.",
+      "tabs": "Chọn bé",
+      "tasksFor": "Việc cho {{name}}",
+      "tasksHint": "Mỗi mẫu tạo một việc lặp lại.",
+      "daily": "Mỗi ngày",
+      "weekdays": "Các ngày: {{days}}",
+      "day": {
+        "1": "T2",
+        "2": "T3",
+        "3": "T4",
+        "4": "T5",
+        "5": "T6",
+        "6": "T7",
+        "7": "CN"
+      },
+      "pointsFor": "Điểm cho {{title}}",
+      "costFor": "Giá của {{title}}",
+      "points": "điểm",
+      "rewardsTitle": "Phần thưởng",
+      "rewardsHint": "Phần thưởng chung cho cả gia đình. Giá (điểm) có thể sửa.",
+      "failed": "Không tạo được. Hãy thử lại."
+    },
+    "templates": {
+      "tasks": {
+        "tidyRoom": "Dọn phòng",
+        "read20": "Đọc sách 20 phút",
+        "homework": "Làm bài tập",
+        "brushTeeth": "Đánh răng",
+        "clearTable": "Dọn bàn ăn",
+        "foldClothes": "Gấp quần áo",
+        "practiceMusic": "Luyện đàn",
+        "waterPlants": "Tưới cây"
+      },
+      "rewards": {
+        "gameTime": "30 phút chơi game",
+        "familyMovie": "Xem phim cả nhà",
+        "iceCream": "Đi ăn kem",
+        "weekendMeal": "Chọn món ăn cuối tuần"
+      }
+    },
+    "coparent": {
+      "title": "Mời phụ huynh thứ hai",
+      "subtitle": "Tạo mã mời để bố hoặc mẹ còn lại cùng quản lý gia đình (không bắt buộc)."
+    },
+    "card": {
+      "title": "Hoàn tất cài đặt",
+      "counter": "{{done}} trên {{total}} bước đã xong",
+      "done": "đã xong",
+      "todo": "chưa làm",
+      "skipped": "đã bỏ qua",
+      "continue": "Tiếp tục: {{step}}",
+      "hide": "Ẩn"
+    },
+    "child": {
+      "title": "Chào {{name}}! Cài đặt nhanh, chỉ 2 bước",
+      "example": "Bài ôn tập đã được duyệt · +5 điểm",
+      "exampleTitle": "Bạn sẽ nhận thông báo như thế này:",
+      "exampleA11y": "Ví dụ thông báo: {{text}}",
+      "later": "Để sau"
+    },
+    "settings": {
+      "restart": "Chạy lại trình hướng dẫn",
+      "childSetup": "Cài đặt nhanh (thông báo)"
     }
   },
   "today": {
@@ -1028,7 +1160,10 @@
     "copied": "Đã sao chép mã",
     "copyFailed": "Không sao chép được: hãy ghi lại",
     "active": "Có một lời mời đang hiệu lực đến {{date}}. Không thể hiện lại mã: hãy tạo mã mới nếu cần.",
-    "none": "Chưa có lời mời nào."
+    "none": "Chưa có lời mời nào.",
+    "share": "Chia sẻ mã mời",
+    "shareTitle": "Mời tham gia TaskMate",
+    "shareText": "Mã mời vào gia đình trên TaskMate: {{code}} (dùng trong 24 giờ)"
   },
   "parents": {
     "title": "Phụ huynh trong gia đình",

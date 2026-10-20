@@ -50,6 +50,10 @@ async function childSignIn(browser: import('@playwright/test').Browser, parentEm
   await page.getByRole('button', { name: 'Đăng nhập' }).click();
   return page;
 }
+/** D-090 : au premier login d'un enfant sans appareil actif, le mini-parcours s'ouvre ; ces tests passent « Để sau » pour atteindre Hôm nay. */
+async function dismissChildSetup(page: Page) {
+  await page.getByRole('button', { name: 'Để sau' }).click({ timeout: 20_000 });
+}
 const WRONG_LOGIN = 'Không đăng nhập được: hãy kiểm tra email của phụ huynh, tên đăng nhập và mật khẩu.';
 
 async function open(page: Page, path = '/') {
@@ -786,19 +790,26 @@ test.describe('parents Google, famille partagée, enfants rattachés à la famil
     await pageA.getByLabel('Tên gia đình').fill(`Gia đình ${tag}`);
     await pageA.getByLabel('Tên của bạn').fill('Ba');
     await pageA.getByRole('button', { name: 'Tạo gia đình' }).click();
+    // D-090 : une famille neuve arrive dans l'assistant de première connexion (étape 1 : confirmer langue, nom, fuseau)
+    await expectVisibleOrDump(pageA, pageA.getByRole('button', { name: 'Tiếp tục' }), 'parent-A');
+    await pageA.getByRole('button', { name: 'Tiếp tục' }).click();
+    // étape 2 (obligatoire) : l'enfant et son compte de connexion, en un seul formulaire
     await expectVisibleOrDump(pageA, pageA.getByLabel('Tên của con'), 'parent-A');
     await pageA.getByLabel('Tên của con').fill('Bin');
     await pageA.getByLabel('Ngày sinh (YYYY-MM-DD)').fill('2012-05-01');
-    await pageA.getByRole('button', { name: 'Thêm con' }).click();
     await pageA.getByLabel(LOGIN_FIELD).fill(loginId);
     await pageA.getByLabel(PASSWORD_FIELD).fill('abc123');
-    await pageA.getByRole('button', { name: 'Tạo tài khoản Bin' }).click();
-    await expect(pageA.getByText(`Tên đăng nhập: ${loginId}`)).toBeVisible({ timeout: 20_000 });
-    await pageA.getByRole('button', { name: 'Hoàn tất' }).click();
+    await pageA.getByRole('button', { name: 'Tạo hồ sơ và tài khoản cho con' }).click();
+    await expect(pageA.getByText('Phiếu đăng nhập của Bin')).toBeVisible({ timeout: 20_000 });
+    // les autres étapes sont passables : on les passe toutes, l'assistant se referme sur Hôm nay
+    await expect(pageA.getByRole('button', { name: 'Tiếp tục' })).toBeEnabled({ timeout: 20_000 });
+    await pageA.getByRole('button', { name: 'Tiếp tục' }).click();
+    for (let i = 0; i < 4; i += 1) await pageA.getByRole('button', { name: 'Bỏ qua bước này' }).click(); // matières, notifications, tâches, 2e parent
     await expect(pageA.getByText('Chào Bin!')).toBeVisible({ timeout: 20_000 });
 
     // ── parent A invite un parent : code affiché une seule fois (haché en base)
     await open(pageA, '/more/settings');
+    await expectVisibleOrDump(pageA, pageA.getByRole('button', { name: 'Tạo mã' }).first(), 'parent-A-réglages', 30_000);
     await pageA.getByRole('button', { name: 'Tạo mã' }).first().click();
     const codeLocator = pageA.locator('[aria-label^="Mã mời: "]');
     await expect(codeLocator).toBeVisible({ timeout: 20_000 });
@@ -807,7 +818,7 @@ test.describe('parents Google, famille partagée, enfants rattachés à la famil
     await expect(pageA.getByText(/sẽ không hiển thị lại/)).toBeVisible();
     await open(pageA, '/more/settings'); // rechargé : le code n'est plus relisible
     await expect(pageA.getByText(code)).toHaveCount(0);
-    await expect(pageA.getByText(/Không thể hiện lại mã/)).toBeVisible({ timeout: 20_000 });
+    await expectVisibleOrDump(pageA, pageA.getByText(/Không thể hiện lại mã/), 'parent-A');
 
     // ── parent B (Google simulé) : « Tham gia một gia đình » ; un mauvais code est refusé
     const ctxB = await browser.newContext();
@@ -822,7 +833,10 @@ test.describe('parents Google, famille partagée, enfants rattachés à la famil
     await expect(pageB.getByText('Mã không hợp lệ, đã hết hạn hoặc đã được dùng.')).toBeVisible({ timeout: 20_000 });
     await pageB.getByLabel('Mã mời').fill(code.toLowerCase());
     await pageB.getByRole('button', { name: 'Tham gia gia đình' }).click();
-    // les mêmes enfants, sans rien refaire
+    // parent INVITÉ : assistant court (langue + notifications, « Bước 1/2 »), puis les mêmes enfants sans rien refaire
+    await expect(pageB.getByRole('progressbar', { name: 'Bước 1/2' })).toBeVisible({ timeout: 20_000 });
+    await pageB.getByRole('button', { name: 'Tiếp tục' }).click();
+    await pageB.getByRole('button', { name: 'Bỏ qua bước này' }).click();
     await expect(pageB.getByText('Chào Bin!')).toBeVisible({ timeout: 20_000 });
 
     // ── le code est à usage unique : un troisième parent est refusé
@@ -838,6 +852,7 @@ test.describe('parents Google, famille partagée, enfants rattachés à la famil
 
     // ── l'enfant se connecte avec l'e-mail du SECOND parent (e-mail de n'importe quel parent de la famille)
     const child = await childSignIn(browser, parentB.email, loginId, 'abc123');
+    await dismissChildSetup(child);
     await expect(child.getByText('Chào Bin!')).toBeVisible({ timeout: 20_000 });
     // l'enfant ne voit aucun écran parent
     await open(child, '/more/add-child');
@@ -863,6 +878,7 @@ test.describe('parents Google, famille partagée, enfants rattachés à la famil
     const oldPw = await childSignIn(browser, parentA.email, loginId, 'abc123');
     await expect(oldPw.getByText(WRONG_LOGIN)).toBeVisible({ timeout: 20_000 });
     const newPw = await childSignIn(browser, parentA.email, loginId, 'nouveau1');
+    await dismissChildSetup(newPw);
     await expect(newPw.getByText('Chào Bin!')).toBeVisible({ timeout: 20_000 });
 
     // ── le parent B quitte la famille ; le parent A, devenu seul parent, ne peut plus « quitter »
@@ -910,6 +926,7 @@ test.describe('parents Google, famille partagée, enfants rattachés à la famil
     }
     for (const family of families) {
       const page = await childSignIn(browser, family.parent.email, loginId, 'abc123');
+      await dismissChildSetup(page);
       await expect(page.getByText('Chào Minh!')).toBeVisible({ timeout: 20_000 });
     }
     // l'e-mail d'une AUTRE famille ne donne pas accès à ce compte-ci (mauvais mot de passe là-bas)
@@ -1012,6 +1029,7 @@ test.describe('comptes enfants : aucune connexion directe, child-login seul', ()
     expect(await childLoginRequest(family.parent.email, loginId, 'faux-mdp')).toEqual({ status: 401, body: { error: 'invalid_credentials' } });
     // et l'interface fonctionne de bout en bout
     const page = await childSignIn(browser, family.parent.email, loginId, 'abc123');
+    await dismissChildSetup(page);
     await expect(page.getByText('Chào Minh!')).toBeVisible({ timeout: 20_000 });
   });
 
@@ -1090,6 +1108,7 @@ test.describe('ajouter un enfant après l\'onboarding', () => {
 
     // l'enfant se connecte sur son téléphone
     const child = await childSignIn(browser, family.parent.email, loginId, 'secret1');
+    await dismissChildSetup(child);
     await expect(child.getByText('Chào Cam!')).toBeVisible({ timeout: 20_000 });
 
     // le parent crée une tâche pour Cam (« Cho ai? » : Cam seule cochée)
@@ -1337,5 +1356,132 @@ test.describe('verrouillage de la connexion enfant', () => {
     } finally {
       await resetAttempts();
     }
+  });
+});
+
+test.describe('assistant de première connexion (D-090)', () => {
+  test('famille neuve : confirmer, créer un enfant (fiche de connexion), passer le reste, carte sur Hôm nay, masquer, relancer', async ({ browser }) => {
+    test.setTimeout(240_000);
+    const tag = Math.random().toString(36).slice(2, 8);
+    const loginId = `onb.${tag}`;
+    const parent = await createGoogleParent('onb');
+    const ctx = await browser.newContext();
+    await signInContext(ctx, parent);
+    const page = await ctx.newPage();
+    trace(page, 'onboarding');
+    await open(page);
+    await page.getByLabel('Tên gia đình').fill(`Gia đình ${tag}`);
+    await page.getByLabel('Tên của bạn').fill('Ba');
+    await page.getByRole('button', { name: 'Tạo gia đình' }).click();
+
+    // étape 1 : tout est prérempli, une confirmation
+    await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 1/6' }), 'onboarding');
+    await page.getByRole('button', { name: 'Tiếp tục' }).click();
+
+    // étape 2 : OBLIGATOIRE — ni « Bỏ qua », ni « Tiếp tục » tant qu'aucun enfant n'existe
+    await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 2/6' }), 'onboarding');
+    await expect(page.getByRole('button', { name: 'Bỏ qua bước này' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Tiếp tục' })).toBeDisabled();
+    await page.getByLabel('Tên của con').fill('Bin');
+    await page.getByLabel('Ngày sinh (YYYY-MM-DD)').fill('2012-05-01');
+    await page.getByLabel('Tên đăng nhập (chữ, số, . _ -)').fill(loginId);
+    await page.getByLabel('Mật khẩu (tối thiểu 6 ký tự)').fill('abc123');
+    await page.getByRole('button', { name: 'Tạo hồ sơ và tài khoản cho con' }).click();
+
+    // fiche de connexion : e-mail du parent + identifiant ; le mot de passe est masqué jusqu'à « Hiện » et n'existe que dans cet écran
+    await expect(page.getByText('Phiếu đăng nhập của Bin')).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText(parent.email)).toBeVisible();
+    await expect(page.getByText(loginId, { exact: true })).toBeVisible();
+    await expect(page.getByText('abc123', { exact: true })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Hiện' }).click();
+    await expect(page.getByText('abc123', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Sao chép hướng dẫn' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Chia sẻ' })).toBeVisible();
+    const db = serviceClient();
+    const { data: member } = await db.from('members').select('id').eq('user_id', parent.userId).maybeSingle();
+    const { data: account } = await db.from('child_accounts').select('login_id').eq('login_id', loginId).maybeSingle();
+    expect(account?.login_id).toBe(loginId);
+    expect(JSON.stringify(account)).not.toContain('abc123'); // jamais le mot de passe en clair
+
+    // les autres étapes sont passables
+    await expect(page.getByRole('button', { name: 'Tiếp tục' })).toBeEnabled({ timeout: 20_000 });
+    await page.getByRole('button', { name: 'Tiếp tục' }).click();
+    for (const n of [3, 4, 5, 6]) {
+      await expect(page.getByRole('progressbar', { name: `Bước ${n}/6` })).toBeVisible({ timeout: 20_000 });
+      await page.getByRole('button', { name: 'Bỏ qua bước này' }).click();
+    }
+
+    // Hôm nay : la carte reste (les étapes passées restent « à faire »), progression d'après les vraies données
+    await expect(page.getByText('Chào Bin!')).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole('heading', { name: 'Hoàn tất cài đặt' })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText('3/6', { exact: true })).toBeVisible(); // langue, enfant, matières (classe sans contenu : rien à activer)
+    await expect(page.getByLabel('Thông báo, đã bỏ qua')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Tiếp tục: Thông báo' })).toBeVisible();
+    const { data: progress } = await db.from('onboarding_progress').select('skipped, language_confirmed_at, card_hidden').eq('member_id', member?.id as string).maybeSingle();
+    expect(progress?.language_confirmed_at).not.toBeNull();
+    expect([...(progress?.skipped ?? [])].sort()).toEqual(['content', 'coparent', 'notifications', 'subjects']);
+
+    // « Ẩn » : masquée côté serveur (suit le parent d'un appareil à l'autre)
+    await page.getByRole('button', { name: 'Ẩn', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Hoàn tất cài đặt' })).toHaveCount(0, { timeout: 20_000 });
+    await expect.poll(async () => (await db.from('onboarding_progress').select('card_hidden').eq('member_id', member?.id as string).maybeSingle()).data?.card_hidden).toBe(true);
+    await open(page);
+    await expect(page.getByText('Chào Bin!')).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole('heading', { name: 'Hoàn tất cài đặt' })).toHaveCount(0);
+
+    // Réglages → « Chạy lại trình hướng dẫn » : repart de l'étape 1, la carte revient
+    await open(page, '/more/settings');
+    await page.getByRole('button', { name: 'Chạy lại trình hướng dẫn' }).click();
+    await expect(page.getByRole('progressbar', { name: 'Bước 1/6' })).toBeVisible({ timeout: 20_000 });
+    await open(page);
+    await expect(page.getByRole('heading', { name: 'Hoàn tất cài đặt' })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText('2/6', { exact: true })).toBeVisible(); // langue à reconfirmer : 2/6
+  });
+
+  test('famille existante : jamais l\'assistant automatique, seulement la carte quand des étapes manquent', async ({ browser }) => {
+    const family = await createFamily(); // 2 enfants, 1 récompense, pas d'autre parent, pas de tâche
+    const ctx = await browser.newContext();
+    await signInContext(ctx, family.parent);
+    const page = await ctx.newPage();
+    await open(page);
+    await expect(page.getByText('Chào Minh!')).toBeVisible({ timeout: 20_000 });
+    await expect(page).not.toHaveURL(/onboarding/); // jamais d'assistant automatique pour une famille qui a des enfants
+    await expect(page.getByRole('heading', { name: 'Hoàn tất cài đặt' })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole('button', { name: /^Tiếp tục: / })).toBeVisible();
+    // elle ne cite aucun enfant (ni comparaison ni classement)
+    await expect(page.getByLabel(/^Ngôn ngữ và gia đình, /)).toBeVisible();
+  });
+
+  test('parcours enfant : proposé UNE fois au premier login, « Để sau » ferme, ne revient pas tout seul, reste accessible depuis ses Réglages', async ({ browser }) => {
+    test.setTimeout(120_000);
+    const family = await createFamily();
+    await revokeChildMembers(family);
+    const token = await accessTokenOf(family.parent);
+    const loginId = `kid.${Math.random().toString(36).slice(2, 7)}`;
+    const create = await fetch(`${supabaseUrl()}/functions/v1/create-child`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: process.env.E2E_ANON_KEY as string, Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ childId: family.minh.childId, loginId, password: 'abc123' }),
+    });
+    expect(create.status).toBe(200);
+    const page = await childSignIn(browser, family.parent.email, loginId, 'abc123');
+    await expect(page.getByText('Chào Minh! Cài đặt nhanh, chỉ 2 bước')).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText('Bài ôn tập đã được duyệt · +5 điểm')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Bật thông báo' })).toBeVisible({ timeout: 20_000 });
+    await page.getByRole('button', { name: 'Để sau' }).click();
+    await expect(page.getByText('Chào Minh!', { exact: true })).toBeVisible({ timeout: 20_000 });
+    // l'enfant ne voit jamais la carte du parent
+    await expect(page.getByRole('heading', { name: 'Hoàn tất cài đặt' })).toHaveCount(0);
+    // ne revient pas tout seul
+    await page.reload();
+    await expect(page.getByText('Chào Minh!', { exact: true })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText('Cài đặt nhanh, chỉ 2 bước')).toHaveCount(0);
+    // reste accessible depuis ses Réglages
+    await open(page, '/more/settings');
+    await page.getByRole('button', { name: 'Cài đặt nhanh (thông báo)' }).click();
+    await expect(page.getByText('Chào Minh! Cài đặt nhanh, chỉ 2 bước')).toBeVisible({ timeout: 20_000 });
+    // un enfant n'ouvre pas l'assistant du parent
+    await open(page, '/onboarding/setup');
+    await expect(page.getByText(/Bước \d\/6/)).toHaveCount(0);
   });
 });

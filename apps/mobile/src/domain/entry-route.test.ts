@@ -19,7 +19,7 @@ describe('resolveEntryRoute', () => {
     expect(resolveEntryRoute({ ...base, isChildAccount: true })).toBe('/onboarding/child-login');
   });
   it('envoie un parent sans enfant vers la création des profils', () => {
-    expect(resolveEntryRoute({ ...base, member: { role: 'parent' } })).toBe('/onboarding/children');
+    expect(resolveEntryRoute({ ...base, member: { role: 'parent' } })).toBe('/onboarding/setup');
   });
   it('ouvre l’accueil pour un parent avec enfants', () => {
     expect(resolveEntryRoute({ ...base, member: { role: 'parent' }, childrenCount: 2 })).toBe('/(tabs)/today');

@@ -17,6 +17,9 @@ jest.mock('@/api/notifications', () => ({ syncPushLocale: () => mockSyncPushLoca
 const mockSignOut = jest.fn().mockResolvedValue(undefined);
 jest.mock('@/api/auth', () => ({ signOut: () => mockSignOut() }));
 
+const mockRestart = jest.fn();
+jest.mock('@/api/onboarding', () => ({ restartOnboarding: () => mockRestart(), fetchOnboarding: jest.fn(), setOnboardingStep: jest.fn(), hideSetupCard: jest.fn() }));
+
 let mockRole: 'parent' | 'child' = 'parent';
 jest.mock('@/hooks/useMe', () => ({
   useMe: () => ({ data: { member: { id: 'm-p', role: mockRole }, family: { id: 'f1', timezone: 'Asia/Ho_Chi_Minh' }, children: [] } }),
@@ -61,6 +64,32 @@ describe('SettingsScreen', () => {
     // invitation d'un parent (code haché, 24 h) et liste des parents
     expect(screen.getByRole('button', { name: 'Tạo mã' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Rời gia đình' })).toBeTruthy();
+  });
+
+  it('D-090 parent : « Chạy lại trình hướng dẫn » relance l\'assistant côté serveur puis ouvre l\'étape 1', async () => {
+    mockRestart.mockResolvedValue(undefined);
+    await renderWithClient(<SettingsScreen />);
+    expect(screen.queryByRole('button', { name: 'Cài đặt nhanh (thông báo)' })).toBeNull(); // c'est le bouton de l'enfant
+    await fireEvent.press(screen.getByRole('button', { name: 'Chạy lại trình hướng dẫn' }));
+    await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/onboarding/setup/language'));
+    expect(mockRestart).toHaveBeenCalledTimes(1);
+  });
+
+  it('D-090 parent : si la relance échoue, on n\'ouvre pas l\'assistant', async () => {
+    mockRestart.mockRejectedValue(new Error('offline'));
+    await renderWithClient(<SettingsScreen />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Chạy lại trình hướng dẫn' }));
+    await waitFor(() => expect(mockRestart).toHaveBeenCalled());
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it('D-090 enfant : le mini-parcours reste accessible depuis ses Réglages, jamais l\'assistant parent', async () => {
+    mockRole = 'child';
+    await renderWithClient(<SettingsScreen />);
+    expect(screen.queryByRole('button', { name: 'Chạy lại trình hướng dẫn' })).toBeNull();
+    await fireEvent.press(screen.getByRole('button', { name: 'Cài đặt nhanh (thông báo)' }));
+    expect(mockPush).toHaveBeenCalledWith('/onboarding/child-setup');
+    expect(mockRestart).not.toHaveBeenCalled();
   });
 
   it('enfant : seulement langue et déconnexion (pas de gestion du foyer ni de suppression)', async () => {

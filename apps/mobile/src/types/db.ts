@@ -399,6 +399,31 @@ isOneToOne: true
       referencedColumns: ["id"]
     }
                   ]
+                },"onboarding_progress": {
+                  Row: {
+                    "card_hidden": boolean,"family_id": string,"language_confirmed_at": string | null,"member_id": string,"skipped": (string)[],"updated_at": string
+                  }
+                  Insert: {
+                    "card_hidden"?: boolean,"family_id": string,"language_confirmed_at"?: string | null,"member_id": string,"skipped"?: (string)[],"updated_at"?: string
+                  }
+                  Update: {
+                    "card_hidden"?: boolean,"family_id"?: string,"language_confirmed_at"?: string | null,"member_id"?: string,"skipped"?: (string)[],"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "onboarding_progress_family_id_fkey"
+      columns: ["family_id"]
+isOneToOne: false
+      referencedRelation: "families"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "onboarding_progress_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: true
+      referencedRelation: "members"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"parent_invites": {
                   Row: {
                     "code_hash": string,"created_at": string,"created_by": string,"expires_at": string,"family_id": string,"id": string,"revoked_at": string | null,"used_at": string | null,"used_by": string | null
@@ -1226,6 +1251,37 @@ isOneToOne: false
                            },
 "my_role":
 { Args: Record<PropertyKey, never>; Returns: Database["public"]['Enums']["member_role"]
+                           },
+"onboarding_hide_card":
+{ Args: { "p_hidden": boolean }; Returns: undefined
+                           },
+"onboarding_require_parent":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "child_id": string | null,
+"created_at": string,
+"deleted_at": string | null,
+"display_name": string,
+"family_id": string,
+"id": string,
+"revoked_at": string | null,
+"role": Database["public"]['Enums']["member_role"],
+"updated_at": string,
+"user_id": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "members"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"onboarding_restart":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"onboarding_set":
+{ Args: { "p_action": string,"p_step": string }; Returns: undefined
+                           },
+"onboarding_state":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "parent_attempt_review":
 { Args: { "p_attempt": string }; Returns: Json

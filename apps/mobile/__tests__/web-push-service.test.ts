@@ -1,4 +1,4 @@
-import { getWebPushStatus, enableWebPush, sendTestNotification } from '@/services/webPush.web';
+import { getWebPushStatus, enableWebPush, installState, sendTestNotification, thisDeviceRegistered } from '@/services/webPush.web';
 
 const mockFetchStatus = jest.fn();
 const mockRegister = jest.fn();
@@ -184,5 +184,33 @@ describe('notification de test', () => {
     expect(await sendTestNotification()).toEqual({ kind: 'error', code: null });
     mockSendTest.mockRejectedValue(new Error('network'));
     expect(await sendTestNotification()).toEqual({ kind: 'error', code: null });
+  });
+});
+
+describe('assistant de première connexion (D-090) : état de CET appareil', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockVapid = 'KEY';
+    mockExisting = subscription;
+    mockPermission = 'granted';
+    mockFetchStatus.mockResolvedValue({ activeDevices: 1, thisDevice: true, lastPushAt: null, lastPushResult: null });
+    setup();
+  });
+  it('enregistré = abonnement ET ligne active de ce membre en base', async () => {
+    expect(await thisDeviceRegistered()).toBe(true);
+    mockFetchStatus.mockResolvedValue({ activeDevices: 0, thisDevice: false, lastPushAt: null, lastPushResult: null });
+    expect(await thisDeviceRegistered()).toBe(false);
+    mockFetchStatus.mockResolvedValue(null);
+    expect(await thisDeviceRegistered()).toBe(false);
+    mockExisting = null;
+    expect(await thisDeviceRegistered()).toBe(false);
+  });
+  it('installation : iOS hors PWA détecté ; PWA installée ; autres plateformes', () => {
+    setup({ ios: true, standalone: false });
+    expect(installState()).toEqual({ ios: true, standalone: false });
+    setup({ ios: true, standalone: true });
+    expect(installState()).toEqual({ ios: true, standalone: true });
+    setup();
+    expect(installState().ios).toBe(false);
   });
 });

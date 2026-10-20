@@ -17,7 +17,7 @@ export type EntryRoute =
   | '/onboarding/role'
   | '/onboarding/family'
   | '/onboarding/child-login'
-  | '/onboarding/children'
+  | '/onboarding/setup'
   | '/(tabs)/today';
 
 /** Où envoyer l'utilisateur au lancement, selon session et rôle (SPEC §2.1). */
@@ -27,6 +27,7 @@ export function resolveEntryRoute(s: EntryState): EntryRoute {
   if (!s.memberLoaded) return 'loading';
   // Compte sans membership : un parent crée sa famille ; un compte enfant supprimé/retiré retourne à la connexion enfant.
   if (!s.member) return s.isChildAccount ? '/onboarding/child-login' : '/onboarding/family';
-  if (s.member.role === 'parent' && s.childrenCount === 0) return '/onboarding/children';
+  // famille NEUVE (aucun enfant) : l'assistant de première connexion (D-090) ; une famille existante n'y est jamais envoyée automatiquement
+  if (s.member.role === 'parent' && s.childrenCount === 0) return '/onboarding/setup';
   return '/(tabs)/today';
 }
