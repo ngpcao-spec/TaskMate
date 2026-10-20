@@ -1504,10 +1504,13 @@ test.describe('aucun champ mot de passe monté hors des écrans de connexion (D-
   /** Champs sensibles présents dans le DOM mais CACHÉS (écran resté monté sous un autre) : ce que iOS propose de remplir en pleine utilisation. */
   const hiddenSecrets = (page: Page) =>
     page.$$eval('input[type=password], input[autocomplete*=password], input[autocomplete=username]', (els) => (els as HTMLInputElement[]).filter((e) => !(e.offsetWidth || e.offsetHeight || e.getClientRects().length)).length);
-  async function everyTab(page: Page, who: string) {
+  /** `moreKeepsForm` : l'onglet « Thêm » rouvre le dernier écran visité (ici le formulaire d'ajout, dont le mot de passe est légitime) → seuls les champs CACHÉS comptent. */
+  async function everyTab(page: Page, who: string, moreKeepsForm = false) {
     for (const tab of ['Lịch', 'Thống kê', 'Thêm', 'Hôm nay']) {
       await page.getByRole('tab', { name: new RegExp(`^${tab}`) }).click();
-      expect(await secretCount(page, `${who} · onglet ${tab}`), `${who} : onglet ${tab}`).toBe(0);
+      const count = await secretCount(page, `${who} · onglet ${tab}`);
+      if (moreKeepsForm && tab === 'Thêm') expect(await hiddenSecrets(page), `${who} : onglet ${tab} (aucun champ caché)`).toBe(0);
+      else expect(count, `${who} : onglet ${tab}`).toBe(0);
     }
   }
 
@@ -1541,7 +1544,7 @@ test.describe('aucun champ mot de passe monté hors des écrans de connexion (D-
     expect(await hiddenSecrets(page), 'ajout d\'un enfant : aucun champ caché dessous').toBe(0);
     await page.getByRole('tab', { name: /^Hôm nay/ }).click();
     expect(await secretCount(page, 'parent · Hôm nay après les formulaires d\'enfant'), 'parent : Hôm nay après les formulaires d\'enfant').toBe(0);
-    await everyTab(page, 'parent (après formulaires)');
+    await everyTab(page, 'parent (après formulaires)', true);
   });
 
   test('enfant connecté (child-login) : 0 champ mot de passe sur Hôm nay et les autres onglets', async ({ browser }) => {
