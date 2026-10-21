@@ -1,9 +1,10 @@
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import '@/i18n';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
-import { Stack, ThemeProvider } from 'expo-router';
+import { Stack, ThemeProvider, type ErrorBoundaryProps } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { AppErrorScreen } from '@/components/AppErrorScreen';
 import { ToastHost } from '@/components/ToastHost';
 import { useAuthListener } from '@/hooks/useMe';
 import { applyStoredLanguage } from '@/i18n/language';
@@ -57,6 +58,11 @@ function Root() {
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
+}
+
+/** Toute exception d'affichage atterrit ici (jamais un écran uni) : voir `AppErrorScreen` (D-094). */
+export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+  return <AppErrorScreen error={error} retry={retry} />;
 }
 
 export default function RootLayout() {

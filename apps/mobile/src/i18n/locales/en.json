@@ -1471,5 +1471,13 @@
     "forbidden": "This quiz is not assigned to this child, or no longer exists.",
     "retry": "Try again",
     "openHint": "Opens the quiz details"
+  },
+  "errorScreen": {
+    "title": "Display error",
+    "body": "TaskMate could not display this screen. Your data is safe. Try again; if it keeps failing, reload the app.",
+    "retry": "Try again",
+    "reload": "Reload the app",
+    "detail": "Technical detail (please include it in a report):",
+    "detailLabel": "Technical detail of the error"
   }
 }

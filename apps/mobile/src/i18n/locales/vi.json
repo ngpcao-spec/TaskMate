@@ -1471,5 +1471,13 @@
     "forbidden": "Bài ôn tập này không dành cho bạn ấy hoặc không còn nữa.",
     "retry": "Thử lại",
     "openHint": "Mở chi tiết bài ôn tập"
+  },
+  "errorScreen": {
+    "title": "Đã có lỗi hiển thị",
+    "body": "TaskMate không hiển thị được màn hình này. Dữ liệu của bạn vẫn an toàn. Hãy thử lại; nếu vẫn lỗi, tải lại ứng dụng.",
+    "retry": "Thử lại",
+    "reload": "Tải lại ứng dụng",
+    "detail": "Chi tiết kỹ thuật (hãy gửi kèm khi báo lỗi):",
+    "detailLabel": "Chi tiết kỹ thuật của lỗi"
   }
 }

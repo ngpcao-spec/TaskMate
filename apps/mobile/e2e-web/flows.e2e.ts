@@ -1,5 +1,5 @@
 import { expect, test, webkit, type Page } from '@playwright/test';
-import { accessTokenOf, createFamily, createGoogleParent, directSignIn, internalEmailOf, resetAttempts, revokeChildMembers, serviceClient, seedTask, taskChildId, serverState, signInContext, supabaseUrl, todayVn } from './support/seed';
+import { accessTokenOf, createFamily, createGoogleParent, directSignIn, internalEmailOf, resetAttempts, revokeChildMembers, serviceClient, seedCatalogQuiz, seedTask, taskChildId, serverState, signInContext, supabaseUrl, todayVn } from './support/seed';
 
 const title = (label: string) => `${label} ${Math.random().toString(36).slice(2, 7)}`;
 
@@ -1574,6 +1574,7 @@ test.describe('aucun champ mot de passe monté hors des écrans de connexion (D-
  */
 async function fullParentJourney(browser: import('@playwright/test').Browser, options: Parameters<import('@playwright/test').Browser['newContext']>[0]) {
   const tag = Math.random().toString(36).slice(2, 6);
+  await seedCatalogQuiz(tag); // du contenu RÉEL pour la classe de l'enfant (matières disponibles, bandeau Ôn tập), comme en production
   const parent = await createGoogleParent('full');
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 3, ...options });
   await ctx.addInitScript(() => globalThis.localStorage.setItem('taskmate-theme', 'cosmos'));
