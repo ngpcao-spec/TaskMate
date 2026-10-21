@@ -135,6 +135,18 @@ export function ParentCatalog({ child, today }: { child: ChildRow; today: string
                 {body}
                 <ChevronRight color={colors.textSecondary} />
               </Pressable>
+            ) : r.available ? (
+              // D-089 : le parent ouvre le DÉTAIL d'un quiz ouvert de SON enfant (questions, clés, réponses en cours) — pas commencé, en cours ou en retard ; jamais un quiz pas encore ouvert
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={[r.title, place, dates, weekText].join(', ')}
+                accessibilityHint={t('quizDetail.openHint')}
+                onPress={() => router.push({ pathname: '/quiz/detail', params: { child: child.id, quiz: r.quiz_id } })}
+                style={styles.cardMain}
+              >
+                {body}
+                <ChevronRight color={colors.textSecondary} />
+              </Pressable>
             ) : (
               <View accessible accessibilityLabel={[r.title, place, dates, weekText].join(', ')} style={styles.cardMain}>
                 {body}

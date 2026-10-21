@@ -109,10 +109,20 @@ describe('Catalogue — côté parent (D-080)', () => {
     mockOverview = [row({ attempt_id: 'a1', attempt_status: 'in_progress', answered_count: 4 })];
     const { unmount } = await render(<ParentCatalog child={minh} today="2026-09-10" />);
     expect(screen.getByText('Đang làm (4/10)')).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /Phân số/ })).toBeNull(); // pas de revue avant l'envoi
+    // D-089 : le parent peut OUVRIR le quiz (détail : questions, clés, réponses en cours) avant l'envoi
+    await fireEvent.press(screen.getByRole('button', { name: /Phân số/ }));
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/quiz/detail', params: { child: 'c-minh', quiz: 'z1' } });
     await unmount();
     await render(<ParentCatalog child={minh} today="2026-09-20" />);
     expect(screen.getByText(/Quá hạn/)).toBeTruthy();
+  });
+  it('D-089 : un quiz ouvert mais pas commencé, ou en retard, s\'ouvre en détail pour le parent ; jamais un quiz pas encore ouvert', async () => {
+    mockSubjects = [{ subject: 'maths', week_offset: 0 }];
+    mockOverview = [row(), row({ quiz_id: 'z2', title: 'Hình học', available: false })];
+    await render(<ParentCatalog child={minh} today="2026-09-20" />); // échéance dépassée : « Quá hạn », toujours ouvrable
+    await fireEvent.press(screen.getByRole('button', { name: /Phân số/ }));
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/quiz/detail', params: { child: 'c-minh', quiz: 'z1' } });
+    expect(screen.queryByRole('button', { name: /Hình học/ })).toBeNull();
   });
   it('QCM envoyé : ouvre l\'écran de validation (où le parent voit les réponses) ; validé : score et relance', async () => {
     mockSubjects = [{ subject: 'maths', week_offset: 0 }];
