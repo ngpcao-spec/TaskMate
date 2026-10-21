@@ -1606,9 +1606,9 @@ test.describe('parcours complet d\'un nouveau parent, sur téléphone, thème co
     await page.getByRole('button', { name: 'Bỏ qua bước này' }).click();
 
     await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 5/6' }), 'parcours-complet');
-    await page.getByRole('switch', { name: 'Dọn phòng' }).click();
-    await page.getByRole('switch', { name: 'Đánh răng' }).click();
-    await page.getByRole('switch', { name: '30 phút chơi game' }).click();
+    await page.getByRole('switch', { name: 'Dọn phòng' }).first().click();
+    await page.getByRole('switch', { name: 'Đánh răng' }).first().click();
+    await page.getByRole('switch', { name: '30 phút chơi game' }).first().click();
     await page.getByRole('button', { name: 'Tiếp tục' }).click();
 
     await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 6/6' }), 'parcours-complet');
