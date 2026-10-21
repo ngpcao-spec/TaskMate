@@ -217,7 +217,9 @@
       "forChild": "{{name}} · {{grade}}",
       "noneForClass": "Aucun contenu pour cette classe pour l’instant.",
       "noContent": "Pas encore de contenu",
-      "needClass": "Choisissez la classe de {{name}} pour voir ses matières"
+      "needClass": "Choisissez la classe de {{name}} pour voir ses matières",
+      "on": "Activée",
+      "off": "Désactivée"
     },
     "notifications": {
       "title": "Installer et notifier",

@@ -217,7 +217,9 @@
       "forChild": "{{name}} · {{grade}}",
       "noneForClass": "No content for this class yet.",
       "noContent": "No content yet",
-      "needClass": "Pick {{name}}’s class to see the subjects"
+      "needClass": "Pick {{name}}’s class to see the subjects",
+      "on": "On",
+      "off": "Off"
     },
     "notifications": {
       "title": "Install and get notified",

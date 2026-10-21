@@ -245,6 +245,13 @@ describe('Étape 3 — révisions', () => {
     expect(mockSubject).not.toHaveBeenCalled();
   });
 
+  it('l\'état de chaque matière est écrit en toutes lettres (« Đang bật » / « Đang tắt »), pas seulement par la position de l\'interrupteur', async () => {
+    mockStore.set('taskmate-onboarding-subjects-defaulted-c1', '1');
+    await renderWithClient(<SubjectsStep facts={facts({ children: [kid()] })} />);
+    expect(screen.getAllByText('Đang bật').length).toBe(1); // Toán
+    expect(screen.getAllByText('Đang tắt').length).toBe(1); // Lịch sử và Địa lý : disponible mais désactivée
+  });
+
   it('activer / désactiver = l’écriture existante de child_subjects', async () => {
     mockStore.set('taskmate-onboarding-subjects-defaulted-c1', '1');
     await renderWithClient(<SubjectsStep facts={facts({ children: [kid()] })} />);
