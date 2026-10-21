@@ -105,6 +105,8 @@ function SubjectRow({ label, available, value, onChange }: { label: string; avai
       <View style={styles.flex}>
         <Text style={[styles.subject, !available && styles.off]}>{label}</Text>
         {!available ? <Text style={typography.secondary}>{t('onboarding.subjects.noContent')}</Text> : null}
+        {/* l'état en toutes lettres : sur un thème sombre, la position d'un interrupteur ne suffit pas à savoir s'il est activé */}
+        {available ? <Text style={[styles.state, value && styles.stateOn]}>{value ? t('onboarding.subjects.on') : t('onboarding.subjects.off')}</Text> : null}
       </View>
       <Switch
         accessibilityRole="switch"
@@ -113,6 +115,7 @@ function SubjectRow({ label, available, value, onChange }: { label: string; avai
         aria-checked={available && value}
         aria-disabled={!available}
         disabled={!available}
+        trackColor={{ true: colors.primary, false: colors.cardStrong }}
         value={available && value}
         onValueChange={(v) => {
           if (available) onChange(v);
@@ -151,5 +154,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: MIN_TARGET },
   subject: { fontSize: 16, fontWeight: '600', color: colors.text },
   off: { color: colors.textSecondary },
+  state: { fontSize: 13, fontWeight: '600', color: colors.textSecondary },
+  stateOn: { color: colors.primary, fontWeight: '800' },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
 });

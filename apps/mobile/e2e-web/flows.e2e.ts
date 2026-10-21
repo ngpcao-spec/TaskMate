@@ -1600,6 +1600,18 @@ async function fullParentJourney(browser: import('@playwright/test').Browser, op
   await page.getByRole('button', { name: 'Tiếp tục' }).click();
 
   await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 3/6' }), 'parcours-complet');
+  // matières : activées par défaut (un QCM est publié pour la classe), puis les interrupteurs écrivent bien en base dans les deux sens
+  const db = serviceClient();
+  const { data: member } = await db.from('members').select('family_id').eq('user_id', parent.userId).maybeSingle();
+  const { data: child } = await db.from('children').select('id').eq('family_id', member?.family_id as string).eq('name', 'Bin').maybeSingle();
+  const activeSubjects = async () => ((await db.from('child_subjects').select('subject').eq('child_id', child?.id as string)).data ?? []).length;
+  await expect.poll(activeSubjects, { timeout: 20_000 }).toBe(1);
+  const maths = page.getByRole('switch', { name: 'Toán' }).first();
+  await expect(maths).toBeVisible({ timeout: 20_000 });
+  await maths.click();
+  await expect.poll(activeSubjects, { timeout: 20_000 }).toBe(0);
+  await maths.click();
+  await expect.poll(activeSubjects, { timeout: 20_000 }).toBe(1);
   await page.getByRole('button', { name: 'Tiếp tục' }).click();
   await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 4/6' }), 'parcours-complet');
   await page.getByRole('button', { name: 'Bỏ qua bước này' }).click();
@@ -1618,6 +1630,8 @@ async function fullParentJourney(browser: import('@playwright/test').Browser, op
   // fin du parcours : Hôm nay avec les tâches modèles (séries quotidiennes), jamais un écran vide
   await expectVisibleOrDump(page, page.getByText('Chào Bin!'), 'parcours-complet', 30_000);
   await expectVisibleOrDump(page, page.getByText('Đánh răng'), 'parcours-complet', 30_000);
+  // les devoirs d'Ôn tập de la semaine (matière activée, QCM publié et ouvert) : le bandeau est sur Hôm nay
+  await expectVisibleOrDump(page, page.getByText(/Ôn tập tuần/), 'parcours-complet-bandeau', 30_000);
   await page.reload();
   await expectVisibleOrDump(page, page.getByText('Chào Bin!'), 'parcours-complet-rechargé', 30_000);
 }

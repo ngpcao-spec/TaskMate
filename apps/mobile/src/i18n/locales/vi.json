@@ -217,7 +217,9 @@
       "forChild": "{{name}} · {{grade}}",
       "noneForClass": "Chưa có nội dung nào cho lớp này.",
       "noContent": "Chưa có nội dung",
-      "needClass": "Chọn lớp cho {{name}} để xem các môn ôn tập"
+      "needClass": "Chọn lớp cho {{name}} để xem các môn ôn tập",
+      "on": "Đang bật",
+      "off": "Đang tắt"
     },
     "notifications": {
       "title": "Cài đặt và thông báo",
