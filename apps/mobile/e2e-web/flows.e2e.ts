@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, webkit, type Page } from '@playwright/test';
 import { accessTokenOf, createFamily, createGoogleParent, directSignIn, internalEmailOf, resetAttempts, revokeChildMembers, serviceClient, seedTask, taskChildId, serverState, signInContext, supabaseUrl, todayVn } from './support/seed';
 
 const title = (label: string) => `${label} ${Math.random().toString(36).slice(2, 7)}`;
@@ -1627,11 +1627,13 @@ test.describe('parcours complet d\'un nouveau parent, sur téléphone, thème co
     await fullParentJourney(browser, {});
   });
 
-  test.describe('WebKit (moteur de Safari)', () => {
-    test.use({ browserName: 'webkit' });
-    test('WebKit iPhone : même parcours', async ({ browser }) => {
-      test.setTimeout(240_000);
+  test('WebKit iPhone (moteur de Safari) : même parcours', async () => {
+    test.setTimeout(240_000);
+    const browser = await webkit.launch();
+    try {
       await fullParentJourney(browser, { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1' });
-    });
+    } finally {
+      await browser.close();
+    }
   });
 });
