@@ -1471,5 +1471,13 @@
     "forbidden": "Ce quiz n’est pas attribué à cet enfant, ou n’existe plus.",
     "retry": "Réessayer",
     "openHint": "Ouvre le détail du quiz"
+  },
+  "errorScreen": {
+    "title": "Erreur d’affichage",
+    "body": "TaskMate n’a pas pu afficher cet écran. Vos données sont intactes. Réessayez ; si l’erreur persiste, rechargez l’application.",
+    "retry": "Réessayer",
+    "reload": "Recharger l’application",
+    "detail": "Détail technique (à joindre à un signalement) :",
+    "detailLabel": "Détail technique de l’erreur"
   }
 }

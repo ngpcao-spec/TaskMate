@@ -1,5 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
-import { accessTokenOf, createFamily, createGoogleParent, directSignIn, internalEmailOf, resetAttempts, revokeChildMembers, serviceClient, seedTask, taskChildId, serverState, signInContext, supabaseUrl, todayVn } from './support/seed';
+import { expect, test, webkit, type Page } from '@playwright/test';
+import { accessTokenOf, createFamily, createGoogleParent, directSignIn, internalEmailOf, resetAttempts, revokeChildMembers, serviceClient, seedCatalogQuiz, seedTask, taskChildId, serverState, signInContext, supabaseUrl, todayVn } from './support/seed';
 
 const title = (label: string) => `${label} ${Math.random().toString(36).slice(2, 7)}`;
 
@@ -33,6 +33,7 @@ async function expectVisibleOrDump(page: Page, locator: ReturnType<Page['getByLa
     await expect(locator).toBeVisible({ timeout });
   } catch (e) {
     console.log(`[${who}] introuvable — url=${page.url()} texte=${(await page.locator('body').innerText().catch(() => '')).replace(/\s+/g, ' ').slice(0, 600)}`);
+    console.log(`[${who}] #root — enfants=${await page.locator('#root *').count().catch(() => -1)} html=${((await page.locator('#root').innerHTML().catch(() => '')) as string).replace(/\s+/g, ' ').slice(0, 400)}`);
     throw e;
   }
 }
@@ -1564,5 +1565,76 @@ test.describe('aucun champ mot de passe monté hors des écrans de connexion (D-
     await expect(page.getByText('Chào Minh!', { exact: true })).toBeVisible({ timeout: 20_000 });
     expect(await secretCount(page, 'enfant · Hôm nay juste après la connexion'), 'enfant : Hôm nay juste après la connexion').toBe(0);
     await everyTab(page, 'enfant');
+  });
+});
+
+/**
+ * Parcours COMPLET d'un nouveau parent, comme sur iPhone : thème « cosmos », écran de téléphone, aucune étape passée (enfant avec classe, modèles de tâches
+ * et de récompenses, code d'invitation), puis « Hoàn tất » → Hôm nay doit s'afficher (jamais un écran vide). Rejoué avec WebKit (le moteur de Safari / de la PWA iPhone).
+ */
+async function fullParentJourney(browser: import('@playwright/test').Browser, options: Parameters<import('@playwright/test').Browser['newContext']>[0]) {
+  const tag = Math.random().toString(36).slice(2, 6);
+  await seedCatalogQuiz(tag); // du contenu RÉEL pour la classe de l'enfant (matières disponibles, bandeau Ôn tập), comme en production
+  const parent = await createGoogleParent('full');
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 3, ...options });
+  await ctx.addInitScript(() => globalThis.localStorage.setItem('taskmate-theme', 'cosmos'));
+  await signInContext(ctx, parent);
+  const page = await ctx.newPage();
+  trace(page, 'parcours-complet');
+  await open(page);
+  await page.getByLabel('Tên gia đình').fill(`Gia đình ${tag}`);
+  await page.getByLabel('Tên của bạn').fill('Ba');
+  await page.getByRole('button', { name: 'Tạo gia đình' }).click();
+
+  await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 1/6' }), 'parcours-complet');
+  await page.getByRole('button', { name: 'Tiếp tục' }).click();
+  await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 2/6' }), 'parcours-complet');
+  await page.getByLabel('Tên của con').fill('Bin');
+  await page.getByLabel('Ngày sinh (YYYY-MM-DD)').fill('2015-05-01');
+  await page.getByLabel('Tên đăng nhập (chữ, số, . _ -)').fill(`full.${tag}`);
+  await page.getByLabel('Mật khẩu (tối thiểu 6 ký tự)').fill('abc123');
+  await page.getByRole('radio', { name: 'Lớp 5' }).click();
+  await page.getByRole('button', { name: 'Tạo hồ sơ và tài khoản cho con' }).click();
+  await expect(page.getByText('Phiếu đăng nhập của Bin')).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByRole('button', { name: 'Tiếp tục' })).toBeEnabled({ timeout: 20_000 });
+  await page.getByRole('button', { name: 'Tiếp tục' }).click();
+
+  await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 3/6' }), 'parcours-complet');
+  await page.getByRole('button', { name: 'Tiếp tục' }).click();
+  await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 4/6' }), 'parcours-complet');
+  await page.getByRole('button', { name: 'Bỏ qua bước này' }).click();
+
+  await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 5/6' }), 'parcours-complet');
+  await page.getByRole('switch', { name: 'Đánh răng' }).first().click();
+  await page.getByRole('switch', { name: 'Dọn bàn ăn' }).first().click();
+  await page.getByRole('switch', { name: '30 phút chơi game' }).first().click();
+  await page.getByRole('button', { name: 'Tiếp tục' }).click();
+
+  await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 6/6' }), 'parcours-complet');
+  await page.getByRole('button', { name: 'Tạo mã' }).click();
+  await expect(page.locator('[aria-label^="Mã mời: "]')).toBeVisible({ timeout: 20_000 });
+  await page.getByRole('button', { name: 'Hoàn tất' }).click();
+
+  // fin du parcours : Hôm nay avec les tâches modèles (séries quotidiennes), jamais un écran vide
+  await expectVisibleOrDump(page, page.getByText('Chào Bin!'), 'parcours-complet', 30_000);
+  await expectVisibleOrDump(page, page.getByText('Đánh răng'), 'parcours-complet', 30_000);
+  await page.reload();
+  await expectVisibleOrDump(page, page.getByText('Chào Bin!'), 'parcours-complet-rechargé', 30_000);
+}
+
+test.describe('parcours complet d\'un nouveau parent, sur téléphone, thème cosmos', () => {
+  test('Chromium : de la création de la famille à Hôm nay avec ses tâches modèles', async ({ browser }) => {
+    test.setTimeout(240_000);
+    await fullParentJourney(browser, {});
+  });
+
+  test('WebKit iPhone (moteur de Safari) : même parcours', async () => {
+    test.setTimeout(240_000);
+    const browser = await webkit.launch();
+    try {
+      await fullParentJourney(browser, { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1' });
+    } finally {
+      await browser.close();
+    }
   });
 });

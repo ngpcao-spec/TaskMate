@@ -157,3 +157,36 @@ export async function internalEmailOf(family: FamilyFixture, loginId: string): P
   if (error || !data) throw new Error(`child_accounts: ${error?.message}`);
   return data.auth_email;
 }
+
+/** Jour `YYYY-MM-DD` décalé de `days` jours (calcul sur le calendrier, jamais sur un instant UTC local). */
+const shiftDay = (day: string, days: number): string => {
+  const d = new Date(`${day}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+};
+
+/**
+ * QCM PUBLIÉ du catalogue, ouvert aujourd'hui, pour (pays, classe, matière) : donne du contenu réel à un nouvel enfant dont on a réglé la classe (matières
+ * disponibles dans l'assistant, bandeau « Ôn tập » sur Hôm nay). Posé avec les droits du service local, comme la fixture d'une famille.
+ */
+export async function seedCatalogQuiz(tag: string, country = 'VN', grade = '5', subject = 'maths'): Promise<string> {
+  const db = admin();
+  const today = todayVn();
+  const { data: quiz, error } = await db
+    .from('catalog_quizzes')
+    .insert({ country, grade, subject, week_label: `Tuần ${tag}`, title: `Ôn tập ${tag}`, status: 'published', release_on: shiftDay(today, -3), due_on: shiftDay(today, 3) })
+    .select('id')
+    .single();
+  if (error || !quiz) throw new Error(`catalog_quizzes: ${error?.message}`);
+  const { data: questions, error: qe } = await db
+    .from('catalog_questions')
+    .insert([
+      { quiz_id: quiz.id, position: 0, prompt: '1 + 1 = ?', choices: ['1', '2', '3', '4'] },
+      { quiz_id: quiz.id, position: 1, prompt: '2 + 2 = ?', choices: ['3', '4', '5', '6'] },
+    ])
+    .select('id');
+  if (qe || !questions) throw new Error(`catalog_questions: ${qe?.message}`);
+  const { error: ke } = await db.from('catalog_answer_keys').insert(questions.map((q) => ({ question_id: q.id, correct_index: 1, confirmed: true })));
+  if (ke) throw new Error(`catalog_answer_keys: ${ke.message}`);
+  return quiz.id;
+}

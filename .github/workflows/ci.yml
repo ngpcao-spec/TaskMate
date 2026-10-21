@@ -82,7 +82,7 @@ jobs:
         env:
           EXPO_PUBLIC_SUPABASE_URL: ${{ env.E2E_SUPABASE_URL }}
           EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ env.E2E_ANON_KEY }}
-      - run: pnpm --filter @taskmate/mobile exec playwright install --with-deps chromium
+      - run: pnpm --filter @taskmate/mobile exec playwright install --with-deps chromium webkit
       - run: pnpm --filter @taskmate/mobile e2e:web
       - name: Journal des functions (diagnostic)
         if: failure()
