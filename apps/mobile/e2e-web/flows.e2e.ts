@@ -33,6 +33,7 @@ async function expectVisibleOrDump(page: Page, locator: ReturnType<Page['getByLa
     await expect(locator).toBeVisible({ timeout });
   } catch (e) {
     console.log(`[${who}] introuvable — url=${page.url()} texte=${(await page.locator('body').innerText().catch(() => '')).replace(/\s+/g, ' ').slice(0, 600)}`);
+    console.log(`[${who}] #root — enfants=${await page.locator('#root *').count().catch(() => -1)} html=${((await page.locator('#root').innerHTML().catch(() => '')) as string).replace(/\s+/g, ' ').slice(0, 400)}`);
     throw e;
   }
 }
@@ -1566,3 +1567,60 @@ test.describe('aucun champ mot de passe monté hors des écrans de connexion (D-
     await everyTab(page, 'enfant');
   });
 });
+
+/**
+ * Parcours COMPLET d'un nouveau parent, comme sur iPhone : thème « cosmos », écran de téléphone, aucune étape passée (enfant avec classe, modèles de tâches
+ * et de récompenses, code d'invitation), puis « Hoàn tất » → Hôm nay doit s'afficher (jamais un écran vide).
+ */
+test.describe('parcours complet d\'un nouveau parent, sur téléphone, thème cosmos', () => {
+  test('de la création de la famille à Hôm nay avec ses tâches modèles', async ({ browser }) => {
+    test.setTimeout(240_000);
+    const tag = Math.random().toString(36).slice(2, 6);
+    const parent = await createGoogleParent('full');
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 3 });
+    await ctx.addInitScript(() => globalThis.localStorage.setItem('taskmate-theme', 'cosmos'));
+    await signInContext(ctx, parent);
+    const page = await ctx.newPage();
+    trace(page, 'parcours-complet');
+    await open(page);
+    await page.getByLabel('Tên gia đình').fill(`Gia đình ${tag}`);
+    await page.getByLabel('Tên của bạn').fill('Ba');
+    await page.getByRole('button', { name: 'Tạo gia đình' }).click();
+
+    await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 1/6' }), 'parcours-complet');
+    await page.getByRole('button', { name: 'Tiếp tục' }).click();
+    await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 2/6' }), 'parcours-complet');
+    await page.getByLabel('Tên của con').fill('Bin');
+    await page.getByLabel('Ngày sinh (YYYY-MM-DD)').fill('2015-05-01');
+    await page.getByLabel('Tên đăng nhập (chữ, số, . _ -)').fill(`full.${tag}`);
+    await page.getByLabel('Mật khẩu (tối thiểu 6 ký tự)').fill('abc123');
+    await page.getByRole('radio', { name: 'Lớp 5' }).click();
+    await page.getByRole('button', { name: 'Tạo hồ sơ và tài khoản cho con' }).click();
+    await expect(page.getByText('Phiếu đăng nhập của Bin')).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole('button', { name: 'Tiếp tục' })).toBeEnabled({ timeout: 20_000 });
+    await page.getByRole('button', { name: 'Tiếp tục' }).click();
+
+    await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 3/6' }), 'parcours-complet');
+    await page.getByRole('button', { name: 'Tiếp tục' }).click();
+    await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 4/6' }), 'parcours-complet');
+    await page.getByRole('button', { name: 'Bỏ qua bước này' }).click();
+
+    await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 5/6' }), 'parcours-complet');
+    await page.getByRole('switch', { name: 'Dọn phòng' }).click();
+    await page.getByRole('switch', { name: 'Đánh răng' }).click();
+    await page.getByRole('switch', { name: '30 phút chơi game' }).click();
+    await page.getByRole('button', { name: 'Tiếp tục' }).click();
+
+    await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 6/6' }), 'parcours-complet');
+    await page.getByRole('button', { name: 'Tạo mã' }).click();
+    await expect(page.locator('[aria-label^="Mã mời: "]')).toBeVisible({ timeout: 20_000 });
+    await page.getByRole('button', { name: 'Hoàn tất' }).click();
+
+    // fin du parcours : Hôm nay, jamais un écran vide
+    await expectVisibleOrDump(page, page.getByText('Chào Bin!'), 'parcours-complet', 30_000);
+    await expectVisibleOrDump(page, page.getByText('Dọn phòng'), 'parcours-complet', 30_000);
+    await page.reload();
+    await expectVisibleOrDump(page, page.getByText('Chào Bin!'), 'parcours-complet-rechargé', 30_000);
+  });
+});
+
