@@ -13,7 +13,11 @@ function trace(page: Page, who: string): Promise<void> {
     if (res.status() >= 400 && res.url().includes('/rest/v1/')) console.log(`[${who}] ${res.status()} ${res.request().method()} ${res.url().replace(/^.*\/rest\/v1\//, '')} ${(await res.text().catch(() => '')).slice(0, 300)}`);
   });
   page.on('console', (m) => {
-    if (m.type() === 'error') console.log(`[${who}] console.error ${m.text().slice(0, 300)}`);
+    if (m.type() === 'error' || m.type() === 'warning') console.log(`[${who}] console.${m.type()} ${m.text().slice(0, 300)}`);
+  });
+  page.on('requestfailed', (r) => console.log(`[${who}] requête échouée ${r.method()} ${r.url().replace(/apikey=[^&]+/, 'apikey=…').slice(0, 200)} ${r.failure()?.errorText ?? ''}`));
+  page.on('framenavigated', (f) => {
+    if (f === page.mainFrame()) console.log(`[${who}] navigation ${f.url()}`);
   });
   page.on('websocket', (ws) => {
     console.log(`[${who}] ws ouvert ${ws.url().replace(/apikey=[^&]+/, 'apikey=…')}`);
@@ -33,6 +37,8 @@ async function expectVisibleOrDump(page: Page, locator: ReturnType<Page['getByLa
     await expect(locator).toBeVisible({ timeout });
   } catch (e) {
     console.log(`[${who}] introuvable — url=${page.url()} texte=${(await page.locator('body').innerText().catch(() => '')).replace(/\s+/g, ' ').slice(0, 600)}`);
+    console.log(`[${who}] arbre — ${((await page.locator('body').ariaSnapshot().catch(() => '')) as string).replace(/\s+/g, ' ').slice(0, 600)}`);
+    console.log(`[${who}] stockage — ${await page.evaluate(() => Object.keys(globalThis.localStorage).map((k) => `${k}=${(globalThis.localStorage.getItem(k) ?? '').length}`).join(' ')).catch(() => '')} readyState=${await page.evaluate(() => document.readyState).catch(() => '')}`);
     console.log(`[${who}] #root — enfants=${await page.locator('#root *').count().catch(() => -1)} html=${((await page.locator('#root').innerHTML().catch(() => '')) as string).replace(/\s+/g, ' ').slice(0, 400)}`);
     throw e;
   }
