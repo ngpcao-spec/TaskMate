@@ -31,9 +31,10 @@ describe('resolveEntryRoute', () => {
 
 describe('cache persisté et « aucun enfant » (D-090)', () => {
   it('« aucun enfant » est toujours périmé (relu à chaque montage) ; sinon la fraîcheur habituelle', () => {
-    expect(meStaleTime(0)).toBe(0);
-    expect(meStaleTime(1)).toBe(ME_STALE_MS);
-    expect(meStaleTime(3)).toBe(ME_STALE_MS);
+    expect(meStaleTime({ children: [] })).toBe(0);
+    expect(meStaleTime({ children: [{}] })).toBe(ME_STALE_MS);
+    expect(meStaleTime({ children: [{}, {}, {}] })).toBe(ME_STALE_MS);
+    expect(meStaleTime(null)).toBe(0); // « aucune famille » restauré du cache avant la création de la famille : toujours relu (D-098)
     expect(meStaleTime(undefined)).toBe(ME_STALE_MS); // pas encore de donnée
   });
   it('zéro enfant pendant une relecture : le routage attend (pas de retour dans l\'assistant sur une donnée d\'avant la création de l\'enfant)', () => {

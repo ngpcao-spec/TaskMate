@@ -19,15 +19,15 @@ export default function SetupStepScreen() {
   const { t } = useTranslation();
   const me = useMe().data;
   const ob = useOnboarding();
-  if (!me) return null;
-  if (me.member.role !== 'parent') return <Redirect href="/" />;
-  if (ob.isPending) {
+  // `me` pas encore lu (ou relu après un cache périmé, D-098) : jamais un écran vide
+  if (!me || ob.isPending) {
     return (
       <Screen>
         <ActivityIndicator color={colors.primary} accessibilityLabel={t('onboarding.wizard.loading')} />
       </Screen>
     );
   }
+  if (me.member.role !== 'parent') return <Redirect href="/" />;
   if (!ob.facts) {
     return (
       <Screen>

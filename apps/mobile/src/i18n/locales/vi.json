@@ -206,9 +206,10 @@
     },
     "language": {
       "title": "Chào mừng đến với TaskMate",
-      "subtitle": "Kiểm tra ngôn ngữ, tên gia đình và múi giờ. Mọi thứ đã điền sẵn, bạn chỉ cần xác nhận.",
+      "subtitle": "Kiểm tra ngôn ngữ, giao diện, tên gia đình và múi giờ. Mọi thứ đã điền sẵn, bạn chỉ cần xác nhận.",
       "familyName": "Tên gia đình",
-      "timezoneHint": "Múi giờ quyết định “hôm nay” của gia đình, kể cả ngày của các việc."
+      "timezoneHint": "Múi giờ quyết định “hôm nay” của gia đình, kể cả ngày của các việc.",
+      "themeHint": "Giao diện được lưu riêng cho từng thiết bị. Bạn đổi lại được bất cứ lúc nào trong Thêm → Cài đặt chung."
     },
     "subjects": {
       "title": "Môn ôn tập",

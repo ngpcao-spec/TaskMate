@@ -9,9 +9,8 @@ import { colors } from '@/theme/tokens';
 export default function SetupIndex() {
   const me = useMe().data;
   const ob = useOnboarding();
-  if (!me) return null;
-  if (me.member.role !== 'parent') return <Redirect href="/" />;
-  if (ob.isPending) {
+  if (me && me.member.role !== 'parent') return <Redirect href="/" />;
+  if (!me || ob.isPending) {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background }}>
         <ActivityIndicator color={colors.primary} />

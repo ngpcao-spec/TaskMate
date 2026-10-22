@@ -16,7 +16,8 @@ jest.mock('expo-router', () => ({
 jest.mock('react-native-safe-area-context', () => ({ SafeAreaView: ({ children }: { children: ReactNode }) => children }));
 jest.mock('@/api/supabase', () => ({ supabase: {} }));
 let mockRole: 'parent' | 'child' = 'parent';
-jest.mock('@/hooks/useMe', () => ({ useMe: () => ({ data: { member: { id: 'm1', role: mockRole }, family: { id: 'f1' }, children: [] } }) }));
+let mockNoMe = false;
+jest.mock('@/hooks/useMe', () => ({ useMe: () => ({ data: mockNoMe ? null : { member: { id: 'm1', role: mockRole }, family: { id: 'f1' }, children: [] } }) }));
 const mockFetch = jest.fn();
 jest.mock('@/api/onboarding', () => ({ fetchOnboarding: async () => jest.requireActual('@/domain/onboarding').parseOnboarding(await mockFetch()), setOnboardingStep: jest.fn(), hideSetupCard: jest.fn(), restartOnboarding: jest.fn() }));
 const mockDevice = jest.fn();
@@ -33,7 +34,7 @@ jest.mock('@/components/onboarding/ChildSetup', () => ({ ChildSetup: () => { con
 const kid = { id: 'c1', name: 'Minh', country: 'VN', grade: '7', subjects: ['maths'], available: ['maths'] };
 const raw = (over: Record<string, unknown> = {}) => ({ is_owner: true, language_confirmed: false, skipped: [], card_hidden: false, children: [], tasks: 0, rewards: 0, parents: 1, invite_active: false, ...over });
 
-beforeEach(() => { mockRole = 'parent'; mockParams = {}; mockDevice.mockResolvedValue(false); mockFetch.mockResolvedValue(raw()); });
+beforeEach(() => { mockRole = 'parent'; mockNoMe = false; mockParams = {}; mockDevice.mockResolvedValue(false); mockFetch.mockResolvedValue(raw()); });
 afterEach(() => { clearClients(); jest.clearAllMocks(); });
 
 describe('Entrée de l’assistant (reprise)', () => {
@@ -101,6 +102,14 @@ describe('Route /onboarding/setup/[step]', () => {
     await renderWithClient(<SetupStepScreen />);
     expect(mockRedirect).toHaveBeenCalledWith('/');
     expect(mockFetch).not.toHaveBeenCalled();
+  });
+  it('`me` pas encore (re)lu — cache périmé « aucune famille » (D-098) : un indicateur de chargement, jamais un écran vide', async () => {
+    mockNoMe = true;
+    mockParams = { step: 'language' };
+    await renderWithClient(<SetupStepScreen />);
+    expect(screen.getByLabelText('Đang tải…')).toBeTruthy();
+    expect(mockFetch).not.toHaveBeenCalled();
+    expect(screen.queryByText('step:language')).toBeNull();
   });
   it('lecture impossible : message et « Thử lại »', async () => {
     mockFetch.mockRejectedValueOnce(new Error('offline')).mockResolvedValue(raw());

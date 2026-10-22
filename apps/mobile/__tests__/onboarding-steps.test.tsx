@@ -55,6 +55,16 @@ describe('Étape 1 — langue et famille', () => {
     expect(screen.queryByRole('button', { name: 'Quay lại' })).toBeNull();
   });
 
+  it('le choix de l\'apparence est proposé (5 thèmes, par appareil) ; le choisir l\'enregistre pour cet appareil', async () => {
+    await renderWithClient(<LanguageStep facts={facts()} />);
+    expect(screen.getByText('Giao diện')).toBeTruthy();
+    for (const label of ['Kính mờ', 'Kawaii', 'Vũ trụ', 'Gấu nâu', 'Thỏ bông']) expect(screen.getByRole('radio', { name: label })).toBeTruthy();
+    expect(screen.getByText(/lưu riêng cho từng thiết bị/)).toBeTruthy();
+    await fireEvent.press(screen.getByRole('radio', { name: 'Vũ trụ' }));
+    expect(mockStore.get('taskmate-theme')).toBe('cosmos');
+    expect(screen.getByText(/Hãy đóng hẳn ứng dụng rồi mở lại/)).toBeTruthy(); // natif : redémarrage manuel ; sur le web l'app se recharge seule
+  });
+
   it('valeurs préremplies (nom, fuseau de l’appareil) ; « Tiếp tục » enregistre les changements PUIS confirme, puis étape suivante', async () => {
     await renderWithClient(<LanguageStep facts={facts()} />);
     const deviceTz = Intl.DateTimeFormat().resolvedOptions().timeZone;

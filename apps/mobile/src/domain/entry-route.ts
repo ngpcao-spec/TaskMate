@@ -36,10 +36,11 @@ export function resolveEntryRoute(s: EntryState): EntryRoute {
 export const ME_STALE_MS = 30_000;
 
 /**
- * Un « aucun enfant » peut venir du cache persisté, écrit AVANT la création du premier enfant (rechargement de la page juste après). On ne s'y fie pas :
- * ce résultat-là est toujours périmé (relu à chaque montage). Sinon le parent retournerait dans l'assistant alors que son enfant existe.
+ * Un « aucun enfant » — ou un « aucune famille » (`null`) — peut venir du cache persisté, écrit AVANT la création de la famille ou du premier enfant
+ * (rechargement de la page juste après : iOS relance souvent la PWA). On ne s'y fie pas : ce résultat-là est toujours périmé (relu à chaque montage).
+ * Sinon le parent retomberait dans l'assistant, ou sur un écran vide, alors que sa famille existe (D-098).
  */
-export const meStaleTime = (childrenCount: number | undefined): number => (childrenCount === 0 ? 0 : ME_STALE_MS);
+export const meStaleTime = (me: { children: readonly unknown[] } | null | undefined): number => (me === undefined || (me !== null && me.children.length > 0) ? ME_STALE_MS : 0);
 
 /** `me` est exploitable pour le routage : lu, et — s'il annonce zéro enfant — pas en cours de relecture. */
 export const meSettled = (isPending: boolean, childrenCount: number, isFetching: boolean): boolean => !isPending && !(childrenCount === 0 && isFetching);

@@ -206,9 +206,10 @@
     },
     "language": {
       "title": "Welcome to TaskMate",
-      "subtitle": "Check the language, family name and time zone. Everything is prefilled: just confirm.",
+      "subtitle": "Check the language, appearance, family name and time zone. Everything is prefilled: just confirm.",
       "familyName": "Family name",
-      "timezoneHint": "The time zone sets the family’s “local day”, and so the date of tasks."
+      "timezoneHint": "The time zone sets the family’s “local day”, and so the date of tasks.",
+      "themeHint": "The appearance is saved for this device. You can change it at any time in More → General settings."
     },
     "subjects": {
       "title": "Revision subjects",
