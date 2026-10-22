@@ -50,6 +50,7 @@ async function expectVisibleOrDump(page: Page, locator: ReturnType<Page['getByLa
       })
       .catch((e) => `sonde impossible ${String(e).slice(0, 120)}`);
     console.log(`[${who}] sonde — ${probe}`);
+    console.log(`[${who}] cache — ${(await page.evaluate(() => globalThis.localStorage.getItem('taskmate-query-cache') ?? '').catch(() => '')).slice(0, 700)}`);
     console.log(`[${who}] #root — enfants=${await page.locator('#root *').count().catch(() => -1)} html=${((await page.locator('#root').innerHTML().catch(() => '')) as string).replace(/\s+/g, ' ').slice(0, 400)}`);
     await page.reload().catch(() => undefined); // expérience : un second rechargement suffit-il ?
     const again = await locator.waitFor({ state: 'visible', timeout: 10_000 }).then(() => 'oui', () => 'non');
@@ -1611,6 +1612,8 @@ async function fullParentJourney(browser: import('@playwright/test').Browser, op
   await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 1/6' }), 'parcours-complet');
   // apparence : proposée dès l'étape 1, par appareil ; sur le web le choix recharge l'app et l'assistant reprend à la même étape
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'cosmos');
+  await page.waitForTimeout(1500); // diagnostic : laisse le cache persisté se stabiliser avant de le journaliser
+  console.log(`[parcours-complet] cache avant le choix — ${(await page.evaluate(() => globalThis.localStorage.getItem('taskmate-query-cache') ?? '')).slice(0, 700)}`);
   await page.getByRole('radio', { name: 'Kawaii' }).click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'kawaii', { timeout: 20_000 });
   await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 1/6' }), 'parcours-complet-thème');
