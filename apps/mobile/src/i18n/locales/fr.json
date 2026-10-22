@@ -206,9 +206,10 @@
     },
     "language": {
       "title": "Bienvenue sur TaskMate",
-      "subtitle": "Vérifiez la langue, le nom de la famille et le fuseau horaire. Tout est prérempli : il suffit de confirmer.",
+      "subtitle": "Vérifiez la langue, l’apparence, le nom de la famille et le fuseau horaire. Tout est prérempli : il suffit de confirmer.",
       "familyName": "Nom de la famille",
-      "timezoneHint": "Le fuseau fixe le « jour local » de la famille, donc la date des tâches."
+      "timezoneHint": "Le fuseau fixe le « jour local » de la famille, donc la date des tâches.",
+      "themeHint": "L’apparence est enregistrée pour cet appareil. Vous pouvez la changer à tout moment dans Plus → Réglages généraux."
     },
     "subjects": {
       "title": "Matières de révision",

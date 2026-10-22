@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { syncPushLocale } from '@/api/notifications';
 import { Chip } from '@/components/Chip';
 import { useStepNav } from '@/components/onboarding/useStepNav';
+import { ThemeCard } from '@/components/ThemeCard';
 import { WizardShell } from '@/components/onboarding/WizardShell';
 import { Card, ErrorText, Field } from '@/components/ui';
 import { detectLanguage, suggestTimeZone, type OnboardingFacts } from '@/domain/onboarding';
@@ -82,6 +83,9 @@ export function LanguageStep({ facts }: { facts: OnboardingFacts }) {
           ))}
         </View>
       </Card>
+      {/* apparence : réglage PAR APPAREIL (comme la langue) ; sur le web le choix recharge l'app, l'assistant reprend à cette étape */}
+      <ThemeCard />
+      <Text style={typography.secondary}>{t('onboarding.language.themeHint')}</Text>
       <Card>
         <Field label={t('onboarding.language.familyName')} value={name} onChangeText={setName} maxLength={80} error={nameValid ? null : t('onboarding.family.required')} />
         <Field label={t('settings.timezone')} value={tz} onChangeText={setTz} autoCapitalize="none" autoCorrect={false} error={tzValid ? null : t('settings.timezoneInvalid')} />

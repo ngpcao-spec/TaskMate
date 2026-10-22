@@ -1577,7 +1577,9 @@ async function fullParentJourney(browser: import('@playwright/test').Browser, op
   await seedCatalogQuiz(tag); // du contenu RÉEL pour la classe de l'enfant (matières disponibles, bandeau Ôn tập), comme en production
   const parent = await createGoogleParent('full');
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 3, ...options });
-  await ctx.addInitScript(() => globalThis.localStorage.setItem('taskmate-theme', 'cosmos'));
+  await ctx.addInitScript(() => {
+    if (!globalThis.localStorage.getItem('taskmate-theme')) globalThis.localStorage.setItem('taskmate-theme', 'cosmos'); // thème de départ ; un choix fait dans l'assistant n'est jamais écrasé
+  });
   await signInContext(ctx, parent);
   const page = await ctx.newPage();
   trace(page, 'parcours-complet');
@@ -1587,6 +1589,15 @@ async function fullParentJourney(browser: import('@playwright/test').Browser, op
   await page.getByRole('button', { name: 'Tạo gia đình' }).click();
 
   await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 1/6' }), 'parcours-complet');
+  // apparence : proposée dès l'étape 1, par appareil ; sur le web le choix recharge l'app et l'assistant reprend à la même étape
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'cosmos');
+  await page.getByRole('radio', { name: 'Kawaii' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'kawaii', { timeout: 20_000 });
+  await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 1/6' }), 'parcours-complet-thème');
+  expect(await page.evaluate(() => globalThis.localStorage.getItem('taskmate-theme'))).toBe('kawaii');
+  await page.getByRole('radio', { name: 'Vũ trụ' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'cosmos', { timeout: 20_000 });
+  await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 1/6' }), 'parcours-complet-thème');
   await page.getByRole('button', { name: 'Tiếp tục' }).click();
   await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 2/6' }), 'parcours-complet');
   await page.getByLabel('Tên của con').fill('Bin');
