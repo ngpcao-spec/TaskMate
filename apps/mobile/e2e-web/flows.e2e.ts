@@ -39,22 +39,7 @@ async function expectVisibleOrDump(page: Page, locator: ReturnType<Page['getByLa
     console.log(`[${who}] introuvable — url=${page.url()} texte=${(await page.locator('body').innerText().catch(() => '')).replace(/\s+/g, ' ').slice(0, 600)}`);
     console.log(`[${who}] arbre — ${((await page.locator('body').ariaSnapshot().catch(() => '')) as string).replace(/\s+/g, ' ').slice(0, 600)}`);
     console.log(`[${who}] stockage — ${await page.evaluate(() => Object.keys(globalThis.localStorage).map((k) => `${k}=${(globalThis.localStorage.getItem(k) ?? '').length}`).join(' ')).catch(() => '')} readyState=${await page.evaluate(() => document.readyState).catch(() => '')}`);
-    const probe = await page
-      .evaluate(async () => {
-        const locks = await (navigator as Navigator & { locks?: { query(): Promise<{ held?: unknown[]; pending?: unknown[] }> } }).locks?.query().catch(() => null);
-        const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
-        const token = JSON.parse(globalThis.localStorage.getItem(Object.keys(globalThis.localStorage).find((k) => k.endsWith('-auth-token')) ?? '') ?? '{}');
-        const t0 = Date.now();
-        const res = await fetch(`${globalThis.location.protocol}//127.0.0.1:54321/auth/v1/user`, { headers: { Authorization: `Bearer ${token.access_token}`, apikey: 'x' } }).catch((e) => ({ status: -1, statusText: String(e) }));
-        return `verrous=${JSON.stringify(locks)} sw=${navigator.serviceWorker?.controller ? 'oui' : 'non'} nav=${nav?.type}/${Math.round(nav?.duration ?? -1)}ms exp=${token.expires_at} now=${Math.round(Date.now() / 1000)} sondeAuth=${res.status} ${Date.now() - t0}ms`;
-      })
-      .catch((e) => `sonde impossible ${String(e).slice(0, 120)}`);
-    console.log(`[${who}] sonde — ${probe}`);
-    console.log(`[${who}] cache — ${(await page.evaluate(() => globalThis.localStorage.getItem('taskmate-query-cache') ?? '').catch(() => '')).slice(0, 700)}`);
     console.log(`[${who}] #root — enfants=${await page.locator('#root *').count().catch(() => -1)} html=${((await page.locator('#root').innerHTML().catch(() => '')) as string).replace(/\s+/g, ' ').slice(0, 400)}`);
-    await page.reload().catch(() => undefined); // expérience : un second rechargement suffit-il ?
-    const again = await locator.waitFor({ state: 'visible', timeout: 10_000 }).then(() => 'oui', () => 'non');
-    console.log(`[${who}] après un second rechargement : visible=${again}`);
     throw e;
   }
 }
@@ -1612,8 +1597,7 @@ async function fullParentJourney(browser: import('@playwright/test').Browser, op
   await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 1/6' }), 'parcours-complet');
   // apparence : proposée dès l'étape 1, par appareil ; sur le web le choix recharge l'app et l'assistant reprend à la même étape
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'cosmos');
-  await page.waitForTimeout(1500); // diagnostic : laisse le cache persisté se stabiliser avant de le journaliser
-  console.log(`[parcours-complet] cache avant le choix — ${(await page.evaluate(() => globalThis.localStorage.getItem('taskmate-query-cache') ?? '')).slice(0, 700)}`);
+  // le rechargement suit le clic IMMÉDIATEMENT (cache persisté pas encore réécrit : D-098)
   await page.getByRole('radio', { name: 'Kawaii' }).click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'kawaii', { timeout: 20_000 });
   await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 1/6' }), 'parcours-complet-thème');

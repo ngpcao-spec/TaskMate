@@ -41,8 +41,8 @@ export function useMe() {
     queryKey: [...queryKeys.me, userId],
     queryFn: () => fetchMe(userId as string),
     enabled: userId !== null,
-    // « aucun enfant » jamais servi par le cache persisté (voir `meStaleTime`)
-    staleTime: (query) => meStaleTime(query.state.data?.children.length),
+    // « aucune famille » ou « aucun enfant » jamais servi par le cache persisté (voir `meStaleTime`)
+    staleTime: (query) => meStaleTime(query.state.data),
   });
 }
 
