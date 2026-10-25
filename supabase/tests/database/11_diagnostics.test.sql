@@ -65,11 +65,11 @@ select ok((select public.diagnostics()->'extensions' ? 'pgcrypto'), 'diagnostics
 select lives_ok($$select public.diagnostics()->'realtime_tables'$$, 'diagnostics: publication Realtime lisible (vide hors Supabase)');
 select ok((select jsonb_typeof(public.diagnostics()->'cron_jobs') in ('array', 'null')), 'diagnostics: cron_jobs = tableau ou null (inconnu), jamais une erreur');
 
--- sur Supabase (pg_cron disponible), les deux tâches planifiées par les migrations existent ; ailleurs le test est vacuement vrai
+-- sur Supabase (pg_cron disponible), les quatre tâches planifiées par les migrations existent ; ailleurs le test est vacuement vrai
 select ok(
   not exists (select 1 from pg_available_extensions where name = 'pg_cron')
-  or (select public.diagnostics()->'cron_jobs' ?& array['expire-reward-requests', 'generate-recurrences']),
-  'diagnostics: tâches pg_cron planifiées (expiration des demandes, génération des récurrences) quand pg_cron existe');
+  or (select public.diagnostics()->'cron_jobs' ?& array['expire-reward-requests', 'generate-recurrences', 'push-evening-recap', 'push-task-reminders']),
+  'diagnostics: tâches pg_cron planifiées (expiration des demandes, récurrences, récap du soir, rappels) quand pg_cron existe');
 select ok(
   not exists (select 1 from pg_publication where pubname = 'supabase_realtime')
   or (select public.diagnostics()->'realtime_tables' ?& array['tasks', 'goals', 'rewards', 'reward_requests', 'point_transactions', 'children']),

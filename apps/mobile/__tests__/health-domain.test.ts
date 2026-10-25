@@ -9,7 +9,7 @@ const healthyData: DiagnosticsData = {
   functions: [...EXPECTED_FUNCTIONS],
   realtime_tables: [...REALTIME_TABLES],
   extensions: ['pgcrypto', 'pg_cron'],
-  cron_jobs: ['expire-reward-requests', 'generate-recurrences'],
+  cron_jobs: ['expire-reward-requests', 'generate-recurrences', 'push-evening-recap', 'push-task-reminders'],
 };
 const healthy: Probes = {
   reachable: true,
@@ -93,7 +93,7 @@ describe('diagnostic de production', () => {
     expect(find(items, 'rpc')?.params?.list).toBe('validate_task');
     expect(find(items, 'rls')).toMatchObject({ status: 'fail', params: { list: 'goals' } });
     expect(find(items, 'publication')?.params?.list).toContain('reward_requests');
-    expect(find(items, 'cron')).toMatchObject({ status: 'warn', params: { list: 'generate-recurrences' } });
+    expect(find(items, 'cron')).toMatchObject({ status: 'warn', params: { list: 'generate-recurrences, push-evening-recap, push-task-reminders' } });
   });
 
   it('cron inconnu (extension absente ou illisible) : avertissement, pas un échec', () => {

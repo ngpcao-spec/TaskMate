@@ -1,7 +1,9 @@
 // Edge Function `send-push` — notifications push via Expo Push et Web Push (SPEC §5.6).
 // Trois usages :
 //   1. Déclenchée par le déclencheur `activity_log_push` (INSERT dans `activity_log`, D-065) : protégée par `x-webhook-secret` ;
-//   2. récap du soir des parents : appel planifié `{ "type": "evening_recap" }` (même secret) ;
+//   2. tâches planifiées `pg_cron` (D-099, même secret) : `{ "type": "evening_recap" }` toutes les 15 min (récap des parents dont l'heure choisie tombe dans ce
+//      passage, jour et heure du fuseau de LA FAMILLE) et `{ "type": "task_reminders" }` toutes les 5 min (rappel « avant le début / l'échéance » à l'enfant,
+//      sur ses navigateurs seulement : les appareils natifs ont leurs rappels locaux) ;
 //   3. D-088, depuis l'app, par un membre CONNECTÉ (JWT) : `{ "type": "status" }` (état d'envoi du membre) et `{ "type": "test", "endpoint"? }`
 //      (notification de test à SES appareils). Aucun secret n'est jamais renvoyé : seulement `vapidConfigured: true/false`.
 // La réponse détaille pourquoi rien n'est parti : `skipped: { noRecipient, noDevice, prefOff, noVapid }` (compteurs, journalisés sans aucun secret).
@@ -10,6 +12,7 @@ import webpush from 'npm:web-push@3.6.7';
 import {
   buildMessages,
   buildRecapMessages,
+  buildReminderWebMessages,
   buildTestMessages,
   buildWebMessages,
   buildWebRecapMessages,
@@ -18,6 +21,11 @@ import {
   countGroupedCompletions,
   expoResultLabel,
   explainDelivery,
+  dueReminders,
+  localParts,
+  recapDue,
+  reminderTarget,
+  REMINDER_HORIZON_MS,
   tokensToRemove,
   webResultLabel,
   type ActivityRecord,
@@ -25,6 +33,7 @@ import {
   type ExpoTicket,
   type MemberInfo,
   type PushMessage,
+  type ReminderTask,
   type Skipped,
   type WebPushMessage,
 } from './logic.ts';
@@ -156,12 +165,20 @@ Deno.serve(async (req) => {
   let skipped: Omit<Skipped, 'noVapid'> = { noRecipient: 0, noDevice: 0, prefOff: 0 };
 
   if (body.type === 'evening_recap') {
-    const today = new Date().toISOString().slice(0, 10);
+    const now = new Date();
     const { data: families } = await db.from('families').select('id, timezone').is('deleted_at', null);
     for (const f of families ?? []) {
+      let local: { date: string; minutes: number };
+      try {
+        local = localParts(now, f.timezone); // jour et heure LOCAUX de la famille, jamais l'UTC
+      } catch {
+        continue; // fuseau illisible : cette famille est ignorée, pas les autres
+      }
       const { members, devices } = await loadFamily(f.id);
+      const parents = members.filter((m) => m.role === 'parent' && recapDue(m.prefs, local.minutes));
+      if (parents.length === 0) continue;
       const { data: children } = await db.from('children').select('id, name').eq('family_id', f.id).is('deleted_at', null);
-      const { data: tasks } = await db.from('tasks').select('child_id, completed_at').eq('family_id', f.id).eq('date', today).is('deleted_at', null);
+      const { data: tasks } = await db.from('tasks').select('child_id, completed_at').eq('family_id', f.id).eq('date', local.date).is('deleted_at', null);
       const { count: pendingTasks } = await db.from('tasks').select('id', { count: 'exact', head: true }).eq('family_id', f.id).not('completed_at', 'is', null).is('validated_at', null).is('deleted_at', null);
       const { count: pendingRequests } = await db.from('reward_requests').select('id', { count: 'exact', head: true }).eq('family_id', f.id).eq('status', 'pending');
       // quiz « Ôn tập » envoyés, pas encore validés (D-088)
@@ -170,10 +187,44 @@ Deno.serve(async (req) => {
         const mine = (tasks ?? []).filter((t) => t.child_id === c.id);
         return { name: c.name, done: mine.filter((t) => t.completed_at).length, total: mine.length };
       });
-      const parents = members.filter((m) => m.role === 'parent');
       const pending = { tasks: pendingTasks ?? 0, requests: pendingRequests ?? 0, quizzes: pendingQuizzes ?? 0 };
       messages.push(...buildRecapMessages(parents, devices, summary, pending));
       webMessages.push(...buildWebRecapMessages(parents, devices, summary, pending));
+    }
+  } else if (body.type === 'task_reminders') {
+    const now = new Date();
+    const day = (offset: number) => new Date(now.getTime() + offset * 86_400_000).toISOString().slice(0, 10);
+    const { data: families } = await db.from('families').select('id, timezone').is('deleted_at', null);
+    const zoneOf = new Map((families ?? []).map((f) => [f.id as string, f.timezone as string]));
+    // une seule lecture : tâches à heure, non cochées, autour d'aujourd'hui (le jour local d'une famille est à ±1 jour du jour UTC)
+    const { data: rows } = await db
+      .from('tasks')
+      .select('id, family_id, child_id, title, date, time_kind, start_time, end_time')
+      .neq('time_kind', 'anytime')
+      .is('completed_at', null)
+      .is('deleted_at', null)
+      .gte('date', day(-1))
+      .lte('date', day(2));
+    const byFamily = new Map<string, ReminderTask[]>();
+    for (const t of (rows ?? []) as (ReminderTask & { family_id: string })[]) {
+      const zone = zoneOf.get(t.family_id);
+      if (!zone) continue;
+      try {
+        const target = reminderTarget(t, zone);
+        const ahead = target ? target.at.getTime() - now.getTime() : -1;
+        if (ahead <= 0 || ahead > REMINDER_HORIZON_MS) continue; // heure visée passée ou trop lointaine : aucun rappel possible
+      } catch {
+        continue;
+      }
+      byFamily.set(t.family_id, [...(byFamily.get(t.family_id) ?? []), t]);
+    }
+    for (const [familyId, tasks] of byFamily) {
+      const zone = zoneOf.get(familyId) as string;
+      const { members, devices } = await loadFamily(familyId);
+      for (const child of members.filter((m) => m.role === 'child' && m.child_id)) {
+        const due = dueReminders(tasks.filter((t) => t.child_id === child.child_id), child.prefs, now, zone);
+        webMessages.push(...buildReminderWebMessages(due, child.id, devices));
+      }
     }
   } else if (body.record) {
     const activity = body.record;

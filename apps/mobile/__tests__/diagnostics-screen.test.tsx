@@ -59,7 +59,7 @@ describe('Réglages → Diagnostic', () => {
     mockData = build(
       probes({
         auth: { google: true, email: true },
-        diagnostics: { ok: true, data: { tables: [...EXPECTED_TABLES], tables_without_rls: [], functions: [...EXPECTED_FUNCTIONS], realtime_tables: ['tasks', 'goals', 'rewards', 'reward_requests', 'point_transactions', 'children'], extensions: [], cron_jobs: ['expire-reward-requests', 'generate-recurrences'] } },
+        diagnostics: { ok: true, data: { tables: [...EXPECTED_TABLES], tables_without_rls: [], functions: [...EXPECTED_FUNCTIONS], realtime_tables: ['tasks', 'goals', 'rewards', 'reward_requests', 'point_transactions', 'children'], extensions: [], cron_jobs: ['expire-reward-requests', 'generate-recurrences', 'push-evening-recap', 'push-task-reminders'] } },
         functions: { 'child-login': true, 'create-child': true, 'reset-child-password': true, 'delete-child': true, 'delete-account': true, 'send-push': true, 'generate-questions': true, 'generate-avatar': true }, ai: { configured: true, usedToday: 0, dailyLimit: 20 },
       }),
     );

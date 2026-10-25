@@ -129,7 +129,7 @@ Plus de Database Webhook à créer dans le tableau de bord : la migration `…00
 - **À faire par vous (secrets d'une fonction : saisie humaine uniquement)** : https://supabase.com/dashboard/project/olftkozksanvnzlsvwrp/functions/secrets → *Add new secrets* → `WEBHOOK_SECRET` = la **même** valeur que `push_webhook_secret` du coffre ; `VAPID_PUBLIC_KEY` = la clé publique, `VAPID_PRIVATE_KEY` = la clé privée (uniquement ici), `VAPID_SUBJECT` = `mailto:` + votre e-mail. La clé publique est déjà sur Vercel (`EXPO_PUBLIC_VAPID_PUBLIC_KEY`).
 - **Changer le secret plus tard** : modifier `WEBHOOK_SECRET` (secrets de fonction) ET le secret `push_webhook_secret` du coffre (SQL Editor : `select vault.update_secret((select id from vault.secrets where name = 'push_webhook_secret'), 'nouvelle-valeur');`).
 - **Vérifier** : avec un compte enfant, cocher une tâche ; *Edge Functions → send-push → Logs* montre un appel en **200** (`"sent":0` tant qu'aucun appareil n'a activé les notifications). Un 401 = secrets différents.
-- *(Facultatif, plus tard)* récap du soir des parents : tâche pg_cron appelant `send-push` avec `{"type":"evening_recap"}` et le même en-tête ; dites-le-moi et je prépare le SQL.
+- **Récap du soir des parents et rappels des tâches de l'enfant (fait, D-099)** : planifiés automatiquement par la migration `…000033_push_schedule` (pg_cron → `send-push`, mêmes secrets du coffre ; rien à créer). Si Diagnostic signale des tâches planifiées manquantes : SQL Editor → `select public.schedule_cron_jobs();`.
 
 ### Notifications : vérifier que l'envoi est réellement configuré (D-088)
 Pour qu'une notification PARTE, il faut côté Supabase → *Edge Functions → Secrets* (noms exacts, valeurs saisies par vous seul) : `WEBHOOK_SECRET`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` ; et côté Vercel (variable lue au *build*, puis **Redeploy**) : `EXPO_PUBLIC_VAPID_PUBLIC_KEY` (la MÊME clé publique que `VAPID_PUBLIC_KEY`). Si l'un manque, l'app le dit maintenant :
@@ -143,4 +143,4 @@ Si **pg_cron** est signalé : Supabase → *Database → Extensions* → activer
 
 ## À valider sur de vrais appareils (non automatisable)
 Installer la PWA (iPhone : Safari → Partager → « Sur l'écran d'accueil » ; Android/Chrome : « Installer l'application »), connecter un enfant sur son propre téléphone (identifiant + mot de passe créés par le parent), recevoir une notification Web Push (iOS ≥ 16.4 et PWA installée uniquement ; l'autorisation se demande depuis le bouton des réglages), latence Realtime (< 5 s).
-Limites connues : pas de rappels planifiés « avant l'heure » sur le web (D-035) ; pas de boutons Duyệt/Từ chối dans une notification web (D-034).
+Limites connues : les rappels « avant l'heure » sont désormais envoyés par le serveur aux navigateurs de l'enfant (D-099, remplace D-035), avec jusqu'à 5 min de retard ; pas de boutons Duyệt/Từ chối dans une notification web (D-034).
