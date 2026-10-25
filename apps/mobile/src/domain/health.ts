@@ -186,7 +186,7 @@ type NotListedTable = Exclude<DbTable, (typeof EXPECTED_TABLES)[number]>;
 type NotListedFunction = Exclude<DbFunction, (typeof EXPECTED_FUNCTIONS)[number]>;
 export const COMPLETENESS: [NotListedTable, NotListedFunction] extends [never, never] ? true : never = true;
 
-export const EXPECTED_CRON_JOBS = ['expire-reward-requests', 'generate-recurrences'] as const;
+export const EXPECTED_CRON_JOBS = ['expire-reward-requests', 'generate-recurrences', 'push-evening-recap', 'push-task-reminders'] as const;
 export const EDGE_FUNCTIONS = ['child-login', 'create-child', 'reset-child-password', 'delete-child', 'delete-account', 'send-push', 'generate-questions', 'generate-avatar'] as const;
 export type EdgeFunctionName = (typeof EDGE_FUNCTIONS)[number];
 

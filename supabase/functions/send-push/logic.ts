@@ -32,6 +32,8 @@ type Catalog = {
   recapLine: (name: string, done: number, total: number) => string;
   recapWaiting: (count: number) => string;
   recapQuizzes: (count: number) => string;
+  reminderStart: (minutes: number, time: string) => string;
+  reminderDeadline: (minutes: number, time: string) => string;
 };
 
 const withNote = (note: string) => (note ? ` — ${note}` : '');
@@ -59,6 +61,8 @@ const CATALOGS: Record<Locale, Catalog> = {
     recapLine: (name, done, total) => `${name}: ${done}/${total} việc`,
     recapWaiting: (count) => `${count} mục chờ duyệt`,
     recapQuizzes: (count) => `${count} bài ôn tập chờ duyệt`,
+    reminderStart: (minutes, time) => `Bắt đầu lúc ${time} (còn ${minutes} phút)`,
+    reminderDeadline: (minutes, time) => `Hạn chót ${time} (còn ${minutes} phút)`,
   },
   fr: {
     taskDoneMany: (v) => `${v.child} a terminé ${v.count} tâches — à valider`,
@@ -81,6 +85,8 @@ const CATALOGS: Record<Locale, Catalog> = {
     recapLine: (name, done, total) => `${name} : ${done}/${total} tâches`,
     recapWaiting: (count) => `${count} à valider`,
     recapQuizzes: (count) => `${count} quiz à valider`,
+    reminderStart: (minutes, time) => `Début à ${time} (dans ${minutes} min)`,
+    reminderDeadline: (minutes, time) => `À finir avant ${time} (dans ${minutes} min)`,
   },
   en: {
     taskDoneMany: (v) => `${v.child} finished ${v.count} tasks — waiting for approval`,
@@ -103,6 +109,8 @@ const CATALOGS: Record<Locale, Catalog> = {
     recapLine: (name, done, total) => `${name}: ${done}/${total} tasks`,
     recapWaiting: (count) => `${count} waiting for approval`,
     recapQuizzes: (count) => `${count} quizzes waiting for approval`,
+    reminderStart: (minutes, time) => `Starts at ${time} (in ${minutes} min)`,
+    reminderDeadline: (minutes, time) => `Due before ${time} (in ${minutes} min)`,
   },
 };
 
@@ -470,4 +478,115 @@ export function buildTestMessages(devices: readonly DeviceInfo[], memberId: stri
       payload: { title: 'TaskMate', body: catalogFor(toLocale(d.locale)).testNotification, data: { type: 'test' }, url: '/', tag: 'test' },
     }));
   return { expo, web };
+}
+
+
+// ───────────────────────── Tâches planifiées (D-099) ─────────────────────────
+// `pg_cron` appelle `send-push` toutes les 15 min (récap du soir des parents) et toutes les 5 min (rappels des tâches de l'enfant). Tout est calculé ICI
+// dans le fuseau de la famille : le jour d'une tâche est un jour LOCAL, jamais dérivé d'un instant UTC.
+
+export const RECAP_TICK_MS = 15 * 60_000;
+export const REMINDER_TICK_MS = 5 * 60_000;
+const MAX_REMINDER_MIN = 240;
+
+const dtf = (timeZone: string) =>
+  new Intl.DateTimeFormat('en-US', { timeZone, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+/** Date locale (`YYYY-MM-DD`) et minutes depuis minuit d'un instant, dans un fuseau IANA (lève `RangeError` si le fuseau est inconnu). */
+export function localParts(at: Date, timeZone: string): { date: string; minutes: number } {
+  const parts = dtf(timeZone).formatToParts(at);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '00';
+  return { date: `${get('year')}-${get('month')}-${get('day')}`, minutes: Number(get('hour')) * 60 + Number(get('minute')) };
+}
+
+function offsetMs(at: Date, timeZone: string): number {
+  const parts = dtf(timeZone).formatToParts(at);
+  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value ?? 0);
+  const asUtc = Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'), get('second'));
+  return asUtc - Math.floor(at.getTime() / 1000) * 1000;
+}
+
+/** Instant (UTC) correspondant à « ce jour, cette heure » DANS le fuseau de la famille (heure d'été comprise). */
+export function zonedInstant(date: string, time: string, timeZone: string): Date {
+  const wall = Date.UTC(Number(date.slice(0, 4)), Number(date.slice(5, 7)) - 1, Number(date.slice(8, 10)), Number(time.slice(0, 2)), Number(time.slice(3, 5)));
+  const first = wall - offsetMs(new Date(wall), timeZone);
+  return new Date(wall - offsetMs(new Date(first), timeZone));
+}
+
+const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+/** Récap du soir d'un parent : activé par défaut à 20:30 (mêmes valeurs par défaut que l'app, `DEFAULT_PREFS`). */
+export function recapSettings(prefs: unknown): { enabled: boolean; time: string } {
+  const r = (prefs as { eveningRecap?: { enabled?: unknown; time?: unknown } } | null)?.eveningRecap;
+  return { enabled: typeof r?.enabled === 'boolean' ? r.enabled : true, time: typeof r?.time === 'string' && TIME_RE.test(r.time) ? r.time : '20:30' };
+}
+
+/** Le récap de ce parent part-il à ce passage ? Le premier passage à partir de l'heure choisie (fenêtre d'un passage, jamais deux fois). */
+export function recapDue(prefs: unknown, localMinutes: number, tickMs = RECAP_TICK_MS): boolean {
+  const s = recapSettings(prefs);
+  if (!s.enabled) return false;
+  const at = Number(s.time.slice(0, 2)) * 60 + Number(s.time.slice(3, 5));
+  return localMinutes >= at && localMinutes < at + tickMs / 60_000;
+}
+
+export type ReminderTask = { id: string; child_id: string; title: string; date: string; time_kind: string; start_time: string | null; end_time: string | null };
+export type DueReminder = { taskId: string; childId: string; title: string; kind: 'start' | 'deadline'; minutes: number; time: string };
+
+/** Instant visé par un rappel : le début d'une plage, ou l'échéance ; `null` pour une tâche sans heure. */
+export function reminderTarget(t: ReminderTask, timeZone: string): { kind: 'start' | 'deadline'; at: Date; time: string } | null {
+  if (t.time_kind === 'range' && t.start_time) return { kind: 'start', at: zonedInstant(t.date, t.start_time, timeZone), time: t.start_time.slice(0, 5) };
+  if (t.time_kind === 'deadline' && t.end_time) return { kind: 'deadline', at: zonedInstant(t.date, t.end_time, timeZone), time: t.end_time.slice(0, 5) };
+  return null;
+}
+
+/** Minutes de rappel de l'enfant : absentes = valeurs par défaut de l'app (10 / 30), `null` = désactivé. */
+export function reminderMinutes(prefs: unknown, kind: 'start' | 'deadline'): number | null {
+  const key = kind === 'start' ? 'reminderBeforeStartMin' : 'reminderBeforeDeadlineMin';
+  const fallback = kind === 'start' ? 10 : 30;
+  const v = (prefs as Record<string, unknown> | null)?.[key];
+  if (v === null || v === 0) return null; // désactivé (0 min = « à l'heure » : seulement le rappel local natif)
+  return typeof v === 'number' && Number.isInteger(v) && v > 0 && v <= MAX_REMINDER_MIN ? v : fallback;
+}
+
+/** Fenêtre d'une tâche : au-delà, aucun rappel possible (évite de charger les préférences d'une famille pour rien). */
+export const REMINDER_HORIZON_MS = MAX_REMINDER_MIN * 60_000 + REMINDER_TICK_MS;
+
+/**
+ * Rappels à envoyer à CE passage pour un enfant : l'instant de rappel (début/échéance − minutes) tombe dans la fenêtre du passage et l'heure visée n'est pas
+ * passée. « Dans N min » est le temps RÉEL restant (le passage peut avoir quelques minutes de retard). 0 minute = désactivé côté serveur.
+ */
+export function dueReminders(tasks: readonly ReminderTask[], prefs: unknown, now: Date, timeZone: string, tickMs = REMINDER_TICK_MS): DueReminder[] {
+  const out: DueReminder[] = [];
+  for (const t of tasks) {
+    const target = reminderTarget(t, timeZone);
+    if (!target) continue;
+    const before = reminderMinutes(prefs, target.kind);
+    if (before === null) continue;
+    const remindAt = target.at.getTime() - before * 60_000;
+    if (now.getTime() >= remindAt && now.getTime() < remindAt + tickMs && now.getTime() < target.at.getTime()) {
+      out.push({ taskId: t.id, childId: t.child_id, title: t.title, kind: target.kind, minutes: Math.max(1, Math.round((target.at.getTime() - now.getTime()) / 60_000)), time: target.time });
+    }
+  }
+  return out;
+}
+
+/** Rappel → texte dans la langue de l'appareil. */
+export function reminderText(r: DueReminder, locale: Locale = 'vi'): Text {
+  const c = catalogFor(locale);
+  return { title: r.title, body: r.kind === 'start' ? c.reminderStart(r.minutes, r.time) : c.reminderDeadline(r.minutes, r.time) };
+}
+
+/**
+ * Rappels de l'ENFANT sur ses navigateurs (Web Push) : les appareils natifs ont déjà leurs rappels locaux planifiés (pas de doublon), et jamais d'autre
+ * destinataire que l'enfant concerné.
+ */
+export function buildReminderWebMessages(reminders: readonly DueReminder[], childMemberId: string, devices: readonly DeviceInfo[]): WebPushMessage[] {
+  return reminders.flatMap((r) =>
+    webDevicesOf(devices, childMemberId).map(
+      (d): WebPushMessage => ({
+        subscription: d.web_push_subscription as WebPushSubscription,
+        payload: { ...reminderText(r, toLocale(d.locale)), data: { type: r.kind === 'start' ? 'reminder_start' : 'reminder_deadline', taskId: r.taskId }, url: '/', tag: `reminder-${r.taskId}-${r.kind}` },
+      }),
+    ),
+  );
 }
