@@ -1,5 +1,5 @@
 import {
-  AiError, AVATAR_PROMPT, buildOpenAiFields, decodeBase64, DEFAULT_IMAGE_MODEL, handleGenerate, isModerationCode, isWebp, LIMITS, parseOpenAiImageResponse, prepareInput, resolveLimit, resolveQuality, sniffPhoto,
+  AiError, AVATAR_PROMPT, buildOpenAiFields, decodeBase64, DEFAULT_IMAGE_MODEL, handleGenerate, isModerationCode, isWebp, LIMITS, parseOpenAiImageResponse, prepareInput, resolveImageModel, resolveLimit, resolveQuality, sniffPhoto,
   type AiClient, type AvatarAiRequest, type AvatarAiResponse, type Deps, type Target,
 } from '../../../supabase/functions/generate-avatar/logic';
 
@@ -227,5 +227,17 @@ describe('génération', () => {
   it('un journal en panne ne masque jamais le résultat', async () => {
     const { deps } = makeDeps({ finishThrows: true });
     expect((await handleGenerate(deps, body())).status).toBe(200);
+  });
+});
+
+describe('modèle d\'image (D-101)', () => {
+  it('défaut gpt-image-2 ; un ancien nom retiré par le fournisseur est remplacé ; un autre nom est respecté', () => {
+    expect(DEFAULT_IMAGE_MODEL).toBe('gpt-image-2');
+    expect(resolveImageModel(undefined)).toBe('gpt-image-2');
+    expect(resolveImageModel('')).toBe('gpt-image-2');
+    expect(resolveImageModel('  ')).toBe('gpt-image-2');
+    expect(resolveImageModel('gpt-image-1')).toBe('gpt-image-2');
+    expect(resolveImageModel(' gpt-image-1.5 ')).toBe('gpt-image-1.5');
+    expect(resolveImageModel('autre-modele')).toBe('autre-modele');
   });
 });

@@ -6,7 +6,7 @@
 // UNIQUEMENT de l'environnement des fonctions (Supabase → Edge Functions → Secrets) : jamais dans le code ni dans git.
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import { jsonResponse, preflight } from '../_shared/cors.ts';
-import { AiError, buildOpenAiFields, DEFAULT_IMAGE_MODEL, handleGenerate, isModerationCode, LIMITS, OPENAI_IMAGES_EDIT_URL, parseOpenAiImageResponse, resolveLimit, resolveQuality, type AiClient, type Deps, type Target } from './logic.ts';
+import { AiError, buildOpenAiFields, handleGenerate, isModerationCode, LIMITS, OPENAI_IMAGES_EDIT_URL, parseOpenAiImageResponse, resolveImageModel, resolveLimit, resolveQuality, type AiClient, type Deps, type Target } from './logic.ts';
 
 const MAX_BODY_BYTES = Math.ceil((LIMITS.maxImageBytes * 4) / 3) + 10_000;
 
@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
       return { error };
     },
     ai: apiKey ? realAiClient(apiKey) : null,
-    model: Deno.env.get('OPENAI_IMAGE_MODEL') || DEFAULT_IMAGE_MODEL,
+    model: resolveImageModel(Deno.env.get('OPENAI_IMAGE_MODEL')),
     quality: resolveQuality(Deno.env.get('OPENAI_IMAGE_QUALITY')),
     childDailyLimit: resolveLimit(Deno.env.get('AVATAR_CHILD_DAILY_LIMIT'), LIMITS.defaultChildDailyLimit),
     familyDailyLimit: resolveLimit(Deno.env.get('AVATAR_FAMILY_DAILY_LIMIT'), LIMITS.defaultFamilyDailyLimit),
