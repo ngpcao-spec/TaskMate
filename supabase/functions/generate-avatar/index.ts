@@ -29,12 +29,18 @@ function realAiClient(apiKey: string): AiClient {
       }
       if (!res.ok) {
         let code: unknown = null;
+        let param: unknown = null;
+        let message: unknown = null;
         try {
-          code = ((await res.json()) as { error?: { code?: unknown } })?.error?.code;
+          const error = ((await res.json()) as { error?: { code?: unknown; param?: unknown; message?: unknown } })?.error;
+          code = error?.code;
+          param = error?.param;
+          message = error?.message;
         } catch {
           /* corps illisible */
         }
-        console.error('generate-avatar: erreur IA', res.status, typeof code === 'string' ? code : '');
+        // Le fournisseur décrit le PARAMÈTRE refusé (jamais le contenu de la photo) : code, paramètre et début du message suffisent à diagnostiquer (D-100).
+        console.error('generate-avatar: erreur IA', res.status, typeof code === 'string' ? code : '', typeof param === 'string' ? param : '', typeof message === 'string' ? message.slice(0, 200) : '');
         throw isModerationCode(code) ? new AiError('refused', res.status) : new AiError('http', res.status);
       }
       try {
