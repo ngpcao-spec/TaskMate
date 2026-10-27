@@ -6,8 +6,16 @@
 //  * la sortie de l'IA est REVALIDÉE (vrai WebP, taille bornée) avant d'être enregistrée.
 
 export const AI_PROVIDER = 'openai';
-/** Modèle d'image par défaut, surchargeable par OPENAI_IMAGE_MODEL. */
-export const DEFAULT_IMAGE_MODEL = 'gpt-image-1';
+/** Modèle d'image par défaut, surchargeable par OPENAI_IMAGE_MODEL. `gpt-image-1` n'existe plus côté fournisseur (D-101). */
+export const DEFAULT_IMAGE_MODEL = 'gpt-image-2';
+/** Modèles retirés par le fournisseur → leur remplaçant : un secret `OPENAI_IMAGE_MODEL` resté sur un ancien nom ne doit pas casser l'avatar. */
+export const RETIRED_IMAGE_MODELS: Readonly<Record<string, string>> = { 'gpt-image-1': DEFAULT_IMAGE_MODEL };
+
+export function resolveImageModel(raw: unknown): string {
+  const name = typeof raw === 'string' ? raw.trim() : '';
+  if (name === '') return DEFAULT_IMAGE_MODEL;
+  return RETIRED_IMAGE_MODELS[name] ?? name;
+}
 export const OPENAI_IMAGES_EDIT_URL = 'https://api.openai.com/v1/images/edits';
 
 export const LIMITS = {
