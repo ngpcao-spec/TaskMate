@@ -605,3 +605,8 @@ Sélection par `<input type="file">` (`services/documents.web.ts`, `capture` pou
 **Hors périmètre.** Pas de notification pour une tâche en retard ; pas de boutons dans la notification web (D-034) ; 0 min « à l'heure » reste réservé au natif.
 **Tests.** Jest `send-push-schedule` (jour/heure locaux, heure d'été, fenêtres du récap et des rappels, préférences, langues, destinataires : navigateurs de l'enfant concerné seulement) ; pgTAP 38 (fonction privée sans droit client, inerte sans secrets, quatre tâches cron et leurs horaires quand `pg_cron` existe) ; pgTAP 11 et Jest Diagnostic mis à jour. **À constater après fusion** : `list_migrations`, `cron.job`, puis le journal de `send-push` (appels `evening_recap` / `task_reminders` en 200).
 
+
+## D-100 — Avatar IA : le paramètre refusé par le fournisseur est journalisé (2026-10-27)
+**Constat.** En production, « Tạo ảnh đại diện bằng AI » échoue (« Không tạo được ảnh đại diện ») : `generate-avatar` répond 502 car OpenAI renvoie `400 invalid_value`. Le journal ne disait pas QUEL paramètre était refusé (modèle, taille, qualité, format, image…).
+**Décision.** En cas d'erreur du fournisseur, le journal de la fonction garde le statut, le `code`, le `param` et les 200 premiers caractères du `message` d'erreur d'OpenAI (ils décrivent le paramètre, jamais le contenu de la photo ; la photo, elle, n'est JAMAIS journalisée, ni sa taille ni ses octets). Aucun comportement ne change pour l'utilisateur.
+**Suite.** Relancer un essai depuis l'app, lire la ligne `generate-avatar: erreur IA 400 invalid_value <param> <message>` et corriger la requête.
