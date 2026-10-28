@@ -1722,7 +1722,7 @@ test.describe('suivi des utilisateurs (D-102)', () => {
     // fiche famille
     await row.click();
     await expectVisibleOrDump(page, page.getByLabel(`Email phụ huynh tạo gia đình: ${family.parent.email}`), 'admin-fiche', 20_000);
-    await expect(page.getByLabel(/^Việc đã tạo: [1-9]/)).toBeVisible();
+    await expect(page.getByLabel(/^Việc đã tạo: [1-9]/).first()).toBeVisible();
     const sheet = await page.locator('body').innerText();
     expect(sheet).not.toContain('Minh');
     expect(sheet).not.toContain('Khang');
