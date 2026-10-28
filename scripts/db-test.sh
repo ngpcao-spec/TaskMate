@@ -23,3 +23,5 @@ if [ ${#tests[@]} -eq 0 ]; then echo "no pgTAP tests yet"; exit 0; fi
 as_pg "pg_prove -U postgres -d $DB ${tests[*]}"
 ./scripts/db-concurrency.sh
 ./scripts/db-migration-test.sh
+
+./scripts/db-admin-perf.sh

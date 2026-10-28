@@ -15,6 +15,7 @@ create table if not exists auth.users (
   role text,
   instance_id uuid,
   email_confirmed_at timestamptz,
+  last_sign_in_at timestamptz,
   created_at timestamptz,
   updated_at timestamptz,
   raw_app_meta_data jsonb,
