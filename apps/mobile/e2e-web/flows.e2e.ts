@@ -1722,7 +1722,8 @@ test.describe('suivi des utilisateurs (D-102)', () => {
     // fiche famille
     await row.click();
     await expectVisibleOrDump(page, page.getByLabel(`Email phụ huynh tạo gia đình: ${family.parent.email}`), 'admin-fiche', 20_000);
-    await expect(page.getByLabel(/^Việc đã tạo: [1-9]/).first()).toBeVisible();
+    // la liste reste montée (cachée) sous la fiche : seul le libellé de la FICHE se termine par un nombre seul
+    await expect(page.getByLabel(/^Việc đã tạo: [1-9]\d*$/)).toBeVisible();
     const sheet = await page.locator('body').innerText();
     expect(sheet).not.toContain('Minh');
     expect(sheet).not.toContain('Khang');
