@@ -50,5 +50,16 @@ export const quizKeys = {
 /** Statut d'administrateur de l'appelant (D-080) : seulement pour afficher l'entrée de menu ; jamais une autorisation (la base décide). */
 export const platformKeys = { isAdmin: ['platform', 'is-admin'] as const };
 
+/** Suivi des utilisateurs (D-102) : réservé à l'administrateur, mis en cache 5 min. */
+export const adminStatsKeys = {
+  all: ['admin-stats'] as const,
+  overview: ['admin-stats', 'overview'] as const,
+  series: ['admin-stats', 'series'] as const,
+  usage: ['admin-stats', 'usage'] as const,
+  health: ['admin-stats', 'health'] as const,
+  families: (search: string, sort: string, dir: string, page: number) => ['admin-stats', 'families', search, sort, dir, page] as const,
+  family: (id: string) => ['admin-stats', 'family', id] as const,
+};
+
 /** Avatars des enfants (D-071) : la liste visible par l'utilisateur (parent : toute la famille ; enfant : lui seul). */
 export const avatarKeys = { all: ['avatars'] as const };

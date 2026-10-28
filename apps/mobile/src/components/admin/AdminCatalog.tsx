@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { ChevronRight, FilePlus, Plus, Trash2 } from 'lucide-react-native';
+import { ChartNoAxesColumn, ChevronRight, FilePlus, Plus, Trash2 } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -45,6 +45,11 @@ function Catalog() {
       <Pressable accessibilityRole="button" accessibilityLabel={t('catalog.admin.import')} onPress={() => router.push('/admin/import')} style={styles.add}>
         <FilePlus color={colors.primary} size={20} />
         <Text style={styles.addText}>{t('catalog.admin.import')}</Text>
+      </Pressable>
+
+      <Pressable accessibilityRole="button" accessibilityLabel={t('adminStats.entry')} accessibilityHint={t('adminStats.entryHint')} onPress={() => router.push('/admin/users')} style={styles.addPlain}>
+        <ChartNoAxesColumn color={colors.primary} size={20} />
+        <Text style={styles.addText}>{t('adminStats.entry')}</Text>
       </Pressable>
 
       <Pressable accessibilityRole="button" accessibilityLabel={t('catalog.admin.newEmpty')} onPress={() => router.push('/admin/new')} style={styles.addPlain}>

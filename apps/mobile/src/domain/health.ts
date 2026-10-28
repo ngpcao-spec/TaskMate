@@ -22,6 +22,7 @@ export const EXPECTED_TABLES = [
   'devices',
   'families',
   'goals',
+  'member_activity_days',
   'members',
   'notification_prefs',
   'onboarding_progress',
@@ -44,6 +45,12 @@ export const EXPECTED_TABLES = [
 
 export const EXPECTED_FUNCTIONS = [
   'adjust_points',
+  'admin_families',
+  'admin_family_detail',
+  'admin_health',
+  'admin_stats_overview',
+  'admin_stats_series',
+  'admin_stats_usage',
   'ai_finish',
   'ai_reserve',
   'ai_target',
@@ -174,6 +181,7 @@ export const EXPECTED_FUNCTIONS = [
   'start_quiz_evaluation',
   'submit_quiz_evaluation',
   'sync_recurrence',
+  'touch_activity',
   'uncomplete_task',
   'unregister_web_push',
   'upsert_quiz_question',

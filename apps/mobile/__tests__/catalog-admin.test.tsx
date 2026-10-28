@@ -76,6 +76,21 @@ beforeEach(() => {
   mockSeq = 0; mockRole = 'parent'; mockAdmin = true; mockList = []; mockQuiz = quiz(); mockQuestions = [];
 });
 
+describe('Administration — entrée « Suivi des utilisateurs » (D-102)', () => {
+  it('l\'administrateur voit l\'entrée, qui ouvre l\'écran de suivi', async () => {
+    mockRole = 'parent'; mockAdmin = true;
+    mockList = [];
+    await render(<AdminCatalog />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Theo dõi người dùng' }));
+    expect(mockPush).toHaveBeenCalledWith('/admin/users');
+  });
+  it('un parent ordinaire ne voit jamais l\'entrée', async () => {
+    mockRole = 'parent'; mockAdmin = false;
+    await render(<AdminCatalog />);
+    expect(screen.queryByRole('button', { name: 'Theo dõi người dùng' })).toBeNull();
+  });
+});
+
 describe('Administration — accès (D-080)', () => {
   it.each([
     ['un parent ordinaire (non admin)', 'parent', false],

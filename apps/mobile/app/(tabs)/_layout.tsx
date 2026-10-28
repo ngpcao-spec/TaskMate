@@ -14,6 +14,7 @@ import { useIsWide } from '@/hooks/useLayout';
 import { useNotificationSetup, useReminderSync, useUnreadNotifications } from '@/hooks/useNotifications';
 import { badgeTotal } from '@/domain/notification-center';
 import { setAppBadge } from '@/pwa/appBadge';
+import { useActivityPing } from '@/hooks/useActivityPing';
 import { useRealtimeFamily } from '@/hooks/useRealtimeFamily';
 import { colors } from '@/theme/tokens';
 
@@ -28,6 +29,7 @@ export default function TabsLayout() {
   const badge = badgeTotal(unread, approvals.total);
   useEffect(() => setAppBadge(badge), [badge]);
   useRealtimeFamily(familyId);
+  useActivityPing(familyId !== null); // dernière activité du membre (D-102)
   useNotificationSetup();
   useReminderSync();
   // Garde de routage : session perdue ou appareil révoqué → retour à l'onboarding.

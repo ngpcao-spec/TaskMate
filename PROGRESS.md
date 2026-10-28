@@ -259,3 +259,7 @@ Famille neuve → assistant en six étapes (langue/famille, enfants obligatoire 
 
 ### Suppression définitive d'un QCM du catalogue (D-091) — 2026-10-20
 L'administrateur supprime définitivement un QCM, même publié et déjà passé : Administration → corbeille sur la carte (ou bouton rouge dans l'éditeur) → impact lu en base (enfants, tentatives, points) → retaper le titre exact → suppression en une transaction (tentatives, réponses, résultats, questions, clés), case libérée pour un nouvel import. Les points gagnés sont CONSERVÉS (journal immuable), aucune notification, audit immuable `catalog_admin_log`. Un écran ouvert sur un QCM purgé affiche « không còn nữa » ; une écriture hors ligne sur une tentative purgée est retirée de la file en silence. Détail : DECISIONS D-091.
+
+### Suivi des utilisateurs, espace administrateur (D-102) — 2026-10-28
+Écran Administration → Suivi des utilisateurs (lecture seule, administrateur uniquement, autorité côté base) : indicateurs, graphiques (familles par semaine, membres actifs par jour), usage 7 j / 30 j, liste des familles (recherche, tri, pagination de 50 côté serveur), fiche famille, santé du serveur. `members.last_active_at` + `touch_activity()` (une écriture par heure), table fermée `member_activity_days`, RPC `admin_*` en SQL (pire cas 31 ms sur 1 001 familles). Jamais de contenu ni de prénom d'enfant.
+
