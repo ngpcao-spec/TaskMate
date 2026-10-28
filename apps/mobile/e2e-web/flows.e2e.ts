@@ -1670,3 +1670,85 @@ test.describe('parcours complet d\'un nouveau parent, sur téléphone, thème co
     }
   });
 });
+
+test.describe('suivi des utilisateurs (D-102)', () => {
+  test('l\'administrateur lit les vrais agrégats de la base : indicateurs, graphiques, liste, fiche, santé — sans prénom d\'enfant', async ({ browser }) => {
+    test.setTimeout(120_000);
+    const family = await createFamily();
+    const db = serviceClient();
+    const { error } = await db.from('platform_admins').insert({ user_id: family.parent.userId });
+    if (error) throw new Error(`platform_admins: ${error.message}`);
+    const task = await seedTask(family, 'minh', title('Việc bí mật'));
+    expect(task).toBeTruthy();
+
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+    await signInContext(ctx, family.parent);
+    const page = await ctx.newPage();
+    trace(page, 'admin-suivi');
+    await open(page); // l'ouverture de l'app signale l'activité (touch_activity)
+    await expectVisibleOrDump(page, page.getByText(/Chào Ba!/), 'admin-suivi', 30_000);
+    await expect
+      .poll(async () => (await db.from('members').select('last_active_at').eq('id', family.parent.memberId).single()).data?.last_active_at ?? null, { timeout: 20_000 })
+      .not.toBeNull();
+    const first = (await db.from('members').select('last_active_at').eq('id', family.parent.memberId).single()).data?.last_active_at;
+    const days = await db.from('member_activity_days').select('day').eq('member_id', family.parent.memberId);
+    expect(days.data?.length).toBe(1);
+    expect(first).toBeTruthy();
+
+    await open(page, '/admin/users');
+    await expectVisibleOrDump(page, page.getByRole('button', { name: 'Làm mới' }), 'admin-suivi', 30_000);
+    // indicateurs : au moins notre famille, nos 2 enfants (nombres venant de la vraie base)
+    const familiesTile = page.getByLabel(/^Gia đình: \d+, Mới: /);
+    await expect(familiesTile).toBeVisible({ timeout: 20_000 });
+    expect(Number(/Gia đình: (\d+)/.exec((await familiesTile.getAttribute('aria-label')) ?? '')?.[1])).toBeGreaterThanOrEqual(1);
+    await expect(page.getByLabel(/^Trẻ em: \d+$/)).toBeVisible();
+    await expect(page.getByLabel(/^Phụ huynh hoạt động hôm nay: [1-9]/)).toBeVisible(); // l'administrateur lui-même vient d'être actif
+    // graphiques : 12 semaines et 30 jours
+    await expect(page.getByLabel(/^Tuần bắt đầu /)).toHaveCount(12);
+    await expect(page.getByLabel(/^\d{4}-\d\d-\d\d: \d+ phụ huynh, \d+ trẻ hoạt động$/)).toHaveCount(30);
+    // usage : la tâche créée par le service est comptée
+    await expect(page.getByLabel(/^Việc đã tạo: 7 ngày [1-9]/)).toBeVisible();
+
+    // liste : recherche par e-mail du parent créateur → UNE ligne, jamais de prénom d'enfant
+    await page.getByLabel('Tìm theo tên gia đình hoặc email').fill(family.parent.email);
+    const row = page.getByRole('button', { name: new RegExp(`${family.parent.email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}.*Mở hồ sơ gia đình`) });
+    await expect(row).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText('1 gia đình')).toBeVisible();
+    const body = await page.locator('body').innerText();
+    expect(body).not.toContain('Minh');
+    expect(body).not.toContain('Khang');
+    expect(body).not.toContain('Việc bí mật');
+
+    // fiche famille
+    await row.click();
+    await expectVisibleOrDump(page, page.getByLabel(`Email phụ huynh tạo gia đình: ${family.parent.email}`), 'admin-fiche', 20_000);
+    await expect(page.getByLabel(/^Việc đã tạo: [1-9]/)).toBeVisible();
+    const sheet = await page.locator('body').innerText();
+    expect(sheet).not.toContain('Minh');
+    expect(sheet).not.toContain('Khang');
+
+    // santé : taille de la base lisible
+    await page.goBack();
+    await expect(page.getByText(/Dung lượng cơ sở dữ liệu : /)).toBeVisible({ timeout: 20_000 });
+    await ctx.close();
+  });
+
+  test('un parent ordinaire et un enfant n\'ouvrent pas l\'écran (renvoyés à l\'accueil), et la base refuse leurs appels directs', async ({ browser }) => {
+    test.setTimeout(90_000);
+    const family = await createFamily();
+    const parentCtx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true });
+    await signInContext(parentCtx, family.parent);
+    const parent = await parentCtx.newPage();
+    await open(parent, '/admin/users');
+    await expectVisibleOrDump(parent, parent.getByText(/Chào Ba!/), 'non-admin', 30_000);
+    await expect(parent.getByRole('button', { name: 'Làm mới' })).toHaveCount(0);
+    // appel direct de la RPC avec le jeton du parent : refusé par la base
+    const token = await accessTokenOf(family.parent);
+    const res = await fetch(`${supabaseUrl()}/rest/v1/rpc/admin_stats_overview`, { method: 'POST', headers: { apikey: process.env.E2E_ANON_KEY ?? '', Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: '{}' });
+    expect(res.status).toBeGreaterThanOrEqual(400);
+    const childToken = await accessTokenOf(family.minh);
+    const resChild = await fetch(`${supabaseUrl()}/rest/v1/rpc/admin_families`, { method: 'POST', headers: { apikey: process.env.E2E_ANON_KEY ?? '', Authorization: `Bearer ${childToken}`, 'Content-Type': 'application/json' }, body: '{}' });
+    expect(resChild.status).toBeGreaterThanOrEqual(400);
+    await parentCtx.close();
+  });
+});
