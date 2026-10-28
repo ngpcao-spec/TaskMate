@@ -1686,7 +1686,7 @@ test.describe('suivi des utilisateurs (D-102)', () => {
     const page = await ctx.newPage();
     trace(page, 'admin-suivi');
     await open(page); // l'ouverture de l'app signale l'activité (touch_activity)
-    await expectVisibleOrDump(page, page.getByText(/Chào Ba!/), 'admin-suivi', 30_000);
+    await expectVisibleOrDump(page, page.getByText(/Chào Minh!/), 'admin-suivi', 30_000);
     await expect
       .poll(async () => (await db.from('members').select('last_active_at').eq('id', family.parent.memberId).single()).data?.last_active_at ?? null, { timeout: 20_000 })
       .not.toBeNull();
@@ -1740,7 +1740,7 @@ test.describe('suivi des utilisateurs (D-102)', () => {
     await signInContext(parentCtx, family.parent);
     const parent = await parentCtx.newPage();
     await open(parent, '/admin/users');
-    await expectVisibleOrDump(parent, parent.getByText(/Chào Ba!/), 'non-admin', 30_000);
+    await expectVisibleOrDump(parent, parent.getByText(/Chào Minh!/), 'non-admin', 30_000);
     await expect(parent.getByRole('button', { name: 'Làm mới' })).toHaveCount(0);
     // appel direct de la RPC avec le jeton du parent : refusé par la base
     const token = await accessTokenOf(family.parent);
