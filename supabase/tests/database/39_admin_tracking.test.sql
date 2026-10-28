@@ -96,11 +96,13 @@ select ok(not has_function_privilege('anon', 'public.touch_activity()', 'execute
 
 -- ── POSITIFS (administrateur) ──
 select tests.login(11);
-select is((public.admin_stats_overview()->>'families')::int, 3, 'overview : 3 familles (toutes comptées, aucun compte exclu)');
-select is((public.admin_stats_overview()->>'parents')::int, 4, 'overview : 4 parents');
-select is((public.admin_stats_overview()->>'children')::int, 3, 'overview : 3 enfants');
-select is((public.admin_stats_overview()->>'new_families_7d')::int, 1, 'overview : 1 nouvelle famille sur 7 j');
-select is((public.admin_stats_overview()->>'new_families_30d')::int, 2, 'overview : 2 nouvelles familles sur 30 j');
+-- la base de test peut contenir des données de départ (seed) : les totaux sont comparés à un comptage DIRECT, jamais à un nombre figé
+select is((public.admin_stats_overview()->>'families')::int, tests.val('select count(*) from public.families where deleted_at is null')::int, 'overview : toutes les familles sont comptées (aucun compte exclu)');
+select is((public.admin_stats_overview()->>'parents')::int, tests.val($$select count(*) from public.members m join public.families f on f.id = m.family_id and f.deleted_at is null where m.role = 'parent' and m.revoked_at is null and m.deleted_at is null$$)::int, 'overview : parents');
+select is((public.admin_stats_overview()->>'children')::int, tests.val($$select count(*) from public.children c join public.families f on f.id = c.family_id and f.deleted_at is null where c.deleted_at is null$$)::int, 'overview : enfants');
+select is((public.admin_stats_overview()->>'new_families_7d')::int, tests.val($$select count(*) from public.families where deleted_at is null and created_at >= now() - interval '7 days'$$)::int, 'overview : nouvelles familles sur 7 j');
+select is((public.admin_stats_overview()->>'new_families_30d')::int, tests.val($$select count(*) from public.families where deleted_at is null and created_at >= now() - interval '30 days'$$)::int, 'overview : nouvelles familles sur 30 j');
+select ok((public.admin_stats_overview()->>'new_families_30d')::int >= 2 and (public.admin_stats_overview()->>'families')::int >= 3, 'overview : les 3 familles de test sont comptées');
 select is((public.admin_stats_overview()->'active'->'today'->>'parents')::int, 1, 'overview : 1 parent actif aujourd''hui');
 select is((public.admin_stats_overview()->'active'->'today'->>'children')::int, 1, 'overview : 1 enfant actif aujourd''hui');
 select is((public.admin_stats_overview()->'active'->'d7'->>'parents')::int, 1, 'overview : 1 parent actif sur 7 j (celui d''il y a 10 jours n''y est pas)');
@@ -109,13 +111,13 @@ select is((public.admin_stats_overview()->>'families_with_notifications')::int, 
 
 select is(jsonb_array_length(public.admin_stats_series()->'weeks'), 12, 'séries : 12 semaines');
 select is(jsonb_array_length(public.admin_stats_series()->'days'), 30, 'séries : 30 jours');
-select is((select sum((w->>'families')::int)::int from jsonb_array_elements(public.admin_stats_series()->'weeks') w), 2, 'séries : 2 familles créées dans les 12 semaines (la 3e a 100 jours)');
+select is((select sum((w->>'families')::int)::int from jsonb_array_elements(public.admin_stats_series()->'weeks') w), tests.val($$select count(*) from public.families where deleted_at is null and created_at >= (date_trunc('week', (now() at time zone 'Asia/Ho_Chi_Minh')::date::timestamp)::date - 77)::timestamp at time zone 'Asia/Ho_Chi_Minh'$$)::int, 'séries : familles créées dans les 12 semaines (la 3e a 100 jours : exclue)');
 select is((public.admin_stats_series()->'days'->29->>'parents')::int, 1, 'séries : aujourd''hui, 1 parent actif');
 select is((public.admin_stats_series()->'days'->29->>'children')::int, 1, 'séries : aujourd''hui, 1 enfant actif');
 select is((public.admin_stats_series()->'days'->19->>'parents')::int, 1, 'séries : il y a 10 jours, 1 parent actif');
 
-select is((public.admin_stats_usage()->'d7'->>'tasks_created')::int, 1, 'usage 7 j : 1 tâche créée');
-select is((public.admin_stats_usage()->'d30'->>'tasks_created')::int, 2, 'usage 30 j : 2 tâches créées');
+select is((public.admin_stats_usage()->'d7'->>'tasks_created')::int, tests.val($$select count(*) from public.tasks where created_at >= now() - interval '7 days' and recurrence_id is null$$)::int, 'usage 7 j : tâches créées');
+select is((public.admin_stats_usage()->'d30'->>'tasks_created')::int, tests.val($$select count(*) from public.tasks where created_at >= now() - interval '30 days' and recurrence_id is null$$)::int, 'usage 30 j : tâches créées');
 select is((public.admin_stats_usage()->'d7'->>'tasks_completed')::int, 1, 'usage 7 j : 1 tâche cochée');
 select is((public.admin_stats_usage()->'d7'->>'tasks_validated')::int, 1, 'usage 7 j : 1 tâche validée');
 select is((public.admin_stats_usage()->'d7'->>'quizzes_submitted')::int, 1, 'usage 7 j : 1 quiz soumis');
@@ -129,20 +131,22 @@ select is(public.admin_stats_usage()->'quiz_by_class'->0->>'subject', 'maths', '
 select is(public.admin_stats_usage()->'quiz_by_class'->0->>'grade', '7', 'répartition des quiz : classe');
 select is((public.admin_stats_usage()->'ai_by_model'->0->>'input_tokens_30d')::int, 100, 'usage IA : jetons d''entrée');
 
-select is((public.admin_families('', 'name', 'asc', 1)->>'total')::int, 3, 'liste : 3 familles');
+select is((public.admin_families('', 'name', 'asc', 1)->>'total')::int, tests.val('select count(*) from public.families where deleted_at is null')::int, 'liste : toutes les familles');
 select is(public.admin_families('', 'name', 'asc', 1)->'rows'->0->>'name', 'Dormante', 'liste triée par nom croissant');
-select is(public.admin_families('', 'created_at', 'desc', 1)->'rows'->0->>'name', 'Gia đình A', 'liste triée par création décroissante');
+select ok((select coalesce(bool_and(c >= nxt), true) from (select (r->>'created_at')::timestamptz as c, lead((r->>'created_at')::timestamptz) over (order by ord) as nxt from jsonb_array_elements(public.admin_families('', 'created_at', 'desc', 1)->'rows') with ordinality as t (r, ord)) z), 'liste triée par création décroissante');
+select ok((select coalesce(bool_and(c <= nxt), true) from (select (r->>'created_at')::timestamptz as c, lead((r->>'created_at')::timestamptz) over (order by ord) as nxt from jsonb_array_elements(public.admin_families('', 'created_at', 'asc', 1)->'rows') with ordinality as t (r, ord)) z), 'liste triée par création croissante');
 select is(public.admin_families('', 'last_active_at', 'desc', 1)->'rows'->0->>'name', 'Gia đình A', 'liste triée par dernière activité (récente d''abord)');
-select is(public.admin_families('', 'last_active_at', 'desc', 1)->'rows'->2->>'name', 'Dormante', 'les familles jamais actives sont en dernier');
+select is(public.admin_families('', 'last_active_at', 'desc', 1)->'rows'->1->>'name', 'Famille B', 'puis la famille active il y a 10 jours');
+select ok((public.admin_families('', 'last_active_at', 'desc', 1)->'rows'->2->>'last_active_at') is null, 'les familles jamais actives sont en dernier');
 select is((public.admin_families('PB@test', 'name', 'asc', 1)->>'total')::int, 1, 'recherche par e-mail du parent créateur (insensible à la casse)');
 select is(public.admin_families('famille', 'name', 'asc', 1)->'rows'->0->>'creator_email', 'pb@test', 'recherche par nom : e-mail du créateur');
 select is((public.admin_families('%', 'name', 'asc', 1)->>'total')::int, 0, 'recherche : « % » est littéral (jamais un joker)');
 select is((public.admin_families('_', 'name', 'asc', 1)->>'total')::int, 0, 'recherche : « _ » est littéral');
-select is((public.admin_families('', 'name; drop table public.families', 'asc; --', 1)->>'total')::int, 3, 'tri hors liste : valeur par défaut, aucune injection');
+select is((public.admin_families('', 'name; drop table public.families', 'asc; --', 1)->>'total')::int, tests.val('select count(*) from public.families where deleted_at is null')::int, 'tri hors liste : valeur par défaut, aucune injection');
 select ok(to_regclass('public.families') is not null, 'la table families existe toujours');
-select is(jsonb_array_length(public.admin_families('', 'name', 'asc', 2)->'rows'), 0, 'page 2 vide (3 familles, 50 par page)');
+select is(jsonb_array_length(public.admin_families('', 'name', 'asc', 2)->'rows'), 0, 'page 2 vide (moins de 50 familles)');
 select is((public.admin_families('', 'name', 'asc', 0)->>'page')::int, 1, 'page < 1 ramenée à 1');
-select is(public.admin_families('', 'name', 'asc', 1)->'rows'->2->>'creator_email', 'admin@test', 'créateur = premier parent de la famille');
+select is(public.admin_families('Gia đình A', 'name', 'asc', 1)->'rows'->0->>'creator_email', 'admin@test', 'créateur = premier parent de la famille');
 select is((public.admin_families('Gia', 'name', 'asc', 1)->'rows'->0->>'parents')::int, 2, 'liste : 2 parents');
 select is((public.admin_families('Gia', 'name', 'asc', 1)->'rows'->0->>'children')::int, 2, 'liste : 2 enfants');
 select is(public.admin_families('Gia', 'name', 'asc', 1)->'rows'->0->>'status', 'active', 'statut Actif (< 7 j)');
