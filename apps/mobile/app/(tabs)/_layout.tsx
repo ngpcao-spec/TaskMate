@@ -16,6 +16,7 @@ import { badgeTotal } from '@/domain/notification-center';
 import { setAppBadge } from '@/pwa/appBadge';
 import { useActivityPing } from '@/hooks/useActivityPing';
 import { useRealtimeFamily } from '@/hooks/useRealtimeFamily';
+import { useResumeAfterReload } from '@/hooks/useResumeAfterReload';
 import { colors } from '@/theme/tokens';
 
 export default function TabsLayout() {
@@ -30,6 +31,7 @@ export default function TabsLayout() {
   useEffect(() => setAppBadge(badge), [badge]);
   useRealtimeFamily(familyId);
   useActivityPing(familyId !== null); // dernière activité du membre (D-102)
+  useResumeAfterReload(); // après un changement de thème, retour à la page où l'on était (D-103)
   useNotificationSetup();
   useReminderSync();
   // Garde de routage : session perdue ou appareil révoqué → retour à l'onboarding.

@@ -1753,3 +1753,43 @@ test.describe('suivi des utilisateurs (D-102)', () => {
     await parentCtx.close();
   });
 });
+
+test.describe('reprise après changement de thème (D-103)', () => {
+  test('changer de thème dans Cài đặt chung recharge l\'app et reste sur Cài đặt chung (jamais l\'écran principal)', async ({ browser }) => {
+    test.setTimeout(90_000);
+    const family = await createFamily();
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+    await signInContext(ctx, family.parent);
+    const page = await ctx.newPage();
+    trace(page, 'theme-reprise');
+    await open(page, '/more/settings');
+    await expectVisibleOrDump(page, page.getByRole('heading', { name: 'Cài đặt chung' }), 'theme-reprise', 30_000);
+    await page.getByRole('radio', { name: 'Kawaii' }).click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'kawaii', { timeout: 20_000 });
+    await expectVisibleOrDump(page, page.getByRole('heading', { name: 'Cài đặt chung' }), 'theme-reprise-après', 30_000);
+    expect(new URL(page.url()).pathname).toBe('/more/settings');
+    await ctx.close();
+  });
+
+  test('navigateur reparti de la page de départ (PWA iPhone) : la page mémorisée est rouverte, une seule fois', async ({ browser }) => {
+    test.setTimeout(90_000);
+    const family = await createFamily();
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+    await signInContext(ctx, family.parent);
+    const page = await ctx.newPage();
+    trace(page, 'reprise-depart');
+    await open(page);
+    await expectVisibleOrDump(page, page.getByText(/Chào Minh!/), 'reprise-depart', 30_000);
+    // ce que fait l'app juste avant de recharger, puis le navigateur repart de la page de départ
+    await page.evaluate(() => globalThis.localStorage.setItem('taskmate-resume-path', JSON.stringify({ path: '/more/settings', at: Date.now() })));
+    await page.reload();
+    await expectVisibleOrDump(page, page.getByRole('heading', { name: 'Cài đặt chung' }), 'reprise-depart-après', 30_000);
+    expect(new URL(page.url()).pathname).toBe('/more/settings');
+    expect(await page.evaluate(() => globalThis.localStorage.getItem('taskmate-resume-path'))).toBeNull();
+    // un second rechargement ne rouvre plus rien : l'accueil reste l'accueil
+    await open(page);
+    await expectVisibleOrDump(page, page.getByText(/Chào Minh!/), 'reprise-depart-fin', 30_000);
+    expect(new URL(page.url()).pathname).not.toBe('/more/settings');
+    await ctx.close();
+  });
+});
