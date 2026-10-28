@@ -362,15 +362,34 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"members": {
+                },"member_activity_days": {
                   Row: {
-                    "child_id": string | null,"created_at": string,"deleted_at": string | null,"display_name": string,"family_id": string,"id": string,"revoked_at": string | null,"role": Database["public"]['Enums']["member_role"],"updated_at": string,"user_id": string
+                    "day": string,"member_id": string
                   }
                   Insert: {
-                    "child_id"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"display_name": string,"family_id": string,"id"?: string,"revoked_at"?: string | null,"role": Database["public"]['Enums']["member_role"],"updated_at"?: string,"user_id": string
+                    "day": string,"member_id": string
                   }
                   Update: {
-                    "child_id"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"display_name"?: string,"family_id"?: string,"id"?: string,"revoked_at"?: string | null,"role"?: Database["public"]['Enums']["member_role"],"updated_at"?: string,"user_id"?: string
+                    "day"?: string,"member_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "member_activity_days_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "members"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"members": {
+                  Row: {
+                    "child_id": string | null,"created_at": string,"deleted_at": string | null,"display_name": string,"family_id": string,"id": string,"last_active_at": string | null,"revoked_at": string | null,"role": Database["public"]['Enums']["member_role"],"updated_at": string,"user_id": string
+                  }
+                  Insert: {
+                    "child_id"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"display_name": string,"family_id": string,"id"?: string,"last_active_at"?: string | null,"revoked_at"?: string | null,"role": Database["public"]['Enums']["member_role"],"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "child_id"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"display_name"?: string,"family_id"?: string,"id"?: string,"last_active_at"?: string | null,"revoked_at"?: string | null,"role"?: Database["public"]['Enums']["member_role"],"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -972,6 +991,24 @@ isOneToOne: false
             "adjust_points":
 { Args: { "p_child_id": string,"p_delta": number,"p_note": string,"p_tx_id": string }; Returns: undefined
                            },
+"admin_families":
+{ Args: { "p_dir"?: string,"p_page"?: number,"p_search"?: string,"p_sort"?: string }; Returns: Json
+                           },
+"admin_family_detail":
+{ Args: { "p_family": string }; Returns: Json
+                           },
+"admin_health":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"admin_stats_overview":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"admin_stats_series":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"admin_stats_usage":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "ai_finish":
 { Args: { "p_failure": string,"p_id": string,"p_input": number,"p_model": string,"p_output": number,"p_status": string }; Returns: undefined
                            },
@@ -1000,6 +1037,7 @@ isOneToOne: false
 "display_name": string,
 "family_id": string,
 "id": string,
+"last_active_at": string | null,
 "revoked_at": string | null,
 "role": Database["public"]['Enums']["member_role"],
 "updated_at": string,
@@ -1285,6 +1323,7 @@ isOneToOne: false
 "display_name": string,
 "family_id": string,
 "id": string,
+"last_active_at": string | null,
 "revoked_at": string | null,
 "role": Database["public"]['Enums']["member_role"],
 "updated_at": string,
@@ -1380,6 +1419,7 @@ isOneToOne: false
 "display_name": string,
 "family_id": string,
 "id": string,
+"last_active_at": string | null,
 "revoked_at": string | null,
 "role": Database["public"]['Enums']["member_role"],
 "updated_at": string,
@@ -1399,6 +1439,7 @@ isOneToOne: false
 "display_name": string,
 "family_id": string,
 "id": string,
+"last_active_at": string | null,
 "revoked_at": string | null,
 "role": Database["public"]['Enums']["member_role"],
 "updated_at": string,
@@ -1454,6 +1495,7 @@ isOneToOne: false
 "display_name": string,
 "family_id": string,
 "id": string,
+"last_active_at": string | null,
 "revoked_at": string | null,
 "role": Database["public"]['Enums']["member_role"],
 "updated_at": string,
@@ -1518,6 +1560,9 @@ isOneToOne: false
                            },
 "sync_recurrence":
 { Args: { "p_now"?: string,"p_recurrence": string }; Returns: undefined
+                           },
+"touch_activity":
+{ Args: Record<PropertyKey, never>; Returns: undefined
                            },
 "uncomplete_task":
 { Args: { "p_task_id": string,"p_tx_id": string }; Returns: undefined
