@@ -1,4 +1,4 @@
-import { decodeResume, encodeResume, isResumablePath, RESUME_MAX_AGE_MS } from './resume-path';
+import { decodeResume, encodeResume, isResumablePath, isStartPath, RESUME_MAX_AGE_MS } from './resume-path';
 
 describe('reprise après rechargement (D-103)', () => {
   it('chemins internes seulement', () => {
@@ -14,6 +14,13 @@ describe('reprise après rechargement (D-103)', () => {
     expect(isResumablePath('/' + 'x'.repeat(300))).toBe(false);
     expect(isResumablePath(42)).toBe(false);
     expect(isResumablePath(null)).toBe(false);
+  });
+  it('adresse de départ de la PWA : « / » seulement', () => {
+    expect(isStartPath('/')).toBe(true);
+    expect(isStartPath('')).toBe(true);
+    expect(isStartPath('/today')).toBe(false);
+    expect(isStartPath('/more/settings')).toBe(false);
+    expect(isStartPath(undefined)).toBe(false);
   });
   it('aller-retour, dans la minute', () => {
     expect(decodeResume(encodeResume('/more/settings', 1_000), 1_000)).toBe('/more/settings');

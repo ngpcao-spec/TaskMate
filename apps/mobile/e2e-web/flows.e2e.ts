@@ -1782,7 +1782,7 @@ test.describe('reprise après changement de thème (D-103)', () => {
     await expectVisibleOrDump(page, page.getByText(/Chào Minh!/), 'reprise-depart', 30_000);
     // ce que fait l'app juste avant de recharger, puis le navigateur repart de la page de départ
     await page.evaluate(() => globalThis.localStorage.setItem('taskmate-resume-path', JSON.stringify({ path: '/more/settings', at: Date.now() })));
-    await page.reload();
+    await page.goto('/'); // la PWA repart de start_url
     await expectVisibleOrDump(page, page.getByRole('heading', { name: 'Cài đặt chung' }), 'reprise-depart-après', 30_000);
     expect(new URL(page.url()).pathname).toBe('/more/settings');
     expect(await page.evaluate(() => globalThis.localStorage.getItem('taskmate-resume-path'))).toBeNull();

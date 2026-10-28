@@ -7,6 +7,12 @@ export const RESUME_KEY = 'taskmate-resume-path';
 /** Au-delà, la mémoire est périmée (ouverture à froid plus tard) : on l'ignore. */
 export const RESUME_MAX_AGE_MS = 60_000;
 
+/** Fenêtre, après le chargement de la page, pendant laquelle la reprise est encore permise : Hôm nay s'ouvre en quelques secondes ; au-delà, l'utilisateur a déjà fait autre chose. */
+export const RESUME_WINDOW_MS = 15_000;
+
+/** La PWA repart de `start_url` (« / » dans le manifest) : seule une page chargée À CETTE ADRESSE a perdu la page où l'on était. */
+export const isStartPath = (pathname: unknown): boolean => pathname === '/' || pathname === '';
+
 /** Chemin interne seulement : jamais une adresse externe ni protocole-relative ; la page de départ elle-même n'a rien à reprendre. */
 export const isResumablePath = (p: unknown): p is string =>
   typeof p === 'string' && p.length <= 300 && p.startsWith('/') && !p.startsWith('//') && !p.includes('://') && !p.includes('\\') && p !== '/' && !/[\u0000-\u001f]/.test(p);
