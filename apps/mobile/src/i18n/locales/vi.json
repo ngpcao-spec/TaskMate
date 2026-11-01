@@ -1989,6 +1989,8 @@
   "adventure": {
     "gauge": "Phiêu lưu {{value}}/{{cost}}",
     "gaugeLabel": "Phiêu lưu: {{value}} trên {{cost}} năng lượng",
+    "gaugeNext": "Chuyến sau {{value}}/{{cost}}",
+    "gaugeNextLabel": "Chuyến sau: {{value}} trên {{cost}} năng lượng",
     "go": "Đi phiêu lưu!",
     "away": "{{name}} đang ở {{destination}}, mai về nhé!",
     "back": "{{name}} về rồi!",

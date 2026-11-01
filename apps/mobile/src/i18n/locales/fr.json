@@ -1989,6 +1989,8 @@
   "adventure": {
     "gauge": "Aventure {{value}}/{{cost}}",
     "gaugeLabel": "Aventure : {{value}} sur {{cost}} d'énergie",
+    "gaugeNext": "Prochaine aventure {{value}}/{{cost}}",
+    "gaugeNextLabel": "Prochaine aventure : {{value}} sur {{cost}} d'énergie",
     "go": "Partir à l'aventure !",
     "away": "{{name}} est à {{destination}}, retour demain !",
     "back": "{{name}} est rentré !",
