@@ -69,3 +69,9 @@ export const companionKeys = {
   all: ['companion'] as const,
   state: (childId: string) => ['companion', 'state', childId] as const,
 };
+
+/** Aventures du panda (D-105) : état (jauge, aventure en cours, carnet) d'UN enfant, sous ['adventure']. */
+export const adventureKeys = {
+  all: ['adventure'] as const,
+  state: (childId: string) => ['adventure', 'state', childId] as const,
+};

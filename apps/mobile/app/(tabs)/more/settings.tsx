@@ -76,6 +76,8 @@ export default function SettingsScreen() {
 
       {/* D-104 : l'enfant règle SON panda (nom, trait, plus jeune / plus grand) */}
       {!isParent && me.member.child_id ? <PandaSettingsCard childId={me.member.child_id} /> : null}
+      {/* D-105 : le carnet d'aventures de l'enfant, aussi depuis ses réglages */}
+      {!isParent ? <Button variant="secondary" label={t('adventure.journal.open')} onPress={() => router.push('/adventure/journal')} /> : null}
 
       {/* D-090 : parent = rejouer l'assistant ; enfant = revoir l'installation et les notifications */}
       {isParent ? (

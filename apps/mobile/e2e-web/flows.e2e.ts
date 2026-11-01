@@ -1,5 +1,7 @@
 import { expect, test, webkit, type Page } from '@playwright/test';
-import { accessTokenOf, companionEnergy, createFamily, createGoogleParent, directSignIn, internalEmailOf, resetAttempts, revokeChildMembers, serviceClient, seedCatalogQuiz, seedCompanion, seedTask, taskChildId, serverState, signInContext, supabaseUrl, todayVn } from './support/seed';
+import { accessTokenOf, adventureNextDay, adventuresOf, companionEnergy, createFamily, createGoogleParent, directSignIn, internalEmailOf, resetAttempts, revokeChildMembers, serviceClient, seedCatalogQuiz, seedCompanion, seedEnergy, seedTask, taskChildId, serverState, signInContext, supabaseUrl, todayVn } from './support/seed';
+
+import vi from '../src/i18n/locales/vi.json';
 
 const title = (label: string) => `${label} ${Math.random().toString(36).slice(2, 7)}`;
 
@@ -1873,5 +1875,56 @@ test.describe('compagnon panda (D-104)', () => {
     expect(write.status).toBeGreaterThanOrEqual(400);
     const offset = await fetch(`${supabaseUrl()}/rest/v1/rpc/companion_set_stage_offset`, { method: 'POST', headers, body: JSON.stringify({ p_child: family.minh.childId, p_offset: 1 }) });
     expect(offset.status).toBeGreaterThanOrEqual(400);
+  });
+});
+
+test.describe('aventures du panda (D-105)', () => {
+  test('30 d\'énergie : l\'enfant part à Hạ Long ; le lendemain il récupère une trouvaille tirée par le serveur, retrouvée dans son carnet après rechargement', async ({ browser }) => {
+    test.setTimeout(150_000);
+    const family = await createFamily();
+    await seedCompanion(family, 'minh', 'Bambou');
+    await seedEnergy(family, 'minh', 30);
+
+    const ctx = await browser.newContext();
+    await signInContext(ctx, family.minh);
+    const page = await ctx.newPage();
+    trace(page, 'enfant-aventure');
+    page.on('dialog', (d) => void d.accept()); // confirmation du départ (window.confirm sur le web)
+    await open(page);
+
+    // jauge pleine → choix de la destination (verrouillées grisées) → départ
+    await expect(page.getByText('Phiêu lưu 30/30')).toBeVisible({ timeout: 20_000 });
+    await page.getByRole('button', { name: 'Đi phiêu lưu!' }).click();
+    await expect(page).toHaveURL(/\/adventure\/choose/);
+    await expect(page.getByRole('button', { name: 'Phong Nha, mở ở cấp 6' })).toBeDisabled();
+    await page.getByRole('button', { name: 'Vịnh Hạ Long' }).click();
+    await expect(page.getByText('Bambou đang ở Vịnh Hạ Long, mai về nhé!')).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText('Phiêu lưu 0/30')).toBeVisible();
+    await expect.poll(async () => (await adventuresOf(family, 'minh')).adventures.length).toBe(1);
+    const [departed] = (await adventuresOf(family, 'minh')).adventures;
+    expect(departed).toMatchObject({ destination_slug: 'ha-long', energy_mark: 30, discovery_slug: null });
+    expect(await companionEnergy(family, 'minh')).toBe(30); // partir ne retire aucune énergie
+
+    // le lendemain (horloge simulée côté serveur : l'aventure a un jour de plus)
+    await adventureNextDay(family, 'minh');
+    await page.reload();
+    await page.getByRole('button', { name: 'Bambou về rồi!' }).click({ timeout: 20_000 });
+    await expect(page).toHaveURL(/\/adventure\/reveal/);
+    await expect(page.getByText(/^Bambou mang về: /)).toBeVisible({ timeout: 20_000 });
+    await expect.poll(async () => (await adventuresOf(family, 'minh')).journal.length).toBe(1);
+    const { adventures, journal } = await adventuresOf(family, 'minh');
+    const slug = journal[0]!.discovery_slug;
+    expect(slug.startsWith('ha-long-')).toBe(true);
+    expect(adventures[0]).toMatchObject({ discovery_slug: slug });
+    const name = (vi.adventure.discoveries as Record<string, string>)[slug]!;
+    await expect(page.getByText(`Bambou mang về: ${name}`)).toBeVisible();
+
+    // carnet, après rechargement de la page
+    await page.getByRole('button', { name: 'Xem sổ phiêu lưu' }).click();
+    await expect(page).toHaveURL(/\/adventure\/journal/);
+    await page.reload();
+    await expect(page.getByText('1/30', { exact: true })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByLabel(`${name}, tìm được 1 lần`)).toBeVisible();
+    expect((await adventuresOf(family, 'minh')).journal).toEqual([{ discovery_slug: slug, times_found: 1 }]); // aucun nouveau tirage
   });
 });

@@ -1634,7 +1634,8 @@
       "content": "vui",
       "tres-heureux": "rất vui",
       "fier": "tự hào",
-      "dort": "đang ngủ"
+      "dort": "đang ngủ",
+      "surpris": "ngạc nhiên"
     },
     "imageLabel": "Panda {{name}}, {{mood}}",
     "speech": "Lời Panda nói: {{text}}",
@@ -1802,7 +1803,277 @@
           "v1": "Hôm nay chưa kịp cũng không sao. Mai tiếp tục.",
           "v2": "Ngày mai sẽ nhẹ nhàng hơn. Nghỉ ngơi đi."
         }
+      },
+      "adventure_ready": {
+        "s1": {
+          "v1": "{{name}} ơi, Panda sẵn sàng rồi!",
+          "v2": "Panda muốn đi chơi xa!"
+        },
+        "s2": {
+          "v1": "Năng lượng đầy rồi! Cậu chọn chỗ cho tớ đi nhé!",
+          "v2": "Tớ sẵn sàng phiêu lưu rồi, cậu ơi!"
+        },
+        "s3": {
+          "v1": "Đầy năng lượng rồi. Bạn chọn điểm đến đi!",
+          "v2": "Balo xếp xong rồi, mình đi đâu đây?"
+        },
+        "s4": {
+          "v1": "Đủ năng lượng cho một chuyến đi. Bạn chọn điểm đến nhé.",
+          "v2": "Sẵn sàng lên đường khi bạn muốn."
+        }
+      },
+      "adventure_away": {
+        "s1": {
+          "v1": "Panda đang đi chơi, mai về!",
+          "v2": "Mai Panda về với {{name}} nhé!"
+        },
+        "s2": {
+          "v1": "Tớ đang ở {{destination}} nè! Mai tớ về kể cho cậu nghe!",
+          "v2": "Ở đây vui lắm! Mai gặp cậu nhé!"
+        },
+        "s3": {
+          "v1": "Mình đang ở {{destination}}. Mai về kể bạn nghe.",
+          "v2": "Chuyến đi thú vị lắm. Mai gặp nhé!"
+        },
+        "s4": {
+          "v1": "Đang ở {{destination}}. Mai mình về.",
+          "v2": "Chuyến đi suôn sẻ. Hẹn bạn ngày mai."
+        }
+      },
+      "adventure_back": {
+        "s1": {
+          "v1": "Panda về rồi nè, {{name}}!",
+          "v2": "Panda có quà cho {{name}}!"
+        },
+        "s2": {
+          "v1": "Tớ về rồi! Cậu mở túi của tớ ra xem đi!",
+          "v2": "Tớ về rồi đây! Tớ có mang một thứ cho cậu!"
+        },
+        "s3": {
+          "v1": "Mình về rồi! Mở túi ra xem có gì nào.",
+          "v2": "Về tới nơi rồi. Có món này hay lắm."
+        },
+        "s4": {
+          "v1": "Mình đã về. Có một món nhỏ từ chuyến đi.",
+          "v2": "Chuyến đi kết thúc tốt đẹp. Xem mình mang gì về nhé."
+        }
+      },
+      "adventure_duplicate": {
+        "s1": {
+          "v1": "{{name}} có rồi, Panda vẫn thích!",
+          "v2": "Thêm một cái nữa nè!"
+        },
+        "s2": {
+          "v1": "Cái này cậu có rồi, nhưng tớ thích quá nên mang thêm một cái!",
+          "v2": "Lại là món này! Tớ thấy đẹp quá nên mang về luôn!"
+        },
+        "s3": {
+          "v1": "Món này có trong sổ rồi, nhưng thêm một cái cũng vui mà.",
+          "v2": "Lại gặp món quen! Mình giữ thêm một cái nhé."
+        },
+        "s4": {
+          "v1": "Món này đã có trong sổ. Thêm một cái làm kỷ niệm.",
+          "v2": "Một món quen thuộc, vẫn đáng giữ."
+        }
+      },
+      "story_ha_long": {
+        "s1": {
+          "v1": "Panda đi thuyền ở Hạ Long!",
+          "v2": "Biển Hạ Long đẹp quá!"
+        },
+        "s2": {
+          "v1": "Tớ đã đi thuyền ở Vịnh Hạ Long! Xem tớ mang gì về cho cậu này!",
+          "v2": "Tớ ngắm hàng nghìn hòn đảo ở Hạ Long! Cậu xem nè!"
+        },
+        "s3": {
+          "v1": "Mình đã chèo thuyền giữa các đảo đá ở Hạ Long. Xem mình tìm được gì nè!",
+          "v2": "Vịnh Hạ Long đẹp thật sự. Có món này cho bạn."
+        },
+        "s4": {
+          "v1": "Một ngày trên Vịnh Hạ Long, giữa những đảo đá vôi. Đây là kỷ niệm.",
+          "v2": "Hạ Long lúc bình minh rất yên bình. Mình mang về món này."
+        }
+      },
+      "story_hoi_an": {
+        "s1": {
+          "v1": "Panda xem đèn lồng Hội An!",
+          "v2": "Hội An lung linh quá!"
+        },
+        "s2": {
+          "v1": "Tớ đi dạo phố cổ Hội An, đèn lồng sáng khắp nơi! Xem nè!",
+          "v2": "Tớ qua Chùa Cầu ở Hội An rồi! Tớ mang về cho cậu nè!"
+        },
+        "s3": {
+          "v1": "Phố cổ Hội An về đêm lung linh lắm. Mình tìm được món này.",
+          "v2": "Mình đi dạo khắp Hội An. Bạn xem có gì nè!"
+        },
+        "s4": {
+          "v1": "Hội An giữ được nét xưa rất đẹp. Đây là kỷ niệm của chuyến đi.",
+          "v2": "Một buổi tối yên bình ở phố cổ. Mình mang về món này."
+        }
+      },
+      "story_mekong": {
+        "s1": {
+          "v1": "Panda đi xuồng trên sông!",
+          "v2": "Miền Tây nhiều trái cây quá!"
+        },
+        "s2": {
+          "v1": "Tớ đi xuồng trên sông nước miền Tây! Vui ơi là vui!",
+          "v2": "Tớ ghé vườn trái cây miền Tây! Xem tớ mang gì về nè!"
+        },
+        "s3": {
+          "v1": "Mình đi xuồng qua những con kênh, nhộn nhịp lắm. Xem nè!",
+          "v2": "Vườn trái cây miền Tây thơm lừng. Mình mang về món này."
+        },
+        "s4": {
+          "v1": "Sông nước miền Tây hiền hòa. Đây là kỷ niệm.",
+          "v2": "Một buổi sáng trên sông Cửu Long. Mình chọn món này cho bạn."
+        }
+      },
+      "story_da_lat": {
+        "s1": {
+          "v1": "Đà Lạt lạnh mà vui!",
+          "v2": "Panda thấy hoa dã quỳ!"
+        },
+        "s2": {
+          "v1": "Tớ đạp xe quanh hồ ở Đà Lạt! Lạnh mà vui lắm!",
+          "v2": "Tớ thấy đồi hoa dã quỳ vàng rực ở Đà Lạt! Xem nè!"
+        },
+        "s3": {
+          "v1": "Đà Lạt se lạnh, đồi thông thơm lắm. Mình tìm được món này.",
+          "v2": "Mình đạp xe quanh hồ Xuân Hương. Bạn xem nè!"
+        },
+        "s4": {
+          "v1": "Không khí Đà Lạt trong lành. Đây là kỷ niệm của chuyến đi.",
+          "v2": "Một buổi sáng sương mù ở Đà Lạt. Mình mang về món này."
+        }
+      },
+      "story_sa_pa": {
+        "s1": {
+          "v1": "Panda leo núi Sa Pa!",
+          "v2": "Sa Pa có mây nè!"
+        },
+        "s2": {
+          "v1": "Tớ đi giữa ruộng bậc thang ở Sa Pa! Đẹp lắm cậu ơi!",
+          "v2": "Tớ chạm vào mây ở Sa Pa đó! Xem tớ mang gì về nè!"
+        },
+        "s3": {
+          "v1": "Ruộng bậc thang Sa Pa đẹp như tranh. Mình tìm được món này.",
+          "v2": "Mình đi giữa mây núi Sa Pa. Bạn xem nè!"
+        },
+        "s4": {
+          "v1": "Sa Pa mùa này rất đẹp, núi non hùng vĩ. Đây là kỷ niệm.",
+          "v2": "Một ngày giữa núi rừng Tây Bắc. Mình mang về món này."
+        }
+      },
+      "story_phong_nha": {
+        "s1": {
+          "v1": "Panda vào hang động lớn!",
+          "v2": "Hang Phong Nha to quá!"
+        },
+        "s2": {
+          "v1": "Tớ đi thuyền vào hang Phong Nha! Trong hang lấp lánh lắm!",
+          "v2": "Tớ khám phá hang động ở Phong Nha! Xem tớ tìm được gì nè!"
+        },
+        "s3": {
+          "v1": "Hang Phong Nha rộng và bí ẩn lắm. Mình tìm được món này.",
+          "v2": "Mình đi thuyền vào lòng hang. Bạn xem nè!"
+        },
+        "s4": {
+          "v1": "Phong Nha là một kỳ quan thiên nhiên. Đây là kỷ niệm.",
+          "v2": "Một chuyến thám hiểm hang động thú vị. Mình mang về món này."
+        }
       }
+    }
+  },
+  "adventure": {
+    "gauge": "Phiêu lưu {{value}}/{{cost}}",
+    "gaugeLabel": "Phiêu lưu: {{value}} trên {{cost}} năng lượng",
+    "go": "Đi phiêu lưu!",
+    "away": "{{name}} đang ở {{destination}}, mai về nhé!",
+    "back": "{{name}} về rồi!",
+    "pending": "Đang chờ kết nối…",
+    "journal": {
+      "title": "Sổ phiêu lưu",
+      "titleOf": "Sổ phiêu lưu của {{child}}",
+      "open": "Sổ phiêu lưu",
+      "count": "{{found}}/{{total}}",
+      "countLabel": "Đã tìm được {{found}} trên {{total}} món",
+      "unknown": "?",
+      "unknownLabel": "Chưa tìm thấy",
+      "times": "×{{count}}",
+      "foundLabel": "{{name}}, tìm được {{count}} lần",
+      "empty": "Chưa có món nào. Panda sẽ mang về sau mỗi chuyến đi!"
+    },
+    "choose": {
+      "title": "Chọn nơi phiêu lưu",
+      "locked": "Mở ở cấp {{level}}",
+      "lockedLabel": "{{destination}}, mở ở cấp {{level}}",
+      "confirmTitle": "Đi {{destination}}?",
+      "confirmBody": "{{name}} sẽ về vào ngày mai.",
+      "confirmOk": "Đi thôi!",
+      "notReady": "Panda cần đầy năng lượng phiêu lưu trước nhé."
+    },
+    "reveal": {
+      "title": "{{name}} về rồi!",
+      "opening": "Panda đang mở túi…",
+      "found": "{{name}} mang về: {{discovery}}",
+      "duplicate": "Đã có trong sổ (×{{count}})",
+      "openJournal": "Xem sổ phiêu lưu",
+      "done": "Tuyệt quá!",
+      "nothing": "Không có chuyến phiêu lưu nào để mở."
+    },
+    "errors": {
+      "gauge_not_full": "Panda cần thêm chút năng lượng nữa nhé.",
+      "destination_locked": "Nơi này sẽ mở khi hai bạn thân hơn nữa.",
+      "not_back_yet": "Panda chưa về đâu, mai nhé!",
+      "generic": "Chưa được, thử lại sau nhé."
+    },
+    "parent": {
+      "inProgress": "Đang phiêu lưu ở {{destination}}, về ngày {{date}}",
+      "back": "Đã về từ {{destination}}, đang chờ con mở túi",
+      "none": "Không có chuyến phiêu lưu nào",
+      "viewJournal": "Xem sổ phiêu lưu"
+    },
+    "destinations": {
+      "ha-long": "Vịnh Hạ Long",
+      "hoi-an": "Phố cổ Hội An",
+      "mekong": "Miền Tây sông nước",
+      "da-lat": "Đà Lạt",
+      "sa-pa": "Sa Pa",
+      "phong-nha": "Phong Nha"
+    },
+    "discoveries": {
+      "ha-long-coquillage": "vỏ sò",
+      "ha-long-perle": "ngọc trai",
+      "ha-long-jonque": "thuyền buồm",
+      "ha-long-etoile-de-mer": "sao biển",
+      "ha-long-rocher": "hòn đá tí hon",
+      "ha-long-flotteur": "phao nổi",
+      "hoi-an-lanterne": "đèn lồng",
+      "hoi-an-non-la": "nón lá",
+      "hoi-an-banh-mi": "bánh mì",
+      "hoi-an-barque": "thuyền gỗ",
+      "hoi-an-pont-couvert": "Chùa Cầu tí hon",
+      "hoi-an-eventail": "quạt giấy",
+      "mekong-noix-de-coco": "trái dừa",
+      "mekong-mangue": "trái xoài",
+      "mekong-sampan": "xuồng ba lá",
+      "mekong-lotus": "hoa sen",
+      "mekong-poisson": "chú cá",
+      "mekong-panier-de-fruits": "giỏ trái cây",
+      "da-lat-fraise": "dâu tây",
+      "da-lat-pomme-de-pin": "quả thông",
+      "da-lat-da-quy": "hoa dã quỳ",
+      "da-lat-velo": "xe đạp",
+      "da-lat-confiture": "hũ mứt",
+      "sa-pa-foulard": "khăn thổ cẩm",
+      "sa-pa-fleur-de-pecher": "hoa đào",
+      "sa-pa-theiere": "ấm trà",
+      "phong-nha-cristal": "tinh thể đá",
+      "phong-nha-boussole": "la bàn",
+      "phong-nha-lampe": "đèn pin",
+      "phong-nha-fougere": "cây dương xỉ"
     }
   }
 }

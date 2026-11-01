@@ -1,8 +1,11 @@
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 import { Button } from '@/components/ui';
+import { formatDueDay, type CalendarLanguage } from '@/domain/calendar';
 import { DEFAULT_PANDA_NAME } from '@/domain/panda';
+import { useAdventure } from '@/hooks/useAdventure';
 import { useCompanion, useSetupCompanion } from '@/hooks/useCompanion';
 import { colors, typography } from '@/theme/tokens';
 import { PandaImage } from './PandaCompanion';
@@ -13,8 +16,10 @@ import { PandaForm } from './PandaForm';
  * (décidé par l'enfant). Une seule fiche par enfant : jamais deux pandas côte à côte, jamais de comparaison entre enfants.
  */
 export function ParentPandaCard({ childId, childName }: { childId: string; childName: string }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const router = useRouter();
   const state = useCompanion(childId).data;
+  const adventure = useAdventure(childId).data;
   const setup = useSetupCompanion();
   const [editing, setEditing] = useState(false);
   if (!state) return null;
@@ -49,6 +54,20 @@ export function ParentPandaCard({ childId, childName }: { childId: string; child
         <Button variant="secondary" label={t('panda.parent.rename')} onPress={() => setEditing(true)} />
       )}
       <Text style={typography.secondary}>{t('panda.parent.stageNote')}</Text>
+      {/* D-105 : l'aventure en cours de CET enfant et son carnet en lecture seule ; le parent ne lance ni ne récupère jamais d'aventure */}
+      {adventure ? (
+        <Text style={typography.body}>
+          {adventure.active
+            ? adventure.state === 'back'
+              ? t('adventure.parent.back', { destination: t(`adventure.destinations.${adventure.active.destination}`) })
+              : t('adventure.parent.inProgress', {
+                  destination: t(`adventure.destinations.${adventure.active.destination}`),
+                  date: formatDueDay(adventure.active.returnsOn, (['vi', 'fr', 'en'].includes(i18n.language) ? i18n.language : 'vi') as CalendarLanguage),
+                })
+            : t('adventure.parent.none')}
+        </Text>
+      ) : null}
+      <Button variant="secondary" label={t('adventure.parent.viewJournal')} onPress={() => router.push({ pathname: '/adventure/journal', params: { child: childId } })} />
     </View>
   );
 }

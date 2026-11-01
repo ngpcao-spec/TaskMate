@@ -12,7 +12,17 @@ export type PandaSituation =
   | 'task_checked'
   | 'all_done'
   | 'quiz_validated'
-  | 'nothing_yet_evening';
+  | 'nothing_yet_evening'
+  // D-105 : aventures (prête, en voyage, rentrée, doublon) et une ligne de récit par destination
+  | 'adventure_ready'
+  | 'adventure_away'
+  | 'adventure_back'
+  | 'adventure_duplicate'
+  | StorySituation;
+
+/** Destinations du catalogue des aventures (D-105) : leur slug donne la clé de récit (`story_ha_long`…). */
+export const STORY_DESTINATIONS = ['ha-long', 'hoi-an', 'mekong', 'da-lat', 'sa-pa', 'phong-nha'] as const;
+export type StorySituation = `story_${'ha_long' | 'hoi_an' | 'mekong' | 'da_lat' | 'sa_pa' | 'phong_nha'}`;
 
 /** Nombre de variantes écrites par situation (2 à 3). */
 export const LINE_VARIANTS: Record<PandaSituation, number> = {
@@ -23,7 +33,23 @@ export const LINE_VARIANTS: Record<PandaSituation, number> = {
   all_done: 3,
   quiz_validated: 3,
   nothing_yet_evening: 2,
+  adventure_ready: 2,
+  adventure_away: 2,
+  adventure_back: 2,
+  adventure_duplicate: 2,
+  story_ha_long: 2,
+  story_hoi_an: 2,
+  story_mekong: 2,
+  story_da_lat: 2,
+  story_sa_pa: 2,
+  story_phong_nha: 2,
 };
+
+/** Situation de récit d'une destination (slug du catalogue) ; `null` pour une destination sans récit écrit. */
+export function storySituation(destination: string): StorySituation | null {
+  const key = `story_${destination.replace(/-/g, '_')}`;
+  return key in LINE_VARIANTS ? (key as StorySituation) : null;
+}
 export const PANDA_SITUATIONS = Object.keys(LINE_VARIANTS) as PandaSituation[];
 
 /** Clé i18n de la variante `variant` (0-based, ramenée dans l'intervalle) de la situation pour le stade. */
@@ -38,10 +64,11 @@ export const pandaLineKeys = (stage: PandaStage, situation: PandaSituation): str
   Array.from({ length: LINE_VARIANTS[situation] }, (_, i) => pandaLineKey(stage, situation, i));
 
 /** Valeurs d'interpolation communes à toutes les répliques. */
-export const pandaLineParams = (name: string): { name: string; energy: number; quizEnergy: number } => ({
+export const pandaLineParams = (name: string, destination = ''): { name: string; energy: number; quizEnergy: number; destination: string } => ({
   name,
   energy: ENERGY_TASK_CHECKED,
   quizEnergy: ENERGY_QUIZ_VALIDATED,
+  destination,
 });
 
 /** Salutation selon l'heure locale de la famille (matin < 12 h, après-midi < 18 h, soir ensuite). */

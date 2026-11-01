@@ -26,6 +26,7 @@ import { taskState } from '@/domain/task-state';
 import { localHourOf } from '@/domain/panda';
 import { dayProgress } from '@/domain/progress';
 import { isOverdue, sortTasks } from '@/domain/task-time';
+import { useAdventure } from '@/hooks/useAdventure';
 import { useCompanion } from '@/hooks/useCompanion';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { useUnreadNotifications } from '@/hooks/useNotifications';
@@ -58,6 +59,8 @@ export default function TodayScreen() {
   const counts = useApprovalCounts(isParent);
   const weekly = useWeeklyQuizzes(today, false);
   const companion = useCompanion(d?.child?.id ?? null, !!d?.child).data;
+  // D-105 : aventures du panda, vue enfant seulement (le parent les voit dans la fiche de l'enfant)
+  const adventure = useAdventure(d?.child?.id ?? null, !!d?.child && d.viewer.role === 'child').data;
   const reactToCheck = usePandaReaction((s) => s.trigger);
 
   if (!d || !d.child) {
@@ -129,7 +132,7 @@ export default function TodayScreen() {
         {/* D-104 : le panda de l'enfant en haut, au-dessus du bandeau de la semaine ; première fois : étape « Panda của em » */}
         {!isParent && companion ? (
           companion.hasCompanion ? (
-            <PandaCompanion childId={child.id} childName={child.name} state={companion} done={progress.done} total={progress.total} localHour={localHourOf(nowTime)} />
+            <PandaCompanion childId={child.id} childName={child.name} state={companion} done={progress.done} total={progress.total} localHour={localHourOf(nowTime)} adventure={adventure} />
           ) : (
             <PandaSetupCard childId={child.id} state={companion} />
           )

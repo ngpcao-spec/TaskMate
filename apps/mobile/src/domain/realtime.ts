@@ -20,7 +20,7 @@ export function invalidationsFor(table: RealtimeTable, row: Row): readonly (read
     case 'tasks':
       // la file « Cần duyệt » et les points en attente suivent les tâches
       // + le centre de notifications (journal d'activité des parents) + l'énergie du panda (D-104 : un refus la retire)
-      return childId ? [['tasks', childId], ['task', row?.id ?? ''], ['tasks', 'pending'], ['balance'], ['activity'], ['companion']] : [['tasks'], ['balance'], ['activity'], ['companion']];
+      return childId ? [['tasks', childId], ['task', row?.id ?? ''], ['tasks', 'pending'], ['balance'], ['activity'], ['companion'], ['adventure']] : [['tasks'], ['balance'], ['activity'], ['companion'], ['adventure']];
     case 'goals':
       return [['goals', ...(childId ? [childId] : [])]];
     case 'rewards':
@@ -35,6 +35,6 @@ export function invalidationsFor(table: RealtimeTable, row: Row): readonly (read
     // révisions : jeux publiés/dépubliés, tentatives soumises/validées (le parent voit arriver une évaluation, l'enfant sa validation)
     case 'quiz_sets':
     case 'quiz_attempts':
-      return [['quiz'], ['companion']]; // une validation donne de l'énergie au panda (D-104)
+      return [['quiz'], ['companion'], ['adventure']]; // une validation donne de l'énergie au panda (D-104) et remplit la jauge d'aventure (D-105)
   }
 }

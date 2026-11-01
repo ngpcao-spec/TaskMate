@@ -203,3 +203,27 @@ export async function seedCompanion(family: FamilyFixture, child: 'minh' | 'khan
   const { error } = await admin().from('companions').insert({ child_id: family[child].childId as string, family_id: family.familyId, name, trait: trait as 'kind' });
   if (error) throw new Error(`companions: ${error.message}`);
 }
+
+/** Énergie du panda posée par le service local (D-105 : remplir la jauge d'aventure sans cocher 6 tâches). Journal immuable : on n'ajoute qu'une ligne. */
+export async function seedEnergy(family: FamilyFixture, child: 'minh' | 'khang', amount: number): Promise<void> {
+  const { error } = await admin().from('companion_energy').insert({ id: crypto.randomUUID(), child_id: family[child].childId as string, family_id: family.familyId, amount, reason: 'task_checked', source_id: crypto.randomUUID() });
+  if (error) throw new Error(`companion_energy: ${error.message}`);
+}
+
+/** « Le lendemain » côté serveur : le jour local du serveur ne se simule pas, on recule donc d'un jour les dates de l'aventure en cours de l'enfant. */
+export async function adventureNextDay(family: FamilyFixture, child: 'minh' | 'khang'): Promise<void> {
+  const db = admin();
+  const { data, error } = await db.from('child_adventures').select('id, departed_on, returns_on').eq('child_id', family[child].childId as string).is('collected_at', null).single();
+  if (error || !data) throw new Error(`child_adventures: ${error?.message}`);
+  const back = (d: string) => new Date(Date.parse(`${d}T00:00:00Z`) - 86_400_000).toISOString().slice(0, 10);
+  const { error: ue } = await db.from('child_adventures').update({ departed_on: back(data.departed_on), returns_on: back(data.returns_on) }).eq('id', data.id);
+  if (ue) throw new Error(`child_adventures: ${ue.message}`);
+}
+
+/** Aventures et carnet d'un enfant, lus par le service local (indépendants de l'UI). */
+export async function adventuresOf(family: FamilyFixture, child: 'minh' | 'khang') {
+  const db = admin();
+  const { data: adventures } = await db.from('child_adventures').select('destination_slug, departed_on, returns_on, energy_mark, discovery_slug, collected_at').eq('child_id', family[child].childId as string);
+  const { data: journal } = await db.from('child_discoveries').select('discovery_slug, times_found').eq('child_id', family[child].childId as string);
+  return { adventures: adventures ?? [], journal: journal ?? [] };
+}

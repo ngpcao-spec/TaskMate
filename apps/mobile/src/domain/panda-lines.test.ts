@@ -1,7 +1,7 @@
 import en from '@/i18n/locales/en.json';
 import fr from '@/i18n/locales/fr.json';
 import vi from '@/i18n/locales/vi.json';
-import { greetingFor, LINE_VARIANTS, PANDA_SITUATIONS, pandaLineKey, pandaLineKeys, pandaLineParams, pandaSituation, pickPandaLine } from './panda-lines';
+import { greetingFor, LINE_VARIANTS, PANDA_SITUATIONS, pandaLineKey, pandaLineKeys, pandaLineParams, pandaSituation, pickPandaLine, STORY_DESTINATIONS, storySituation } from './panda-lines';
 import type { PandaStage } from './panda';
 
 const STAGES: PandaStage[] = [1, 2, 3, 4];
@@ -15,7 +15,7 @@ describe('clés de répliques', () => {
     expect(pandaLineKey(1, 'greeting_morning', -1)).toBe('panda.lines.greeting_morning.s1.v2');
     expect(pandaLineKeys(4, 'nothing_yet_evening')).toHaveLength(LINE_VARIANTS.nothing_yet_evening);
   });
-  it('2 à 3 variantes par situation', () => {
+  it('2 à 3 variantes par situation (2 pour les aventures)', () => {
     for (const s of PANDA_SITUATIONS) expect([2, 3]).toContain(LINE_VARIANTS[s]);
   });
 });
@@ -31,7 +31,7 @@ describe('textes dans les trois langues', () => {
   });
   it.each(Object.entries(LOCALES))('%s : aucune variable inconnue dans les textes', (_name, locale) => {
     for (const key of every) {
-      for (const m of (lookup(locale, key) as string).matchAll(/\{\{(\w+)\}\}/g)) expect(['name', 'energy', 'quizEnergy']).toContain(m[1]);
+      for (const m of (lookup(locale, key) as string).matchAll(/\{\{(\w+)\}\}/g)) expect(['name', 'energy', 'quizEnergy', 'destination']).toContain(m[1]);
     }
   });
   it('le panda ne parle jamais d’un frère ou d’une sœur, ne pousse pas à acheter et ne donne pas de réponse', () => {
@@ -66,13 +66,25 @@ describe('textes dans les trois langues', () => {
     expect(lookup(vi, 'panda.lines.task_checked.s4.v1')).toBe('Đã xong. Một bước nữa cho mục tiêu tuần này.');
     expect(lookup(vi, 'panda.lines.nothing_yet_evening.s3.v1')).toBe('Hôm nay hơi bận hả? Mai mình làm tiếp.');
   });
+  it('aventures (D-105) : exemples imposés, une ligne de récit par destination, jamais de culpabilité', () => {
+    expect(lookup(vi, 'panda.lines.story_ha_long.s2.v1')).toBe('Tớ đã đi thuyền ở Vịnh Hạ Long! Xem tớ mang gì về cho cậu này!');
+    expect(lookup(vi, 'panda.lines.adventure_duplicate.s2.v1')).toBe('Cái này cậu có rồi, nhưng tớ thích quá nên mang thêm một cái!');
+    for (const d of STORY_DESTINATIONS) expect(storySituation(d)).toBe(`story_${d.replace(/-/g, '_')}`);
+    expect(storySituation('atlantide')).toBeNull();
+    for (const locale of Object.values(LOCALES)) {
+      for (const s of ['adventure_ready', 'adventure_away', 'adventure_back', 'adventure_duplicate', ...STORY_DESTINATIONS.map((d) => storySituation(d)!)] as const) {
+        for (const st of STAGES) for (const key of pandaLineKeys(st, s)) expect(lookup(locale, key) as string).not.toMatch(/nourri|affamé|faim|hungry|starv|fed me|đói|bỏ rơi|perdu|lost|triste|sad|buồn/i);
+      }
+    }
+  });
   it('« nothing_yet_evening » : jamais de reproche', () => {
     for (const locale of Object.values(LOCALES)) {
       for (const st of STAGES) for (const key of pandaLineKeys(st, 'nothing_yet_evening')) expect(lookup(locale, key) as string).not.toMatch(/pas fait|jamais|paresse|lazy|never|failed|lười|không làm/i);
     }
   });
   it('valeurs d’interpolation', () => {
-    expect(pandaLineParams('Minh')).toEqual({ name: 'Minh', energy: 5, quizEnergy: 10 });
+    expect(pandaLineParams('Minh')).toEqual({ name: 'Minh', energy: 5, quizEnergy: 10, destination: '' });
+    expect(pandaLineParams('Minh', 'Vịnh Hạ Long').destination).toBe('Vịnh Hạ Long');
   });
 });
 

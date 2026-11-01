@@ -1,6 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query';
 import { newId } from '@/api/ids';
-import { companionKeys, quizKeys, taskKeys } from '@/api/keys';
+import { collectAdventure, startAdventure } from '@/api/adventure';
+import { adventureKeys, companionKeys, quizKeys, taskKeys } from '@/api/keys';
 import {
   createTasks,
   deleteTask,
@@ -17,6 +18,7 @@ import { isTransientError } from '@/domain/errors';
 import { isGoneError } from '@/domain/catalog-purge';
 import { quizErrorKey } from '@/domain/quiz';
 import { dateInRange, optimisticTask } from '@/domain/optimistic-task';
+import { adventureErrorKey } from '@/domain/adventure';
 import { energyForToggle, withEnergy, type CompanionState } from '@/domain/panda';
 import { optimisticToggle } from '@/domain/task-state';
 import i18n from '@/i18n';
@@ -36,6 +38,8 @@ export const mutationKeys = {
   saveQuizProgress: ['saveQuizProgress'] as const,
   submitQuizEvaluation: ['submitQuizEvaluation'] as const,
   validateQuizAttempt: ['validateQuizAttempt'] as const,
+  startAdventure: ['startAdventure'] as const,
+  collectAdventure: ['collectAdventure'] as const,
 };
 
 /** `asParent` : un parent qui coche valide d'office ; un enfant ne fait jamais que passer la tâche en attente. */
@@ -51,6 +55,9 @@ export type StartEvaluationVars = { setId: string; attemptId: string; /** D-080 
 export type SaveProgressVars = { attemptId: string; questionId: string; choice: number | null };
 export type SubmitEvaluationVars = { attemptId: string; answers: { question_id: string; choice: number | null }[] };
 export type ValidateAttemptVars = { attemptId: string; showCorrection?: boolean };
+/** Aventures (D-105) : l'id de l'aventure est fixé à la création → rejeu idempotent côté RPC. */
+export type StartAdventureVars = { childId: string; adventureId: string; destination: string };
+export type CollectAdventureVars = { childId: string; adventureId: string };
 type SnapshotCtx = { snapshot?: ReturnType<typeof snapshotTasks>; /** D-104 : état du panda avant la coche optimiste (rétabli si l'écriture échoue). */ companion?: CompanionState };
 
 /** Variables d'une coche : le `txId` est tiré ici, une seule fois — tout rejeu (retry, file hors ligne) reste idempotent. */
@@ -111,6 +118,7 @@ export function registerMutationDefaults(
       void queryClient.invalidateQueries({ queryKey: ['balance'] });
       void queryClient.invalidateQueries({ queryKey: taskKeys.pending });
       void queryClient.invalidateQueries({ queryKey: companionKeys.state(task.child_id) });
+      void queryClient.invalidateQueries({ queryKey: adventureKeys.state(task.child_id) }); // la jauge d'aventure suit l'énergie (D-105)
     },
   });
 
@@ -263,5 +271,24 @@ export function registerMutationDefaults(
       refreshQuiz();
       void queryClient.invalidateQueries({ queryKey: companionKeys.all }); // une validation donne 10 ⚡ (D-104)
     },
+  });
+
+  // D-105 : aventures. Le serveur reste seul juge (jauge, destination, jour du retour, trouvaille) ; un refus est abandonné avec un message DOUX
+  // (jamais d'erreur technique), un double appui (`adventure_in_progress`) sans aucun message.
+  const adventureFailure = (error: unknown) => {
+    const key = adventureErrorKey(serverErrorCode(error));
+    if (key) toast(i18n.t(key), 'info');
+  };
+  queryClient.setMutationDefaults(mutationKeys.startAdventure, {
+    ...common,
+    mutationFn: ({ childId, adventureId, destination }: StartAdventureVars) => startAdventure(childId, adventureId, destination),
+    onError: adventureFailure,
+    onSettled: (_d: unknown, _e: unknown, { childId }: StartAdventureVars) => void queryClient.invalidateQueries({ queryKey: adventureKeys.state(childId) }),
+  });
+  queryClient.setMutationDefaults(mutationKeys.collectAdventure, {
+    ...common,
+    mutationFn: ({ childId, adventureId }: CollectAdventureVars) => collectAdventure(childId, adventureId),
+    onError: adventureFailure,
+    onSettled: (_d: unknown, _e: unknown, { childId }: CollectAdventureVars) => void queryClient.invalidateQueries({ queryKey: adventureKeys.state(childId) }),
   });
 }
