@@ -218,28 +218,6 @@ isOneToOne: true
       referencedColumns: ["id"]
     }
                   ]
-                },"companion_energy": {
-                  Row: {
-                    "amount": number,"child_id": string,"created_at": string,"family_id": string,"id": string,"reason": Database["public"]['Enums']["companion_energy_reason"],"source_id": string
-                  }
-                  Insert: {
-                    "amount": number,"child_id": string,"created_at"?: string,"family_id": string,"id": string,"reason": Database["public"]['Enums']["companion_energy_reason"],"source_id": string
-                  }
-                  Update: {
-                    "amount"?: number,"child_id"?: string,"created_at"?: string,"family_id"?: string,"id"?: string,"reason"?: Database["public"]['Enums']["companion_energy_reason"],"source_id"?: string
-                  }
-                  Relationships: []
-                },"companions": {
-                  Row: {
-                    "child_id": string,"created_at": string,"family_id": string,"name": string,"stage_offset": number,"trait": Database["public"]['Enums']["companion_trait"]
-                  }
-                  Insert: {
-                    "child_id": string,"created_at"?: string,"family_id": string,"name": string,"stage_offset"?: number,"trait": Database["public"]['Enums']["companion_trait"]
-                  }
-                  Update: {
-                    "child_id"?: string,"created_at"?: string,"family_id"?: string,"name"?: string,"stage_offset"?: number,"trait"?: Database["public"]['Enums']["companion_trait"]
-                  }
-                  Relationships: []
                 },"child_avatars": {
                   Row: {
                     "ai_allowed": boolean,"candidate_b64": string | null,"child_id": string,"consent_at": string | null,"consent_by": string | null,"family_id": string,"image_b64": string | null,"updated_at": string,"version": number
@@ -313,6 +291,56 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "families"
       referencedColumns: ["id"]
+    }
+                  ]
+                },"companion_energy": {
+                  Row: {
+                    "amount": number,"child_id": string,"created_at": string,"family_id": string,"id": string,"reason": Database["public"]['Enums']["companion_energy_reason"],"source_id": string
+                  }
+                  Insert: {
+                    "amount": number,"child_id": string,"created_at"?: string,"family_id": string,"id": string,"reason": Database["public"]['Enums']["companion_energy_reason"],"source_id": string
+                  }
+                  Update: {
+                    "amount"?: number,"child_id"?: string,"created_at"?: string,"family_id"?: string,"id"?: string,"reason"?: Database["public"]['Enums']["companion_energy_reason"],"source_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "companion_energy_child_id_family_id_fkey"
+      columns: ["child_id","family_id"]
+isOneToOne: false
+      referencedRelation: "child_balances"
+      referencedColumns: ["child_id","family_id"]
+    },{
+      foreignKeyName: "companion_energy_child_id_family_id_fkey"
+      columns: ["child_id","family_id"]
+isOneToOne: false
+      referencedRelation: "children"
+      referencedColumns: ["id","family_id"]
+    }
+                  ]
+                },"companions": {
+                  Row: {
+                    "child_id": string,"created_at": string,"family_id": string,"name": string,"stage_offset": number,"trait": Database["public"]['Enums']["companion_trait"]
+                  }
+                  Insert: {
+                    "child_id": string,"created_at"?: string,"family_id": string,"name": string,"stage_offset"?: number,"trait": Database["public"]['Enums']["companion_trait"]
+                  }
+                  Update: {
+                    "child_id"?: string,"created_at"?: string,"family_id"?: string,"name"?: string,"stage_offset"?: number,"trait"?: Database["public"]['Enums']["companion_trait"]
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "companions_child_id_family_id_fkey"
+      columns: ["child_id","family_id"]
+isOneToOne: false
+      referencedRelation: "child_balances"
+      referencedColumns: ["child_id","family_id"]
+    },{
+      foreignKeyName: "companions_child_id_family_id_fkey"
+      columns: ["child_id","family_id"]
+isOneToOne: false
+      referencedRelation: "children"
+      referencedColumns: ["id","family_id"]
     }
                   ]
                 },"devices": {
@@ -1250,6 +1278,50 @@ isOneToOne: false
 "child_reserved":
 { Args: { "p_child": string }; Returns: number
                            },
+"companion_add_energy":
+{ Args: { "p_amount": number,"p_child": string,"p_family": string,"p_id": string,"p_reason": Database["public"]['Enums']["companion_energy_reason"],"p_source": string }; Returns: undefined
+                           },
+"companion_authorize":
+{ Args: { "p_child": string }; Returns: {
+              "child_id": string | null,
+"created_at": string,
+"deleted_at": string | null,
+"display_name": string,
+"family_id": string,
+"id": string,
+"last_active_at": string | null,
+"revoked_at": string | null,
+"role": Database["public"]['Enums']["member_role"],
+"updated_at": string,
+"user_id": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "members"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"companion_level":
+{ Args: { "p_total": number }; Returns: number
+                           },
+"companion_next_level_at":
+{ Args: { "p_total": number }; Returns: number
+                           },
+"companion_set_stage_offset":
+{ Args: { "p_child": string,"p_offset": number }; Returns: undefined
+                           },
+"companion_setup":
+{ Args: { "p_child": string,"p_name": string,"p_trait": Database["public"]['Enums']["companion_trait"] }; Returns: undefined
+                           },
+"companion_stage":
+{ Args: { "p_birth": string,"p_offset"?: number,"p_today": string }; Returns: number
+                           },
+"companion_state":
+{ Args: { "p_child": string }; Returns: Json
+                           },
+"companion_task_energy":
+{ Args: { "p_child": string,"p_task": string }; Returns: number
+                           },
 "complete_task":
 { Args: { "p_task_id": string,"p_tx_id": string }; Returns: undefined
                            },
@@ -1541,33 +1613,6 @@ isOneToOne: false
 "schedule_cron_jobs":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
-"companion_add_energy":
-{ Args: { "p_amount": number,"p_child": string,"p_family": string,"p_id": string,"p_reason": Database["public"]['Enums']["companion_energy_reason"],"p_source": string }; Returns: undefined
-                           },
-"companion_authorize":
-{ Args: { "p_child": string }; Returns: Json
-                           },
-"companion_level":
-{ Args: { "p_total": number }; Returns: number
-                           },
-"companion_next_level_at":
-{ Args: { "p_total": number }; Returns: number
-                           },
-"companion_set_stage_offset":
-{ Args: { "p_child": string,"p_offset": number }; Returns: undefined
-                           },
-"companion_setup":
-{ Args: { "p_child": string,"p_name": string,"p_trait": Database["public"]['Enums']["companion_trait"] }; Returns: undefined
-                           },
-"companion_stage":
-{ Args: { "p_birth": string,"p_offset"?: number,"p_today": string }; Returns: number
-                           },
-"companion_state":
-{ Args: { "p_child": string }; Returns: Json
-                           },
-"companion_task_energy":
-{ Args: { "p_child": string,"p_task": string }; Returns: number
-                           },
 "set_avatar_ai_allowed":
 { Args: { "p_allowed": boolean,"p_child": string }; Returns: undefined
                            },
@@ -1750,7 +1795,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "member_role": ["parent", "child"],"point_reason": ["task_validated", "task_unvalidated", "reward_redeemed", "manual_adjust", "quiz_validated"],"quiz_attempt_status": ["in_progress", "submitted", "validated"],"quiz_material_kind": ["exam", "exam_key", "course", "list"],"quiz_status": ["draft", "published"],"recurrence_rule": ["daily", "weekdays"],"request_status": ["pending", "approved", "rejected", "cancelled", "expired"],"task_category": ["study", "sport", "chores", "personal", "other"],"time_kind": ["range", "deadline", "anytime"]
+            "companion_energy_reason": ["task_checked", "task_unchecked", "task_rejected", "quiz_validated"],"companion_trait": ["curious", "persistent", "kind", "brave", "funny", "calm"],"member_role": ["parent", "child"],"point_reason": ["task_validated", "task_unvalidated", "reward_redeemed", "manual_adjust", "quiz_validated"],"quiz_attempt_status": ["in_progress", "submitted", "validated"],"quiz_material_kind": ["exam", "exam_key", "course", "list"],"quiz_status": ["draft", "published"],"recurrence_rule": ["daily", "weekdays"],"request_status": ["pending", "approved", "rejected", "cancelled", "expired"],"task_category": ["study", "sport", "chores", "personal", "other"],"time_kind": ["range", "deadline", "anytime"]
           }
         }
 } as const
