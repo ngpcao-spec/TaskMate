@@ -1602,5 +1602,207 @@
       "lastRun": "Last run: {{date}}",
       "unknown": "Scheduled tasks unreadable (pg_cron unavailable)."
     }
+  },
+  "panda": {
+    "title": "The panda",
+    "setup": {
+      "title": "Your panda",
+      "intro": "Panda will keep you company every day. Would you like to give it a name?",
+      "nameLabel": "Panda's name",
+      "traitLabel": "What is your panda like?",
+      "save": "Start",
+      "skip": "Later (it will be called Panda)",
+      "nameInvalid": "The name must be 1 to 20 characters",
+      "error": "Could not save. Try again."
+    },
+    "trait": {
+      "curious": "Curious",
+      "persistent": "Persistent",
+      "kind": "Kind",
+      "brave": "Brave",
+      "funny": "Funny",
+      "calm": "Calm"
+    },
+    "stage": {
+      "s1": "Baby panda",
+      "s2": "Kid panda",
+      "s3": "Teen panda",
+      "s4": "Companion panda"
+    },
+    "mood": {
+      "calme": "calm",
+      "content": "happy",
+      "tres-heureux": "very happy",
+      "fier": "proud",
+      "dort": "asleep"
+    },
+    "imageLabel": "Panda {{name}}, {{mood}}",
+    "speech": "Panda says: {{text}}",
+    "energy": {
+      "label": "Energy",
+      "value": "Energy {{current}} of {{next}}"
+    },
+    "level": "Friendship level {{level}}",
+    "reaction": "+{{energy}} ⚡",
+    "settings": {
+      "title": "Your panda",
+      "name": "Name",
+      "trait": "Personality",
+      "save": "Save",
+      "saved": "Saved",
+      "error": "Could not save",
+      "stageTitle": "Panda's age",
+      "stageHint": "The panda grows up each school year. You can keep it one step younger or older.",
+      "younger": "Keep the panda younger",
+      "same": "Match my age",
+      "older": "Keep the panda older"
+    },
+    "parent": {
+      "card": "{{child}}'s panda",
+      "rename": "Change name or personality",
+      "notSet": "{{child}} has not named the panda yet",
+      "stageNote": "The panda's age is chosen by the child.",
+      "save": "Save panda"
+    },
+    "lines": {
+      "greeting_morning": {
+        "s1": {
+          "v1": "Good morning, {{name}}!",
+          "v2": "Panda says hi, {{name}}!"
+        },
+        "s2": {
+          "v1": "Good morning! I'm ready. Are you?",
+          "v2": "It's morning! What shall we do today, you and me?"
+        },
+        "s3": {
+          "v1": "Morning. Shall we get started together?",
+          "v2": "Brand new morning. Pick the first task."
+        },
+        "s4": {
+          "v1": "Good morning. Let's see what today holds.",
+          "v2": "Good morning. Ready for a tidy day?"
+        }
+      },
+      "greeting_afternoon": {
+        "s1": {
+          "v1": "Good afternoon, {{name}}!",
+          "v2": "Panda is here, {{name}}!"
+        },
+        "s2": {
+          "v1": "Good afternoon! I'm still here with you.",
+          "v2": "Have a lovely afternoon!"
+        },
+        "s3": {
+          "v1": "Afternoon already. Shall we finish what's left?",
+          "v2": "Middle of the day: take a breath."
+        },
+        "s4": {
+          "v1": "Afternoon. One thing at a time.",
+          "v2": "Good afternoon. You're keeping a good pace."
+        }
+      },
+      "greeting_evening": {
+        "s1": {
+          "v1": "Good evening, {{name}}!",
+          "v2": "Have a nice evening, {{name}}!"
+        },
+        "s2": {
+          "v1": "Good evening! How was your day?",
+          "v2": "Have a lovely evening!"
+        },
+        "s3": {
+          "v1": "Evening. So, how was the day?",
+          "v2": "Chill evening. You've earned it."
+        },
+        "s4": {
+          "v1": "Good evening. Thank you for today.",
+          "v2": "A quiet evening. Resting is part of the plan too."
+        }
+      },
+      "task_checked": {
+        "s1": {
+          "v1": "Well done, {{name}}! Panda is so happy!",
+          "v2": "Hooray {{name}}! {{energy}} more energy!",
+          "v3": "{{name}} did it!"
+        },
+        "s2": {
+          "v1": "Yeah! You and me, {{energy}} more energy!",
+          "v2": "You're awesome! I'm so happy!",
+          "v3": "One done! Let's keep going!"
+        },
+        "s3": {
+          "v1": "Not bad. +{{energy}} energy, the adventure is getting close.",
+          "v2": "Clean! +{{energy}} energy.",
+          "v3": "Nice. Keep this pace."
+        },
+        "s4": {
+          "v1": "Done. One more step toward this week's goal.",
+          "v2": "Good. +{{energy}} energy.",
+          "v3": "Completed. You're consistent."
+        }
+      },
+      "all_done": {
+        "s1": {
+          "v1": "All done! Well done, {{name}}!",
+          "v2": "{{name}} did everything! Panda is proud!",
+          "v3": "Hooray for {{name}}!"
+        },
+        "s2": {
+          "v1": "We finished everything! You're great!",
+          "v2": "Nothing left for today! I'm proud of you!",
+          "v3": "Time to celebrate!"
+        },
+        "s3": {
+          "v1": "All done. You did great today.",
+          "v2": "Clean slate! You can relax.",
+          "v3": "A full day. Congratulations."
+        },
+        "s4": {
+          "v1": "Everything is done for today. Thank you.",
+          "v2": "All completed. Time to rest.",
+          "v3": "A full day. Well done."
+        }
+      },
+      "quiz_validated": {
+        "s1": {
+          "v1": "Revision done! Well done, {{name}}!",
+          "v2": "Your revision was approved!",
+          "v3": "{{name}} works so hard! Panda is happy!"
+        },
+        "s2": {
+          "v1": "Revision approved! I got +{{quizEnergy}} energy!",
+          "v2": "You revise so carefully! I'm thrilled!",
+          "v3": "Yeah! Revision finished!"
+        },
+        "s3": {
+          "v1": "Revision approved. +{{quizEnergy}} energy for the road.",
+          "v2": "You revise steadily, and it shows.",
+          "v3": "Approved. Nice work."
+        },
+        "s4": {
+          "v1": "Revision approved. Knowledge keeps adding up.",
+          "v2": "Good. Steady revision is the surest method.",
+          "v3": "Approved. +{{quizEnergy}} energy."
+        }
+      },
+      "nothing_yet_evening": {
+        "s1": {
+          "v1": "We'll do it tomorrow, {{name}}.",
+          "v2": "Panda is going to sleep. See you tomorrow, {{name}}!"
+        },
+        "s2": {
+          "v1": "Busy day? Tomorrow we continue together.",
+          "v2": "No worries. Tomorrow we try again."
+        },
+        "s3": {
+          "v1": "Busy day? We pick it up tomorrow.",
+          "v2": "No problem. Tomorrow is another day."
+        },
+        "s4": {
+          "v1": "No time today, and that's fine. We resume tomorrow.",
+          "v2": "Tomorrow will be lighter. Get some rest."
+        }
+      }
+    }
   }
 }

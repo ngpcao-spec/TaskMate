@@ -1602,5 +1602,207 @@
       "lastRun": "Dernière exécution : {{date}}",
       "unknown": "Tâches planifiées illisibles (pg_cron indisponible)."
     }
+  },
+  "panda": {
+    "title": "Le panda",
+    "setup": {
+      "title": "Ton panda",
+      "intro": "Panda t'accompagnera chaque jour. Tu veux lui donner un nom ?",
+      "nameLabel": "Nom du panda",
+      "traitLabel": "Quel caractère a ton panda ?",
+      "save": "Commencer",
+      "skip": "Plus tard (il s'appellera Panda)",
+      "nameInvalid": "Le nom doit faire de 1 à 20 caractères",
+      "error": "Enregistrement impossible. Réessaie."
+    },
+    "trait": {
+      "curious": "Curieux",
+      "persistent": "Persévérant",
+      "kind": "Gentil",
+      "brave": "Courageux",
+      "funny": "Drôle",
+      "calm": "Calme"
+    },
+    "stage": {
+      "s1": "Panda bébé",
+      "s2": "Panda enfant",
+      "s3": "Panda ado",
+      "s4": "Panda compagnon"
+    },
+    "mood": {
+      "calme": "calme",
+      "content": "content",
+      "tres-heureux": "très heureux",
+      "fier": "fier",
+      "dort": "endormi"
+    },
+    "imageLabel": "Panda {{name}}, {{mood}}",
+    "speech": "Le panda dit : {{text}}",
+    "energy": {
+      "label": "Énergie",
+      "value": "Énergie {{current}} sur {{next}}"
+    },
+    "level": "Amitié niveau {{level}}",
+    "reaction": "+{{energy}} ⚡",
+    "settings": {
+      "title": "Ton panda",
+      "name": "Nom",
+      "trait": "Caractère",
+      "save": "Enregistrer",
+      "saved": "Enregistré",
+      "error": "Enregistrement impossible",
+      "stageTitle": "Âge du panda",
+      "stageHint": "Le panda grandit à chaque rentrée. Tu peux le garder un cran plus jeune ou plus grand.",
+      "younger": "Garder le panda plus jeune",
+      "same": "Selon ton âge",
+      "older": "Garder le panda plus grand"
+    },
+    "parent": {
+      "card": "Le panda de {{child}}",
+      "rename": "Changer le nom ou le caractère",
+      "notSet": "{{child}} n'a pas encore nommé son panda",
+      "stageNote": "L'âge du panda est choisi par l'enfant.",
+      "save": "Enregistrer le panda"
+    },
+    "lines": {
+      "greeting_morning": {
+        "s1": {
+          "v1": "Bonjour {{name}} !",
+          "v2": "Panda dit coucou, {{name}} !"
+        },
+        "s2": {
+          "v1": "Bonjour ! Moi, je suis prêt. Et toi ?",
+          "v2": "C'est le matin ! On fait quoi aujourd'hui, toi et moi ?"
+        },
+        "s3": {
+          "v1": "Bonjour. On démarre la journée ensemble ?",
+          "v2": "Matin tout neuf. Choisis la première tâche."
+        },
+        "s4": {
+          "v1": "Bonjour. Voyons ensemble ce qui t'attend aujourd'hui.",
+          "v2": "Bonjour. Prêt pour une journée bien rangée ?"
+        }
+      },
+      "greeting_afternoon": {
+        "s1": {
+          "v1": "Bon après-midi, {{name}} !",
+          "v2": "Panda est là, {{name}} !"
+        },
+        "s2": {
+          "v1": "Bon après-midi ! Je suis toujours là avec toi.",
+          "v2": "Belle après-midi à toi !"
+        },
+        "s3": {
+          "v1": "L'après-midi est là. On continue ce qui reste ?",
+          "v2": "Milieu de journée : respire un peu."
+        },
+        "s4": {
+          "v1": "Après-midi. Une chose à la fois.",
+          "v2": "Bon après-midi. Tu avances au bon rythme."
+        }
+      },
+      "greeting_evening": {
+        "s1": {
+          "v1": "Bonsoir {{name}} !",
+          "v2": "Belle soirée, {{name}} !"
+        },
+        "s2": {
+          "v1": "Bonsoir ! Comment s'est passée ta journée ?",
+          "v2": "Belle soirée à toi !"
+        },
+        "s3": {
+          "v1": "Bonsoir. Alors, cette journée ?",
+          "v2": "Soirée détente, tu l'as bien méritée."
+        },
+        "s4": {
+          "v1": "Bonsoir. Merci pour cette journée.",
+          "v2": "Soirée calme. Se reposer fait aussi partie du plan."
+        }
+      },
+      "task_checked": {
+        "s1": {
+          "v1": "Bravo {{name}} ! Panda est tout content !",
+          "v2": "Hourra {{name}} ! Encore {{energy}} d'énergie !",
+          "v3": "{{name}} a réussi !"
+        },
+        "s2": {
+          "v1": "Yeah ! On gagne {{energy}} d'énergie, toi et moi !",
+          "v2": "Tu es super ! Je suis trop content !",
+          "v3": "Une de faite ! On continue ?"
+        },
+        "s3": {
+          "v1": "Pas mal du tout. +{{energy}} d'énergie, l'aventure approche.",
+          "v2": "Net ! +{{energy}} d'énergie.",
+          "v3": "Carré. Garde ce rythme."
+        },
+        "s4": {
+          "v1": "Fait. Un pas de plus vers l'objectif de la semaine.",
+          "v2": "Bien. +{{energy}} d'énergie.",
+          "v3": "Terminé. Tu es régulier."
+        }
+      },
+      "all_done": {
+        "s1": {
+          "v1": "Tout est fini ! Bravo {{name}} !",
+          "v2": "{{name}} a tout fait ! Panda est fier !",
+          "v3": "Hourra pour {{name}} !"
+        },
+        "s2": {
+          "v1": "On a tout fini ! Tu es génial !",
+          "v2": "Plus rien pour aujourd'hui ! Je suis fier de toi !",
+          "v3": "On fête ça !"
+        },
+        "s3": {
+          "v1": "Tout est fait. Belle journée de ta part.",
+          "v2": "Tableau vide ! Tu peux souffler.",
+          "v3": "Journée complète. Félicitations."
+        },
+        "s4": {
+          "v1": "Tout est terminé pour aujourd'hui. Merci.",
+          "v2": "Tout est accompli. Place au repos.",
+          "v3": "Une journée complète. Bien joué."
+        }
+      },
+      "quiz_validated": {
+        "s1": {
+          "v1": "La révision est faite ! Bravo {{name}} !",
+          "v2": "Ta révision est validée !",
+          "v3": "{{name}} est très sérieux ! Panda est content !"
+        },
+        "s2": {
+          "v1": "Révision validée ! J'ai +{{quizEnergy}} d'énergie !",
+          "v2": "Tu révises avec tant de sérieux ! Je suis ravi !",
+          "v3": "Yeah ! Révision terminée !"
+        },
+        "s3": {
+          "v1": "Révision validée. +{{quizEnergy}} d'énergie pour la route.",
+          "v2": "Tu révises régulièrement, ça se voit.",
+          "v3": "Validé. Beau travail."
+        },
+        "s4": {
+          "v1": "Révision validée. Les connaissances s'accumulent.",
+          "v2": "Bien. Réviser régulièrement, c'est la méthode la plus solide.",
+          "v3": "Validé. +{{quizEnergy}} d'énergie."
+        }
+      },
+      "nothing_yet_evening": {
+        "s1": {
+          "v1": "On fera demain, {{name}}.",
+          "v2": "Panda va dormir. À demain, {{name}} !"
+        },
+        "s2": {
+          "v1": "Journée chargée ? Demain, on continue ensemble.",
+          "v2": "Ce n'est pas grave. Demain, on réessaie."
+        },
+        "s3": {
+          "v1": "Journée chargée ? On reprend demain.",
+          "v2": "Pas de souci. Demain est un autre jour."
+        },
+        "s4": {
+          "v1": "Pas le temps aujourd'hui, ce n'est pas grave. On reprend demain.",
+          "v2": "Demain sera plus léger. Repose-toi."
+        }
+      }
+    }
   }
 }

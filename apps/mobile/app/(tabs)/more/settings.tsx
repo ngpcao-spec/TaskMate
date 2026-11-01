@@ -7,6 +7,7 @@ import { Linking, StyleSheet, Text, View } from 'react-native';
 import { signOut } from '@/api/auth';
 import { syncPushLocale } from '@/api/notifications';
 import { Chip } from '@/components/Chip';
+import { PandaSettingsCard } from '@/components/companion/PandaSettingsCard';
 import { ParentInviteCard } from '@/components/ParentInviteCard';
 import { ParentsCard } from '@/components/ParentsCard';
 import { ThemeCard } from '@/components/ThemeCard';
@@ -72,6 +73,9 @@ export default function SettingsScreen() {
       </Card>
 
       <ThemeCard />
+
+      {/* D-104 : l'enfant règle SON panda (nom, trait, plus jeune / plus grand) */}
+      {!isParent && me.member.child_id ? <PandaSettingsCard childId={me.member.child_id} /> : null}
 
       {/* D-090 : parent = rejouer l'assistant ; enfant = revoir l'installation et les notifications */}
       {isParent ? (

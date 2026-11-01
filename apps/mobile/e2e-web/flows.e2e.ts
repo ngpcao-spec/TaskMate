@@ -1,5 +1,5 @@
 import { expect, test, webkit, type Page } from '@playwright/test';
-import { accessTokenOf, createFamily, createGoogleParent, directSignIn, internalEmailOf, resetAttempts, revokeChildMembers, serviceClient, seedCatalogQuiz, seedTask, taskChildId, serverState, signInContext, supabaseUrl, todayVn } from './support/seed';
+import { accessTokenOf, companionEnergy, createFamily, createGoogleParent, directSignIn, internalEmailOf, resetAttempts, revokeChildMembers, serviceClient, seedCatalogQuiz, seedCompanion, seedTask, taskChildId, serverState, signInContext, supabaseUrl, todayVn } from './support/seed';
 
 const title = (label: string) => `${label} ${Math.random().toString(36).slice(2, 7)}`;
 
@@ -1791,5 +1791,87 @@ test.describe('reprise après changement de thème (D-103)', () => {
     await expectVisibleOrDump(page, page.getByText(/Chào Minh!/), 'reprise-depart-fin', 30_000);
     expect(new URL(page.url()).pathname).not.toBe('/more/settings');
     await ctx.close();
+  });
+});
+
+test.describe('compagnon panda (D-104)', () => {
+  test('l\'enfant crée son panda, coche une tâche, voit la réaction ; l\'énergie est toujours à +5 après rechargement, aucun point en plus', async ({ browser }) => {
+    test.setTimeout(120_000);
+    const family = await createFamily();
+    const taskTitle = title('Đọc sách');
+    await seedTask(family, 'minh', taskTitle);
+
+    const ctx = await browser.newContext();
+    await signInContext(ctx, family.minh);
+    const page = await ctx.newPage();
+    trace(page, 'enfant-panda');
+    await open(page);
+
+    // première fois : petite étape « Panda của em » (nom proposé « Bambou », six traits)
+    await expect(page.getByText('Panda của em', { exact: true })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByLabel('Tên của Panda')).toHaveValue('Bambou');
+    for (const trait of ['Tò mò', 'Kiên trì', 'Tốt bụng', 'Dũng cảm', 'Vui tính', 'Bình tĩnh']) await expect(page.getByRole('radio', { name: trait })).toBeVisible();
+    await page.getByLabel('Tên của Panda').fill('Mochi');
+    await page.getByRole('radio', { name: 'Dũng cảm' }).click();
+    await page.getByRole('button', { name: 'Gặp Panda!' }).click();
+    await expect(page.getByText('Mochi', { exact: true })).toBeVisible();
+    await expect(page.getByLabel('Năng lượng 0 trên 50')).toBeVisible();
+    await expect(page.getByText('Panda của em', { exact: true })).toHaveCount(0); // l'étape ne revient pas
+
+    // coche : réaction immédiate (expression « très heureux », « +5 ⚡ »), puis l'énergie affichée passe à 5
+    await page.getByRole('checkbox', { name: taskTitle }).click();
+    await expect(page.getByText('+5 ⚡')).toBeVisible();
+    await expect(page.getByLabel('Panda Mochi, rất vui')).toBeVisible();
+    await expect(page.getByLabel('Năng lượng 5 trên 50')).toBeVisible();
+    await expect(page.getByLabel('Panda Mochi, tự hào')).toBeVisible({ timeout: 10_000 }); // la seule tâche du jour est faite
+
+    // serveur : +5, une seule ligne ; les points restent à 0 (la coche attend le parent)
+    await expect.poll(() => companionEnergy(family, 'minh')).toBe(5);
+    expect(await serverState(family, 'minh', taskTitle)).toMatchObject({ validated: false, balance: 0, transactions: 0 });
+
+    // rechargement : l'énergie est toujours à 5 et l'étape de création n'est pas revenue
+    await page.reload();
+    await expect(page.getByLabel('Năng lượng 5 trên 50')).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText('Mochi', { exact: true })).toBeVisible();
+    await expect(page.getByText('Panda của em', { exact: true })).toHaveCount(0);
+    expect(await companionEnergy(family, 'minh')).toBe(5);
+  });
+
+  test('le parent voit le panda dans la fiche de chaque enfant, le renomme, mais ne règle pas son stade ; un enfant ne lit pas le panda de son frère', async ({ browser }) => {
+    test.setTimeout(120_000);
+    const family = await createFamily();
+    await seedCompanion(family, 'minh', 'Bambou');
+    await seedCompanion(family, 'khang', 'Mochi', 'brave');
+
+    const parentCtx = await browser.newContext();
+    await signInContext(parentCtx, family.parent);
+    const parent = await parentCtx.newPage();
+    trace(parent, 'parent-panda');
+    await open(parent, '/more/children');
+    await expect(parent.getByText('Panda của Minh', { exact: true })).toBeVisible({ timeout: 20_000 });
+    await expect(parent.getByText('Panda của Khang', { exact: true })).toBeVisible();
+    await expect(parent.getByText('Bambou · Thân thiết cấp 1')).toBeVisible();
+    await expect(parent.getByRole('radio', { name: 'Giữ Panda lớn hơn' })).toHaveCount(0); // le stade n'est pas au parent
+    await parent.getByRole('button', { name: 'Đổi tên hoặc tính cách' }).first().click();
+    await parent.getByLabel('Tên của Panda').fill('Bao Bao');
+    await parent.getByRole('radio', { name: 'Vui tính' }).click();
+    await parent.getByRole('button', { name: 'Lưu tên Panda' }).click();
+    await expect(parent.getByText('Bao Bao · Thân thiết cấp 1')).toBeVisible();
+    const { data } = await serviceClient().from('companions').select('name, trait, stage_offset').eq('child_id', family.minh.childId as string).single();
+    expect(data).toEqual({ name: 'Bao Bao', trait: 'funny', stage_offset: 0 });
+
+    // côté base : Khang ne lit ni le panda ni l'énergie de Minh, et personne n'écrit directement
+    const token = await accessTokenOf(family.khang);
+    const headers = { apikey: process.env.E2E_ANON_KEY as string, Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
+    const state = await fetch(`${supabaseUrl()}/rest/v1/rpc/companion_state`, { method: 'POST', headers, body: JSON.stringify({ p_child: family.minh.childId }) });
+    expect(state.status).toBeGreaterThanOrEqual(400);
+    const own = await fetch(`${supabaseUrl()}/rest/v1/companions?select=child_id,name`, { headers });
+    expect(await own.json()).toEqual([{ child_id: family.khang.childId, name: 'Mochi' }]);
+    const energy = await fetch(`${supabaseUrl()}/rest/v1/companion_energy?select=id`, { headers });
+    expect(await energy.json()).toEqual([]);
+    const write = await fetch(`${supabaseUrl()}/rest/v1/companions`, { method: 'POST', headers, body: JSON.stringify({ child_id: family.khang.childId, family_id: family.familyId, name: 'Hack', trait: 'kind' }) });
+    expect(write.status).toBeGreaterThanOrEqual(400);
+    const offset = await fetch(`${supabaseUrl()}/rest/v1/rpc/companion_set_stage_offset`, { method: 'POST', headers, body: JSON.stringify({ p_child: family.minh.childId, p_offset: 1 }) });
+    expect(offset.status).toBeGreaterThanOrEqual(400);
   });
 });
