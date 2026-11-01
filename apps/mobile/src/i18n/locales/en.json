@@ -1634,7 +1634,8 @@
       "content": "happy",
       "tres-heureux": "very happy",
       "fier": "proud",
-      "dort": "asleep"
+      "dort": "asleep",
+      "surpris": "surprised"
     },
     "imageLabel": "Panda {{name}}, {{mood}}",
     "speech": "Panda says: {{text}}",
@@ -1802,7 +1803,277 @@
           "v1": "No time today, and that's fine. We resume tomorrow.",
           "v2": "Tomorrow will be lighter. Get some rest."
         }
+      },
+      "adventure_ready": {
+        "s1": {
+          "v1": "{{name}}, Panda is ready!",
+          "v2": "Panda wants to go exploring!"
+        },
+        "s2": {
+          "v1": "Full of energy! Will you pick where I go?",
+          "v2": "I'm ready for an adventure, are you?"
+        },
+        "s3": {
+          "v1": "Energy is full. Pick a destination!",
+          "v2": "Backpack packed. Where to?"
+        },
+        "s4": {
+          "v1": "Enough energy for a trip. Pick a destination.",
+          "v2": "Ready to set off whenever you are."
+        }
+      },
+      "adventure_away": {
+        "s1": {
+          "v1": "Panda is travelling, back tomorrow!",
+          "v2": "Tomorrow Panda comes back to {{name}}!"
+        },
+        "s2": {
+          "v1": "I'm in {{destination}}! I'll tell you everything tomorrow!",
+          "v2": "It's so fun here! See you tomorrow!"
+        },
+        "s3": {
+          "v1": "I'm in {{destination}}. I'll tell you about it tomorrow.",
+          "v2": "The trip is great. See you tomorrow!"
+        },
+        "s4": {
+          "v1": "Travelling in {{destination}}. Back tomorrow.",
+          "v2": "All is going well. See you tomorrow."
+        }
+      },
+      "adventure_back": {
+        "s1": {
+          "v1": "Panda is back, {{name}}!",
+          "v2": "Panda has a surprise for {{name}}!"
+        },
+        "s2": {
+          "v1": "I'm back! Open my bag and see!",
+          "v2": "Here I am! I brought you something!"
+        },
+        "s3": {
+          "v1": "Back home! Open the bag and see.",
+          "v2": "Made it back. I found something cool."
+        },
+        "s4": {
+          "v1": "I'm back. A small keepsake from the trip.",
+          "v2": "Trip complete. See what I brought back."
+        }
+      },
+      "adventure_duplicate": {
+        "s1": {
+          "v1": "{{name}} has it, Panda loves it!",
+          "v2": "Another one, here it is!"
+        },
+        "s2": {
+          "v1": "You already have this one, but I liked it so much I brought another!",
+          "v2": "This one again! It's so pretty I took it!"
+        },
+        "s3": {
+          "v1": "Already in your journal, but one more is fun.",
+          "v2": "An old friend! Let's keep one more."
+        },
+        "s4": {
+          "v1": "Already in your journal. One more as a keepsake.",
+          "v2": "A familiar item, still worth keeping."
+        }
+      },
+      "story_ha_long": {
+        "s1": {
+          "v1": "Panda went sailing at Ha Long!",
+          "v2": "Ha Long Bay is so pretty!"
+        },
+        "s2": {
+          "v1": "I went sailing in Ha Long Bay! Look what I brought you!",
+          "v2": "I saw thousands of islands at Ha Long! Look!"
+        },
+        "s3": {
+          "v1": "I sailed between the rocky islands of Ha Long. Look what I found!",
+          "v2": "Ha Long Bay is truly beautiful. I've got this for you."
+        },
+        "s4": {
+          "v1": "A day on Ha Long Bay, among the limestone islands. Here is a keepsake.",
+          "v2": "Ha Long at sunrise is so peaceful. I brought this back."
+        }
+      },
+      "story_hoi_an": {
+        "s1": {
+          "v1": "Panda saw Hoi An's lanterns!",
+          "v2": "Hoi An sparkles everywhere!"
+        },
+        "s2": {
+          "v1": "I strolled through Hoi An's old town, lanterns everywhere! Look!",
+          "v2": "I crossed the covered bridge in Hoi An! I brought you this!"
+        },
+        "s3": {
+          "v1": "Hoi An's old town at night is gorgeous. I found this.",
+          "v2": "I walked all around Hoi An. Look!"
+        },
+        "s4": {
+          "v1": "Hoi An keeps its old-time charm. Here is a keepsake.",
+          "v2": "A peaceful evening in the old town. I brought this back."
+        }
+      },
+      "story_mekong": {
+        "s1": {
+          "v1": "Panda sailed on the river!",
+          "v2": "So much fruit in the Mekong!"
+        },
+        "s2": {
+          "v1": "I rode a boat on the Mekong Delta! So much fun!",
+          "v2": "I visited an orchard by the Mekong! Look what I brought!"
+        },
+        "s3": {
+          "v1": "I drifted down the canals, so lively. Look!",
+          "v2": "The Mekong orchards smell amazing. I brought this back."
+        },
+        "s4": {
+          "v1": "The Mekong Delta is so calm. Here is a keepsake.",
+          "v2": "A morning on the river. I picked this for you."
+        }
+      },
+      "story_da_lat": {
+        "s1": {
+          "v1": "Da Lat is cool and fun!",
+          "v2": "Panda saw yellow flowers!"
+        },
+        "s2": {
+          "v1": "I cycled around the lake in Da Lat! Chilly but great!",
+          "v2": "I saw hills of bright yellow wild sunflowers in Da Lat! Look!"
+        },
+        "s3": {
+          "v1": "Da Lat is crisp, the pine hills smell lovely. I found this.",
+          "v2": "I cycled around Xuan Huong Lake. Look!"
+        },
+        "s4": {
+          "v1": "The air in Da Lat is so fresh. Here is a keepsake of the trip.",
+          "v2": "A misty morning in Da Lat. I brought this back."
+        }
+      },
+      "story_sa_pa": {
+        "s1": {
+          "v1": "Panda climbed in Sa Pa!",
+          "v2": "Sa Pa has clouds!"
+        },
+        "s2": {
+          "v1": "I walked through the rice terraces of Sa Pa! So beautiful!",
+          "v2": "I touched the clouds in Sa Pa! Look what I brought!"
+        },
+        "s3": {
+          "v1": "Sa Pa's rice terraces look like a painting. I found this.",
+          "v2": "I walked through the mountain clouds of Sa Pa. Look!"
+        },
+        "s4": {
+          "v1": "Sa Pa is stunning this season, among the mountains. Here is a keepsake.",
+          "v2": "A day in the northwest mountains. I brought this back."
+        }
+      },
+      "story_phong_nha": {
+        "s1": {
+          "v1": "Panda went into a big cave!",
+          "v2": "The cave is huge!"
+        },
+        "s2": {
+          "v1": "I took a boat into Phong Nha cave! It sparkled everywhere!",
+          "v2": "I explored the caves of Phong Nha! Look what I found!"
+        },
+        "s3": {
+          "v1": "Phong Nha cave is huge and mysterious. I found this.",
+          "v2": "I drifted by boat deep into the cave. Look!"
+        },
+        "s4": {
+          "v1": "Phong Nha is a natural wonder. Here is a keepsake.",
+          "v2": "A great underground expedition. I brought this back."
+        }
       }
+    }
+  },
+  "adventure": {
+    "gauge": "Adventure {{value}}/{{cost}}",
+    "gaugeLabel": "Adventure: {{value}} of {{cost}} energy",
+    "go": "Go on an adventure!",
+    "away": "{{name}} is in {{destination}}, back tomorrow!",
+    "back": "{{name}} is back!",
+    "pending": "Waiting for connection…",
+    "journal": {
+      "title": "Adventure journal",
+      "titleOf": "{{child}}'s adventure journal",
+      "open": "Adventure journal",
+      "count": "{{found}}/{{total}}",
+      "countLabel": "{{found}} of {{total}} finds",
+      "unknown": "?",
+      "unknownLabel": "Not found yet",
+      "times": "×{{count}}",
+      "foundLabel": "{{name}}, found {{count}} times",
+      "empty": "No finds yet. The panda brings one back after every trip!"
+    },
+    "choose": {
+      "title": "Choose a destination",
+      "locked": "Level {{level}}",
+      "lockedLabel": "{{destination}}, opens at level {{level}}",
+      "confirmTitle": "Go to {{destination}}?",
+      "confirmBody": "{{name}} will be back tomorrow.",
+      "confirmOk": "Let's go!",
+      "notReady": "The panda needs a full adventure gauge first."
+    },
+    "reveal": {
+      "title": "{{name}} is back!",
+      "opening": "The panda is opening the bag…",
+      "found": "{{name}} brought back: {{discovery}}",
+      "duplicate": "Already in the journal (×{{count}})",
+      "openJournal": "Open the journal",
+      "done": "Awesome!",
+      "nothing": "No adventure to open."
+    },
+    "errors": {
+      "gauge_not_full": "The panda needs a little more energy.",
+      "destination_locked": "This place opens when you become even closer friends.",
+      "not_back_yet": "The panda is not back yet, see you tomorrow!",
+      "generic": "Not right now, try again later."
+    },
+    "parent": {
+      "inProgress": "Travelling in {{destination}}, back on {{date}}",
+      "back": "Back from {{destination}}, waiting for the child to open the bag",
+      "none": "No adventure in progress",
+      "viewJournal": "View adventure journal"
+    },
+    "destinations": {
+      "ha-long": "Ha Long Bay",
+      "hoi-an": "Hoi An Ancient Town",
+      "mekong": "Mekong Delta",
+      "da-lat": "Da Lat",
+      "sa-pa": "Sa Pa",
+      "phong-nha": "Phong Nha"
+    },
+    "discoveries": {
+      "ha-long-coquillage": "seashell",
+      "ha-long-perle": "pearl",
+      "ha-long-jonque": "junk boat",
+      "ha-long-etoile-de-mer": "starfish",
+      "ha-long-rocher": "tiny rock island",
+      "ha-long-flotteur": "float",
+      "hoi-an-lanterne": "lantern",
+      "hoi-an-non-la": "conical hat",
+      "hoi-an-banh-mi": "bánh mì",
+      "hoi-an-barque": "wooden boat",
+      "hoi-an-pont-couvert": "tiny covered bridge",
+      "hoi-an-eventail": "paper fan",
+      "mekong-noix-de-coco": "coconut",
+      "mekong-mangue": "mango",
+      "mekong-sampan": "sampan",
+      "mekong-lotus": "lotus flower",
+      "mekong-poisson": "fish",
+      "mekong-panier-de-fruits": "fruit basket",
+      "da-lat-fraise": "strawberry",
+      "da-lat-pomme-de-pin": "pine cone",
+      "da-lat-da-quy": "wild sunflower",
+      "da-lat-velo": "bicycle",
+      "da-lat-confiture": "jar of jam",
+      "sa-pa-foulard": "embroidered scarf",
+      "sa-pa-fleur-de-pecher": "peach blossom",
+      "sa-pa-theiere": "teapot",
+      "phong-nha-cristal": "crystal",
+      "phong-nha-boussole": "compass",
+      "phong-nha-lampe": "lamp",
+      "phong-nha-fougere": "fern"
     }
   }
 }

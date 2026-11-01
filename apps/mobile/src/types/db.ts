@@ -48,6 +48,38 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"adventure_destinations": {
+                  Row: {
+                    "min_level": number,"slug": string,"sort_order": number
+                  }
+                  Insert: {
+                    "min_level": number,"slug": string,"sort_order": number
+                  }
+                  Update: {
+                    "min_level"?: number,"slug"?: string,"sort_order"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"adventure_discoveries": {
+                  Row: {
+                    "destination_slug": string,"slug": string,"sort_order": number
+                  }
+                  Insert: {
+                    "destination_slug": string,"slug": string,"sort_order": number
+                  }
+                  Update: {
+                    "destination_slug"?: string,"slug"?: string,"sort_order"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "adventure_discoveries_destination_slug_fkey"
+      columns: ["destination_slug"]
+isOneToOne: false
+      referencedRelation: "adventure_destinations"
+      referencedColumns: ["slug"]
+    }
+                  ]
                 },"ai_usage": {
                   Row: {
                     "counted": boolean,"created_at": string,"day": string,"failure": string | null,"family_id": string,"finished_at": string | null,"id": string,"input_tokens": number | null,"member_id": string,"model": string | null,"output_tokens": number | null,"set_id": string | null,"status": string
@@ -218,6 +250,43 @@ isOneToOne: true
       referencedColumns: ["id"]
     }
                   ]
+                },"child_adventures": {
+                  Row: {
+                    "child_id": string,"collected_at": string | null,"created_at": string,"departed_on": string,"destination_slug": string,"discovery_slug": string | null,"duplicate": boolean,"energy_mark": number,"family_id": string,"id": string,"returns_on": string
+                  }
+                  Insert: {
+                    "child_id": string,"collected_at"?: string | null,"created_at"?: string,"departed_on": string,"destination_slug": string,"discovery_slug"?: string | null,"duplicate"?: boolean,"energy_mark": number,"family_id": string,"id": string,"returns_on": string
+                  }
+                  Update: {
+                    "child_id"?: string,"collected_at"?: string | null,"created_at"?: string,"departed_on"?: string,"destination_slug"?: string,"discovery_slug"?: string | null,"duplicate"?: boolean,"energy_mark"?: number,"family_id"?: string,"id"?: string,"returns_on"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "child_adventures_child_id_family_id_fkey"
+      columns: ["child_id","family_id"]
+isOneToOne: false
+      referencedRelation: "child_balances"
+      referencedColumns: ["child_id","family_id"]
+    },{
+      foreignKeyName: "child_adventures_child_id_family_id_fkey"
+      columns: ["child_id","family_id"]
+isOneToOne: false
+      referencedRelation: "children"
+      referencedColumns: ["id","family_id"]
+    },{
+      foreignKeyName: "child_adventures_destination_slug_fkey"
+      columns: ["destination_slug"]
+isOneToOne: false
+      referencedRelation: "adventure_destinations"
+      referencedColumns: ["slug"]
+    },{
+      foreignKeyName: "child_adventures_discovery_slug_fkey"
+      columns: ["discovery_slug"]
+isOneToOne: false
+      referencedRelation: "adventure_discoveries"
+      referencedColumns: ["slug"]
+    }
+                  ]
                 },"child_avatars": {
                   Row: {
                     "ai_allowed": boolean,"candidate_b64": string | null,"child_id": string,"consent_at": string | null,"consent_by": string | null,"family_id": string,"image_b64": string | null,"updated_at": string,"version": number
@@ -247,6 +316,37 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "members"
       referencedColumns: ["id"]
+    }
+                  ]
+                },"child_discoveries": {
+                  Row: {
+                    "child_id": string,"discovery_slug": string,"family_id": string,"first_found_at": string,"times_found": number
+                  }
+                  Insert: {
+                    "child_id": string,"discovery_slug": string,"family_id": string,"first_found_at"?: string,"times_found"?: number
+                  }
+                  Update: {
+                    "child_id"?: string,"discovery_slug"?: string,"family_id"?: string,"first_found_at"?: string,"times_found"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "child_discoveries_child_id_family_id_fkey"
+      columns: ["child_id","family_id"]
+isOneToOne: false
+      referencedRelation: "child_balances"
+      referencedColumns: ["child_id","family_id"]
+    },{
+      foreignKeyName: "child_discoveries_child_id_family_id_fkey"
+      columns: ["child_id","family_id"]
+isOneToOne: false
+      referencedRelation: "children"
+      referencedColumns: ["id","family_id"]
+    },{
+      foreignKeyName: "child_discoveries_discovery_slug_fkey"
+      columns: ["discovery_slug"]
+isOneToOne: false
+      referencedRelation: "adventure_discoveries"
+      referencedColumns: ["slug"]
     }
                   ]
                 },"child_subjects": {
@@ -1058,6 +1158,44 @@ isOneToOne: false
                            },
 "admin_stats_usage":
 { Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"adventure_collect":
+{ Args: { "p_adventure": string,"p_child": string }; Returns: Json
+                           },
+"adventure_cost":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
+"adventure_energy_total":
+{ Args: { "p_child": string }; Returns: number
+                           },
+"adventure_gauge":
+{ Args: { "p_child": string }; Returns: number
+                           },
+"adventure_require_self":
+{ Args: { "p_child": string }; Returns: {
+              "child_id": string | null,
+"created_at": string,
+"deleted_at": string | null,
+"display_name": string,
+"family_id": string,
+"id": string,
+"last_active_at": string | null,
+"revoked_at": string | null,
+"role": Database["public"]['Enums']["member_role"],
+"updated_at": string,
+"user_id": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "members"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"adventure_start":
+{ Args: { "p_child": string,"p_destination": string,"p_id": string }; Returns: Json
+                           },
+"adventure_state":
+{ Args: { "p_child": string }; Returns: Json
                            },
 "ai_finish":
 { Args: { "p_failure": string,"p_id": string,"p_input": number,"p_model": string,"p_output": number,"p_status": string }; Returns: undefined

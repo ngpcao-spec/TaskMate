@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import '@/i18n';
 import { usePandaReaction } from '@/store/pandaReaction';
 import type { CompanionState } from '@/domain/panda';
+import type { AdventureState } from '@/domain/adventure';
 import TodayScreen from '../app/(tabs)/today';
 import type { WeeklyGroup } from '@/hooks/useWeeklyQuizzes';
 import type { WeeklyItem, WeeklyState } from '@/domain/weekly-quiz';
@@ -42,6 +43,16 @@ jest.mock('@/components/onboarding/ChildSetupGate', () => ({ ChildSetupGate: () 
 // compagnon panda (D-104) : état simulé ; l'étape de première fois est testée dans panda-companion.test.tsx, ici seulement sa PLACE
 let mockCompanion: CompanionState | undefined;
 jest.mock('@/hooks/useCompanion', () => ({ useCompanion: () => ({ data: mockCompanion }) }));
+// aventures (D-105) : état simulé ; les écrans d'aventure sont testés dans adventure-screens.test.tsx
+let mockAdventure: AdventureState | undefined;
+const mockAdventureArgs: unknown[][] = [];
+jest.mock('@/hooks/useAdventure', () => ({
+  useAdventure: (...a: unknown[]) => {
+    mockAdventureArgs.push(a);
+    return { data: mockAdventure };
+  },
+  useAdventurePending: () => false,
+}));
 jest.mock('@/components/companion/PandaSetupCard', () => ({ PandaSetupCard: () => { const { Text } = jest.requireActual('react-native'); return <Text>panda-setup-card</Text>; } }));
 let mockNow: Date | null = null;
 jest.mock('@/hooks/useNow', () => ({ useNow: () => mockNow ?? new Date() }));
@@ -395,5 +406,69 @@ describe('TodayScreen : compagnon panda (D-104)', () => {
     await render(<TodayScreen />);
     await fireEvent.press(screen.getByRole('checkbox', { name: 'Làm bài tập Toán' }));
     expect(usePandaReaction.getState().active).toBe(false);
+  });
+});
+
+describe('TodayScreen : aventures du panda (D-105)', () => {
+  const panda: CompanionState = { hasCompanion: true, name: 'Bambou', trait: 'kind', stage: 2, stageOffset: 0, energyTotal: 48, level: 1, nextLevelAt: 50 };
+  const adv = (over: Partial<AdventureState> = {}): AdventureState => ({
+    gauge: 18, cost: 30, state: 'filling', level: 1, today: '2026-11-01', active: null, last: null, unlocked: ['ha-long'],
+    destinations: [{ slug: 'ha-long', minLevel: 1, discoveries: ['ha-long-perle'] }], found: [], foundCount: 3, totalCount: 30, ...over,
+  });
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockRole = 'child';
+    mockCounts = { tasks: 0, requests: 0, total: 0 };
+    mockTasks = [task({})];
+    mockWeekly = [];
+    mockCompanion = panda;
+    mockAdventure = adv();
+    mockAdventureArgs.length = 0;
+    mockNow = new Date('2026-10-21T03:00:00Z');
+  });
+  afterEach(() => {
+    mockNow = null;
+    mockCompanion = undefined;
+    mockAdventure = undefined;
+  });
+
+  it('jauge « Phiêu lưu 18/30 » avec un libellé, lien vers le carnet', async () => {
+    await render(<TodayScreen />);
+    expect(screen.getByText('Phiêu lưu 18/30')).toBeTruthy();
+    expect(screen.getByLabelText('Phiêu lưu: 18 trên 30 năng lượng')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Đi phiêu lưu!' })).toBeNull();
+    await fireEvent.press(screen.getByRole('button', { name: 'Sổ phiêu lưu' }));
+    expect(mockPush).toHaveBeenCalledWith('/adventure/journal');
+  });
+
+  it('jauge pleine : « Đi phiêu lưu! » ouvre le choix de la destination', async () => {
+    mockAdventure = adv({ gauge: 30, state: 'ready_to_go' });
+    await render(<TodayScreen />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Đi phiêu lưu!' }));
+    expect(mockPush).toHaveBeenCalledWith('/adventure/choose');
+  });
+
+  it('en voyage : la carte postale, le panda en petit à côté, « mai về nhé! »', async () => {
+    mockAdventure = adv({ gauge: 0, state: 'away', active: { id: 'a1', destination: 'ha-long', departedOn: '2026-10-21', returnsOn: '2026-10-22' } });
+    await render(<TodayScreen />);
+    expect(screen.getByText('Bambou đang ở Vịnh Hạ Long, mai về nhé!')).toBeTruthy();
+    expect(screen.getByLabelText('Vịnh Hạ Long')).toBeTruthy();
+    expect(screen.getByLabelText('Panda Bambou, bình tĩnh')).toBeTruthy(); // le panda ne disparaît jamais
+  });
+
+  it('rentré : « Bambou về rồi! » ouvre la révélation de CETTE aventure', async () => {
+    mockAdventure = adv({ gauge: 0, state: 'back', active: { id: 'a1', destination: 'ha-long', departedOn: '2026-10-20', returnsOn: '2026-10-21' } });
+    await render(<TodayScreen />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Bambou về rồi!' }));
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/adventure/reveal', params: { id: 'a1' } });
+  });
+
+  it('parent : aucune jauge ni bouton d’aventure dans Hôm nay (la requête n’est même pas active)', async () => {
+    mockRole = 'parent';
+    mockAdventure = adv({ gauge: 30, state: 'ready_to_go' });
+    await render(<TodayScreen />);
+    expect(screen.queryByText(/Phiêu lưu/)).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Đi phiêu lưu!' })).toBeNull();
+    expect(mockAdventureArgs.every((a) => a[1] === false)).toBe(true);
   });
 });
