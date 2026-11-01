@@ -448,11 +448,15 @@ describe('TodayScreen : aventures du panda (D-105)', () => {
     expect(mockPush).toHaveBeenCalledWith('/adventure/choose');
   });
 
-  it('en voyage : la carte postale, le panda en petit à côté, « mai về nhé! »', async () => {
+  it('en voyage : la carte postale (libellé « mai về nhé! »), le panda en petit à côté, un seul message (la bulle), jauge « Chuyến sau »', async () => {
     mockAdventure = adv({ gauge: 0, state: 'away', active: { id: 'a1', destination: 'ha-long', departedOn: '2026-10-21', returnsOn: '2026-10-22' } });
     await render(<TodayScreen />);
-    expect(screen.getByText('Bambou đang ở Vịnh Hạ Long, mai về nhé!')).toBeTruthy();
-    expect(screen.getByLabelText('Vịnh Hạ Long')).toBeTruthy();
+    expect(screen.queryByText('Bambou đang ở Vịnh Hạ Long, mai về nhé!')).toBeNull(); // plus de ligne de statut : la bulle porte le message
+    expect(screen.getByLabelText('Bambou đang ở Vịnh Hạ Long, mai về nhé!')).toBeTruthy(); // libellé de la carte postale
+    expect(screen.getByText(/Vịnh Hạ Long|Mai gặp cậu/)).toBeTruthy(); // réplique adventure_away dans la bulle
+    expect(screen.getByText('Chuyến sau 0/30')).toBeTruthy();
+    expect(screen.getByLabelText('Chuyến sau: 0 trên 30 năng lượng')).toBeTruthy();
+    expect(screen.queryByText(/^Phiêu lưu /)).toBeNull();
     expect(screen.getByLabelText('Panda Bambou, bình tĩnh')).toBeTruthy(); // le panda ne disparaît jamais
   });
 

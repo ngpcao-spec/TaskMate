@@ -10,23 +10,25 @@ type Props = { childId: string; pandaName: string; adventure: AdventureState };
 
 /**
  * Aventures dans le panneau du panda (D-105, vue enfant) : jauge « Phiêu lưu 18/30 », puis selon l'état « Đi phiêu lưu! » (choix de la destination),
- * « {name} đang ở {destination}, mai về nhé! » ou « {name} về rồi! » (révélation), et le lien vers le carnet. Posé sur le panneau marine : textes `onNavy`.
+ * « {name} về rồi! » (révélation), et le lien vers le carnet. En voyage, la bulle du panda porte le seul message ; la jauge devient « Chuyến sau » (elle se
+ * remplit pour la prochaine aventure). Posé sur le panneau marine : textes `onNavy`.
  */
 export function AdventurePanel({ childId, pandaName, adventure }: Props) {
   const { t } = useTranslation();
   const router = useRouter();
   const pending = useAdventurePending(childId);
   const ratio = adventure.cost > 0 ? Math.min(1, adventure.gauge / adventure.cost) : 0;
-  const destination = adventure.active ? t(`adventure.destinations.${adventure.active.destination}`) : '';
+  // en voyage, la jauge se remplit pour la PROCHAINE aventure
+  const gaugeKey = adventure.state === 'away' ? 'adventure.gaugeNext' : 'adventure.gauge';
   return (
     <View style={styles.box}>
       <View
         accessibilityRole="progressbar"
-        accessibilityLabel={t('adventure.gaugeLabel', { value: adventure.gauge, cost: adventure.cost })}
+        accessibilityLabel={t(`${gaugeKey}Label`, { value: adventure.gauge, cost: adventure.cost })}
         accessibilityValue={{ min: 0, max: adventure.cost, now: adventure.gauge }}
         style={styles.gaugeRow}
       >
-        <Text style={styles.gaugeText}>{t('adventure.gauge', { value: adventure.gauge, cost: adventure.cost })}</Text>
+        <Text style={styles.gaugeText}>{t(gaugeKey, { value: adventure.gauge, cost: adventure.cost })}</Text>
         <View style={styles.track}>
           <View style={[styles.fill, { width: `${Math.round(ratio * 100)}%` }]} />
         </View>
@@ -34,7 +36,6 @@ export function AdventurePanel({ childId, pandaName, adventure }: Props) {
 
       {pending ? <Text style={styles.note}>{t('adventure.pending')}</Text> : null}
       {adventure.state === 'ready_to_go' && !pending ? <Button label={t('adventure.go')} onPress={() => router.push('/adventure/choose')} /> : null}
-      {adventure.state === 'away' ? <Text style={styles.note}>{t('adventure.away', { name: pandaName, destination })}</Text> : null}
       {adventure.state === 'back' && adventure.active && !pending ? (
         <Button label={t('adventure.back', { name: pandaName })} onPress={() => router.push({ pathname: '/adventure/reveal', params: { id: adventure.active!.id } })} />
       ) : null}

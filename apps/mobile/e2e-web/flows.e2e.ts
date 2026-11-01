@@ -1898,8 +1898,8 @@ test.describe('aventures du panda (D-105)', () => {
     await expect(page).toHaveURL(/\/adventure\/choose/);
     await expect(page.getByRole('button', { name: 'Phong Nha, mở ở cấp 6' })).toBeDisabled();
     await page.getByRole('button', { name: 'Vịnh Hạ Long' }).click();
-    await expect(page.getByText('Bambou đang ở Vịnh Hạ Long, mai về nhé!')).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByText('Phiêu lưu 0/30')).toBeVisible();
+    await expect(page.getByLabel('Bambou đang ở Vịnh Hạ Long, mai về nhé!')).toBeVisible({ timeout: 20_000 }); // la carte postale
+    await expect(page.getByText('Chuyến sau 0/30')).toBeVisible(); // la jauge se remplit pour la prochaine aventure
     await expect.poll(async () => (await adventuresOf(family, 'minh')).adventures.length).toBe(1);
     const [departed] = (await adventuresOf(family, 'minh')).adventures;
     expect(departed).toMatchObject({ destination_slug: 'ha-long', energy_mark: 30, discovery_slug: null });

@@ -84,7 +84,7 @@ export function PandaCompanion({ childId, childName, state, done, total, localHo
         {travelling ? (
           // en voyage : la carte postale de la destination, et le panda reste visible en petit à côté (il ne disparaît jamais)
           <View style={styles.travel}>
-            {postcard ? <Image source={postcard} resizeMode="contain" accessibilityRole="image" accessibilityLabel={destinationName} style={styles.postcard} /> : null}
+            {postcard ? <Image source={postcard} resizeMode="contain" accessibilityRole="image" accessibilityLabel={t('adventure.away', { name, destination: destinationName })} style={styles.postcard} /> : null}
             <Animated.View style={[styles.smallPanda, { transform: [{ translateY: lift }] }]}>
               <PandaImage stage={state.stage} mood={mood} name={name} size={56} />
             </Animated.View>
