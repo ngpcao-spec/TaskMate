@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { confirmDialog } from '@/components/confirm';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ChildAccountSection } from '@/components/ChildAccountSection';
+import { ParentPandaCard } from '@/components/companion/ParentPandaCard';
 import { useRouter } from 'expo-router';
 import { Button, Card, Field, Screen, ScreenHeader } from '@/components/ui';
 import { ageFromBirthDate } from '@/domain/age';
@@ -57,6 +58,7 @@ function ChildCard({ child, today }: { child: ChildRow; today: string }) {
         ))}
       </View>
       <Button label={t('common.save')} disabled={!dirty || !valid} loading={update.isPending} onPress={() => update.mutate({ id: child.id, patch: { name: name.trim(), birth_date: birth, color } })} />
+      <ParentPandaCard childId={child.id} childName={child.name} />
       <ChildAccountSection childId={child.id} childName={child.name} />
       <Button
         variant="secondary"

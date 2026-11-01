@@ -1,6 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query';
 import { newId } from '@/api/ids';
-import { quizKeys, taskKeys } from '@/api/keys';
+import { companionKeys, quizKeys, taskKeys } from '@/api/keys';
 import {
   createTasks,
   deleteTask,
@@ -17,6 +17,7 @@ import { isTransientError } from '@/domain/errors';
 import { isGoneError } from '@/domain/catalog-purge';
 import { quizErrorKey } from '@/domain/quiz';
 import { dateInRange, optimisticTask } from '@/domain/optimistic-task';
+import { energyForToggle, withEnergy, type CompanionState } from '@/domain/panda';
 import { optimisticToggle } from '@/domain/task-state';
 import i18n from '@/i18n';
 import { useToastStore } from '@/store/toast';
@@ -50,7 +51,7 @@ export type StartEvaluationVars = { setId: string; attemptId: string; /** D-080 
 export type SaveProgressVars = { attemptId: string; questionId: string; choice: number | null };
 export type SubmitEvaluationVars = { attemptId: string; answers: { question_id: string; choice: number | null }[] };
 export type ValidateAttemptVars = { attemptId: string; showCorrection?: boolean };
-type SnapshotCtx = { snapshot?: ReturnType<typeof snapshotTasks> };
+type SnapshotCtx = { snapshot?: ReturnType<typeof snapshotTasks>; /** D-104 : état du panda avant la coche optimiste (rétabli si l'écriture échoue). */ companion?: CompanionState };
 
 /** Variables d'une coche : le `txId` est tiré ici, une seule fois — tout rejeu (retry, file hors ligne) reste idempotent. */
 export const toggleVars = (task: TaskRow, completed: boolean, asParent: boolean): ToggleVars => ({ task, completed, txId: newId(), asParent });
@@ -81,10 +82,18 @@ export function registerMutationDefaults(
       const snapshot = snapshotTasks(queryClient, task.child_id);
       const patch = optimisticToggle(task, completed, asParent, new Date().toISOString());
       patchCachedTasks(queryClient, task.child_id, (list) => list.map((t) => (t.id === task.id ? { ...t, ...patch } : t)));
-      return { snapshot };
+      // D-104 : ±5 ⚡ affichés tout de suite, même hors ligne (l'enfant seulement : le serveur ne donne rien pour une coche de parent) ; resynchronisé au retour
+      let companion: CompanionState | undefined;
+      if (!asParent) {
+        await queryClient.cancelQueries({ queryKey: companionKeys.state(task.child_id) });
+        companion = queryClient.getQueryData<CompanionState>(companionKeys.state(task.child_id));
+        if (companion) queryClient.setQueryData<CompanionState>(companionKeys.state(task.child_id), withEnergy(companion, energyForToggle(completed)));
+      }
+      return { snapshot, companion };
     },
     onError: (error: unknown, { task }: ToggleVars, context: SnapshotCtx | undefined) => {
       restoreSnapshot(queryClient, context?.snapshot);
+      if (context?.companion) queryClient.setQueryData<CompanionState>(companionKeys.state(task.child_id), context.companion);
       const code = serverErrorCode(error);
       if (code === 'task_not_found') {
         patchCachedTasks(queryClient, task.child_id, (list) => list.filter((t) => t.id !== task.id));
@@ -101,6 +110,7 @@ export function registerMutationDefaults(
       void queryClient.invalidateQueries({ queryKey: taskKeys.all(task.child_id) });
       void queryClient.invalidateQueries({ queryKey: ['balance'] });
       void queryClient.invalidateQueries({ queryKey: taskKeys.pending });
+      void queryClient.invalidateQueries({ queryKey: companionKeys.state(task.child_id) });
     },
   });
 
@@ -148,7 +158,10 @@ export function registerMutationDefaults(
       toast(i18n.t(code === 'not_pending' || code === 'task_not_found' ? 'approvals.alreadyHandled' : 'common.error'), 'error');
       void queryClient.invalidateQueries({ queryKey: taskKeys.all(task.child_id) });
     },
-    onSettled: () => void queryClient.invalidateQueries({ queryKey: ['tasks'] }),
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      void queryClient.invalidateQueries({ queryKey: companionKeys.all }); // un refus retire 5 ⚡ (D-104)
+    },
   });
 
   queryClient.setMutationDefaults(mutationKeys.createTasks, {
@@ -246,6 +259,9 @@ export function registerMutationDefaults(
     ...common,
     mutationFn: ({ attemptId, showCorrection }: ValidateAttemptVars) => validateQuizAttempt(attemptId, showCorrection ?? false),
     onError: (error: unknown) => quizFailure(error, () => i18n.t('common.error')),
-    onSettled: refreshQuiz,
+    onSettled: () => {
+      refreshQuiz();
+      void queryClient.invalidateQueries({ queryKey: companionKeys.all }); // une validation donne 10 ⚡ (D-104)
+    },
   });
 }

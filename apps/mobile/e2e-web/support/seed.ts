@@ -190,3 +190,16 @@ export async function seedCatalogQuiz(tag: string, country = 'VN', grade = '5', 
   if (ke) throw new Error(`catalog_answer_keys: ${ke.message}`);
   return quiz.id;
 }
+
+/** Énergie du panda d'un enfant (D-104) : somme du journal `companion_energy`, lue avec le service local (indépendante de l'UI). */
+export async function companionEnergy(family: FamilyFixture, child: 'minh' | 'khang'): Promise<number> {
+  const { data, error } = await admin().from('companion_energy').select('amount').eq('child_id', family[child].childId as string);
+  if (error) throw new Error(`companion_energy: ${error.message}`);
+  return (data ?? []).reduce((sum, row) => sum + row.amount, 0);
+}
+
+/** Panda d'un enfant, créé par le service local (sans passer par l'étape « Panda của em »). */
+export async function seedCompanion(family: FamilyFixture, child: 'minh' | 'khang', name: string, trait = 'kind'): Promise<void> {
+  const { error } = await admin().from('companions').insert({ child_id: family[child].childId as string, family_id: family.familyId, name, trait: trait as 'kind' });
+  if (error) throw new Error(`companions: ${error.message}`);
+}

@@ -1602,5 +1602,207 @@
       "lastRun": "Lần chạy gần nhất: {{date}}",
       "unknown": "Không đọc được các tác vụ định kỳ (pg_cron không khả dụng)."
     }
+  },
+  "panda": {
+    "title": "Panda của em",
+    "setup": {
+      "title": "Panda của em",
+      "intro": "Panda sẽ đồng hành cùng em mỗi ngày. Em muốn đặt tên cho bạn ấy không?",
+      "nameLabel": "Tên của Panda",
+      "traitLabel": "Panda của em có tính cách nào?",
+      "save": "Gặp Panda!",
+      "skip": "Bỏ qua, gọi là Panda",
+      "nameInvalid": "Tên dài từ 1 đến 20 ký tự",
+      "error": "Chưa lưu được. Em thử lại nhé."
+    },
+    "trait": {
+      "curious": "Tò mò",
+      "persistent": "Kiên trì",
+      "kind": "Tốt bụng",
+      "brave": "Dũng cảm",
+      "funny": "Vui tính",
+      "calm": "Bình tĩnh"
+    },
+    "stage": {
+      "s1": "Panda bé",
+      "s2": "Panda nhí",
+      "s3": "Panda teen",
+      "s4": "Panda đồng hành"
+    },
+    "mood": {
+      "calme": "bình tĩnh",
+      "content": "vui",
+      "tres-heureux": "rất vui",
+      "fier": "tự hào",
+      "dort": "đang ngủ"
+    },
+    "imageLabel": "Panda {{name}}, {{mood}}",
+    "speech": "Lời Panda nói: {{text}}",
+    "energy": {
+      "label": "Năng lượng",
+      "value": "Năng lượng {{current}} trên {{next}}"
+    },
+    "level": "Thân thiết cấp {{level}}",
+    "reaction": "+{{energy}} ⚡",
+    "settings": {
+      "title": "Panda của em",
+      "name": "Tên",
+      "trait": "Tính cách",
+      "save": "Lưu",
+      "saved": "Đã lưu",
+      "error": "Chưa lưu được",
+      "stageTitle": "Tuổi của Panda",
+      "stageHint": "Panda lớn lên mỗi năm học mới. Em có thể giữ Panda nhỏ hơn hoặc lớn hơn một bậc.",
+      "younger": "Giữ Panda nhỏ hơn",
+      "same": "Theo tuổi của em",
+      "older": "Giữ Panda lớn hơn"
+    },
+    "parent": {
+      "card": "Panda của {{child}}",
+      "rename": "Đổi tên hoặc tính cách",
+      "notSet": "{{child}} chưa đặt tên cho Panda",
+      "stageNote": "Bậc của Panda do con tự chọn.",
+      "save": "Lưu tên Panda"
+    },
+    "lines": {
+      "greeting_morning": {
+        "s1": {
+          "v1": "Chào buổi sáng, {{name}}!",
+          "v2": "Panda chào {{name}} nè!"
+        },
+        "s2": {
+          "v1": "Chào buổi sáng! Tớ sẵn sàng rồi, còn cậu?",
+          "v2": "Sáng rồi! Hôm nay tớ với cậu làm gì đây?"
+        },
+        "s3": {
+          "v1": "Chào buổi sáng. Hôm nay mình bắt đầu thôi, bạn nhỉ?",
+          "v2": "Sáng mới tinh. Bạn chọn việc đầu tiên đi."
+        },
+        "s4": {
+          "v1": "Chào buổi sáng. Cùng xem hôm nay có gì nhé.",
+          "v2": "Chào buổi sáng. Sẵn sàng cho một ngày gọn gàng chứ?"
+        }
+      },
+      "greeting_afternoon": {
+        "s1": {
+          "v1": "Chiều rồi, {{name}} ơi!",
+          "v2": "Panda đây nè, {{name}}!"
+        },
+        "s2": {
+          "v1": "Chiều rồi! Tớ vẫn ở đây với cậu nhé.",
+          "v2": "Buổi chiều vui nhé, cậu!"
+        },
+        "s3": {
+          "v1": "Chiều rồi. Mình làm tiếp việc còn lại nhé?",
+          "v2": "Giữa ngày rồi, bạn thở một chút đi."
+        },
+        "s4": {
+          "v1": "Buổi chiều. Từng việc một thôi.",
+          "v2": "Chiều tốt lành. Bạn đang đi đúng nhịp."
+        }
+      },
+      "greeting_evening": {
+        "s1": {
+          "v1": "Tối rồi, {{name}} ơi!",
+          "v2": "Chúc {{name}} buổi tối vui!"
+        },
+        "s2": {
+          "v1": "Tối rồi! Hôm nay của cậu thế nào?",
+          "v2": "Buổi tối vui nhé, cậu!"
+        },
+        "s3": {
+          "v1": "Tối rồi. Hôm nay bạn thế nào?",
+          "v2": "Buổi tối thư giãn chút đi, bạn."
+        },
+        "s4": {
+          "v1": "Chào buổi tối. Cảm ơn bạn vì hôm nay.",
+          "v2": "Buổi tối yên tĩnh. Nghỉ ngơi cũng là một việc tốt."
+        }
+      },
+      "task_checked": {
+        "s1": {
+          "v1": "Giỏi quá, {{name}} ơi! Panda vui lắm!",
+          "v2": "Hoan hô {{name}}! Thêm {{energy}} năng lượng nè!",
+          "v3": "{{name}} làm được rồi!"
+        },
+        "s2": {
+          "v1": "Yeah! Tớ với cậu thêm {{energy}} năng lượng rồi!",
+          "v2": "Cậu giỏi ghê! Tớ vui lắm luôn!",
+          "v3": "Xong một việc! Tiếp thôi cậu ơi!"
+        },
+        "s3": {
+          "v1": "Ổn áp đấy. Thêm {{energy}} năng lượng, chuyến phiêu lưu sắp đủ rồi.",
+          "v2": "Gọn! Mình thêm {{energy}} năng lượng rồi.",
+          "v3": "Chuẩn đấy bạn. Cứ đà này nhé."
+        },
+        "s4": {
+          "v1": "Đã xong. Một bước nữa cho mục tiêu tuần này.",
+          "v2": "Tốt. Thêm {{energy}} năng lượng.",
+          "v3": "Hoàn thành. Bạn làm việc rất đều tay."
+        }
+      },
+      "all_done": {
+        "s1": {
+          "v1": "Xong hết rồi! Giỏi quá {{name}}!",
+          "v2": "{{name}} làm hết rồi! Panda tự hào!",
+          "v3": "Hoan hô {{name}} nhé!"
+        },
+        "s2": {
+          "v1": "Tụi mình xong hết rồi! Cậu tuyệt lắm!",
+          "v2": "Hết việc hôm nay rồi! Tớ tự hào về cậu!",
+          "v3": "Ăn mừng thôi cậu ơi!"
+        },
+        "s3": {
+          "v1": "Xong hết cả rồi. Hôm nay bạn làm tốt lắm.",
+          "v2": "Sạch việc! Bạn xứng đáng nghỉ ngơi.",
+          "v3": "Trọn vẹn một ngày. Chúc mừng bạn."
+        },
+        "s4": {
+          "v1": "Mọi việc hôm nay đã xong. Cảm ơn bạn.",
+          "v2": "Đã hoàn thành tất cả. Nghỉ ngơi thôi.",
+          "v3": "Một ngày trọn vẹn. Làm tốt lắm."
+        }
+      },
+      "quiz_validated": {
+        "s1": {
+          "v1": "Bài ôn xong rồi! Giỏi lắm {{name}}!",
+          "v2": "Bài ôn được duyệt rồi nè!",
+          "v3": "{{name}} chăm quá! Panda vui!"
+        },
+        "s2": {
+          "v1": "Bài ôn được duyệt rồi! Tớ thêm {{quizEnergy}} năng lượng nè!",
+          "v2": "Cậu ôn bài chăm quá! Tớ vui lắm!",
+          "v3": "Yeah! Bài ôn xong rồi cậu ơi!"
+        },
+        "s3": {
+          "v1": "Bài ôn đã được duyệt. Thêm {{quizEnergy}} năng lượng cho chuyến đi.",
+          "v2": "Ôn bài đều tay thật. Mình thấy hay đấy.",
+          "v3": "Duyệt rồi nhé. Bạn học chăm thật."
+        },
+        "s4": {
+          "v1": "Bài ôn đã được duyệt. Kiến thức cứ thế tích lũy.",
+          "v2": "Tốt. Ôn tập đều là cách chắc nhất.",
+          "v3": "Đã duyệt. Thêm {{quizEnergy}} năng lượng."
+        }
+      },
+      "nothing_yet_evening": {
+        "s1": {
+          "v1": "Mai mình làm nhé, {{name}}.",
+          "v2": "Panda đi ngủ đây. Mai gặp {{name}}!"
+        },
+        "s2": {
+          "v1": "Hôm nay hơi bận hả? Mai tớ với cậu làm tiếp nhé.",
+          "v2": "Không sao đâu cậu. Mai mình thử lại."
+        },
+        "s3": {
+          "v1": "Hôm nay hơi bận hả? Mai mình làm tiếp.",
+          "v2": "Không sao. Ngày mai còn dài."
+        },
+        "s4": {
+          "v1": "Hôm nay chưa kịp cũng không sao. Mai tiếp tục.",
+          "v2": "Ngày mai sẽ nhẹ nhàng hơn. Nghỉ ngơi đi."
+        }
+      }
+    }
   }
 }

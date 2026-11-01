@@ -1,5 +1,7 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import '@/i18n';
+import { usePandaReaction } from '@/store/pandaReaction';
+import type { CompanionState } from '@/domain/panda';
 import TodayScreen from '../app/(tabs)/today';
 import type { WeeklyGroup } from '@/hooks/useWeeklyQuizzes';
 import type { WeeklyItem, WeeklyState } from '@/domain/weekly-quiz';
@@ -37,6 +39,10 @@ jest.mock('@/hooks/useDisplayedChild', () => ({
 // assistant de première connexion (D-090) : testé dans onboarding-card.test.tsx ; ici seulement sa PLACE sur Hôm nay
 jest.mock('@/components/onboarding/SetupCard', () => ({ SetupCard: ({ role }: { role: string }) => { const { Text } = jest.requireActual('react-native'); return <Text>{`setup-card:${role}`}</Text>; } }));
 jest.mock('@/components/onboarding/ChildSetupGate', () => ({ ChildSetupGate: () => { const { Text } = jest.requireActual('react-native'); return <Text>child-setup-gate</Text>; } }));
+// compagnon panda (D-104) : état simulé ; l'étape de première fois est testée dans panda-companion.test.tsx, ici seulement sa PLACE
+let mockCompanion: CompanionState | undefined;
+jest.mock('@/hooks/useCompanion', () => ({ useCompanion: () => ({ data: mockCompanion }) }));
+jest.mock('@/components/companion/PandaSetupCard', () => ({ PandaSetupCard: () => { const { Text } = jest.requireActual('react-native'); return <Text>panda-setup-card</Text>; } }));
 let mockNow: Date | null = null;
 jest.mock('@/hooks/useNow', () => ({ useNow: () => mockNow ?? new Date() }));
 jest.mock('@/hooks/useWeeklyQuizzes', () => ({ useWeeklyQuizzes: () => ({ groups: mockWeekly, isPending: false }) }));
@@ -308,5 +314,86 @@ describe('TodayScreen : bandeau « Ôn tập » (D-084)', () => {
     await render(<TodayScreen />);
     expect(screen.queryByText(/^Minh · /)).toBeNull();
     expect(screen.getByText(/^Khang · Ôn tập tuần 8/)).toBeTruthy();
+  });
+});
+
+describe('TodayScreen : compagnon panda (D-104)', () => {
+  const panda = (over: Partial<CompanionState> = {}): CompanionState => ({ hasCompanion: true, name: 'Bambou', trait: 'kind', stage: 2, stageOffset: 0, energyTotal: 20, level: 1, nextLevelAt: 50, ...over });
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockRole = 'child';
+    mockCounts = { tasks: 0, requests: 0, total: 0 };
+    mockTasks = [task({})];
+    mockWeekly = [];
+    mockCompanion = panda();
+    mockNow = new Date('2026-10-21T03:00:00Z'); // 10 h à Hô Chi Minh
+    usePandaReaction.setState({ childId: null, id: 0, active: false });
+  });
+  afterEach(() => {
+    mockNow = null;
+    mockCompanion = undefined;
+  });
+
+  it('enfant : le panda est affiché en haut, au-dessus du bandeau de la semaine', async () => {
+    mockWeekly = [group([item('todo')])];
+    await render(<TodayScreen />);
+    expect(screen.getByRole('header', { name: 'Bambou' })).toBeTruthy();
+    expect(screen.getByLabelText('Năng lượng 20 trên 50')).toBeTruthy();
+    const tree = JSON.stringify(screen.toJSON());
+    expect(tree.indexOf('Bambou')).toBeGreaterThan(-1);
+    expect(tree.indexOf('Bambou')).toBeLessThan(tree.indexOf('Ôn tập tuần 8'));
+  });
+
+  it('enfant sans panda : l’étape « Panda của em » remplace le compagnon', async () => {
+    mockCompanion = panda({ hasCompanion: false, name: null, trait: null });
+    await render(<TodayScreen />);
+    expect(screen.getByText('panda-setup-card')).toBeTruthy();
+    expect(screen.queryByLabelText(/Năng lượng/)).toBeNull();
+  });
+
+  it('état pas encore chargé : ni panda ni étape de création', async () => {
+    mockCompanion = undefined;
+    await render(<TodayScreen />);
+    expect(screen.queryByText('panda-setup-card')).toBeNull();
+    expect(screen.queryByLabelText(/Năng lượng/)).toBeNull();
+  });
+
+  it('l’enfant coche : réaction IMMÉDIATE du panda (« +5 ⚡ »), sans attendre le serveur', async () => {
+    jest.useFakeTimers();
+    await render(<TodayScreen />);
+    expect(screen.queryByText('+5 ⚡')).toBeNull();
+    await fireEvent.press(screen.getByRole('checkbox', { name: 'Làm bài tập Toán' }));
+    expect(mockToggle).toHaveBeenCalledWith(expect.objectContaining({ completed: true, asParent: false }));
+    expect(screen.getByText('+5 ⚡')).toBeTruthy();
+    expect(screen.getByLabelText('Panda Bambou, rất vui')).toBeTruthy();
+    await act(async () => {
+      jest.advanceTimersByTime(2100);
+    });
+    expect(screen.queryByText('+5 ⚡')).toBeNull();
+    jest.useRealTimers();
+  });
+
+  it('décocher ne déclenche aucune réaction', async () => {
+    mockTasks = [task({ completed_at: '2026-07-02T01:00:00Z' })];
+    await render(<TodayScreen />);
+    await fireEvent.press(screen.getByRole('checkbox', { name: 'Làm bài tập Toán' }));
+    expect(mockToggle).toHaveBeenCalledWith(expect.objectContaining({ completed: false }));
+    expect(usePandaReaction.getState().active).toBe(false);
+  });
+
+  it('parent : seulement la petite image du panda, sans compagnon complet ni chiffre d’énergie', async () => {
+    mockRole = 'parent';
+    await render(<TodayScreen />);
+    expect(screen.getByLabelText('Panda Bambou, bình tĩnh')).toBeTruthy();
+    expect(screen.queryByLabelText(/Năng lượng/)).toBeNull();
+    expect(screen.queryByText(/⚡/)).toBeNull();
+    expect(screen.queryByText('panda-setup-card')).toBeNull();
+  });
+
+  it('parent : la coche d’un parent ne fait pas réagir le panda', async () => {
+    mockRole = 'parent';
+    await render(<TodayScreen />);
+    await fireEvent.press(screen.getByRole('checkbox', { name: 'Làm bài tập Toán' }));
+    expect(usePandaReaction.getState().active).toBe(false);
   });
 });

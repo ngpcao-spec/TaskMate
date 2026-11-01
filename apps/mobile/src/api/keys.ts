@@ -63,3 +63,9 @@ export const adminStatsKeys = {
 
 /** Avatars des enfants (D-071) : la liste visible par l'utilisateur (parent : toute la famille ; enfant : lui seul). */
 export const avatarKeys = { all: ['avatars'] as const };
+
+/** Compagnon panda (D-104) : l'état (nom, trait, stade, énergie, niveau) d'UN enfant. Tout sous ['companion'] : le Realtime invalide par ce préfixe. */
+export const companionKeys = {
+  all: ['companion'] as const,
+  state: (childId: string) => ['companion', 'state', childId] as const,
+};

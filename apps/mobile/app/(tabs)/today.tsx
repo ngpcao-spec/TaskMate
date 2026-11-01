@@ -11,6 +11,8 @@ import { Mascot, TopOrnament } from '@/components/decor/Decor';
 import { Fab } from '@/components/Fab';
 import { ProfilePills } from '@/components/ProfilePills';
 import { ProgressRing } from '@/components/ProgressRing';
+import { PandaCompanion, PandaImage } from '@/components/companion/PandaCompanion';
+import { PandaSetupCard } from '@/components/companion/PandaSetupCard';
 import { ChildSetupGate } from '@/components/onboarding/ChildSetupGate';
 import { SetupCard } from '@/components/onboarding/SetupCard';
 import { WeeklyBanner } from '@/components/quiz/WeeklyBanner';
@@ -21,8 +23,10 @@ import { centeredContent, NavyPanel, SectionTitle } from '@/components/ui';
 import { timeInTz, todayInTz } from '@/domain/family-time';
 import { taskPermissions } from '@/domain/permissions';
 import { taskState } from '@/domain/task-state';
+import { localHourOf } from '@/domain/panda';
 import { dayProgress } from '@/domain/progress';
 import { isOverdue, sortTasks } from '@/domain/task-time';
+import { useCompanion } from '@/hooks/useCompanion';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { useUnreadNotifications } from '@/hooks/useNotifications';
 import { useNow } from '@/hooks/useNow';
@@ -31,6 +35,7 @@ import { bannerModel } from '@/domain/weekly-review';
 import { useWeeklyQuizzes } from '@/hooks/useWeeklyQuizzes';
 import { usePendingTaskIds } from '@/hooks/useSyncStatus';
 import { toggleVars, useDeleteTask, useRejectTask, useTasks, useToggleTask, useValidateTask, validateVars } from '@/hooks/useTasks';
+import { usePandaReaction } from '@/store/pandaReaction';
 import { colors, glass, hasDecor, radius, spacing, typography, line } from '@/theme/tokens';
 
 export default function TodayScreen() {
@@ -52,6 +57,8 @@ export default function TodayScreen() {
   const isParent = d?.viewer.role === 'parent';
   const counts = useApprovalCounts(isParent);
   const weekly = useWeeklyQuizzes(today, false);
+  const companion = useCompanion(d?.child?.id ?? null, !!d?.child).data;
+  const reactToCheck = usePandaReaction((s) => s.trigger);
 
   if (!d || !d.child) {
     return (
@@ -87,6 +94,8 @@ export default function TodayScreen() {
             </Text>
             <Text style={typography.secondary}>{t('today.encouragement')}</Text>
           </View>
+          {/* parent : au plus la petite image du panda de l'enfant affiché, sans chiffre d'énergie (D-104) */}
+          {isParent && companion?.hasCompanion ? <PandaImage stage={companion.stage} name={companion.name ?? ''} size={44} /> : null}
           <RoundButton
             label={unread > 0 ? `${t('notifications.bell')}, ${t('notifications.unread', { count: unread })}` : t('notifications.bell')}
             onPress={() => router.push('/notifications')}
@@ -115,6 +124,15 @@ export default function TodayScreen() {
           <Pressable accessibilityRole="button" accessibilityLabel={t('home.toApprove', { count: counts.requests })} onPress={() => router.push('/approvals')} style={styles.banner}>
             <Text style={styles.bannerText}>{t('home.toApprove', { count: counts.requests })}</Text>
           </Pressable>
+        ) : null}
+
+        {/* D-104 : le panda de l'enfant en haut, au-dessus du bandeau de la semaine ; première fois : étape « Panda của em » */}
+        {!isParent && companion ? (
+          companion.hasCompanion ? (
+            <PandaCompanion childId={child.id} childName={child.name} state={companion} done={progress.done} total={progress.total} localHour={localHourOf(nowTime)} />
+          ) : (
+            <PandaSetupCard childId={child.id} state={companion} />
+          )
         ) : null}
 
         {weekly.groups.map((g) => {
@@ -174,7 +192,11 @@ export default function TodayScreen() {
                   canOpen
                   canValidate={perms.canValidate}
                   pending={pendingIds.has(task.id)}
-                  onToggle={() => toggle.mutate(toggleVars(task, task.completed_at === null, isParent))}
+                  onToggle={() => {
+                    // D-104 : le panda réagit tout de suite quand l'enfant coche (même hors ligne), avant toute réponse du serveur
+                    if (!isParent && task.completed_at === null) reactToCheck(child.id);
+                    toggle.mutate(toggleVars(task, task.completed_at === null, isParent));
+                  }}
                   onOpen={() => router.push({ pathname: '/task/[id]', params: { id: task.id } })}
                   onValidate={() => validate.mutate(validateVars(task))}
                   onReject={() => reject.mutate({ task })}
