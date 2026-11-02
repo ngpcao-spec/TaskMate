@@ -2,7 +2,7 @@ import { useIsFocused, useRouter } from 'expo-router';
 import { Bell, CalendarDays, Menu } from 'lucide-react-native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Platform, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PandaSetupCard } from '@/components/companion/PandaSetupCard';
 import { ChildSetupGate } from '@/components/onboarding/ChildSetupGate';
@@ -101,7 +101,7 @@ export default function V2ChildHome() {
   // D-106 : vidéo d'accueil (maison, panda teen) à la place du décor fixe et du panda, si toutes les conditions sont réunies (web seulement)
   const video =
     !!companion?.hasCompanion &&
-    showHomeVideo({ scene, adventure: adventure?.state, stage: companion.stage, variant: companion.variant, reduceMotion, saveData: prefersSaveData() });
+    showHomeVideo({ scene, adventure: adventure?.state, stage: companion.stage, variant: companion.variant, reduceMotion, saveData: prefersSaveData(), web: Platform.OS === 'web' });
 
   return (
     <View style={styles.screen}>
@@ -114,6 +114,7 @@ export default function V2ChildHome() {
             { key: 'calendar', Icon: CalendarDays, label: t('v2.top.calendar'), onPress: () => router.push('/v2/calendar') },
             { key: 'bell', Icon: Bell, label: unread > 0 ? t('v2.top.notificationsCount', { count: unread }) : t('v2.top.notifications'), onPress: () => router.push('/notifications'), badge: unread },
           ]}
+          sceneHidden={video && !reacting}
           overlay={video ? <HomeVideo visible={!reacting} active={focused} topClear={insets.top + SCENE_TOP_CLEAR} groundOffset={SCENE_GROUND_OFFSET} width={screenWidth} height={SCENE_HEIGHT + insets.top} /> : null}
         >
           {companion?.hasCompanion ? (

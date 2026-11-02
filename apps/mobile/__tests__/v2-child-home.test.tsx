@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import '@/i18n';
+import { Platform, StyleSheet } from 'react-native';
 import type { AdventureState } from '@/domain/adventure';
 import type { CompanionState } from '@/domain/panda';
 import type { WeeklyGroup } from '@/hooks/useWeeklyQuizzes';
@@ -138,5 +139,38 @@ describe('V2 : Hôm nay de l’enfant (D-106)', () => {
     mockCompanion = { ...panda, hasCompanion: false };
     await render(<V2ChildHome />);
     expect(screen.getByText('panda-setup-card')).toBeTruthy();
+  });
+});
+
+describe('V2 : vidéo d’accueil dans Hôm nay (D-106)', () => {
+  const teen: CompanionState = { hasCompanion: true, name: 'Bambou', trait: 'kind', variant: 'boy', stage: 3, stageOffset: 0, energyTotal: 20, level: 1, nextLevelAt: 100 };
+  const H = { includeHiddenElements: true } as const;
+  const layerOpacity = () => StyleSheet.flatten(screen.getByTestId('v2-scene-layer', H).props.style).opacity;
+  beforeEach(() => {
+    usePandaReaction.setState({ childId: null, active: false, energy: 0 });
+    mockCompanion = teen;
+    mockAdventure = adv();
+    mockTasks = [task({})];
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it('web, stade 3 à la maison : décor fixe et panda masqués (la vidéo les remplace, même pendant son chargement) ; visibles pendant une réaction', async () => {
+    jest.replaceProperty(Platform, 'OS', 'web');
+    await render(<V2ChildHome />);
+    expect(layerOpacity()).toBe(0);
+    expect(screen.getByLabelText('Panda Bambou, bình tĩnh', H)).toBeTruthy(); // le libellé du panda reste
+    await fireEvent.press(screen.getByRole('checkbox', { name: 'Đánh răng' }));
+    expect(layerOpacity()).toBe(1);
+  });
+  it('natif : jamais masqués (pas de vidéo)', async () => {
+    jest.replaceProperty(Platform, 'OS', 'ios');
+    await render(<V2ChildHome />);
+    expect(layerOpacity()).toBe(1);
+  });
+  it('web, en voyage : décor de la destination visible', async () => {
+    jest.replaceProperty(Platform, 'OS', 'web');
+    mockAdventure = adv({ state: 'away', active: { id: 'a1', destination: 'ha-long', departedOn: '2026-11-01', returnsOn: '2026-11-02' } });
+    await render(<V2ChildHome />);
+    expect(layerOpacity()).toBe(1);
   });
 });
