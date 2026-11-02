@@ -28,21 +28,21 @@ test.describe('interface V2 : enfant (D-106)', () => {
     await seedTask(family, 'minh', b, 5);
     const page = await openChild(browser, family);
 
-    await expect(page.getByText('Còn 2 việc hôm nay!')).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText('Còn 2 việc hôm nay!', { exact: true })).toBeVisible({ timeout: 20_000 });
     await expect(page.getByRole('button', { name: /^Lúc nào cũng được, 2 việc/ })).toBeVisible();
     await page.getByRole('checkbox', { name: a }).click();
-    await expect(page.getByText('Còn 1 việc hôm nay!')).toBeVisible();
+    await expect(page.getByText('Còn 1 việc hôm nay!', { exact: true })).toBeVisible();
     await page.getByRole('checkbox', { name: b }).click();
 
-    await expect(page.getByText('Xong hết rồi!')).toBeVisible();
-    await expect(page.getByText('Mục tiêu hôm nay hoàn thành')).toBeVisible();
+    await expect(page.getByText('Xong hết rồi!', { exact: true })).toBeVisible();
+    await expect(page.getByText('Mục tiêu hôm nay hoàn thành', { exact: true })).toBeVisible();
     await expect(page.getByRole('checkbox', { name: a })).toHaveCount(0); // la liste est repliée
-    await expect(page.getByText('Còn 45 ⚡ nữa là đi được!')).toBeVisible(); // 10 + 5 points = 15 ⚡ sur 60
+    await expect(page.getByText('Còn 45 ⚡ nữa là đi được!', { exact: true })).toBeVisible(); // 10 + 5 points = 15 ⚡ sur 60
     await expect.poll(async () => (await serverState(family, 'minh', b)).completed).toBe(true);
 
     await page.getByRole('link', { name: 'Xem lại' }).click();
     await expect(page.getByRole('checkbox', { name: a })).toBeChecked();
-    await expect(page.getByText('chờ bố mẹ duyệt').first()).toBeVisible();
+    await expect(page.getByText('chờ bố mẹ duyệt', { exact: true }).first()).toBeVisible();
   });
 
   test('avec 60 ⚡ : départ depuis la carte, le panda marche dans le décor de la destination', async ({ browser }) => {
@@ -61,8 +61,9 @@ test.describe('interface V2 : enfant (D-106)', () => {
 
     await expect(page).toHaveURL(/\/v2\/child\/home/, { timeout: 20_000 });
     await expect(page.getByTestId('v2-scene-ha-long')).toBeAttached({ timeout: 20_000 });
-    await expect(page.getByLabel('Panda Bambou đang đi phiêu lưu')).toBeVisible();
-    await expect(page.getByText('Đang phiêu lưu · về sáng mai')).toBeVisible();
+    await expect(page.getByLabel('Panda Bambou đang đi phiêu lưu').filter({ visible: true })).toBeVisible();
+    // l'onglet Phiêu lưu, déjà ouvert, reste monté (caché) avec sa propre carte : on ne regarde que l'élément visible
+    await expect(page.getByText('Đang phiêu lưu · về sáng mai', { exact: true }).filter({ visible: true })).toBeVisible();
     await expect.poll(async () => (await adventuresOf(family, 'minh')).adventures.length).toBe(1);
     expect((await adventuresOf(family, 'minh')).adventures[0]).toMatchObject({ destination_slug: 'ha-long', energy_mark: 60 });
   });
