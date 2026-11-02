@@ -101,14 +101,8 @@ test.describe('interface V2 : vidéo d\'accueil (D-106)', () => {
     browser: import('@playwright/test').Browser,
     family: Awaited<ReturnType<typeof createFamily>>,
     options: import('@playwright/test').BrowserContextOptions = {},
-    init?: () => void,
   ) {
     const ctx = await browser.newContext(options);
-    if (init) {
-      await ctx.addInitScript(init);
-      // et aucune image vidéo n'arrive jamais (l'attribut autoplay lance la lecture sans passer par play())
-      await ctx.route(/\.(mp4|webm)(\?.*)?$/, (r) => r.abort());
-    }
     await signInContext(ctx, family.khang);
     const page = await ctx.newPage();
     page.on('pageerror', (e) => console.log(`[v2-video] pageerror ${e.message.slice(0, 300)}`));
@@ -156,31 +150,25 @@ test.describe('interface V2 : vidéo d\'accueil (D-106)', () => {
     }
   });
 
-  test('WebKit iPhone, vidéo qui ne joue jamais (lecture refusée, économie d\'énergie) : l\'aperçu fixe remplace le décor, jamais un fond uni', async () => {
+  // Une vidéo qui ne joue jamais (économie d'énergie de l'iPhone) ne s'émule pas : WebKit Linux lit les médias hors de l'interception réseau de
+  // Playwright. Ce test vérifie que l'aperçu fixe (Image React Native) couvre le décor sous WebKit ; la vidéo invisible tant qu'aucune image n'est
+  // peinte est vérifiée par __tests__/v2-home-video.test.tsx.
+  test('WebKit iPhone : l\'aperçu fixe (Image) remplace le décor dès l\'ouverture, panda dessiné masqué, jamais un fond uni', async () => {
     test.setTimeout(150_000);
     const family = await createFamily({ uiVersion: 'v2' });
     await seedCompanion(family, 'khang', 'Bambou');
     const wk = await webkit.launch();
     try {
-      const page = await openTeen(
-        wk,
-        family,
-        {
-          viewport: { width: 390, height: 844 },
-          userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1',
-        },
-        // comme un iPhone en mode économie d'énergie : play() est refusé
-        () => {
-          HTMLMediaElement.prototype.play = () => Promise.reject(new DOMException('blocked', 'NotAllowedError'));
-        },
-      );
+      const page = await openTeen(wk, family, {
+        viewport: { width: 390, height: 844 },
+        userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1',
+      });
       await expect(page.getByTestId('v2-home-video-element')).toBeAttached({ timeout: 20_000 });
       const poster = page.getByTestId('v2-home-video-poster');
       await expect(poster).toBeVisible();
       await expect.poll(() => poster.locator('img').first().evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0), { timeout: 20_000 }).toBe(true);
       await expect(page.getByTestId('v2-scene-backdrop')).toHaveCSS('opacity', '1');
       await expect(page.getByTestId('v2-scene-ground')).toHaveCSS('opacity', '0'); // pas de deuxième panda par-dessus l'aperçu
-      expect(await page.getByTestId('v2-home-video-box').getAttribute('data-ready')).toBe('false'); // vidéo jamais peinte : invisible
       await page.waitForTimeout(500);
       const jpeg = await page.screenshot({ type: 'jpeg', quality: 60, clip: { x: 0, y: 0, width: 390, height: 640 } });
       console.log(`=====V2-CAPTURE-WEBKIT-390-BEGIN=====\n${jpeg.toString('base64')}\n=====V2-CAPTURE-WEBKIT-390-END=====`);
