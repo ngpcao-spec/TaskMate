@@ -2,6 +2,7 @@ import { useFonts } from 'expo-font';
 import { Redirect, Stack } from 'expo-router';
 import { useEffect } from 'react';
 import { setThemeColor } from '@/pwa/themeColor';
+import { preloadHomePoster } from '@/v2/videoPreload';
 import { colors } from '@/theme/tokens';
 import { View } from 'react-native';
 import { useEntryRoute } from '@/hooks/useMe';
@@ -18,6 +19,7 @@ export default function V2Layout() {
   useFonts(V2_FONT_FILES);
   // couleur du navigateur : le fond V2 (sous la barre d'état, le décor la recouvre) ; celle du thème V1 en sortant
   useEffect(() => {
+    preloadHomePoster(); // image d'aperçu de la vidéo d'accueil prête avant Hôm nay (D-106)
     setThemeColor(v2Colors.background);
     return () => setThemeColor(colors.background);
   }, []);

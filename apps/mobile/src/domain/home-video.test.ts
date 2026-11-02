@@ -1,4 +1,4 @@
-import { homeVideoLayout, homeVideoSize, showHomeVideo } from './home-video';
+import { homeVideoLayout, homeVideoSize, homeVideoSources, showHomeVideo, videoShowsFrames } from './home-video';
 
 const ok = { scene: 'home', adventure: 'filling' as const, stage: 3, variant: 'boy', reduceMotion: false, saveData: false, web: true };
 
@@ -53,5 +53,25 @@ describe('vidéo d’accueil : source et cadrage', () => {
     const l = homeVideoLayout({ width: 120, height: 300, groundY: 276, topClear: 0 });
     expect(l.boxWidth).toBe(120);
     expect(l.objectPositionY).toBe(50);
+  });
+});
+
+describe('vidéo d’accueil : sources et poster (iPhone)', () => {
+  const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1';
+  const IPHONE_CHROME = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/130.0 Mobile/15E148 Safari/604.1';
+  const MAC_SAFARI = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15';
+  const MAC_CHROME = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36';
+  const ANDROID = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36';
+  it('Safari et navigateurs iOS : mp4 (H.264) d’abord', () => {
+    for (const ua of [IPHONE, IPHONE_CHROME, MAC_SAFARI]) expect(homeVideoSources(ua, 430).map((s) => s.key)).toEqual(['mp4', 'webm']);
+    expect(homeVideoSources(IPHONE, 375).map((s) => s.key)).toEqual(['mp4Small', 'webm']);
+  });
+  it('Chrome, Android : webm d’abord', () => {
+    for (const ua of [MAC_CHROME, ANDROID]) expect(homeVideoSources(ua, 430).map((s) => s.type)).toEqual(['video/webm', 'video/mp4']);
+  });
+  it('poster effacé seulement quand une image est peinte', () => {
+    expect(videoShowsFrames({ paused: true, currentTime: 0 })).toBe(false);
+    expect(videoShowsFrames({ paused: false, currentTime: 0 })).toBe(false);
+    expect(videoShowsFrames({ paused: false, currentTime: 0.04 })).toBe(true);
   });
 });

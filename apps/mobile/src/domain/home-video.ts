@@ -64,3 +64,22 @@ export function homeVideoLayout(o: { width: number; height: number; groundY: num
     pandaBottom: Math.round(HOME_VIDEO.feetY * shown - offset),
   };
 }
+
+/**
+ * Ordre des sources : Safari (iPhone, iPad, Mac — et tout navigateur iOS, qui est un Safari) décode le H.264 (mp4) par la puce, mais accepte le webm (VP9)
+ * en le décodant lentement : mp4 d'abord. Ailleurs, webm d'abord (plus léger), mp4 en secours. Le mp4 480 px remplace le mp4 sous 400 px de large.
+ */
+export type HomeVideoSourceKey = 'webm' | 'mp4' | 'mp4Small';
+export function isAppleWebKit(userAgent: string): boolean {
+  const ios = /iPhone|iPad|iPod/.test(userAgent);
+  const macSafari = /Macintosh/.test(userAgent) && /Safari\//.test(userAgent) && !/Chrome|Chromium|Edg\/|Firefox|OPR\//.test(userAgent);
+  return ios || macSafari;
+}
+export function homeVideoSources(userAgent: string, headerWidth: number): { key: HomeVideoSourceKey; type: 'video/webm' | 'video/mp4' }[] {
+  const mp4 = { key: homeVideoSize(headerWidth) === 'small' ? ('mp4Small' as const) : ('mp4' as const), type: 'video/mp4' as const };
+  const webm = { key: 'webm' as const, type: 'video/webm' as const };
+  return isAppleWebKit(userAgent) ? [mp4, webm] : [webm, mp4];
+}
+
+/** Le poster ne s'efface que quand la vidéo JOUE vraiment (une image peinte) : sur iPhone, « canplay » arrive avant la première image. */
+export const videoShowsFrames = (v: { paused: boolean; currentTime: number }): boolean => !v.paused && v.currentTime > 0;
