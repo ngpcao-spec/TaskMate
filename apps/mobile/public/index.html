@@ -29,6 +29,14 @@
         height: 100%;
         flex: 1;
       }
+      /* D-106 : PWA iPhone en « black-translucent » — la page commence SOUS la barre d'état, mais iOS lui donne la hauteur « écran − barre d'état » :
+         sans correction, une bande vide de cette hauteur apparaît en bas (sous la barre d'onglets). En mode installé seulement : ailleurs la marge haute
+         est nulle (navigateur, Android, ancienne PWA en « default ») et rien ne change. */
+      @media (display-mode: standalone) {
+        html {
+          height: calc(100% + env(safe-area-inset-top));
+        }
+      }
       /* Thèmes illustrés (kawaii, cosmos, teddy, bunny) : police arrondie du système (SF Rounded sur iPhone) */
       html[data-theme='kawaii'] body,
       html[data-theme='cosmos'] body,

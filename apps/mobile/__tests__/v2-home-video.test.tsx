@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { act, render, screen } from '@testing-library/react-native';
 import { HomeVideo } from '@/v2/components/HomeVideo.web';
 import { HomeVideo as NativeHomeVideo } from '@/v2/components/HomeVideo';
 
@@ -16,11 +16,10 @@ jest.mock('@/v2/videoPlayback', () => ({ syncPlayback: (_el: unknown, playing: b
 const all = (container: Node, type: string) => container.queryAll((n) => n.type === type);
 const layer = (container: Node) => container.queryAll((n) => n.props.testID === 'v2-home-video')[0]!;
 
+const base = { topClear: 60, groundOffset: 24, height: 347 };
 async function show(props: Partial<Parameters<typeof HomeVideo>[0]> = {}, width = 390) {
-  const r = await render(<HomeVideo visible active topClear={60} groundOffset={24} {...props} />);
-  const container = r.container as unknown as Node;
-  await fireEvent(layer(container) as never, 'layout', { nativeEvent: { layout: { width, height: 300 } } });
-  return { ...r, container };
+  const r = await render(<HomeVideo visible active {...base} width={width} {...props} />);
+  return { ...r, container: r.container as unknown as Node };
 }
 
 describe('vidéo d’accueil V2 (D-106)', () => {
@@ -32,7 +31,7 @@ describe('vidéo d’accueil V2 (D-106)', () => {
   afterAll(() => delete (globalThis as { document?: unknown }).document);
 
   it('natif : rien (décor fixe et PandaSprite restent)', async () => {
-    await render(<NativeHomeVideo visible active topClear={60} groundOffset={24} />);
+    await render(<NativeHomeVideo visible active {...base} width={390} />);
     expect(screen.toJSON()).toBeNull();
   });
 
@@ -48,6 +47,13 @@ describe('vidéo d’accueil V2 (D-106)', () => {
     expect(poster().props.style).toMatchObject({ opacity: 1, transition: 'opacity 200ms ease' });
     await act(async () => (video.props.onCanPlay as () => void)());
     expect(poster().props.style).toMatchObject({ opacity: 0 });
+  });
+
+  it('iPhone : le poster et la vidéo sont là dès le PREMIER rendu (aucune mesure attendue, pas de saut depuis le décor fixe)', async () => {
+    const r = await render(<HomeVideo visible active {...base} width={390} />);
+    const container = r.container as unknown as Node;
+    expect(all(container, 'video')).toHaveLength(1);
+    expect(all(container, 'img').some((i) => i.props['data-testid'] === 'v2-home-video-poster')).toBe(true);
   });
 
   it.each([
@@ -67,11 +73,11 @@ describe('vidéo d’accueil V2 (D-106)', () => {
     fakeDocument.hidden = false;
     await act(async () => listeners.visibilitychange?.());
     expect(mockSync).toHaveBeenLastCalledWith(true);
-    await r.rerender(<HomeVideo visible active={false} topClear={60} groundOffset={24} />);
+    await r.rerender(<HomeVideo visible active={false} {...base} width={390} />);
     expect(mockSync).toHaveBeenLastCalledWith(false);
-    await r.rerender(<HomeVideo visible active topClear={60} groundOffset={24} />);
+    await r.rerender(<HomeVideo visible active {...base} width={390} />);
     expect(mockSync).toHaveBeenLastCalledWith(true);
-    await r.rerender(<HomeVideo visible={false} active topClear={60} groundOffset={24} />);
+    await r.rerender(<HomeVideo visible={false} active {...base} width={390} />);
     expect(mockSync).toHaveBeenLastCalledWith(false);
     expect(layer(r.container).props.style).toEqual(expect.arrayContaining([expect.objectContaining({ opacity: 0 })]));
   });

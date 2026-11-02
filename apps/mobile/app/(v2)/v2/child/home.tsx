@@ -2,7 +2,7 @@ import { useIsFocused, useRouter } from 'expo-router';
 import { Bell, CalendarDays, Menu } from 'lucide-react-native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PandaSetupCard } from '@/components/companion/PandaSetupCard';
 import { ChildSetupGate } from '@/components/onboarding/ChildSetupGate';
@@ -68,6 +68,7 @@ export default function V2ChildHome() {
   const reduceMotion = useReduceMotion();
   const focused = useIsFocused();
   const insets = useSafeAreaInsets();
+  const screenWidth = useWindowDimensions().width;
   const [reviewKey, setReviewKey] = useState<string | null>(null);
 
   const tasks = tasksQuery.data ?? [];
@@ -113,7 +114,7 @@ export default function V2ChildHome() {
             { key: 'calendar', Icon: CalendarDays, label: t('v2.top.calendar'), onPress: () => router.push('/v2/calendar') },
             { key: 'bell', Icon: Bell, label: unread > 0 ? t('v2.top.notificationsCount', { count: unread }) : t('v2.top.notifications'), onPress: () => router.push('/notifications'), badge: unread },
           ]}
-          overlay={video ? <HomeVideo visible={!reacting} active={focused} topClear={insets.top + SCENE_TOP_CLEAR} groundOffset={SCENE_GROUND_OFFSET} /> : null}
+          overlay={video ? <HomeVideo visible={!reacting} active={focused} topClear={insets.top + SCENE_TOP_CLEAR} groundOffset={SCENE_GROUND_OFFSET} width={screenWidth} height={SCENE_HEIGHT + insets.top} /> : null}
         >
           {companion?.hasCompanion ? (
             <PandaSprite
