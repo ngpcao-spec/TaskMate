@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Animated, Image, Platform, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, Image, Platform, StyleSheet, Text, View } from 'react-native';
 import { AdventurePanel } from '@/components/adventure/AdventurePanel';
 import { destinationImage, POSTCARD_RATIO } from '@/components/adventure/adventureImages';
 import { NavyPanel } from '@/components/ui';
 import type { AdventureState } from '@/domain/adventure';
 import { DEFAULT_PANDA_NAME, expressionForMood, friendshipLevel, pandaMood, usesStagePose, type CompanionState, type PandaExpression, type PandaMood } from '@/domain/panda';
 import { pandaLineKey, pandaLineParams, pickPandaLine, type PandaSituation } from '@/domain/panda-lines';
+import { pandaWalks, WALK_PAUSE_MS, walkPlan } from '@/domain/panda-walk';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 import { usePandaReaction } from '@/store/pandaReaction';
 import { colors, radius, spacing } from '@/theme/tokens';
@@ -42,13 +43,17 @@ type Props = {
   adventure?: AdventureState;
 };
 
+/** Taille du panda en promenade (pt). */
+const PANDA_SIZE = 116;
+
 /** Réplique liée à l'aventure (prête, en voyage, rentrée) ; sinon celle du jour. */
 const ADVENTURE_SITUATION: Partial<Record<AdventureState['state'], PandaSituation>> = { ready_to_go: 'adventure_ready', away: 'adventure_away', back: 'adventure_back' };
 
 /**
  * Compagnon de l'enfant dans Hôm nay (D-104) : image, nom, bulle, barre d'énergie ⚡ et niveau d'amitié. Affiché dans les cinq thèmes (ce n'est pas un décor),
  * sur le panneau marine du thème (fond opaque). Réaction IMMÉDIATE au coche : expression « très heureux » 2 s, « +5 ⚡ », petit rebond (sauf si
- * « réduire les animations » est activé).
+ * « réduire les animations » est activé). D-106 : le panda se promène d'un bord à l'autre du panneau (il se retourne à chaque bord, petits pas), sauf
+ * s'il dort, s'il est en voyage ou si « réduire les animations » est activé.
  */
 export function PandaCompanion({ childId, childName, state, done, total, localHour, adventure }: Props) {
   const { t } = useTranslation();
@@ -56,6 +61,11 @@ export function PandaCompanion({ childId, childName, state, done, total, localHo
   const reactionId = usePandaReaction((s) => (s.childId === childId ? s.id : 0));
   const reduceMotion = useReduceMotion();
   const [lift] = useState(() => new Animated.Value(0));
+  // D-106 : promenade (position, sens du regard, petits pas)
+  const [walkX] = useState(() => new Animated.Value(0));
+  const [facing] = useState(() => new Animated.Value(1));
+  const [step] = useState(() => new Animated.Value(0));
+  const [laneWidth, setLaneWidth] = useState(0);
 
   useEffect(() => {
     if (reactionId === 0 || reduceMotion) return;
@@ -68,6 +78,39 @@ export function PandaCompanion({ childId, childName, state, done, total, localHo
 
   const name = state.name ?? DEFAULT_PANDA_NAME;
   const mood: PandaMood = reacting ? 'tres-heureux' : pandaMood(done, total, localHour);
+  const plan = walkPlan(laneWidth, PANDA_SIZE);
+  const walking = plan !== null && pandaWalks({ mood, travelling: adventure?.state === 'away', reduceMotion });
+
+  useEffect(() => {
+    const native = Platform.OS !== 'web';
+    const p = walkPlan(laneWidth, PANDA_SIZE);
+    // immobile : au centre du panneau, de face
+    walkX.setValue(p ? p.start : Math.max(0, Math.round((laneWidth - PANDA_SIZE) / 2)));
+    facing.setValue(1);
+    step.setValue(0);
+    if (!walking || !p) return;
+    const ease = Easing.inOut(Easing.quad);
+    const leg = (to: number, duration: number, face: 1 | -1) =>
+      Animated.sequence([
+        Animated.timing(facing, { toValue: face, duration: 0, useNativeDriver: native }),
+        Animated.timing(walkX, { toValue: to, duration, easing: ease, useNativeDriver: native }),
+        Animated.delay(WALK_PAUSE_MS),
+      ]);
+    // du centre vers la droite, puis aller-retour sans fin : droite → gauche (retourné), gauche → droite
+    const walk = Animated.sequence([leg(p.range, p.firstLegMs, 1), Animated.loop(Animated.sequence([leg(0, p.crossMs, -1), leg(p.range, p.crossMs, 1)]))]);
+    const steps = Animated.loop(
+      Animated.sequence([
+        Animated.timing(step, { toValue: -3, duration: 220, easing: ease, useNativeDriver: native }),
+        Animated.timing(step, { toValue: 0, duration: 220, easing: ease, useNativeDriver: native }),
+      ]),
+    );
+    walk.start();
+    steps.start();
+    return () => {
+      walk.stop();
+      steps.stop();
+    };
+  }, [walking, laneWidth, walkX, facing, step]);
   const progress = friendshipLevel(state.energyTotal);
   const adventureSituation = !reacting && adventure ? ADVENTURE_SITUATION[adventure.state] : undefined;
   const travelling = adventure?.state === 'away' ? adventure.active : null;
@@ -80,7 +123,8 @@ export function PandaCompanion({ childId, childName, state, done, total, localHo
 
   return (
     <NavyPanel>
-      <View style={styles.row}>
+      {/* D-106 : l'allée où le panda se promène, sur toute la largeur du panneau */}
+      <View testID="panda-lane" style={styles.lane} onLayout={(e) => setLaneWidth(Math.round(e.nativeEvent.layout.width))}>
         {travelling ? (
           // en voyage : la carte postale de la destination, et le panda reste visible en petit à côté (il ne disparaît jamais)
           <View style={styles.travel}>
@@ -90,10 +134,15 @@ export function PandaCompanion({ childId, childName, state, done, total, localHo
             </Animated.View>
           </View>
         ) : (
-          <Animated.View style={{ transform: [{ translateY: lift }] }}>
-            <PandaImage stage={state.stage} mood={mood} name={name} size={116} />
+          <Animated.View
+            testID="panda-walker"
+            style={[styles.walker, { transform: [{ translateX: walkX }, { translateY: Animated.add(lift, step) }, { scaleX: facing }] }]}
+          >
+            <PandaImage stage={state.stage} mood={mood} name={name} size={PANDA_SIZE} />
           </Animated.View>
         )}
+      </View>
+      <View style={styles.row}>
         <View style={styles.info}>
           <Text accessibilityRole="header" style={styles.name}>
             {name}
@@ -125,6 +174,8 @@ export function PandaCompanion({ childId, childName, state, done, total, localHo
 }
 
 const styles = StyleSheet.create({
+  lane: { height: PANDA_SIZE, width: '100%', justifyContent: 'center' },
+  walker: { position: 'absolute', left: 0, top: 0 },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   travel: { width: 132, height: 116, justifyContent: 'center' },
   postcard: { width: 116, height: Math.round(116 * POSTCARD_RATIO), borderRadius: radius.control },

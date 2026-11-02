@@ -147,6 +147,70 @@ describe('PandaCompanion', () => {
   });
 });
 
+describe('promenade (D-106)', () => {
+  const layout = async (width = 316) =>
+    act(async () => {
+      fireEvent(screen.getByTestId('panda-lane'), 'layout', { nativeEvent: { layout: { x: 0, y: 0, width, height: 116 } } });
+    });
+  const transformOf = (): Record<string, unknown> => {
+    const flat = Object.assign({}, ...[screen.getByTestId('panda-walker').props.style].flat(Infinity).filter(Boolean)) as { transform?: Record<string, unknown>[] };
+    return Object.assign({}, ...(flat.transform ?? []));
+  };
+
+  beforeEach(() => {
+    jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(false);
+  });
+
+  it('marche d’un bord à l’autre, se retourne, puis revient', async () => {
+    const loop = jest.spyOn(Animated, 'loop');
+    const timing = jest.spyOn(Animated, 'timing');
+    await render(companion());
+    await layout(316); // course 200 pt : départ au centre (100)
+    expect(loop).toHaveBeenCalledTimes(2); // la marche et les petits pas
+    expect(transformOf()).toMatchObject({ translateX: 100, scaleX: 1 });
+    const moves = timing.mock.calls.map(([, config]) => config as { toValue: number; duration: number });
+    // vers la droite (bord à 200) en regardant à droite, puis vers la gauche (0) retourné, puis à nouveau vers la droite
+    expect(moves.map((m) => m.toValue)).toEqual(expect.arrayContaining([200, 0, -1, 1]));
+    expect(moves.find((m) => m.toValue === 0 && m.duration > 0)?.duration).toBe(Math.round((200 / 30) * 1000)); // traversée calme
+    expect(moves.find((m) => m.toValue === 200)?.duration).toBe(Math.round((100 / 30) * 1000)); // premier trajet : du centre au bord
+  });
+
+  it('immobile au centre quand il dort (après 20 h, rien de fait)', async () => {
+    const loop = jest.spyOn(Animated, 'loop');
+    await render(companion({ done: 0, total: 3, localHour: 21 }));
+    await layout(316);
+    expect(loop).not.toHaveBeenCalled();
+    expect(transformOf()).toMatchObject({ translateX: 100, scaleX: 1 });
+  });
+
+  it('« réduire les animations » : aucune promenade', async () => {
+    jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
+    const loop = jest.spyOn(Animated, 'loop');
+    await render(companion());
+    await act(async () => {
+      await Promise.resolve();
+    });
+    await layout(316);
+    expect(loop).not.toHaveBeenCalled();
+  });
+
+  it('panneau trop étroit : reste au centre', async () => {
+    const loop = jest.spyOn(Animated, 'loop');
+    await render(companion());
+    await layout(130);
+    expect(loop).not.toHaveBeenCalled();
+  });
+
+  it('en voyage : la carte postale, pas de promenade', async () => {
+    const loop = jest.spyOn(Animated, 'loop');
+    const away = { gauge: 0, cost: 30, state: 'away' as const, level: 1, today: '2026-11-01', active: { id: 'a', destination: 'ha-long', departedOn: '2026-11-01', returnsOn: '2026-11-02' }, last: null, unlocked: ['ha-long'], destinations: [], found: [], foundCount: 0, totalCount: 30 };
+    await render(withClient(companion({ adventure: away })));
+    await layout(316);
+    expect(loop).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('panda-walker')).toBeNull();
+  });
+});
+
 describe('première fois : « Panda của em »', () => {
   const none = state({ hasCompanion: false, name: null, trait: null });
 

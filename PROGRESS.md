@@ -269,3 +269,6 @@ Chaque enfant a un panda (nom, trait, stade selon l'âge au 1er septembre, éner
 
 ### V2 « Panda », lot 2 : aventures et carnet de trouvailles (D-105) — 2026-11-01
 Jauge d'aventure (30 d'énergie depuis le dernier départ, sans rien retirer), six destinations débloquées par le niveau d'amitié, départ et retour le lendemain (jour local), trouvaille tirée par le serveur (doublons comptés), révélation animée et carnet « Sổ phiêu lưu ». Migration 36 (catalogue, `child_adventures`, `child_discoveries`, RPC `adventure_state/start/collect`), `domain/adventure.ts`, `components/adventure/*`, routes `/adventure/choose`, `/adventure/reveal`, `/adventure/journal` ; fiche parent (aventure en cours, carnet en lecture seule). pgTAP 41, Jest, E2E.
+
+### Le panda se promène dans Hôm nay (D-106) — 2026-11-02
+Le panda de l'enfant marche d'un bord à l'autre de son panneau, se retourne à chaque bord et revient, à petits pas ; immobile quand il dort, en voyage ou avec « réduire les animations ».
