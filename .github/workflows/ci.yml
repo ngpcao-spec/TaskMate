@@ -87,6 +87,13 @@ jobs:
       - name: Journal des functions (diagnostic)
         if: failure()
         run: tail -n 80 /tmp/functions.log || true
+      - name: Captures de la vidéo d'accueil V2 (D-106)
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: v2-captures
+          path: apps/mobile/test-results/v2-captures
+          if-no-files-found: ignore
       - uses: actions/upload-artifact@v6
         if: failure()
         with:

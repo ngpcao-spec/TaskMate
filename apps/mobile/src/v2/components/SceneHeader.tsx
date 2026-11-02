@@ -15,6 +15,8 @@ type Props = {
   right?: TopButton[];
   /** le panda (posé sur le sol, au centre du décor) */
   children?: ReactNode;
+  /** calque posé sur le décor et le panda, sous les boutons du haut (vidéo d'accueil, D-106) */
+  overlay?: ReactNode;
   testID?: string;
 };
 
@@ -33,16 +35,19 @@ function RoundTop({ b }: { b: TopButton }) {
 }
 
 /** En-tête V2 : décor plein cadre (ciel en haut, sol libre au centre), boutons ronds du haut, panda posé sur le sol. */
-export function SceneHeader({ scene, height, left = [], right = [], children, testID }: Props) {
+export function SceneHeader({ scene, height, left = [], right = [], children, overlay, testID }: Props) {
   const insets = useSafeAreaInsets();
   return (
     <View testID={testID} style={[styles.wrap, { height: height + insets.top }]}>
       <Image source={sceneImage(scene)} resizeMode="cover" style={StyleSheet.absoluteFill} accessibilityIgnoresInvertColors importantForAccessibility="no" testID={`v2-scene-${scene}`} />
+      <View style={styles.groundLayer} pointerEvents="box-none">
+        <View style={styles.ground}>{children}</View>
+      </View>
+      {overlay}
       <View style={[styles.top, { paddingTop: insets.top + v2Spacing.sm }]}>
         <View style={styles.group}>{left.map((b) => <RoundTop key={b.key} b={b} />)}</View>
         <View style={styles.group}>{right.map((b) => <RoundTop key={b.key} b={b} />)}</View>
       </View>
-      <View style={styles.ground}>{children}</View>
     </View>
   );
 }
@@ -55,6 +60,12 @@ const styles = StyleSheet.create({
   pressed: { transform: [{ scale: 0.94 }] },
   badge: { position: 'absolute', top: -2, right: -2, minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 4, backgroundColor: v2Colors.badge, alignItems: 'center', justifyContent: 'center' },
   badgeText: { ...v2Font(800, 11), color: v2Colors.onBadge },
+  groundLayer: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   // sol : bas du décor, où le panda marche
   ground: { position: 'absolute', left: v2Spacing.lg, right: v2Spacing.lg, bottom: v2Spacing.xl },
 });
+
+/** Distance (pt) entre le bas de l'en-tête et le sol où se posent les pieds du panda. */
+export const SCENE_GROUND_OFFSET = v2Spacing.xl;
+/** Hauteur (pt, sous la zone sûre) occupée par les boutons du haut : rien d'important au-dessus. */
+export const SCENE_TOP_CLEAR = v2Spacing.sm + V2_TOUCH + v2Spacing.sm;

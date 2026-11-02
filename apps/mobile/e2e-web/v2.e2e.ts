@@ -94,3 +94,72 @@ test.describe('interface V2 : parent (D-106)', () => {
     await expect(card).toHaveCount(0);
   });
 });
+
+test.describe('interface V2 : vidéo d\'accueil (D-106)', () => {
+  /** Khang a 13 ans : panda TEEN (stade 3), la seule vidéo fournie. */
+  async function openTeen(browser: import('@playwright/test').Browser, family: Awaited<ReturnType<typeof createFamily>>, options: { reducedMotion?: 'reduce' } = {}) {
+    const ctx = await browser.newContext(options);
+    await signInContext(ctx, family.khang);
+    const page = await ctx.newPage();
+    page.on('pageerror', (e) => console.log(`[v2-video] pageerror ${e.message.slice(0, 300)}`));
+    page.on('dialog', (d) => void d.accept());
+    await page.goto('/');
+    await expect(page).toHaveURL(/\/v2\/child\/home/, { timeout: 20_000 });
+    return page;
+  }
+
+  test('stade 3 à la maison : la vidéo remplace le décor ; panda entier, centré, entre les boutons et la carte, à 375, 390, 430 et 768 px', async ({ browser }) => {
+    test.setTimeout(150_000);
+    const family = await createFamily({ uiVersion: 'v2' });
+    await seedCompanion(family, 'khang', 'Bambou');
+    const page = await openTeen(browser, family);
+    const video = page.getByTestId('v2-home-video-element');
+    await expect(video).toBeAttached({ timeout: 20_000 });
+    expect(await video.evaluate((v: HTMLVideoElement) => ({ muted: v.muted, loop: v.loop, sources: [...v.querySelectorAll('source')].map((x) => x.type) }))).toEqual({ muted: true, loop: true, sources: ['video/webm', 'video/mp4'] });
+    // le libellé du panda reste lisible (PandaSprite sous la vidéo), la vidéo est décorative
+    await expect(page.getByLabel('Panda Bambou, bình tĩnh')).toBeAttached();
+    expect(await video.getAttribute('aria-hidden')).toBe('true');
+
+    for (const width of [375, 390, 430, 768]) {
+      await page.setViewportSize({ width, height: 844 });
+      const box = page.getByTestId('v2-home-video-box');
+      await expect(box).toBeVisible();
+      await page.waitForTimeout(300);
+      const b = (await box.boundingBox())!;
+      const top = b.y + Number(await box.getAttribute('data-panda-top'));
+      const bottom = b.y + Number(await box.getAttribute('data-panda-bottom'));
+      const buttons = (await page.getByTestId('v2-top-bell').boundingBox())!;
+      const card = (await page.getByTestId('v2-adventure-filling').boundingBox())!;
+      expect(top).toBeGreaterThanOrEqual(buttons.y + buttons.height); // pas coupé par les boutons du haut
+      expect(bottom).toBeLessThanOrEqual(card.y + 2); // ni par la carte Phiêu lưu
+      expect(Math.abs(b.x + b.width / 2 - width / 2)).toBeLessThanOrEqual(2); // centré
+      await page.screenshot({ path: test.info().outputPath(`v2-video-${width}.png`) });
+      await page.screenshot({ path: `test-results/v2-captures/v2-video-${width}.png` });
+      // 375 et 430 px : aussi dans le journal CI (JPEG compressé, base64) pour le rapport, l'artefact n'étant pas toujours téléchargeable
+      if (width === 375 || width === 430) {
+        const jpeg = await page.screenshot({ type: 'jpeg', quality: 60, clip: { x: 0, y: 0, width, height: 640 } });
+        console.log(`=====V2-CAPTURE-${width}-BEGIN=====\n${jpeg.toString('base64')}\n=====V2-CAPTURE-${width}-END=====`);
+      }
+    }
+  });
+
+  test('pendant une aventure : décor de la destination, sans vidéo ; « réduire les animations » : jamais de vidéo', async ({ browser }) => {
+    test.setTimeout(150_000);
+    const family = await createFamily({ uiVersion: 'v2' });
+    await seedCompanion(family, 'khang', 'Bambou');
+    await seedEnergy(family, 'khang', 60);
+    const reduced = await openTeen(browser, family, { reducedMotion: 'reduce' });
+    await expect(reduced.getByTestId('v2-scene-home')).toBeAttached({ timeout: 20_000 });
+    await expect(reduced.getByLabel('Phiêu lưu: 60 trên 60 năng lượng')).toBeVisible();
+    await expect(reduced.getByTestId('v2-home-video-element')).toHaveCount(0);
+
+    const page = await openTeen(browser, family);
+    await expect(page.getByTestId('v2-home-video-element')).toBeAttached({ timeout: 20_000 });
+    await page.getByRole('button', { name: 'Đi phiêu lưu!' }).click();
+    await page.getByRole('button', { name: 'Vịnh Hạ Long' }).click();
+    await expect(page).toHaveURL(/\/v2\/child\/home/, { timeout: 20_000 });
+    await expect(page.getByTestId('v2-scene-ha-long')).toBeAttached({ timeout: 20_000 });
+    await expect(page.getByTestId('v2-home-video-element')).toHaveCount(0);
+    await expect(page.getByLabel('Panda Bambou đang đi phiêu lưu').first()).toBeVisible();
+  });
+});

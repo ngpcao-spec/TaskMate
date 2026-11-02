@@ -1,14 +1,16 @@
-import { useRouter } from 'expo-router';
+import { useIsFocused, useRouter } from 'expo-router';
 import { Bell, CalendarDays, Menu } from 'lucide-react-native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PandaSetupCard } from '@/components/companion/PandaSetupCard';
 import { ChildSetupGate } from '@/components/onboarding/ChildSetupGate';
 import { awayProgress, RETURN_MORNING } from '@/domain/adventure';
 import { celebrationAction, dayComplete, groupByDaySection, remainingCount } from '@/domain/day-sections';
 import { timeInTz, todayInTz } from '@/domain/family-time';
 import { goalIconFor, WEEKLY_REVIEW_ICON } from '@/domain/goal-icons';
+import { showHomeVideo } from '@/domain/home-video';
 import { DEFAULT_PANDA_NAME, localHourOf, pandaMood, type PandaMood } from '@/domain/panda';
 import { taskPermissions } from '@/domain/permissions';
 import { instantInTz } from '@/domain/reminders';
@@ -20,6 +22,8 @@ import { useCompanion } from '@/hooks/useCompanion';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { useUnreadNotifications } from '@/hooks/useNotifications';
 import { useNow } from '@/hooks/useNow';
+import { useReduceMotion } from '@/hooks/useReduceMotion';
+import { prefersSaveData } from '@/services/saveData';
 import { toggleVars, useTasks, useToggleTask } from '@/hooks/useTasks';
 import { useWeeklyQuizzes } from '@/hooks/useWeeklyQuizzes';
 import { usePandaReaction } from '@/store/pandaReaction';
@@ -28,10 +32,11 @@ import { CelebrationCard } from '@/v2/components/CelebrationCard';
 import { DayPill } from '@/v2/components/DayPill';
 import { GoalRow } from '@/v2/components/GoalRow';
 import { GoalSection } from '@/v2/components/GoalSection';
+import { HomeVideo } from '@/v2/components/HomeVideo';
 import { PandaSprite } from '@/v2/components/PandaSprite';
-import { SceneHeader } from '@/v2/components/SceneHeader';
+import { SCENE_GROUND_OFFSET, SCENE_TOP_CLEAR, SceneHeader } from '@/v2/components/SceneHeader';
 import { V2_MAX_WIDTH } from '@/v2/components/V2Screen';
-import { v2Colors, v2Spacing } from '@/v2/theme';
+import { v2Colors, v2Font, v2Radius, v2Spacing } from '@/v2/theme';
 
 const SCENE_HEIGHT = 300;
 const PANDA_SIZE = 132;
@@ -59,6 +64,10 @@ export default function V2ChildHome() {
   const reacting = usePandaReaction((s) => s.active && s.childId === childId);
   const hopKey = usePandaReaction((s) => (s.childId === childId ? s.id : 0));
   const react = usePandaReaction((s) => s.trigger);
+  const reactionEnergy = usePandaReaction((s) => (s.childId === childId ? s.energy : 0));
+  const reduceMotion = useReduceMotion();
+  const focused = useIsFocused();
+  const insets = useSafeAreaInsets();
   const [reviewKey, setReviewKey] = useState<string | null>(null);
 
   const tasks = tasksQuery.data ?? [];
@@ -88,6 +97,10 @@ export default function V2ChildHome() {
   const groups = groupByDaySection(tasks, banner !== null);
   const showList = !complete || reviewing;
   const goAdventure = () => router.push('/v2/child/adventure');
+  // D-106 : vidéo d'accueil (maison, panda teen) à la place du décor fixe et du panda, si toutes les conditions sont réunies (web seulement)
+  const video =
+    !!companion?.hasCompanion &&
+    showHomeVideo({ scene, adventure: adventure?.state, stage: companion.stage, variant: companion.variant, reduceMotion, saveData: prefersSaveData() });
 
   return (
     <View style={styles.screen}>
@@ -100,6 +113,7 @@ export default function V2ChildHome() {
             { key: 'calendar', Icon: CalendarDays, label: t('v2.top.calendar'), onPress: () => router.push('/v2/calendar') },
             { key: 'bell', Icon: Bell, label: unread > 0 ? t('v2.top.notificationsCount', { count: unread }) : t('v2.top.notifications'), onPress: () => router.push('/notifications'), badge: unread },
           ]}
+          overlay={video ? <HomeVideo visible={!reacting} active={focused} topClear={insets.top + SCENE_TOP_CLEAR} groundOffset={SCENE_GROUND_OFFSET} /> : null}
         >
           {companion?.hasCompanion ? (
             <PandaSprite
@@ -113,6 +127,11 @@ export default function V2ChildHome() {
               walking={!!away}
               hopKey={hopKey}
             />
+          ) : null}
+          {reacting && reactionEnergy > 0 ? (
+            <View style={styles.reaction} pointerEvents="none">
+              <Text style={styles.reactionText}>{t('panda.reaction', { energy: reactionEnergy })}</Text>
+            </View>
           ) : null}
         </SceneHeader>
 
@@ -195,5 +214,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: v2Colors.background },
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: v2Colors.background },
   scroll: { paddingBottom: v2Spacing.xl },
+  reaction: { position: 'absolute', top: 0, alignSelf: 'center', backgroundColor: v2Colors.card, borderRadius: v2Radius.pill, paddingHorizontal: v2Spacing.md, paddingVertical: 4 },
+  reactionText: { ...v2Font(800, 16), color: v2Colors.energyText },
   content: { padding: v2Spacing.lg, gap: v2Spacing.md, marginTop: -v2Spacing.xl, width: '100%', maxWidth: V2_MAX_WIDTH, alignSelf: 'center' },
 });
