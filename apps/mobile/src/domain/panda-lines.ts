@@ -1,5 +1,4 @@
 import type { PandaStage } from './panda';
-import { ENERGY_QUIZ_VALIDATED, ENERGY_TASK_CHECKED } from './panda';
 
 /**
  * Voix du panda (D-104) : toutes les répliques sont écrites à l'avance (aucune IA) dans les fichiers i18n, `panda.lines.<situation>.s<stade>.v<n>`.
@@ -63,11 +62,18 @@ export function pandaLineKey(stage: PandaStage, situation: PandaSituation, varia
 export const pandaLineKeys = (stage: PandaStage, situation: PandaSituation): string[] =>
   Array.from({ length: LINE_VARIANTS[situation] }, (_, i) => pandaLineKey(stage, situation, i));
 
-/** Valeurs d'interpolation communes à toutes les répliques. */
-export const pandaLineParams = (name: string, destination = ''): { name: string; energy: number; quizEnergy: number; destination: string } => ({
+/**
+ * Valeurs d'interpolation communes à toutes les répliques. D-106 : l'énergie affichée est celle que le serveur donne (les points de la tâche cochée,
+ * les points attribués au quiz) — jamais une constante du client.
+ */
+export const pandaLineParams = (
+  name: string,
+  destination = '',
+  amounts: { energy?: number; quizEnergy?: number } = {},
+): { name: string; energy: number; quizEnergy: number; destination: string } => ({
   name,
-  energy: ENERGY_TASK_CHECKED,
-  quizEnergy: ENERGY_QUIZ_VALIDATED,
+  energy: Math.max(0, Math.floor(amounts.energy ?? 0)),
+  quizEnergy: Math.max(0, Math.floor(amounts.quizEnergy ?? 0)),
   destination,
 });
 

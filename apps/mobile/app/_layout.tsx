@@ -7,6 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppErrorScreen } from '@/components/AppErrorScreen';
 import { ToastHost } from '@/components/ToastHost';
 import { useAuthListener } from '@/hooks/useMe';
+import { useUiVersionSwitch } from '@/hooks/useUiVersion';
 import { applyStoredLanguage } from '@/i18n/language';
 import { createQueryClient, CACHE_MAX_AGE } from '@/sync/client';
 import { setupNetworkListeners } from '@/sync/network';
@@ -21,6 +22,7 @@ const queryClient = createQueryClient();
 
 function Root() {
   useAuthListener();
+  useUiVersionSwitch(); // V1 / V2 par famille (D-106) : purge du cache et retour à l'accueil quand la version change
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>

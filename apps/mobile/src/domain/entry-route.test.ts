@@ -27,6 +27,13 @@ describe('resolveEntryRoute', () => {
   it('ouvre l’accueil pour un enfant, même sans compter les enfants', () => {
     expect(resolveEntryRoute({ ...base, member: { role: 'child' } })).toBe('/(tabs)/today');
   });
+  it('famille passée en V2 (D-106) : accueil V2 ; V1 par défaut', () => {
+    expect(resolveEntryRoute({ ...base, member: { role: 'child' }, uiVersion: 'v2' })).toBe('/v2');
+    expect(resolveEntryRoute({ ...base, member: { role: 'parent' }, childrenCount: 1, uiVersion: 'v2' })).toBe('/v2');
+    expect(resolveEntryRoute({ ...base, member: { role: 'parent' }, childrenCount: 1, uiVersion: 'v1' })).toBe('/(tabs)/today');
+    // l'assistant de première connexion reste celui de la V1 (D-090)
+    expect(resolveEntryRoute({ ...base, member: { role: 'parent' }, uiVersion: 'v2' })).toBe('/onboarding/setup');
+  });
 });
 
 describe('cache persisté et « aucun enfant » (D-090)', () => {

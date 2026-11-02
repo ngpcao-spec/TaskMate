@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { Activity, BellRing, Baby, RefreshCw, UserRound, Users } from 'lucide-react-native';
+import { Activity, BellRing, Baby, RefreshCw, Sparkles, UserRound, Users } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -91,6 +91,7 @@ function Indicators() {
               <StatTile tint={colors.tileTeal} icon={<Activity color={colors.accent} size={22} />} label={t('adminStats.kpi.activeParents')} value={String(o.active.today.parents)} caption={t('adminStats.kpi.activeCaption', { d7: o.active.d7.parents, d30: o.active.d30.parents })} />
               <StatTile tint={colors.tileIce} icon={<Activity color={colors.accent} size={22} />} label={t('adminStats.kpi.activeChildren')} value={String(o.active.today.children)} caption={t('adminStats.kpi.activeCaption', { d7: o.active.d7.children, d30: o.active.d30.children })} />
               <StatTile tint={colors.tileViolet} icon={<BellRing color={colors.accent} size={22} />} label={t('adminStats.kpi.notifications')} value={String(o.familiesWithNotifications)} caption={t('adminStats.kpi.notificationsCaption', { total: o.families })} />
+              <StatTile tint={colors.tileTeal} icon={<Sparkles color={colors.accent} size={22} />} label={t('v2.admin.kpi')} value={String(o.uiVersions.v2)} caption={t('v2.admin.kpiCaption', { total: o.families })} />
             </View>
           );
         }}

@@ -78,7 +78,7 @@ select is(tests.n('select 1 from public.adventure_discoveries'), 30::bigint, '�
 -- ═══ jauge et états ═══
 select is(tests.st(201) ->> 'state', 'filling', 'sans énergie : la jauge se remplit');
 select is(tests.st(201) ->> 'gauge', '0', '…jauge 0');
-select is(tests.st(201) ->> 'cost', '30', '…coût 30');
+select is(tests.st(201) ->> 'cost', '60', '…coût 60');
 select is(tests.st(201) -> 'unlocked', '["ha-long"]'::jsonb, 'niveau 1 : seul Hạ Long est débloqué');
 select is(tests.st(201) ->> 'found_count', '0', 'carnet vide');
 select is(tests.st(201) ->> 'total_count', '30', '30 trouvailles à découvrir');
@@ -86,15 +86,15 @@ select is(tests.st(201) -> 'active', 'null'::jsonb, 'aucune aventure en cours');
 select is(jsonb_array_length(tests.st(201) -> 'destinations'), 6, 'le catalogue (ordre, niveaux, trouvailles) vient de la base');
 
 reset role;
-select tests.energy(201, 25);
+select tests.energy(201, 50);
 select tests.login(13);
-select is(tests.st(201) ->> 'gauge', '25', 'énergie 25 : jauge 25');
+select is(tests.st(201) ->> 'gauge', '50', 'énergie 50 : jauge 50');
 select throws_ok($$select public.adventure_start(tests.u(201), tests.u(900), 'ha-long')$$, 'P0001', 'gauge_not_full', 'départ refusé : jauge trop basse');
 reset role;
-select tests.energy(201, 5);
-select tests.energy(201, 5);
+select tests.energy(201, 10);
+select tests.energy(201, 10);
 select tests.login(13);
-select is(tests.st(201) ->> 'gauge', '30', 'énergie 35 : jauge bornée à 30');
+select is(tests.st(201) ->> 'gauge', '60', 'énergie 70 : jauge bornée à 60 (coût D-106)');
 select is(tests.st(201) ->> 'state', 'ready_to_go', '…prête à partir');
 select throws_ok($$select public.adventure_start(tests.u(201), tests.u(900), 'hoi-an')$$, 'P0001', 'destination_locked', 'départ refusé : destination verrouillée (niveau 1)');
 select throws_ok($$select public.adventure_start(tests.u(201), tests.u(900), 'atlantide')$$, 'P0002', 'destination_not_found', 'destination inconnue refusée');
@@ -107,15 +107,15 @@ select tests.login(13);
 select lives_ok($$select public.adventure_start(tests.u(201), tests.u(901), 'ha-long')$$, 'A part à Hạ Long');
 select is(tests.val('select returns_on - departed_on from public.child_adventures where id = tests.u(901)'), '1', 'retour = lendemain');
 select is(tests.val('select departed_on::text from public.child_adventures where id = tests.u(901)'), tests.val('select public.family_today(tests.u(1))::text'), 'départ = jour LOCAL de la famille');
-select is(tests.val('select energy_mark from public.child_adventures where id = tests.u(901)'), '35', 'energy_mark = énergie totale au départ');
-select is(public.companion_state(tests.u(201)) ->> 'energy_total', '35', 'partir ne retire AUCUNE énergie');
+select is(tests.val('select energy_mark from public.child_adventures where id = tests.u(901)'), '70', 'energy_mark = énergie totale au départ');
+select is(public.companion_state(tests.u(201)) ->> 'energy_total', '70', 'partir ne retire AUCUNE énergie');
 select is(tests.st(201) ->> 'gauge', '0', 'la jauge repart de 0 après le départ');
 select is(tests.st(201) ->> 'state', 'away', 'le panda est en voyage');
 select is(tests.st(201) -> 'active' ->> 'destination', 'ha-long', '…à Hạ Long');
 select lives_ok($$select public.adventure_start(tests.u(201), tests.u(901), 'ha-long')$$, 'rejeu du départ (même id) : sans erreur');
 select is(tests.val('select count(*) from public.child_adventures where child_id = tests.u(201)'), '1', '…une seule aventure');
 reset role;
-select tests.energy(201, 30);
+select tests.energy(201, 60);
 select tests.login(13);
 select throws_ok($$select public.adventure_start(tests.u(201), tests.u(902), 'ha-long')$$, 'P0001', 'adventure_in_progress', 'une seule aventure en cours (même jauge pleine)');
 select throws_ok($$select public.adventure_collect(tests.u(201), tests.u(901))$$, 'P0001', 'not_back_yet', 'récupération refusée avant le retour');
@@ -138,8 +138,8 @@ select is(tests.val('select sum(times_found) from public.child_discoveries where
 select is(tests.st(201) ->> 'found_count', '1', 'état : 1 trouvaille');
 select is(tests.st(201) -> 'last' ->> 'id', tests.u(901)::text, 'état : dernière aventure récupérée');
 select is(tests.st(201) -> 'active', 'null'::jsonb, 'plus d''aventure en cours');
-select is(tests.st(201) ->> 'gauge', '30', 'énergie gagnée pendant le voyage : comptée pour la jauge suivante (65 − 35)');
-select is(tests.st(201) -> 'unlocked', '["ha-long", "hoi-an"]'::jsonb, 'niveau 2 : Hội An débloqué');
+select is(tests.st(201) ->> 'gauge', '60', 'énergie gagnée pendant le voyage : comptée pour la jauge suivante (130 − 70)');
+select is(tests.st(201) -> 'unlocked', '["ha-long", "hoi-an"]'::jsonb, 'niveau 2 (130 ≥ 100) : Hội An débloqué');
 
 -- ═══ tout trouvé : doublon ═══
 reset role;
@@ -156,7 +156,7 @@ select is(tests.val('select max(times_found) from public.child_discoveries where
 
 -- ═══ énergie retirée après un départ : la jauge baisse, jamais sous 0 ═══
 reset role;
-select tests.energy(201, -50);
+select tests.energy(201, -100);
 select tests.login(13);
 select is(tests.st(201) ->> 'gauge', '0', 'décocher après un départ fait baisser la jauge suivante (bornée à 0)');
 

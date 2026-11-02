@@ -1,5 +1,5 @@
 import type { ImageSourcePropType } from 'react-native';
-import type { PandaExpression, PandaStage } from '@/domain/panda';
+import type { PandaExpression, PandaStage, PandaVariant } from '@/domain/panda';
 
 /**
  * Images du compagnon panda (D-104) : personnage original, images générées par IA puis retouchées, aucune image de tiers.
@@ -27,5 +27,14 @@ const EXPRESSIONS: Record<PandaExpression, Pair> = {
   fier: { full: require('../../../assets/panda/panda-expr-fier.webp'), small: require('../../../assets/panda/panda-expr-fier@512.webp') },
 };
 
-export const pandaStageImage = (stage: PandaStage, size: PandaImageSize = 'small'): ImageSourcePropType => STAGES[stage][size];
-export const pandaExpressionImage = (expression: PandaExpression, size: PandaImageSize = 'small'): ImageSourcePropType => EXPRESSIONS[expression][size];
+/**
+ * D-106 : variante du panda. Seules les images « boy » existent ; les images « girl » arriveront après le test. Une image absente pour la
+ * variante demandée retombe TOUJOURS sur « boy » (jamais d'image vide).
+ */
+const STAGES_BY_VARIANT: Record<PandaVariant, Partial<Record<PandaStage, Pair>>> = { boy: STAGES, girl: {} };
+const EXPRESSIONS_BY_VARIANT: Record<PandaVariant, Partial<Record<PandaExpression, Pair>>> = { boy: EXPRESSIONS, girl: {} };
+
+export const pandaStageImage = (stage: PandaStage, size: PandaImageSize = 'small', variant: PandaVariant = 'boy'): ImageSourcePropType =>
+  (STAGES_BY_VARIANT[variant][stage] ?? STAGES[stage])[size];
+export const pandaExpressionImage = (expression: PandaExpression, size: PandaImageSize = 'small', variant: PandaVariant = 'boy'): ImageSourcePropType =>
+  (EXPRESSIONS_BY_VARIANT[variant][expression] ?? EXPRESSIONS[expression])[size];

@@ -272,3 +272,6 @@ Jauge d'aventure (30 d'énergie depuis le dernier départ, sans rien retirer), s
 
 ### Le panda se promène dans Hôm nay (D-106) — 2026-11-02
 Le panda de l'enfant marche d'un bord à l'autre de son panneau, se retourne à chaque bord et revient, à petits pas ; immobile quand il dort, en voyage ou avec « réduire les animations ».
+
+### Interface V2 « style Finch », lot A1 : fondations et règles serveur (D-106) — 2026-11-02
+Interrupteur par famille `families.ui_version` (V1 par défaut), basculé par l'administrateur depuis la fiche famille (tracé) ; routage V1 / V2 (`/v2`), purge du cache au changement. Migration 37 : énergie = points de la tâche (et points attribués au quiz), aventure à 60, paliers d'amitié doublés, icônes d'objectifs (36) sur tâches et récurrences, variante du panda, heure de départ de l'aventure. Thème V2 (Nunito, contrastes AA), module d'images, composants de base. Aucun écran V1 ne change, sauf l'énergie affichée (points de la tâche).

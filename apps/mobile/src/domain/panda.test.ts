@@ -38,9 +38,9 @@ const STAGE_CASES: [birth: string, today: string, offset: number, stage: number]
   ['2009-01-01', '2026-10-01', 5, 4], // décalage hors bornes : ramené à +1 puis borné
 ];
 const LEVEL_CASES: [total: number, level: number][] = [
-  [0, 1], [49, 1], [50, 2], [149, 2], [150, 3], [299, 3], [300, 4], [499, 4], [500, 5], [799, 5], [800, 6], [1100, 7], [-12, 1],
+  [0, 1], [99, 1], [100, 2], [299, 2], [300, 3], [599, 3], [600, 4], [999, 4], [1000, 5], [1599, 5], [1600, 6], [2200, 7], [-12, 1],
 ];
-const NEXT_CASES: [total: number, next: number][] = [[0, 50], [299, 300], [300, 500], [500, 800], [800, 1100]];
+const NEXT_CASES: [total: number, next: number][] = [[0, 100], [299, 300], [300, 600], [600, 1000], [1000, 1600], [1600, 2200]];
 
 describe('stade du panda', () => {
   it.each(STAGE_CASES)('né le %s, jour local %s, décalage %i → stade %i', (birth, today, offset, stage) => {
@@ -69,8 +69,12 @@ describe('stade du panda', () => {
 
 describe('énergie', () => {
   it('coche +5, décoche −5', () => {
-    expect(energyForToggle(true)).toBe(5);
-    expect(energyForToggle(false)).toBe(-5);
+    expect(energyForToggle(10, true)).toBe(10);
+    expect(energyForToggle(10, false)).toBe(-10);
+    expect(energyForToggle(7, true)).toBe(7);
+    expect(energyForToggle(0, true)).toBe(0);
+    expect(energyForToggle(-3, true)).toBe(0);
+    expect(energyForToggle(Number.NaN, false)).toBe(-0);
   });
   it('le total ne descend jamais sous 0', () => {
     expect(applyEnergy(3, -5)).toBe(0);
@@ -78,9 +82,9 @@ describe('énergie', () => {
     expect(applyEnergy(10, 5)).toBe(15);
   });
   it('withEnergy recalcule total, niveau et prochain palier', () => {
-    const base: CompanionState = { hasCompanion: true, name: 'B', trait: 'kind', stage: 2, stageOffset: 0, energyTotal: 48, level: 1, nextLevelAt: 50 };
-    expect(withEnergy(base, 5)).toMatchObject({ energyTotal: 53, level: 2, nextLevelAt: 150 });
-    expect(withEnergy(base, -100)).toMatchObject({ energyTotal: 0, level: 1, nextLevelAt: 50 });
+    const base: CompanionState = { hasCompanion: true, name: 'B', trait: 'kind', variant: 'boy', stage: 2, stageOffset: 0, energyTotal: 95, level: 1, nextLevelAt: 100 };
+    expect(withEnergy(base, 10)).toMatchObject({ energyTotal: 105, level: 2, nextLevelAt: 300 });
+    expect(withEnergy(base, -200)).toMatchObject({ energyTotal: 0, level: 1, nextLevelAt: 100 });
   });
 });
 
@@ -92,10 +96,10 @@ describe('niveau d’amitié', () => {
     expect(friendshipLevel(total).next).toBe(next);
   });
   it('progression vers le niveau suivant', () => {
-    expect(friendshipLevel(0)).toMatchObject({ from: 0, next: 50, into: 0, span: 50, progress: 0 });
-    expect(friendshipLevel(25).progress).toBe(0.5);
-    expect(friendshipLevel(50)).toMatchObject({ level: 2, from: 50, next: 150, into: 0 });
-    expect(friendshipLevel(650)).toMatchObject({ level: 5, from: 500, next: 800, into: 150, progress: 0.5 });
+    expect(friendshipLevel(0)).toMatchObject({ from: 0, next: 100, into: 0, span: 100, progress: 0 });
+    expect(friendshipLevel(50).progress).toBe(0.5);
+    expect(friendshipLevel(100)).toMatchObject({ level: 2, from: 100, next: 300, into: 0 });
+    expect(friendshipLevel(1300)).toMatchObject({ level: 5, from: 1000, next: 1600, into: 300, progress: 0.5 });
   });
   it('valeurs invalides ramenées à 0', () => {
     expect(friendshipLevel(Number.NaN).level).toBe(1);
@@ -160,19 +164,20 @@ describe('nom et trait', () => {
 
 describe('lecture de companion_state', () => {
   it('réponse complète', () => {
-    expect(parseCompanionState({ has_companion: true, name: 'Bambou', trait: 'kind', stage: 3, stage_offset: 1, energy_total: 120, level: 2, next_level_at: 150 })).toEqual({
+    expect(parseCompanionState({ has_companion: true, name: 'Bambou', trait: 'kind', stage: 3, stage_offset: 1, energy_total: 120, level: 2, next_level_at: 300, variant: 'girl' })).toEqual({
       hasCompanion: true,
       name: 'Bambou',
       trait: 'kind',
+      variant: 'girl',
       stage: 3,
       stageOffset: 1,
       energyTotal: 120,
       level: 2,
-      nextLevelAt: 150,
+      nextLevelAt: 300,
     });
   });
   it('sans compagnon ni valeurs : valeurs sûres', () => {
-    expect(parseCompanionState(null)).toEqual({ hasCompanion: false, name: null, trait: null, stage: 1, stageOffset: 0, energyTotal: 0, level: 1, nextLevelAt: 50 });
-    expect(parseCompanionState({ stage: 9, stage_offset: 4, trait: 'x', energy_total: -3, level: 0, next_level_at: 'a' })).toMatchObject({ stage: 1, stageOffset: 0, trait: null, energyTotal: 0, level: 1, nextLevelAt: 50 });
+    expect(parseCompanionState(null)).toEqual({ hasCompanion: false, name: null, trait: null, stage: 1, stageOffset: 0, energyTotal: 0, level: 1, nextLevelAt: 100, variant: 'boy' });
+    expect(parseCompanionState({ stage: 9, stage_offset: 4, trait: 'x', energy_total: -3, level: 0, next_level_at: 'a' })).toMatchObject({ stage: 1, stageOffset: 0, trait: null, energyTotal: 0, level: 1, nextLevelAt: 100, variant: 'boy' });
   });
 });

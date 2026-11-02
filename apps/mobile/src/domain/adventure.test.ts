@@ -1,6 +1,7 @@
 import { todayInTz } from './family-time';
 import {
   ADVENTURE_COST,
+  awayProgress,
   addDays,
   adventureErrorKey,
   adventureGauge,
@@ -23,15 +24,15 @@ const CATALOG: CatalogDestination[] = [
 ];
 
 describe('jauge d’aventure', () => {
-  it('énergie − marque du dernier départ, bornée à 0..30', () => {
-    expect(ADVENTURE_COST).toBe(30);
+  it('énergie − marque du dernier départ, bornée à 0..60 (D-106)', () => {
+    expect(ADVENTURE_COST).toBe(60);
     expect(adventureGauge(18, null)).toBe(18);
     expect(adventureGauge(18, undefined)).toBe(18);
-    expect(adventureGauge(45, null)).toBe(30);
-    expect(adventureGauge(65, 35)).toBe(30);
-    expect(adventureGauge(35, 35)).toBe(0); // repart de 0 après un départ
-    expect(adventureGauge(40, 35)).toBe(5);
-    expect(adventureGauge(30, 35)).toBe(0); // décocher après un départ : la jauge baisse, jamais sous 0
+    expect(adventureGauge(90, null)).toBe(60);
+    expect(adventureGauge(130, 70)).toBe(60);
+    expect(adventureGauge(70, 70)).toBe(0); // repart de 0 après un départ
+    expect(adventureGauge(80, 70)).toBe(10);
+    expect(adventureGauge(30, 70)).toBe(0); // décocher après un départ : la jauge baisse, jamais sous 0
     expect(adventureGauge(Number.NaN, 0)).toBe(0);
   });
 });
@@ -64,8 +65,8 @@ describe('états', () => {
   const active = { id: 'a', destination: 'ha-long', departedOn: '2026-11-01', returnsOn: '2026-11-02' };
   it('filling, ready_to_go, away, back', () => {
     expect(adventureStateName(null, '2026-11-01', 18)).toBe('filling');
-    expect(adventureStateName(null, '2026-11-01', 30)).toBe('ready_to_go');
-    expect(adventureStateName(active, '2026-11-01', 30)).toBe('away');
+    expect(adventureStateName(null, '2026-11-01', 60)).toBe('ready_to_go');
+    expect(adventureStateName(active, '2026-11-01', 60)).toBe('away');
     expect(adventureStateName(active, '2026-11-02', 0)).toBe('back');
     expect(adventureStateName(active, '2026-11-09', 0)).toBe('back'); // rien ne se perd : récupérable n’importe quand ensuite
   });
@@ -94,11 +95,11 @@ describe('lecture de adventure_state', () => {
   it('réponse complète', () => {
     const s = parseAdventureState({
       gauge: 18,
-      cost: 30,
+      cost: 60,
       state: 'away',
       level: 2,
       today: '2026-11-01',
-      active: { id: 'a1', destination: 'ha-long', departed_on: '2026-11-01', returns_on: '2026-11-02' },
+      active: { id: 'a1', destination: 'ha-long', departed_on: '2026-11-01', returns_on: '2026-11-02', departed_at: '2026-11-01T10:00:00Z' },
       last: { id: 'a0', destination: 'ha-long', discovery_slug: 'ha-long-perle', duplicate: true },
       unlocked: ['ha-long', 'hoi-an'],
       destinations: [{ slug: 'ha-long', min_level: 1, discoveries: ['ha-long-perle'] }],
@@ -108,11 +109,11 @@ describe('lecture de adventure_state', () => {
     });
     expect(s).toEqual({
       gauge: 18,
-      cost: 30,
+      cost: 60,
       state: 'away',
       level: 2,
       today: '2026-11-01',
-      active: { id: 'a1', destination: 'ha-long', departedOn: '2026-11-01', returnsOn: '2026-11-02' },
+      active: { id: 'a1', destination: 'ha-long', departedOn: '2026-11-01', returnsOn: '2026-11-02', departedAt: '2026-11-01T10:00:00Z' },
       last: { id: 'a0', destination: 'ha-long', discoverySlug: 'ha-long-perle', duplicate: true },
       unlocked: ['ha-long', 'hoi-an'],
       destinations: [{ slug: 'ha-long', minLevel: 1, discoveries: ['ha-long-perle'] }],
@@ -123,7 +124,7 @@ describe('lecture de adventure_state', () => {
   });
   it('valeurs absentes ou invalides : valeurs sûres, état recalculé', () => {
     const s = parseAdventureState({ gauge: 99, state: 'perdu', destinations: [null, { slug: 'ha-long', min_level: 0, discoveries: ['x', 3] }], found: [{ times_found: 1 }], active: { id: 'a' } });
-    expect(s).toMatchObject({ gauge: 30, cost: 30, state: 'ready_to_go', level: 1, today: null, active: null, last: null, unlocked: [], found: [], foundCount: 0, totalCount: 1 });
+    expect(s).toMatchObject({ gauge: 60, cost: 60, state: 'ready_to_go', level: 1, today: null, active: null, last: null, unlocked: [], found: [], foundCount: 0, totalCount: 1 });
     expect(s.destinations).toEqual([{ slug: 'ha-long', minLevel: 1, discoveries: ['x'] }]);
     expect(parseAdventureState(null)).toMatchObject({ gauge: 0, state: 'filling', destinations: [], totalCount: 0 });
   });
@@ -136,5 +137,22 @@ describe('écritures refusées', () => {
     expect(adventureErrorKey('destination_locked')).toBe('adventure.errors.destination_locked');
     expect(adventureErrorKey('not_back_yet')).toBe('adventure.errors.not_back_yet');
     expect(adventureErrorKey('boom')).toBe('adventure.errors.generic');
+  });
+});
+
+describe('chemin du voyage (V2, D-106)', () => {
+  const dep = Date.parse('2026-11-01T10:00:00Z');
+  const morning = Date.parse('2026-11-02T00:00:00Z'); // 07:00 à Hô Chi Minh
+  it('avance avec le temps entre le départ et le lendemain matin, bornée à 0..1', () => {
+    expect(awayProgress(dep, morning, dep)).toBe(0);
+    expect(awayProgress(dep, morning, dep + 7 * 3600_000)).toBe(0.5);
+    expect(awayProgress(dep, morning, morning)).toBe(1);
+    expect(awayProgress(dep, morning, morning + 3600_000)).toBe(1);
+    expect(awayProgress(dep, morning, dep - 1000)).toBe(0);
+  });
+  it('heure de départ inconnue ou incohérente', () => {
+    expect(awayProgress(null, morning, dep)).toBe(0);
+    expect(awayProgress(Number.NaN, morning, dep)).toBe(0);
+    expect(awayProgress(morning, dep, morning)).toBe(1);
   });
 });

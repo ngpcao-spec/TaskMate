@@ -47,10 +47,15 @@ insert into public.members (id, family_id, user_id, role, child_id, display_name
 insert into public.tasks (id, family_id, child_id, title, date, created_by) values
   (tests.u(301), tests.u(1), tests.u(201), 'SECRET-A1', '2026-07-02', tests.u(111)),
   (tests.u(302), tests.u(1), tests.u(201), 'SECRET-A2', '2026-07-02', tests.u(111)),
+  (tests.u(305), tests.u(1), tests.u(201), 'ZERO-A', '2026-07-02', tests.u(111)),
+  (tests.u(306), tests.u(1), tests.u(201), 'LEGACY-A', '2026-07-02', tests.u(111)),
   (tests.u(303), tests.u(1), tests.u(202), 'SECRET-B1', '2026-07-02', tests.u(111)),
   (tests.u(304), tests.u(1), tests.u(202), 'SECRET-B2', '2026-07-02', tests.u(111));
+update public.tasks set points = 7 where id = tests.u(302);
+update public.tasks set points = 0 where id = tests.u(305);
 insert into public.catalog_quizzes (id, country, grade, subject, week_label, title, status, release_on, due_on) values
-  (tests.u(701), 'VN', '7', 'hist_geo', 'Tuần 1', 'Văn Lang', 'published', tests.m(), tests.m() + 6);
+  (tests.u(701), 'VN', '7', 'hist_geo', 'Tuần 1', 'Văn Lang', 'published', tests.m(), tests.m() + 6),
+  (tests.u(702), 'VN', '7', 'hist_geo', 'Tuần 2', 'Âu Lạc', 'published', tests.m(), tests.m() + 6);
 insert into public.catalog_questions (quiz_id, position, prompt, choices) values (tests.u(701), 0, 'Q1', array['a','b','c','d']);
 insert into public.catalog_answer_keys (question_id, correct_index, confirmed) select id, 0, true from public.catalog_questions;
 select * from no_plan();
@@ -69,7 +74,7 @@ select ok(not has_table_privilege('authenticated', 'public.companion_energy', 'i
 select ok(not has_table_privilege('authenticated', 'public.companion_energy', 'update'), 'companion_energy: pas d''UPDATE client');
 select ok(not has_table_privilege('authenticated', 'public.companion_energy', 'delete'), 'companion_energy: pas de DELETE client');
 select ok(not has_function_privilege('anon', 'public.companion_state(uuid)', 'execute'), 'companion_state: non exécutable par anon');
-select ok(not has_function_privilege('anon', 'public.companion_setup(uuid,text,public.companion_trait)', 'execute'), 'companion_setup: non exécutable par anon');
+select ok(not has_function_privilege('anon', 'public.companion_setup(uuid,text,public.companion_trait,text)', 'execute'), 'companion_setup: non exécutable par anon');
 select ok(not has_function_privilege('anon', 'public.companion_set_stage_offset(uuid,int)', 'execute'), 'companion_set_stage_offset: non exécutable par anon');
 select ok(not has_function_privilege('authenticated', 'public.companion_add_energy(uuid,uuid,int,public.companion_energy_reason,uuid,uuid)', 'execute'), 'companion_add_energy: interne, non exécutable par un client');
 select ok(not has_function_privilege('authenticated', 'public.companion_task_energy(uuid,uuid)', 'execute'), 'companion_task_energy: interne');
@@ -94,25 +99,26 @@ select is(public.companion_stage('2009-01-01', '2026-10-01', 1), 4, '17 ans, +1 
 select is(public.companion_stage('2009-01-01', '2026-10-01', -1), 3, '17 ans, −1 → teen');
 select is(public.companion_stage('2009-01-01', '2026-10-01', 5), 4, 'décalage hors bornes : ramené à +1 puis borné');
 
--- ═══ niveau d'amitié : mêmes cas que panda.test.ts ═══
+-- ═══ niveau d'amitié (D-106 : paliers doublés) : mêmes cas que panda.test.ts ═══
 select is(public.companion_level(0), 1, 'niveau 1 à 0');
-select is(public.companion_level(49), 1, 'niveau 1 à 49');
-select is(public.companion_level(50), 2, 'niveau 2 à 50');
-select is(public.companion_level(149), 2, 'niveau 2 à 149');
-select is(public.companion_level(150), 3, 'niveau 3 à 150');
-select is(public.companion_level(299), 3, 'niveau 3 à 299');
-select is(public.companion_level(300), 4, 'niveau 4 à 300');
-select is(public.companion_level(499), 4, 'niveau 4 à 499');
-select is(public.companion_level(500), 5, 'niveau 5 à 500');
-select is(public.companion_level(799), 5, 'niveau 5 à 799');
-select is(public.companion_level(800), 6, 'niveau 6 à 800 (un niveau de plus tous les 300)');
-select is(public.companion_level(1100), 7, 'niveau 7 à 1100');
+select is(public.companion_level(99), 1, 'niveau 1 à 99');
+select is(public.companion_level(100), 2, 'niveau 2 à 100');
+select is(public.companion_level(299), 2, 'niveau 2 à 299');
+select is(public.companion_level(300), 3, 'niveau 3 à 300');
+select is(public.companion_level(599), 3, 'niveau 3 à 599');
+select is(public.companion_level(600), 4, 'niveau 4 à 600');
+select is(public.companion_level(999), 4, 'niveau 4 à 999');
+select is(public.companion_level(1000), 5, 'niveau 5 à 1000');
+select is(public.companion_level(1599), 5, 'niveau 5 à 1599');
+select is(public.companion_level(1600), 6, 'niveau 6 à 1600 (un niveau de plus tous les 600)');
+select is(public.companion_level(2200), 7, 'niveau 7 à 2200');
 select is(public.companion_level(-12), 1, 'total négatif : niveau 1');
-select is(public.companion_next_level_at(0), 50, 'prochain palier depuis 0 : 50');
+select is(public.companion_next_level_at(0), 100, 'prochain palier depuis 0 : 100');
 select is(public.companion_next_level_at(299), 300, 'prochain palier depuis 299 : 300');
-select is(public.companion_next_level_at(300), 500, 'prochain palier depuis 300 : 500');
-select is(public.companion_next_level_at(500), 800, 'prochain palier depuis 500 : 800');
-select is(public.companion_next_level_at(800), 1100, 'prochain palier depuis 800 : 1100');
+select is(public.companion_next_level_at(300), 600, 'prochain palier depuis 300 : 600');
+select is(public.companion_next_level_at(600), 1000, 'prochain palier depuis 600 : 1000');
+select is(public.companion_next_level_at(1000), 1600, 'prochain palier depuis 1000 : 1600');
+select is(public.companion_next_level_at(1600), 2200, 'prochain palier depuis 1600 : 2200');
 
 -- ═══ état sans compagnon : l'enfant le lit, le stade vient de l'âge ═══
 select tests.login(13);
@@ -120,16 +126,16 @@ select is((public.companion_state(tests.u(201)) ->> 'has_companion'), 'false', '
 select is((public.companion_state(tests.u(201)) ->> 'name'), null, '…nom nul');
 select is((public.companion_state(tests.u(201)) ->> 'energy_total'), '0', '…énergie 0');
 select is((public.companion_state(tests.u(201)) ->> 'level'), '1', '…niveau 1');
-select is((public.companion_state(tests.u(201)) ->> 'next_level_at'), '50', '…prochain palier 50');
+select is((public.companion_state(tests.u(201)) ->> 'next_level_at'), '100', '…prochain palier 100');
 select is((public.companion_state(tests.u(201)) ->> 'stage')::int,
           public.companion_stage('2013-05-01', tests.val('select public.family_today(''' || tests.u(1) || ''')')::date, 0), 'le stade suit companion_stage au JOUR LOCAL de la famille');
 
 -- ═══ énergie sans compagnon : enregistrée quand même ═══
 select lives_ok($$select public.complete_task(tests.u(301), tests.u(901))$$, 'A coche la tâche 301');
-select is(tests.raw_energy(201), 5, 'cocher : +5 même sans compagnon');
-select is((public.companion_state(tests.u(201)) ->> 'energy_total'), '5', '…visible dans l''état');
+select is(tests.raw_energy(201), 10, 'cocher : + les points de la tâche (10) même sans compagnon');
+select is((public.companion_state(tests.u(201)) ->> 'energy_total'), '10', '…visible dans l''état');
 select lives_ok($$select public.complete_task(tests.u(301), tests.u(901))$$, 'rejeu de la coche (même tx) : sans erreur');
-select is(tests.raw_energy(201), 5, '…toujours +5 (aucun doublon)');
+select is(tests.raw_energy(201), 10, '…toujours +10 (aucun doublon)');
 select is(tests.points_rows(), 0, 'cocher ne crée AUCUN point');
 
 -- ═══ configuration par l'enfant ═══
@@ -155,22 +161,37 @@ select throws_ok($$select public.companion_set_stage_offset(tests.u(201), -2)$$,
 select throws_ok($$select public.companion_set_stage_offset(tests.u(202), 1)$$, '42501', 'forbidden', 'A ne change pas le décalage de B');
 select lives_ok($$select public.companion_set_stage_offset(tests.u(201), 0)$$, 'A revient à 0');
 
--- ═══ décocher / refuser : −5 puis jamais sous 0 ═══
+-- ═══ décocher / refuser : − ce qui a été crédité, jamais sous 0 ═══
 select lives_ok($$select public.uncomplete_task(tests.u(301), tests.u(902))$$, 'A décoche 301');
-select is(tests.raw_energy(201), 0, 'décocher : −5 (total 0)');
+select is(tests.raw_energy(201), 0, 'décocher : −10 (total 0)');
 select lives_ok($$select public.uncomplete_task(tests.u(301), tests.u(903))$$, 'décocher une tâche déjà décochée : sans effet');
 select is(tests.raw_energy(201), 0, '…le total ne descend pas sous 0');
 select lives_ok($$select public.complete_task(tests.u(302), tests.u(904))$$, 'A coche 302');
-select is(tests.raw_energy(201), 5, 'coche : +5');
+select is(tests.raw_energy(201), 7, 'coche d''une tâche à 7 points : +7');
 select tests.login(11);
 select lives_ok($$select public.reject_task(tests.u(302), 'à refaire')$$, 'le parent refuse 302');
-select is(tests.raw_energy(201), 0, 'refus : −5');
+select is(tests.raw_energy(201), 0, 'refus : −7');
 select lives_ok($$select public.reject_task(tests.u(302), 'à refaire')$$, 'rejeu du refus : sans effet');
-select is(tests.raw_energy(201), 0, '…aucun second −5');
+select is(tests.raw_energy(201), 0, '…aucun second retrait');
 select is((select (public.companion_state(tests.u(201)) ->> 'energy_total')), '0', 'le parent lit un total de 0');
 select tests.login(13);
 select lives_ok($$select public.complete_task(tests.u(302), tests.u(905))$$, 'A recoche 302 (nouvelle tx)');
-select is(tests.raw_energy(201), 5, 'recoche après refus : +5');
+select is(tests.raw_energy(201), 7, 'recoche après refus : +7');
+
+-- ═══ tâche à 0 point : aucune énergie (le journal refuse les montants nuls) ═══
+select lives_ok($$select public.complete_task(tests.u(305), tests.u(910))$$, 'A coche une tâche à 0 point');
+select is(tests.raw_energy(201), 7, '…aucune énergie');
+select lives_ok($$select public.uncomplete_task(tests.u(305), tests.u(911))$$, 'A la décoche');
+select is(tests.raw_energy(201), 7, '…rien n''est retiré');
+
+-- ═══ historique existant non recalculé : un ancien +5 (règle D-104) est retiré tel quel ═══
+reset role;
+update public.tasks set completed_at = now(), completed_by = tests.u(113) where id = tests.u(306);
+select public.companion_add_energy(tests.u(1), tests.u(201), 5, 'task_checked', tests.u(306), tests.u(912));
+select tests.login(13);
+select is(tests.raw_energy(201), 12, 'ancien crédit de +5 conservé (pas de recalcul)');
+select lives_ok($$select public.uncomplete_task(tests.u(306), tests.u(913))$$, 'A décoche la tâche créditée par l''ancienne règle');
+select is(tests.raw_energy(201), 7, '…seuls les 5 crédités sont retirés (pas les 10 points de la tâche)');
 
 -- ═══ une tâche cochée par le PARENT ne donne rien, et la retirer ne retire rien ═══
 select tests.login(11);
@@ -180,16 +201,21 @@ select lives_ok($$select public.uncomplete_task(tests.u(303), tests.u(907))$$, '
 select is(tests.raw_energy(202), 0, '…aucune énergie négative (jamais sous 0)');
 select is((select (public.companion_state(tests.u(202)) ->> 'energy_total')), '0', '…total de B à 0');
 
--- ═══ quiz : +10 une seule fois par tentative ═══
+-- ═══ quiz : + les points attribués par quiz_points_for, une seule fois par tentative ═══
 select tests.submitted(801, 1, 201, 701, 1, 1);
 select tests.login(11);
 select lives_ok($$select public.validate_quiz_attempt(tests.u(801), false)$$, 'le parent valide le quiz de A');
-select is(tests.raw_energy(201), 15, 'validation du quiz : +10');
+select is(tests.raw_energy(201), 15, 'validation du quiz (100 %) : +8 = quiz_points_for');
 select lives_ok($$select public.validate_quiz_attempt(tests.u(801), true)$$, 'revalidation : sans erreur');
-select is(tests.raw_energy(201), 15, '…un seul +10 par tentative');
+select is(tests.raw_energy(201), 15, '…un seul crédit par tentative');
 select is(tests.val('select count(*) from public.companion_energy where source_id = ''' || tests.u(801) || ''' and reason = ''quiz_validated'''), '1', '…une seule ligne quiz_validated');
 select is((select (public.companion_state(tests.u(201)) ->> 'energy_total')), '15', 'état : 15 ⚡');
-select is((public.companion_state(tests.u(201)) ->> 'level'), '1', '…niveau 1 (palier suivant à 50)');
+select is((public.companion_state(tests.u(201)) ->> 'level'), '1', '…niveau 1 (palier suivant à 100)');
+select tests.submitted(802, 1, 201, 702, 0, 1);
+select tests.login(11);
+select lives_ok($$select public.validate_quiz_attempt(tests.u(802), false)$$, 'le parent valide un quiz à 0 %');
+select is(tests.raw_energy(201), 15, '…0 point attribué : 0 énergie');
+select is(tests.val('select count(*) from public.companion_energy where source_id = ''' || tests.u(802) || ''''), '0', '…aucune ligne d''énergie');
 
 -- ═══ le parent configure nom et trait, jamais le décalage ═══
 select lives_ok($$select public.companion_setup(tests.u(201), 'Bao Bao', 'funny')$$, 'le parent renomme le panda de A');
@@ -199,9 +225,18 @@ select throws_ok($$select public.companion_set_stage_offset(tests.u(201), 1)$$, 
 select is((public.companion_state(tests.u(201)) ->> 'stage_offset'), '0', '…toujours 0');
 select lives_ok($$select public.companion_setup(tests.u(202), 'Mochi', 'calm')$$, 'le parent crée le panda de B');
 
+-- ═══ variante (D-106) : 'boy' par défaut, réglée par companion_setup, inchangée si absente ═══
+select is((public.companion_state(tests.u(202)) ->> 'variant'), 'boy', 'variante par défaut : boy');
+select lives_ok($$select public.companion_setup(tests.u(202), 'Mochi', 'calm', 'girl')$$, 'variante girl');
+select is((public.companion_state(tests.u(202)) ->> 'variant'), 'girl', '…enregistrée');
+select lives_ok($$select public.companion_setup(tests.u(202), 'Mochi 2', 'calm')$$, 'mise à jour sans variante');
+select is((public.companion_state(tests.u(202)) ->> 'variant'), 'girl', '…variante inchangée');
+select throws_ok($$select public.companion_setup(tests.u(202), 'Mochi', 'calm', 'robot')$$, 'P0001', 'invalid_input', 'variante inconnue refusée');
+select throws_ok($$update public.companions set variant = 'boy'$$, '42501', null, 'UPDATE direct de la variante refusé');
+
 -- ═══ lecture : isolation (D-052) ═══
 select is(tests.n('select 1 from public.companions'), 2::bigint, 'parent 1: voit les deux compagnons de SA famille');
-select is(tests.n('select 1 from public.companion_energy'), 6::bigint, 'parent 1: voit l''énergie de SA famille (coche, décoche, coche, refus, recoche, quiz)');
+select is(tests.n('select 1 from public.companion_energy'), 8::bigint, 'parent 1: voit l''énergie de SA famille (coche, décoche, coche, refus, recoche, ancien +5, son retrait, quiz)');
 select tests.login(13);
 select is(tests.n('select 1 from public.companions'), 1::bigint, 'A: ne voit que SON compagnon');
 select is(tests.n('select 1 from public.companions where child_id = tests.u(202)'), 0::bigint, 'A: pas celui de B, même par id');

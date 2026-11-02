@@ -51,7 +51,7 @@ const ADVENTURE_SITUATION: Partial<Record<AdventureState['state'], PandaSituatio
 
 /**
  * Compagnon de l'enfant dans Hôm nay (D-104) : image, nom, bulle, barre d'énergie ⚡ et niveau d'amitié. Affiché dans les cinq thèmes (ce n'est pas un décor),
- * sur le panneau marine du thème (fond opaque). Réaction IMMÉDIATE au coche : expression « très heureux » 2 s, « +5 ⚡ », petit rebond (sauf si
+ * sur le panneau marine du thème (fond opaque). Réaction IMMÉDIATE au coche : expression « très heureux » 2 s, « +N ⚡ » (points de la tâche), petit rebond (sauf si
  * « réduire les animations » est activé). D-106 : le panda se promène d'un bord à l'autre du panneau (il se retourne à chaque bord, petits pas), sauf
  * s'il dort, s'il est en voyage ou si « réduire les animations » est activé.
  */
@@ -59,6 +59,7 @@ export function PandaCompanion({ childId, childName, state, done, total, localHo
   const { t } = useTranslation();
   const reacting = usePandaReaction((s) => s.active && s.childId === childId);
   const reactionId = usePandaReaction((s) => (s.childId === childId ? s.id : 0));
+  const reactionEnergy = usePandaReaction((s) => (s.childId === childId ? s.energy : 0));
   const reduceMotion = useReduceMotion();
   const [lift] = useState(() => new Animated.Value(0));
   // D-106 : promenade (position, sens du regard, petits pas)
@@ -117,8 +118,8 @@ export function PandaCompanion({ childId, childName, state, done, total, localHo
   const destinationName = adventure?.active ? t(`adventure.destinations.${adventure.active.destination}`) : '';
   const key = adventureSituation
     ? pandaLineKey(state.stage, adventureSituation, done)
-    : pickPandaLine({ stage: state.stage, done, total, localHour, event: reacting ? 'checked' : null, seed: done }).key;
-  const speech = t(key, pandaLineParams(childName, destinationName));
+    : pickPandaLine({ stage: state.stage, done, total, localHour, event: reacting && reactionEnergy > 0 ? 'checked' : null, seed: done }).key;
+  const speech = t(key, pandaLineParams(childName, destinationName, { energy: reactionEnergy }));
   const postcard = travelling ? destinationImage(travelling.destination) : null;
 
   return (
@@ -165,7 +166,7 @@ export function PandaCompanion({ childId, childName, state, done, total, localHo
         </View>
       </View>
       <View accessibilityLiveRegion="polite" accessibilityLabel={t('panda.speech', { text: speech })} style={styles.bubble}>
-        {reacting ? <Text style={styles.reaction}>{t('panda.reaction', pandaLineParams(childName))}</Text> : null}
+        {reacting && reactionEnergy > 0 ? <Text style={styles.reaction}>{t('panda.reaction', pandaLineParams(childName, '', { energy: reactionEnergy }))}</Text> : null}
         <Text style={styles.speech}>{speech}</Text>
       </View>
       {adventure ? <AdventurePanel childId={childId} pandaName={name} adventure={adventure} /> : null}

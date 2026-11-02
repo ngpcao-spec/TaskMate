@@ -30,7 +30,9 @@ const familyRaw = {
 describe('lecture des réponses des RPC d’administration (D-102)', () => {
   it('indicateurs', () => {
     const o = parseOverview({ families: 2, parents: 3, children: 4, new_families_7d: 1, new_families_30d: 2, active: { today: { parents: 1, children: 0 }, d7: { parents: 2, children: 1 }, d30: { parents: 3, children: 2 } }, families_with_notifications: 1 });
-    expect(o).toEqual({ families: 2, parents: 3, children: 4, newFamilies7d: 1, newFamilies30d: 2, active: { today: { parents: 1, children: 0 }, d7: { parents: 2, children: 1 }, d30: { parents: 3, children: 2 } }, familiesWithNotifications: 1 });
+    expect(o).toEqual({ families: 2, parents: 3, children: 4, newFamilies7d: 1, newFamilies30d: 2, active: { today: { parents: 1, children: 0 }, d7: { parents: 2, children: 1 }, d30: { parents: 3, children: 2 } }, familiesWithNotifications: 1, uiVersions: { v1: 2, v2: 0 } });
+    // D-106 : familles par interface
+    expect(parseOverview({ families: 3, parents: 0, children: 0, new_families_7d: 0, new_families_30d: 0, active: { today: { parents: 0, children: 0 }, d7: { parents: 0, children: 0 }, d30: { parents: 0, children: 0 } }, families_with_notifications: 0, ui_versions: { v1: 2, v2: 1 } }).uiVersions).toEqual({ v1: 2, v2: 1 });
   });
   it('un nombre arrive parfois en texte (bigint) : accepté ; négatif, décimal ou texte libre : refusé', () => {
     expect(parseOverview({ families: '5', parents: 0, children: 0, new_families_7d: 0, new_families_30d: 0, active: { today: { parents: 0, children: 0 }, d7: { parents: 0, children: 0 }, d30: { parents: 0, children: 0 } }, families_with_notifications: 0 }).families).toBe(5);
@@ -63,7 +65,8 @@ describe('lecture des réponses des RPC d’administration (D-102)', () => {
     expect(parseFamilyRow({ ...familyRaw, classes: [{ country: null, grade: null }] }).classes).toEqual([{ country: null, grade: null }]);
     expect(() => parseFamilyRow({ ...familyRaw, status: 'inconnu' })).toThrow('invalid_stats');
     expect(parseFamilyPage({ total: 1, page: 1, page_size: 50, rows: [familyRaw] })).toMatchObject({ total: 1, pageSize: 50, rows: [{ name: 'Gia đình A' }] });
-    expect(parseFamilyDetail({ ...familyRaw, active_devices: 2, usage_30d: counters })).toMatchObject({ activeDevices: 2, usage30d: { tasksValidated: 4 } });
+    expect(parseFamilyDetail({ ...familyRaw, active_devices: 2, usage_30d: counters })).toMatchObject({ activeDevices: 2, usage30d: { tasksValidated: 4 }, uiVersion: 'v1' });
+    expect(parseFamilyDetail({ ...familyRaw, active_devices: 0, usage_30d: counters, ui_version: 'v2' }).uiVersion).toBe('v2');
   });
   it('santé : base, appareils, tâches planifiées (ou inconnues)', () => {
     expect(parseHealth({ db_size_bytes: 1024, active_devices: 2, cron: null })).toEqual({ dbSizeBytes: 1024, activeDevices: 2, cron: null });

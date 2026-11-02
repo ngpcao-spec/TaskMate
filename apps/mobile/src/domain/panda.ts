@@ -45,11 +45,14 @@ export function pandaStage(birthDate: string, today: string, offset: number = 0)
 
 // ───────────── Énergie ─────────────
 
-export const ENERGY_TASK_CHECKED = 5;
-export const ENERGY_QUIZ_VALIDATED = 10;
-
-/** Variation d'énergie quand l'enfant coche (+5) ou décoche (−5) une tâche. */
-export const energyForToggle = (completed: boolean): number => (completed ? ENERGY_TASK_CHECKED : -ENERGY_TASK_CHECKED);
+/**
+ * D-106 : l'énergie d'une tâche = ses points. Cocher (l'ENFANT) donne `points`, décocher les retire (le serveur ne retire que ce qu'il a crédité).
+ * Le serveur reste seul juge (`complete_task`, `uncomplete_task`, `reject_task`, `validate_quiz_attempt`) : ceci ne sert qu'à l'affichage immédiat.
+ */
+export const energyForToggle = (points: number, completed: boolean): number => {
+  const p = Number.isFinite(points) ? Math.max(0, Math.floor(points)) : 0;
+  return completed ? p : -p;
+};
 
 /** Total après une variation : jamais sous 0. */
 export const applyEnergy = (total: number, delta: number): number => Math.max(0, total + delta);
@@ -68,15 +71,16 @@ export type FriendshipProgress = {
   progress: number;
 };
 
-const LEVEL_STARTS = [0, 50, 150, 300, 500] as const;
-const LEVEL_STEP = 300;
+const LEVEL_STARTS = [0, 100, 300, 600, 1000] as const;
+const LEVEL_STEP = 600;
+const LAST_START = LEVEL_STARTS[LEVEL_STARTS.length - 1]!;
 
-const levelStart = (level: number): number => (level <= LEVEL_STARTS.length ? LEVEL_STARTS[level - 1]! : 500 + LEVEL_STEP * (level - LEVEL_STARTS.length));
+const levelStart = (level: number): number => (level <= LEVEL_STARTS.length ? LEVEL_STARTS[level - 1]! : LAST_START + LEVEL_STEP * (level - LEVEL_STARTS.length));
 
-/** Niveau d'amitié (« thân thiết ») : 1 à 0, 2 à 50, 3 à 150, 4 à 300, 5 à 500, puis un niveau de plus tous les 300. */
+/** Niveau d'amitié (« thân thiết », D-106) : 1 à 0, 2 à 100, 3 à 300, 4 à 600, 5 à 1 000, puis un niveau de plus tous les 600 (= `companion_level`). */
 export function friendshipLevel(total: number): FriendshipProgress {
   const t = Math.max(0, Math.floor(Number.isFinite(total) ? total : 0));
-  const level = t < 500 ? LEVEL_STARTS.filter((s) => t >= s).length : 5 + Math.floor((t - 500) / LEVEL_STEP);
+  const level = t < LAST_START ? LEVEL_STARTS.filter((s) => t >= s).length : LEVEL_STARTS.length + Math.floor((t - LAST_START) / LEVEL_STEP);
   const from = levelStart(level);
   const next = levelStart(level + 1);
   const into = t - from;
@@ -110,10 +114,14 @@ export const localHourOf = (hhmm: string): number => Number(hhmm.split(':')[0] ?
 
 // ───────────── État renvoyé par `companion_state` ─────────────
 
+/** Variante du panda (D-106) : réglée par `companion_setup`, aucun choix affiché pour l'instant. */
+export type PandaVariant = 'boy' | 'girl';
+
 export type CompanionState = {
   hasCompanion: boolean;
   name: string | null;
   trait: PandaTrait | null;
+  variant: PandaVariant;
   stage: PandaStage;
   stageOffset: StageOffset;
   energyTotal: number;
@@ -133,6 +141,7 @@ export function parseCompanionState(raw: unknown): CompanionState {
     hasCompanion: r.has_companion === true,
     name: typeof r.name === 'string' ? r.name : null,
     trait: isPandaTrait(r.trait) ? r.trait : null,
+    variant: r.variant === 'girl' ? 'girl' : 'boy',
     stage: asStage(r.stage),
     stageOffset: asOffset(r.stage_offset),
     energyTotal: energy,

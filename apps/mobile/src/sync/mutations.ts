@@ -89,12 +89,12 @@ export function registerMutationDefaults(
       const snapshot = snapshotTasks(queryClient, task.child_id);
       const patch = optimisticToggle(task, completed, asParent, new Date().toISOString());
       patchCachedTasks(queryClient, task.child_id, (list) => list.map((t) => (t.id === task.id ? { ...t, ...patch } : t)));
-      // D-104 : ±5 ⚡ affichés tout de suite, même hors ligne (l'enfant seulement : le serveur ne donne rien pour une coche de parent) ; resynchronisé au retour
+      // D-106 : ± les points de la tâche (⚡) affichés tout de suite, même hors ligne (l'enfant seulement : le serveur ne donne rien pour une coche de parent) ; resynchronisé au retour
       let companion: CompanionState | undefined;
       if (!asParent) {
         await queryClient.cancelQueries({ queryKey: companionKeys.state(task.child_id) });
         companion = queryClient.getQueryData<CompanionState>(companionKeys.state(task.child_id));
-        if (companion) queryClient.setQueryData<CompanionState>(companionKeys.state(task.child_id), withEnergy(companion, energyForToggle(completed)));
+        if (companion) queryClient.setQueryData<CompanionState>(companionKeys.state(task.child_id), withEnergy(companion, energyForToggle(task.points, completed)));
       }
       return { snapshot, companion };
     },

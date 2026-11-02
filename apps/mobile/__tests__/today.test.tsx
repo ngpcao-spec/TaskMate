@@ -329,7 +329,7 @@ describe('TodayScreen : bandeau « Ôn tập » (D-084)', () => {
 });
 
 describe('TodayScreen : compagnon panda (D-104)', () => {
-  const panda = (over: Partial<CompanionState> = {}): CompanionState => ({ hasCompanion: true, name: 'Bambou', trait: 'kind', stage: 2, stageOffset: 0, energyTotal: 20, level: 1, nextLevelAt: 50, ...over });
+  const panda = (over: Partial<CompanionState> = {}): CompanionState => ({ hasCompanion: true, name: 'Bambou', trait: 'kind', variant: 'boy', stage: 2, stageOffset: 0, energyTotal: 20, level: 1, nextLevelAt: 50, ...over });
   beforeEach(() => {
     jest.clearAllMocks();
     mockRole = 'child';
@@ -349,7 +349,7 @@ describe('TodayScreen : compagnon panda (D-104)', () => {
     mockWeekly = [group([item('todo')])];
     await render(<TodayScreen />);
     expect(screen.getByRole('header', { name: 'Bambou' })).toBeTruthy();
-    expect(screen.getByLabelText('Năng lượng 20 trên 50')).toBeTruthy();
+    expect(screen.getByLabelText('Năng lượng 20 trên 100')).toBeTruthy();
     const tree = JSON.stringify(screen.toJSON());
     expect(tree.indexOf('Bambou')).toBeGreaterThan(-1);
     expect(tree.indexOf('Bambou')).toBeLessThan(tree.indexOf('Ôn tập tuần 8'));
@@ -369,18 +369,18 @@ describe('TodayScreen : compagnon panda (D-104)', () => {
     expect(screen.queryByLabelText(/Năng lượng/)).toBeNull();
   });
 
-  it('l’enfant coche : réaction IMMÉDIATE du panda (« +5 ⚡ »), sans attendre le serveur', async () => {
+  it('l’enfant coche : réaction IMMÉDIATE du panda (« +10 ⚡ » = points de la tâche, D-106), sans attendre le serveur', async () => {
     jest.useFakeTimers();
     await render(<TodayScreen />);
-    expect(screen.queryByText('+5 ⚡')).toBeNull();
+    expect(screen.queryByText('+10 ⚡')).toBeNull();
     await fireEvent.press(screen.getByRole('checkbox', { name: 'Làm bài tập Toán' }));
     expect(mockToggle).toHaveBeenCalledWith(expect.objectContaining({ completed: true, asParent: false }));
-    expect(screen.getByText('+5 ⚡')).toBeTruthy();
+    expect(screen.getByText('+10 ⚡')).toBeTruthy();
     expect(screen.getByLabelText('Panda Bambou, rất vui')).toBeTruthy();
     await act(async () => {
       jest.advanceTimersByTime(2100);
     });
-    expect(screen.queryByText('+5 ⚡')).toBeNull();
+    expect(screen.queryByText('+10 ⚡')).toBeNull();
     jest.useRealTimers();
   });
 
@@ -410,7 +410,7 @@ describe('TodayScreen : compagnon panda (D-104)', () => {
 });
 
 describe('TodayScreen : aventures du panda (D-105)', () => {
-  const panda: CompanionState = { hasCompanion: true, name: 'Bambou', trait: 'kind', stage: 2, stageOffset: 0, energyTotal: 48, level: 1, nextLevelAt: 50 };
+  const panda: CompanionState = { hasCompanion: true, name: 'Bambou', trait: 'kind', variant: 'boy', stage: 2, stageOffset: 0, energyTotal: 48, level: 1, nextLevelAt: 50 };
   const adv = (over: Partial<AdventureState> = {}): AdventureState => ({
     gauge: 18, cost: 30, state: 'filling', level: 1, today: '2026-11-01', active: null, last: null, unlocked: ['ha-long'],
     destinations: [{ slug: 'ha-long', minLevel: 1, discoveries: ['ha-long-perle'] }], found: [], foundCount: 3, totalCount: 30, ...over,

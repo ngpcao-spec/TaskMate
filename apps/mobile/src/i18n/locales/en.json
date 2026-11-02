@@ -2077,5 +2077,76 @@
       "phong-nha-lampe": "lamp",
       "phong-nha-fougere": "fern"
     }
+  },
+  "v2": {
+    "tabs": {
+      "home": "Today",
+      "rewards": "Rewards",
+      "adventure": "Adventure",
+      "stats": "Stats",
+      "me": "Me",
+      "calendar": "Calendar",
+      "review": "Review",
+      "settings": "Settings",
+      "badge": "{{label}}, {{count}} new"
+    },
+    "top": {
+      "menu": "Menu",
+      "calendar": "Calendar",
+      "notifications": "Notifications",
+      "notificationsCount": "Notifications, {{count}} unread"
+    },
+    "dayPill": {
+      "remaining": "{{count}} left to do today!",
+      "done": "All done today!"
+    },
+    "section": {
+      "morning": "Morning",
+      "afternoon": "Afternoon",
+      "evening": "Evening",
+      "anytime": "Whenever I want",
+      "label": "{{section}}, {{count}} goal(s)",
+      "collapse": "Collapse",
+      "expand": "Expand"
+    },
+    "goal": {
+      "energy": "{{points}} ⚡",
+      "energyLabel": "{{points}} energy",
+      "pending": "waiting for parents",
+      "done": "done",
+      "open": "Open: {{title}}"
+    },
+    "adventure": {
+      "mapButton": "Adventure map",
+      "ready": "Full of energy!",
+      "away": "On an adventure · back tomorrow morning",
+      "pathLabel": "{{name}} is on the way, {{percent}}% of the path",
+      "back": "{{name}} is back! Let's open the bag",
+      "open": "Open the bag",
+      "start": "⚡",
+      "finish": "?"
+    },
+    "celebration": {
+      "title": "All done!",
+      "subtitle": "Today's goals complete",
+      "s1": "Yay! I'm so happy!",
+      "s2": "Great job! We did everything today!",
+      "s3": "Awesome! All done.",
+      "s4": "Well done. A full day.",
+      "review": "Review",
+      "missing": "{{n}} more ⚡ and we can go!"
+    },
+    "panda": {
+      "walking": "Panda {{name}} is off on an adventure"
+    },
+    "placeholder": "The new interface is being prepared.",
+    "admin": {
+      "toggle": "V2 interface",
+      "hint": "For this family only. The V1 interface stays the default.",
+      "saved": "Interface changed",
+      "error": "Could not change the interface",
+      "kpi": "Families on the V2 interface",
+      "kpiCaption": "out of {{total}} families"
+    }
   }
 }

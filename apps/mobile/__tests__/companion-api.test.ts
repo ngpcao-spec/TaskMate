@@ -14,7 +14,7 @@ describe('API du compagnon (D-104)', () => {
     mockRpc.mockResolvedValue({ data: { has_companion: true, name: 'Bambou', trait: 'brave', stage: 3, stage_offset: -1, energy_total: 75, level: 2, next_level_at: 150 }, error: null });
     const state = await fetchCompanionState('c1');
     expect(mockRpc).toHaveBeenCalledWith('companion_state', { p_child: 'c1' });
-    expect(state).toEqual({ hasCompanion: true, name: 'Bambou', trait: 'brave', stage: 3, stageOffset: -1, energyTotal: 75, level: 2, nextLevelAt: 150 });
+    expect(state).toEqual({ hasCompanion: true, name: 'Bambou', trait: 'brave', variant: 'boy', stage: 3, stageOffset: -1, energyTotal: 75, level: 2, nextLevelAt: 150 });
   });
 
   it('remonte l’erreur (« forbidden » pour un autre enfant)', async () => {

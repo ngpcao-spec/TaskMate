@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-/** Durée de la réaction du panda quand l'enfant coche une tâche (expression « très heureux » + « +5 ⚡ »). */
+/** Durée de la réaction du panda quand l'enfant coche une tâche (expression « très heureux » + « +N ⚡ », N = points de la tâche, D-106). */
 export const REACTION_MS = 2000;
 
 type ReactionState = {
@@ -9,7 +9,9 @@ type ReactionState = {
   /** Incrémenté à chaque réaction : relance le rebond même si la précédente n'est pas finie. */
   id: number;
   active: boolean;
-  trigger: (childId: string) => void;
+  /** Énergie gagnée par ce coche (les points de la tâche) ; 0 = pas de « +N ⚡ ». */
+  energy: number;
+  trigger: (childId: string, energy: number) => void;
 };
 
 let timer: ReturnType<typeof setTimeout> | undefined;
@@ -19,9 +21,10 @@ export const usePandaReaction = create<ReactionState>((set, get) => ({
   childId: null,
   id: 0,
   active: false,
-  trigger: (childId) => {
+  energy: 0,
+  trigger: (childId, energy) => {
     if (timer !== undefined) clearTimeout(timer);
-    set({ childId, id: get().id + 1, active: true });
+    set({ childId, id: get().id + 1, active: true, energy: Math.max(0, Math.floor(energy)) });
     timer = setTimeout(() => set({ active: false }), REACTION_MS);
   },
 }));

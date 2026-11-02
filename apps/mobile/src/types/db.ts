@@ -151,13 +151,13 @@ isOneToOne: false
                   ]
                 },"catalog_admin_log": {
                   Row: {
-                    "action": string,"admin_id": string,"counts": NonNullable<Json>,"created_at": string,"id": string,"quiz_id": string,"slot": NonNullable<Json>,"title": string
+                    "action": string,"admin_id": string,"counts": NonNullable<Json>,"created_at": string,"family_id": string | null,"id": string,"quiz_id": string | null,"slot": NonNullable<Json>,"title": string
                   }
                   Insert: {
-                    "action": string,"admin_id": string,"counts"?: NonNullable<Json>,"created_at"?: string,"id"?: string,"quiz_id": string,"slot"?: NonNullable<Json>,"title": string
+                    "action": string,"admin_id": string,"counts"?: NonNullable<Json>,"created_at"?: string,"family_id"?: string | null,"id"?: string,"quiz_id"?: string | null,"slot"?: NonNullable<Json>,"title": string
                   }
                   Update: {
-                    "action"?: string,"admin_id"?: string,"counts"?: NonNullable<Json>,"created_at"?: string,"id"?: string,"quiz_id"?: string,"slot"?: NonNullable<Json>,"title"?: string
+                    "action"?: string,"admin_id"?: string,"counts"?: NonNullable<Json>,"created_at"?: string,"family_id"?: string | null,"id"?: string,"quiz_id"?: string | null,"slot"?: NonNullable<Json>,"title"?: string
                   }
                   Relationships: [
                     
@@ -420,13 +420,13 @@ isOneToOne: false
                   ]
                 },"companions": {
                   Row: {
-                    "child_id": string,"created_at": string,"family_id": string,"name": string,"stage_offset": number,"trait": Database["public"]['Enums']["companion_trait"]
+                    "child_id": string,"created_at": string,"family_id": string,"name": string,"stage_offset": number,"trait": Database["public"]['Enums']["companion_trait"],"variant": string
                   }
                   Insert: {
-                    "child_id": string,"created_at"?: string,"family_id": string,"name": string,"stage_offset"?: number,"trait": Database["public"]['Enums']["companion_trait"]
+                    "child_id": string,"created_at"?: string,"family_id": string,"name": string,"stage_offset"?: number,"trait": Database["public"]['Enums']["companion_trait"],"variant"?: string
                   }
                   Update: {
-                    "child_id"?: string,"created_at"?: string,"family_id"?: string,"name"?: string,"stage_offset"?: number,"trait"?: Database["public"]['Enums']["companion_trait"]
+                    "child_id"?: string,"created_at"?: string,"family_id"?: string,"name"?: string,"stage_offset"?: number,"trait"?: Database["public"]['Enums']["companion_trait"],"variant"?: string
                   }
                   Relationships: [
                     {
@@ -464,13 +464,13 @@ isOneToOne: false
                   ]
                 },"families": {
                   Row: {
-                    "created_at": string,"deleted_at": string | null,"id": string,"name": string,"timezone": string,"updated_at": string
+                    "created_at": string,"deleted_at": string | null,"id": string,"name": string,"timezone": string,"ui_version": string,"updated_at": string
                   }
                   Insert: {
-                    "created_at"?: string,"deleted_at"?: string | null,"id"?: string,"name": string,"timezone"?: string,"updated_at"?: string
+                    "created_at"?: string,"deleted_at"?: string | null,"id"?: string,"name": string,"timezone"?: string,"ui_version"?: string,"updated_at"?: string
                   }
                   Update: {
-                    "created_at"?: string,"deleted_at"?: string | null,"id"?: string,"name"?: string,"timezone"?: string,"updated_at"?: string
+                    "created_at"?: string,"deleted_at"?: string | null,"id"?: string,"name"?: string,"timezone"?: string,"ui_version"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     
@@ -943,13 +943,13 @@ isOneToOne: false
                   ]
                 },"recurrences": {
                   Row: {
-                    "category": Database["public"]['Enums']["task_category"],"child_id": string,"created_at": string,"created_by": string,"deleted_at": string | null,"end_time": string | null,"ends_on": string | null,"family_id": string,"id": string,"note": string | null,"points": number,"rule": Database["public"]['Enums']["recurrence_rule"],"start_time": string | null,"starts_on": string,"time_kind": Database["public"]['Enums']["time_kind"],"title": string,"updated_at": string,"weekdays": (number)[] | null
+                    "category": Database["public"]['Enums']["task_category"],"child_id": string,"created_at": string,"created_by": string,"deleted_at": string | null,"end_time": string | null,"ends_on": string | null,"family_id": string,"icon": string | null,"id": string,"note": string | null,"points": number,"rule": Database["public"]['Enums']["recurrence_rule"],"start_time": string | null,"starts_on": string,"time_kind": Database["public"]['Enums']["time_kind"],"title": string,"updated_at": string,"weekdays": (number)[] | null
                   }
                   Insert: {
-                    "category"?: Database["public"]['Enums']["task_category"],"child_id": string,"created_at"?: string,"created_by": string,"deleted_at"?: string | null,"end_time"?: string | null,"ends_on"?: string | null,"family_id": string,"id"?: string,"note"?: string | null,"points"?: number,"rule": Database["public"]['Enums']["recurrence_rule"],"start_time"?: string | null,"starts_on": string,"time_kind": Database["public"]['Enums']["time_kind"],"title": string,"updated_at"?: string,"weekdays"?: (number)[] | null
+                    "category"?: Database["public"]['Enums']["task_category"],"child_id": string,"created_at"?: string,"created_by": string,"deleted_at"?: string | null,"end_time"?: string | null,"ends_on"?: string | null,"family_id": string,"icon"?: string | null,"id"?: string,"note"?: string | null,"points"?: number,"rule": Database["public"]['Enums']["recurrence_rule"],"start_time"?: string | null,"starts_on": string,"time_kind": Database["public"]['Enums']["time_kind"],"title": string,"updated_at"?: string,"weekdays"?: (number)[] | null
                   }
                   Update: {
-                    "category"?: Database["public"]['Enums']["task_category"],"child_id"?: string,"created_at"?: string,"created_by"?: string,"deleted_at"?: string | null,"end_time"?: string | null,"ends_on"?: string | null,"family_id"?: string,"id"?: string,"note"?: string | null,"points"?: number,"rule"?: Database["public"]['Enums']["recurrence_rule"],"start_time"?: string | null,"starts_on"?: string,"time_kind"?: Database["public"]['Enums']["time_kind"],"title"?: string,"updated_at"?: string,"weekdays"?: (number)[] | null
+                    "category"?: Database["public"]['Enums']["task_category"],"child_id"?: string,"created_at"?: string,"created_by"?: string,"deleted_at"?: string | null,"end_time"?: string | null,"ends_on"?: string | null,"family_id"?: string,"icon"?: string | null,"id"?: string,"note"?: string | null,"points"?: number,"rule"?: Database["public"]['Enums']["recurrence_rule"],"start_time"?: string | null,"starts_on"?: string,"time_kind"?: Database["public"]['Enums']["time_kind"],"title"?: string,"updated_at"?: string,"weekdays"?: (number)[] | null
                   }
                   Relationships: [
                     {
@@ -1060,13 +1060,13 @@ isOneToOne: false
                   ]
                 },"tasks": {
                   Row: {
-                    "category": Database["public"]['Enums']["task_category"],"child_id": string,"completed_at": string | null,"completed_by": string | null,"created_at": string,"created_by": string,"date": string,"deleted_at": string | null,"end_time": string | null,"family_id": string,"id": string,"note": string | null,"points": number,"recurrence_id": string | null,"rejected_at": string | null,"rejection_note": string | null,"start_time": string | null,"time_kind": Database["public"]['Enums']["time_kind"],"title": string,"updated_at": string,"validated_at": string | null,"validated_by": string | null
+                    "category": Database["public"]['Enums']["task_category"],"child_id": string,"completed_at": string | null,"completed_by": string | null,"created_at": string,"created_by": string,"date": string,"deleted_at": string | null,"end_time": string | null,"family_id": string,"icon": string | null,"id": string,"note": string | null,"points": number,"recurrence_id": string | null,"rejected_at": string | null,"rejection_note": string | null,"start_time": string | null,"time_kind": Database["public"]['Enums']["time_kind"],"title": string,"updated_at": string,"validated_at": string | null,"validated_by": string | null
                   }
                   Insert: {
-                    "category"?: Database["public"]['Enums']["task_category"],"child_id": string,"completed_at"?: string | null,"completed_by"?: string | null,"created_at"?: string,"created_by": string,"date": string,"deleted_at"?: string | null,"end_time"?: string | null,"family_id": string,"id"?: string,"note"?: string | null,"points"?: number,"recurrence_id"?: string | null,"rejected_at"?: string | null,"rejection_note"?: string | null,"start_time"?: string | null,"time_kind"?: Database["public"]['Enums']["time_kind"],"title": string,"updated_at"?: string,"validated_at"?: string | null,"validated_by"?: string | null
+                    "category"?: Database["public"]['Enums']["task_category"],"child_id": string,"completed_at"?: string | null,"completed_by"?: string | null,"created_at"?: string,"created_by": string,"date": string,"deleted_at"?: string | null,"end_time"?: string | null,"family_id": string,"icon"?: string | null,"id"?: string,"note"?: string | null,"points"?: number,"recurrence_id"?: string | null,"rejected_at"?: string | null,"rejection_note"?: string | null,"start_time"?: string | null,"time_kind"?: Database["public"]['Enums']["time_kind"],"title": string,"updated_at"?: string,"validated_at"?: string | null,"validated_by"?: string | null
                   }
                   Update: {
-                    "category"?: Database["public"]['Enums']["task_category"],"child_id"?: string,"completed_at"?: string | null,"completed_by"?: string | null,"created_at"?: string,"created_by"?: string,"date"?: string,"deleted_at"?: string | null,"end_time"?: string | null,"family_id"?: string,"id"?: string,"note"?: string | null,"points"?: number,"recurrence_id"?: string | null,"rejected_at"?: string | null,"rejection_note"?: string | null,"start_time"?: string | null,"time_kind"?: Database["public"]['Enums']["time_kind"],"title"?: string,"updated_at"?: string,"validated_at"?: string | null,"validated_by"?: string | null
+                    "category"?: Database["public"]['Enums']["task_category"],"child_id"?: string,"completed_at"?: string | null,"completed_by"?: string | null,"created_at"?: string,"created_by"?: string,"date"?: string,"deleted_at"?: string | null,"end_time"?: string | null,"family_id"?: string,"icon"?: string | null,"id"?: string,"note"?: string | null,"points"?: number,"recurrence_id"?: string | null,"rejected_at"?: string | null,"rejection_note"?: string | null,"start_time"?: string | null,"time_kind"?: Database["public"]['Enums']["time_kind"],"title"?: string,"updated_at"?: string,"validated_at"?: string | null,"validated_by"?: string | null
                   }
                   Relationships: [
                     {
@@ -1149,6 +1149,9 @@ isOneToOne: false
                            },
 "admin_health":
 { Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"admin_set_ui_version":
+{ Args: { "p_family": string,"p_version": string }; Returns: Json
                            },
 "admin_stats_overview":
 { Args: Record<PropertyKey, never>; Returns: Json
@@ -1449,7 +1452,7 @@ isOneToOne: false
 { Args: { "p_child": string,"p_offset": number }; Returns: undefined
                            },
 "companion_setup":
-{ Args: { "p_child": string,"p_name": string,"p_trait": Database["public"]['Enums']["companion_trait"] }; Returns: undefined
+{ Args: { "p_child": string,"p_name": string,"p_trait": Database["public"]['Enums']["companion_trait"],"p_variant"?: string }; Returns: undefined
                            },
 "companion_stage":
 { Args: { "p_birth": string,"p_offset"?: number,"p_today": string }; Returns: number
@@ -1507,6 +1510,9 @@ isOneToOne: false
                            },
 "generate_recurrence":
 { Args: { "p_now"?: string,"p_recurrence": string }; Returns: number
+                           },
+"goal_icon_slugs":
+{ Args: Record<PropertyKey, never>; Returns: (string)[]
                            },
 "is_google_account":
 { Args: Record<PropertyKey, never>; Returns: boolean
