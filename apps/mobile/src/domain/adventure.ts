@@ -1,11 +1,11 @@
 /** Aventures du panda (D-105) : calculs purs. Le serveur (`adventure_state`, `adventure_start`, `adventure_collect`) reste seul juge. */
 
 /** Énergie à accumuler (depuis le dernier départ) pour partir. Partir ne retire AUCUNE énergie au total (D-104). */
-export const ADVENTURE_COST = 30;
+export const ADVENTURE_COST = 60;
 
 export type AdventureStateName = 'filling' | 'ready_to_go' | 'away' | 'back';
 
-/** Jauge = énergie totale actuelle − `energy_mark` de la dernière aventure (0 sans aventure), bornée à 0..30. */
+/** Jauge = énergie totale actuelle − `energy_mark` de la dernière aventure (0 sans aventure), bornée à 0..60 (D-106). */
 export function adventureGauge(energyTotal: number, lastMark: number | null | undefined): number {
   const raw = Math.floor(energyTotal) - Math.floor(lastMark ?? 0);
   return Number.isFinite(raw) ? Math.max(0, Math.min(ADVENTURE_COST, raw)) : 0;
@@ -29,7 +29,14 @@ export const unlockedDestinations = (catalog: readonly CatalogDestination[], lev
 
 export const isUnlocked = (destination: CatalogDestination, level: number): boolean => destination.minLevel <= level;
 
-export type ActiveAdventure = { id: string; destination: string; departedOn: string; returnsOn: string };
+export type ActiveAdventure = {
+  id: string;
+  destination: string;
+  departedOn: string;
+  returnsOn: string;
+  /** Instant du départ (ISO, serveur) ; absent d'une réponse ancienne ou d'un départ encore hors ligne. */
+  departedAt?: string | null;
+};
 
 /** État affiché : aventure en cours (en voyage avant `returns_on`, rentrée ensuite) ; sinon jauge pleine ou en cours de remplissage. */
 export function adventureStateName(active: ActiveAdventure | null, today: string, gauge: number): AdventureStateName {
@@ -66,7 +73,7 @@ export function parseAdventureState(raw: unknown): AdventureState {
   const l = r.last as Record<string, unknown> | null | undefined;
   const active =
     a && str(a.id) && str(a.destination) && str(a.departed_on) && str(a.returns_on)
-      ? { id: str(a.id)!, destination: str(a.destination)!, departedOn: str(a.departed_on)!, returnsOn: str(a.returns_on)! }
+      ? { id: str(a.id)!, destination: str(a.destination)!, departedOn: str(a.departed_on)!, returnsOn: str(a.returns_on)!, departedAt: str(a.departed_at) }
       : null;
   const last =
     l && str(l.id) && str(l.destination) && str(l.discovery_slug)
@@ -117,4 +124,21 @@ export function adventureErrorKey(code: string): string | null {
   if ((SILENT_ADVENTURE_ERRORS as readonly string[]).includes(code)) return null;
   if (code === 'gauge_not_full' || code === 'destination_locked' || code === 'not_back_yet') return `adventure.errors.${code}`;
   return 'adventure.errors.generic';
+}
+
+// ───────────── Voyage en cours (V2, D-106) ─────────────
+
+/** Heure LOCALE du « lendemain matin » où le chemin du panda arrive au « ? ». */
+export const RETURN_MORNING = '07:00';
+
+/**
+ * Avancée du panda sur son chemin pendant `away` (0 = départ ⚡, 1 = arrivée « ? ») : fraction du temps écoulé entre le départ et le lendemain matin
+ * (`RETURN_MORNING`, jour LOCAL `returnsOn` de la famille). `morningInstant` = instant UTC de ce matin-là (calculé par l'appelant, avec le fuseau).
+ * Sans heure de départ connue (réponse ancienne, départ encore hors ligne) : 0.
+ */
+export function awayProgress(departedAtMs: number | null, morningInstantMs: number, nowMs: number): number {
+  if (departedAtMs === null || !Number.isFinite(departedAtMs) || !Number.isFinite(morningInstantMs) || !Number.isFinite(nowMs)) return 0;
+  const span = morningInstantMs - departedAtMs;
+  if (span <= 0) return 1;
+  return Math.max(0, Math.min(1, (nowMs - departedAtMs) / span));
 }

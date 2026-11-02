@@ -1,5 +1,4 @@
 import { Redirect, Tabs } from 'expo-router';
-import { useEffect } from 'react';
 import { ChartColumn, EllipsisVertical, House, Calendar } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -8,33 +7,17 @@ import { NavBar } from '@/components/NavBar';
 import { BottomBarContext } from '@/components/TabInset';
 import { NotificationPrompt } from '@/components/NotificationPrompt';
 import { SyncBanner } from '@/components/SyncBanner';
-import { useEntryRoute, useMe } from '@/hooks/useMe';
-import { useApprovalCounts } from '@/hooks/useApprovals';
+import { useEntryRoute } from '@/hooks/useMe';
+import { useShellEffects } from '@/hooks/useShellEffects';
 import { useIsWide } from '@/hooks/useLayout';
-import { useNotificationSetup, useReminderSync, useUnreadNotifications } from '@/hooks/useNotifications';
-import { badgeTotal } from '@/domain/notification-center';
-import { setAppBadge } from '@/pwa/appBadge';
-import { useActivityPing } from '@/hooks/useActivityPing';
-import { useRealtimeFamily } from '@/hooks/useRealtimeFamily';
-import { useResumeAfterReload } from '@/hooks/useResumeAfterReload';
 import { colors } from '@/theme/tokens';
 
 export default function TabsLayout() {
   const { t } = useTranslation();
   const wide = useIsWide();
   const route = useEntryRoute();
-  const familyId = useMe().data?.family.id ?? null;
-  const isParent = useMe().data?.member.role === 'parent';
-  const approvals = useApprovalCounts(isParent);
-  const unread = useUnreadNotifications();
-  const badge = badgeTotal(unread, approvals.total);
-  useEffect(() => setAppBadge(badge), [badge]);
-  useRealtimeFamily(familyId);
-  useActivityPing(familyId !== null); // dernière activité du membre (D-102)
-  useResumeAfterReload(); // après un changement de thème, retour à la page où l'on était (D-103)
-  useNotificationSetup();
-  useReminderSync();
-  // Garde de routage : session perdue ou appareil révoqué → retour à l'onboarding.
+  const { approvals } = useShellEffects(); // pastille, temps réel, activité (D-102), reprise (D-103), notifications : communs à la V2 (D-106)
+  // Garde de routage : session perdue, appareil révoqué ou famille passée en V2 (D-106) → retour à l'aiguillage.
   if (route !== 'loading' && route !== '/(tabs)/today') return <Redirect href="/" />;
   return (
     <View style={{ flex: 1 }}>

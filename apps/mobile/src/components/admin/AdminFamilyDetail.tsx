@@ -1,16 +1,19 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Switch, Text, View } from 'react-native';
 import { AdminGate } from '@/components/admin/AdminGate';
 import { Button, Card, ErrorText, Screen, ScreenHeader, SectionTitle } from '@/components/ui';
 import { classLabel, countriesLabel, formatDate } from '@/domain/admin-stats';
-import { useAdminFamily } from '@/hooks/useAdminStats';
+import { useAdminFamily, useSetFamilyUiVersion } from '@/hooks/useAdminStats';
 import { serverErrorCode } from '@/api/tasks';
 import { colors, typography } from '@/theme/tokens';
 
 const USAGE_ROWS = ['tasksCreated', 'tasksGenerated', 'tasksCompleted', 'tasksValidated', 'quizzesSubmitted', 'quizzesValidated', 'rewardRequests', 'aiCalls', 'avatarCalls'] as const;
 
-/** Fiche d'une famille (D-102) : les mêmes champs que la liste + compteurs d'usage sur 30 jours. Aucun contenu, aucun prénom d'enfant. Lecture seule. */
+/**
+ * Fiche d'une famille (D-102) : les mêmes champs que la liste + compteurs d'usage sur 30 jours. Aucun contenu, aucun prénom d'enfant.
+ * Lecture seule, à UNE exception près (D-106) : l'interrupteur « Interface V2 » de la famille (`admin_set_ui_version`, vérifié et tracé par la base).
+ */
 export function AdminFamilyDetail() {
   return (
     <AdminGate>
@@ -48,6 +51,7 @@ function Detail() {
             <Field label={t('adminStats.families.sort.notifications')} value={f.notifications ? t('adminStats.families.notificationsOn') : t('adminStats.families.notificationsOff')} />
             <Field label={t('adminStats.family.devices')} value={String(f.activeDevices)} />
           </Card>
+          <UiVersionSwitch familyId={f.familyId} v2={f.uiVersion === 'v2'} />
           <SectionTitle>{t('adminStats.family.usage')}</SectionTitle>
           <Card>
             {USAGE_ROWS.map((key) => (
@@ -60,6 +64,29 @@ function Detail() {
         </>
       ) : null}
     </Screen>
+  );
+}
+
+/** D-106 : la seule écriture de cet écran. */
+function UiVersionSwitch({ familyId, v2 }: { familyId: string; v2: boolean }) {
+  const { t } = useTranslation();
+  const set = useSetFamilyUiVersion(familyId);
+  const value = set.isPending && set.variables ? set.variables === 'v2' : v2;
+  return (
+    <Card>
+      <View style={styles.row}>
+        <Text style={styles.label}>{t('v2.admin.toggle')}</Text>
+        <Switch
+          testID="admin-ui-version"
+          accessibilityLabel={t('v2.admin.toggle')}
+          accessibilityHint={t('v2.admin.hint')}
+          value={value}
+          disabled={set.isPending}
+          onValueChange={(on) => set.mutate(on ? 'v2' : 'v1')}
+        />
+      </View>
+      <Text style={typography.secondary}>{t('v2.admin.hint')}</Text>
+    </Card>
   );
 }
 

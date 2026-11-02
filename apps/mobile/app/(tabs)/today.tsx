@@ -197,7 +197,7 @@ export default function TodayScreen() {
                   pending={pendingIds.has(task.id)}
                   onToggle={() => {
                     // D-104 : le panda réagit tout de suite quand l'enfant coche (même hors ligne), avant toute réponse du serveur
-                    if (!isParent && task.completed_at === null) reactToCheck(child.id);
+                    if (!isParent && task.completed_at === null) reactToCheck(child.id, task.points);
                     toggle.mutate(toggleVars(task, task.completed_at === null, isParent));
                   }}
                   onOpen={() => router.push({ pathname: '/task/[id]', params: { id: task.id } })}

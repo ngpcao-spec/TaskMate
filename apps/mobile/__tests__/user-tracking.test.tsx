@@ -39,10 +39,12 @@ jest.mock('@/hooks/useAdminStats', () => ({
   useAdminFamilies: (...args: unknown[]) => { mockFamiliesCall(...args); return mockFamilies; },
   useAdminFamily: () => mockFamily,
   useRefreshAdminStats: () => ({ refresh: mockRefresh, busy: mockBusy }),
+  useSetFamilyUiVersion: () => ({ mutate: mockSetUi, isPending: false, variables: undefined }),
 }));
+const mockSetUi = jest.fn();
 
 const split = (parents: number, children: number) => ({ parents, children });
-const overview = { families: 2, parents: 3, children: 4, newFamilies7d: 1, newFamilies30d: 2, active: { today: split(1, 2), d7: split(2, 3), d30: split(3, 4) }, familiesWithNotifications: 1 };
+const overview = { families: 2, parents: 3, children: 4, newFamilies7d: 1, newFamilies30d: 2, active: { today: split(1, 2), d7: split(2, 3), d30: split(3, 4) }, familiesWithNotifications: 1, uiVersions: { v1: 1, v2: 1 } };
 const series = {
   weeks: Array.from({ length: 12 }, (_, i) => ({ weekStart: `2026-08-${String(10 + i).padStart(2, '0')}`, families: i % 3 })),
   days: Array.from({ length: 30 }, (_, i) => ({ day: `2026-10-${String(i + 1).padStart(2, '0')}`, parents: i % 4, children: i % 5 })),
@@ -69,7 +71,7 @@ beforeEach(() => {
   mockUsage = ready(usage);
   mockHealth = ready(health);
   mockFamilies = ready(page([row(), row({ familyId: 'fam-2', name: 'Famille B', creatorEmail: null, countries: [], children: 0, classes: [], status: 'dormant', lastActiveAt: null, notifications: false })]));
-  mockFamily = ready({ ...row(), activeDevices: 1, usage30d: counters() });
+  mockFamily = ready({ ...row(), activeDevices: 1, usage30d: counters(), uiVersion: 'v1' });
   mockBusy = false;
 });
 afterEach(() => jest.clearAllMocks());
@@ -211,6 +213,15 @@ describe('Suivi des utilisateurs : fiche famille', () => {
     expect(screen.getByLabelText('Thiết bị đang bật thông báo: 1')).toBeTruthy();
     expect(screen.getByLabelText('Việc đã tạo: 5')).toBeTruthy();
     expect(screen.queryByRole('button', { name: /Xóa|Sửa|Lưu/ })).toBeNull();
+  });
+  it('D-106 : seule écriture, l’interrupteur « Giao diện V2 » (V1 par défaut)', async () => {
+    await render(<AdminFamilyDetail />);
+    const sw = screen.getByLabelText('Giao diện V2');
+    expect(sw.props.value).toBe(false);
+    await fireEvent(sw, 'valueChange', true);
+    expect(mockSetUi).toHaveBeenCalledWith('v2');
+    await fireEvent(sw, 'valueChange', false);
+    expect(mockSetUi).toHaveBeenLastCalledWith('v1');
   });
   it('chargement et erreur', async () => {
     mockFamily = loading;

@@ -6,6 +6,7 @@ import { queryKeys } from '@/api/keys';
 import { supabase } from '@/api/supabase';
 import { meSettled, meStaleTime, resolveEntryRoute, type EntryRoute } from '@/domain/entry-route';
 import { shouldResetCache } from '@/domain/cache-owner';
+import { parseUiVersion } from '@/domain/ui-version';
 import { persister } from '@/sync/persister';
 import { kvStorage } from '@/sync/storage';
 import { useSessionStore } from '@/store/session';
@@ -56,5 +57,6 @@ export function useEntryRoute(): EntryRoute {
     member: me.data ? { role: me.data.member.role } : null,
     childrenCount: me.data?.children.length ?? 0,
     isChildAccount: session?.user.app_metadata?.account_type === 'child',
+    uiVersion: parseUiVersion(me.data?.family.ui_version),
   });
 }

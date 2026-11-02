@@ -7,6 +7,7 @@ export function optimisticTask(
   ctx: { familyId: string; memberId: string; nowIso: string },
 ): TaskRow {
   return {
+    icon: null,
     ...fields,
     family_id: ctx.familyId,
     completed_at: null,

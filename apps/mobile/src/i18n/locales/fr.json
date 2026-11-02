@@ -2077,5 +2077,76 @@
       "phong-nha-lampe": "lampe",
       "phong-nha-fougere": "fougère"
     }
+  },
+  "v2": {
+    "tabs": {
+      "home": "Aujourd'hui",
+      "rewards": "Récompenses",
+      "adventure": "Aventure",
+      "stats": "Statistiques",
+      "me": "Moi",
+      "calendar": "Calendrier",
+      "review": "Révisions",
+      "settings": "Réglages",
+      "badge": "{{label}}, {{count}} nouveauté(s)"
+    },
+    "top": {
+      "menu": "Menu",
+      "calendar": "Calendrier",
+      "notifications": "Notifications",
+      "notificationsCount": "Notifications, {{count}} non lue(s)"
+    },
+    "dayPill": {
+      "remaining": "Encore {{count}} à faire aujourd'hui !",
+      "done": "Tout est fait aujourd'hui !"
+    },
+    "section": {
+      "morning": "Matin",
+      "afternoon": "Après-midi",
+      "evening": "Soir",
+      "anytime": "Quand je veux",
+      "label": "{{section}}, {{count}} objectif(s)",
+      "collapse": "Replier",
+      "expand": "Déplier"
+    },
+    "goal": {
+      "energy": "{{points}} ⚡",
+      "energyLabel": "{{points}} d'énergie",
+      "pending": "en attente des parents",
+      "done": "fait",
+      "open": "Voir : {{title}}"
+    },
+    "adventure": {
+      "mapButton": "Carte des aventures",
+      "ready": "Plein d'énergie !",
+      "away": "En aventure · retour demain matin",
+      "pathLabel": "{{name}} est en route, {{percent}} % du chemin",
+      "back": "{{name}} est rentré ! Ouvrons son sac",
+      "open": "Ouvrir le sac",
+      "start": "⚡",
+      "finish": "?"
+    },
+    "celebration": {
+      "title": "Tout est fait !",
+      "subtitle": "Objectifs du jour atteints",
+      "s1": "Youpi ! Je suis trop content !",
+      "s2": "Bravo ! On a tout fait aujourd'hui !",
+      "s3": "Trop fort ! Tout est fait.",
+      "s4": "Bien joué. Une journée bien remplie.",
+      "review": "Revoir",
+      "missing": "Encore {{n}} ⚡ et c'est parti !"
+    },
+    "panda": {
+      "walking": "Le panda {{name}} part à l'aventure"
+    },
+    "placeholder": "La nouvelle interface est en préparation.",
+    "admin": {
+      "toggle": "Interface V2",
+      "hint": "Pour cette famille seulement. L'interface V1 reste celle par défaut.",
+      "saved": "Interface changée",
+      "error": "Impossible de changer l'interface",
+      "kpi": "Familles en interface V2",
+      "kpiCaption": "sur {{total}} familles"
+    }
   }
 }

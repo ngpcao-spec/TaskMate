@@ -24,6 +24,7 @@ const state = (over: Partial<CompanionState> = {}): CompanionState => ({
   hasCompanion: true,
   name: 'Bambou',
   trait: 'kind',
+  variant: 'boy',
   stage: 2,
   stageOffset: 0,
   energyTotal: 20,
@@ -60,9 +61,9 @@ describe('PandaCompanion', () => {
     await render(companion());
     expect(screen.getByRole('header', { name: 'Bambou' })).toBeTruthy();
     expect(screen.getByText('Thân thiết cấp 1')).toBeTruthy();
-    expect(screen.getByLabelText('Năng lượng 20 trên 50')).toBeTruthy();
+    expect(screen.getByLabelText('Năng lượng 20 trên 100')).toBeTruthy();
     expect(screen.getByLabelText('Panda Bambou, bình tĩnh')).toBeTruthy();
-    expect(screen.getByText('20/50')).toBeTruthy();
+    expect(screen.getByText('20/100')).toBeTruthy();
   });
 
   it('l’humeur suit les tâches du jour (très heureux, fier, endormi après 20 h)', async () => {
@@ -84,7 +85,7 @@ describe('PandaCompanion', () => {
     await render(companion({ done: 1, total: 3 }));
     expect(screen.getByLabelText('Panda Bambou, vui')).toBeTruthy();
     expect(screen.queryByText('+5 ⚡')).toBeNull();
-    await act(async () => usePandaReaction.getState().trigger('c1'));
+    await act(async () => usePandaReaction.getState().trigger('c1', 5));
     expect(screen.getByLabelText('Panda Bambou, rất vui')).toBeTruthy();
     expect(screen.getByText('+5 ⚡')).toBeTruthy();
     await act(async () => {
@@ -101,7 +102,7 @@ describe('PandaCompanion', () => {
   it('la réaction d’un autre enfant ne touche pas ce panda', async () => {
     jest.useFakeTimers();
     await render(companion({ done: 1, total: 3 }));
-    await act(async () => usePandaReaction.getState().trigger('autre-enfant'));
+    await act(async () => usePandaReaction.getState().trigger('autre-enfant', 5));
     expect(screen.queryByText('+5 ⚡')).toBeNull();
     expect(screen.getByLabelText('Panda Bambou, vui')).toBeTruthy();
     await act(async () => {
@@ -113,13 +114,13 @@ describe('PandaCompanion', () => {
     jest.useFakeTimers();
     const sequence = jest.spyOn(Animated, 'sequence');
     await render(companion());
-    await act(async () => usePandaReaction.getState().trigger('c1'));
+    await act(async () => usePandaReaction.getState().trigger('c1', 5));
     expect(sequence).toHaveBeenCalledTimes(1);
     await act(async () => {
       jest.advanceTimersByTime(REACTION_MS + 10);
     });
     sequence.mockClear();
-    await act(async () => usePandaReaction.getState().trigger('c1'));
+    await act(async () => usePandaReaction.getState().trigger('c1', 5));
     expect(sequence).toHaveBeenCalledTimes(1);
   });
 
@@ -131,7 +132,7 @@ describe('PandaCompanion', () => {
     await act(async () => {
       await Promise.resolve();
     });
-    await act(async () => usePandaReaction.getState().trigger('c1'));
+    await act(async () => usePandaReaction.getState().trigger('c1', 5));
     expect(sequence).not.toHaveBeenCalled();
     expect(screen.getByText('+5 ⚡')).toBeTruthy();
     await act(async () => {
@@ -140,10 +141,10 @@ describe('PandaCompanion', () => {
   });
 
   it('sans nom : « Bambou » par défaut ; niveau supérieur affiché', async () => {
-    await render(companion({ state: state({ name: null, energyTotal: 160, level: 3, nextLevelAt: 300 }) }));
+    await render(companion({ state: state({ name: null, energyTotal: 320, level: 3, nextLevelAt: 600 }) }));
     expect(screen.getByRole('header', { name: 'Bambou' })).toBeTruthy();
     expect(screen.getByText('Thân thiết cấp 3')).toBeTruthy();
-    expect(screen.getByLabelText('Năng lượng 160 trên 300')).toBeTruthy();
+    expect(screen.getByLabelText('Năng lượng 320 trên 600')).toBeTruthy();
   });
 });
 

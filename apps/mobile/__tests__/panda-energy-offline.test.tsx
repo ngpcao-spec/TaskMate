@@ -15,10 +15,10 @@ let mockCounter = 0;
 jest.mock('@/api/ids', () => ({ newId: jest.fn(() => `tx-${++mockCounter}`) }));
 jest.mock('@/api/supabase', () => ({ supabase: {} }));
 
-const task = { id: 't1', child_id: 'c1', date: '2026-07-02', completed_at: null } as TaskRow;
+const task = { id: 't1', child_id: 'c1', date: '2026-07-02', completed_at: null, points: 10 } as TaskRow;
 const done = { ...task, completed_at: '2026-07-02T08:00:00Z' } as TaskRow;
 const tasksKey = taskKeys.range('c1', '2026-07-02', '2026-07-02');
-const state = (energyTotal: number, level = 1, nextLevelAt = 50): CompanionState => ({ hasCompanion: true, name: 'Bambou', trait: 'kind', stage: 2, stageOffset: 0, energyTotal, level, nextLevelAt });
+const state = (energyTotal: number, level = 1, nextLevelAt = 100): CompanionState => ({ hasCompanion: true, name: 'Bambou', trait: 'kind', variant: 'boy', stage: 2, stageOffset: 0, energyTotal, level, nextLevelAt });
 
 const clients: QueryClient[] = [];
 const makeClient = (energy = 20) => {
@@ -35,7 +35,7 @@ const wrap = (client: QueryClient) => {
 };
 const energyOf = (client: QueryClient) => client.getQueryData<CompanionState>(companionKeys.state('c1'))?.energyTotal;
 
-describe('énergie du panda affichée tout de suite (D-104)', () => {
+describe('énergie du panda affichée tout de suite (D-104, D-106 : énergie = points de la tâche)', () => {
   beforeEach(() => {
     mockComplete.mockReset().mockResolvedValue(undefined);
     mockCounter = 0;
@@ -44,17 +44,17 @@ describe('énergie du panda affichée tout de suite (D-104)', () => {
   afterEach(() => clients.splice(0).forEach((c) => c.clear()));
   afterAll(() => onlineManager.setOnline(true));
 
-  it('hors ligne : l’enfant coche → +5 ⚡ aussitôt, sans appel réseau ; le niveau est recalculé', async () => {
-    const client = makeClient(48);
+  it('hors ligne : l’enfant coche → + les points de la tâche (10 ⚡) aussitôt, sans appel réseau ; le niveau est recalculé', async () => {
+    const client = makeClient(95);
     const { result } = await renderHook(() => useToggleTask(), { wrapper: wrap(client) });
     onlineManager.setOnline(false);
     await act(async () => result.current.mutate(toggleVars(task, true, false)));
-    expect(energyOf(client)).toBe(53);
-    expect(client.getQueryData<CompanionState>(companionKeys.state('c1'))).toMatchObject({ level: 2, nextLevelAt: 150 });
+    expect(energyOf(client)).toBe(105);
+    expect(client.getQueryData<CompanionState>(companionKeys.state('c1'))).toMatchObject({ level: 2, nextLevelAt: 300 });
     expect(mockComplete).not.toHaveBeenCalled();
   });
 
-  it('l’enfant décoche → −5 ⚡, jamais sous 0', async () => {
+  it('l’enfant décoche → − les points de la tâche, jamais sous 0', async () => {
     const client = makeClient(3);
     client.setQueryData<TaskRow[]>(tasksKey, [done]);
     const { result } = await renderHook(() => useToggleTask(), { wrapper: wrap(client) });

@@ -1,3 +1,4 @@
+import type { UiVersion } from '@/domain/ui-version';
 import {
   parseFamilyDetail,
   parseFamilyPage,
@@ -57,4 +58,10 @@ export async function fetchAdminHealth(): Promise<Health> {
   const { data, error } = await supabase.rpc('admin_health');
   fail(error);
   return parseHealth(data);
+}
+
+/** D-106 : interface V1 / V2 d'une famille (administrateur seulement, vérifié par la base ; tracé dans `catalog_admin_log`). */
+export async function setFamilyUiVersion(familyId: string, version: UiVersion): Promise<void> {
+  const { error } = await supabase.rpc('admin_set_ui_version', { p_family: familyId, p_version: version });
+  if (error) throw error;
 }

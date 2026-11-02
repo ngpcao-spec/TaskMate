@@ -2077,5 +2077,76 @@
       "phong-nha-lampe": "đèn pin",
       "phong-nha-fougere": "cây dương xỉ"
     }
+  },
+  "v2": {
+    "tabs": {
+      "home": "Hôm nay",
+      "rewards": "Phần thưởng",
+      "adventure": "Phiêu lưu",
+      "stats": "Thống kê",
+      "me": "Tôi",
+      "calendar": "Lịch",
+      "review": "Ôn tập",
+      "settings": "Cài đặt",
+      "badge": "{{label}}, có {{count}} điều mới"
+    },
+    "top": {
+      "menu": "Menu",
+      "calendar": "Lịch",
+      "notifications": "Thông báo",
+      "notificationsCount": "Thông báo, {{count}} chưa đọc"
+    },
+    "dayPill": {
+      "remaining": "Còn {{count}} việc hôm nay!",
+      "done": "Hôm nay xong hết rồi!"
+    },
+    "section": {
+      "morning": "Buổi sáng",
+      "afternoon": "Buổi chiều",
+      "evening": "Buổi tối",
+      "anytime": "Lúc nào cũng được",
+      "label": "{{section}}, {{count}} việc",
+      "collapse": "Thu gọn",
+      "expand": "Mở ra"
+    },
+    "goal": {
+      "energy": "{{points}} ⚡",
+      "energyLabel": "{{points}} năng lượng",
+      "pending": "chờ bố mẹ duyệt",
+      "done": "đã xong",
+      "open": "Xem: {{title}}"
+    },
+    "adventure": {
+      "mapButton": "Bản đồ phiêu lưu",
+      "ready": "Đầy năng lượng rồi!",
+      "away": "Đang phiêu lưu · về sáng mai",
+      "pathLabel": "{{name}} đang trên đường, đã đi {{percent}}%",
+      "back": "{{name}} về rồi! Mở túi xem nào",
+      "open": "Mở túi",
+      "start": "⚡",
+      "finish": "?"
+    },
+    "celebration": {
+      "title": "Xong hết rồi!",
+      "subtitle": "Mục tiêu hôm nay hoàn thành",
+      "s1": "Hoan hô! Tớ vui quá đi!",
+      "s2": "Giỏi quá! Hôm nay tụi mình làm hết rồi!",
+      "s3": "Đỉnh thật! Xong hết rồi đó.",
+      "s4": "Tốt lắm. Một ngày trọn vẹn.",
+      "review": "Xem lại",
+      "missing": "Còn {{n}} ⚡ nữa là đi được!"
+    },
+    "panda": {
+      "walking": "Panda {{name}} đang đi phiêu lưu"
+    },
+    "placeholder": "Giao diện mới đang được chuẩn bị.",
+    "admin": {
+      "toggle": "Giao diện V2",
+      "hint": "Chỉ áp dụng cho gia đình này. Giao diện V1 vẫn là mặc định.",
+      "saved": "Đã đổi giao diện",
+      "error": "Chưa đổi được giao diện",
+      "kpi": "Gia đình dùng giao diện V2",
+      "kpiCaption": "trên {{total}} gia đình"
+    }
   }
 }

@@ -83,7 +83,10 @@ describe('textes dans les trois langues', () => {
     }
   });
   it('valeurs d’interpolation', () => {
-    expect(pandaLineParams('Minh')).toEqual({ name: 'Minh', energy: 5, quizEnergy: 10, destination: '' });
+    expect(pandaLineParams('Minh')).toEqual({ name: 'Minh', energy: 0, quizEnergy: 0, destination: '' });
+    // D-106 : l'énergie affichée vient des points (tâche, quiz), jamais d'une constante
+    expect(pandaLineParams('Minh', '', { energy: 10, quizEnergy: 8 })).toEqual({ name: 'Minh', energy: 10, quizEnergy: 8, destination: '' });
+    expect(pandaLineParams('Minh', '', { energy: -4.5 }).energy).toBe(0);
     expect(pandaLineParams('Minh', 'Vịnh Hạ Long').destination).toBe('Vịnh Hạ Long');
   });
 });
