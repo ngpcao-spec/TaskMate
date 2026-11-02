@@ -1817,26 +1817,26 @@ test.describe('compagnon panda (D-104)', () => {
     await page.getByRole('radio', { name: 'Dũng cảm' }).click();
     await page.getByRole('button', { name: 'Gặp Panda!' }).click();
     await expect(page.getByText('Mochi', { exact: true })).toBeVisible();
-    await expect(page.getByLabel('Năng lượng 0 trên 50')).toBeVisible();
+    await expect(page.getByLabel('Năng lượng 0 trên 100')).toBeVisible();
     await expect(page.getByText('Panda của em', { exact: true })).toHaveCount(0); // l'étape ne revient pas
 
-    // coche : réaction immédiate (expression « très heureux », « +5 ⚡ »), puis l'énergie affichée passe à 5
+    // coche : réaction immédiate (expression « très heureux », « +10 ⚡ » = les points de la tâche), puis l'énergie affichée passe à 10
     await page.getByRole('checkbox', { name: taskTitle }).click();
-    await expect(page.getByText('+5 ⚡')).toBeVisible();
+    await expect(page.getByText('+10 ⚡')).toBeVisible();
     await expect(page.getByLabel('Panda Mochi, rất vui')).toBeVisible();
-    await expect(page.getByLabel('Năng lượng 5 trên 50')).toBeVisible();
+    await expect(page.getByLabel('Năng lượng 10 trên 100')).toBeVisible();
     await expect(page.getByLabel('Panda Mochi, tự hào')).toBeVisible({ timeout: 10_000 }); // la seule tâche du jour est faite
 
-    // serveur : +5, une seule ligne ; les points restent à 0 (la coche attend le parent)
-    await expect.poll(() => companionEnergy(family, 'minh')).toBe(5);
+    // serveur : +10, une seule ligne ; les points restent à 0 (la coche attend le parent)
+    await expect.poll(() => companionEnergy(family, 'minh')).toBe(10);
     expect(await serverState(family, 'minh', taskTitle)).toMatchObject({ validated: false, balance: 0, transactions: 0 });
 
-    // rechargement : l'énergie est toujours à 5 et l'étape de création n'est pas revenue
+    // rechargement : l'énergie est toujours à 10 et l'étape de création n'est pas revenue
     await page.reload();
-    await expect(page.getByLabel('Năng lượng 5 trên 50')).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByLabel('Năng lượng 10 trên 100')).toBeVisible({ timeout: 20_000 });
     await expect(page.getByText('Mochi', { exact: true })).toBeVisible();
     await expect(page.getByText('Panda của em', { exact: true })).toHaveCount(0);
-    expect(await companionEnergy(family, 'minh')).toBe(5);
+    expect(await companionEnergy(family, 'minh')).toBe(10);
   });
 
   test('le parent voit le panda dans la fiche de chaque enfant, le renomme, mais ne règle pas son stade ; un enfant ne lit pas le panda de son frère', async ({ browser }) => {
@@ -1879,11 +1879,11 @@ test.describe('compagnon panda (D-104)', () => {
 });
 
 test.describe('aventures du panda (D-105)', () => {
-  test('30 d\'énergie : l\'enfant part à Hạ Long ; le lendemain il récupère une trouvaille tirée par le serveur, retrouvée dans son carnet après rechargement', async ({ browser }) => {
+  test('60 d\'énergie (D-106) : l\'enfant part à Hạ Long ; le lendemain il récupère une trouvaille tirée par le serveur, retrouvée dans son carnet après rechargement', async ({ browser }) => {
     test.setTimeout(150_000);
     const family = await createFamily();
     await seedCompanion(family, 'minh', 'Bambou');
-    await seedEnergy(family, 'minh', 30);
+    await seedEnergy(family, 'minh', 60);
 
     const ctx = await browser.newContext();
     await signInContext(ctx, family.minh);
@@ -1893,17 +1893,17 @@ test.describe('aventures du panda (D-105)', () => {
     await open(page);
 
     // jauge pleine → choix de la destination (verrouillées grisées) → départ
-    await expect(page.getByText('Phiêu lưu 30/30')).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText('Phiêu lưu 60/60')).toBeVisible({ timeout: 20_000 });
     await page.getByRole('button', { name: 'Đi phiêu lưu!' }).click();
     await expect(page).toHaveURL(/\/adventure\/choose/);
     await expect(page.getByRole('button', { name: 'Phong Nha, mở ở cấp 6' })).toBeDisabled();
     await page.getByRole('button', { name: 'Vịnh Hạ Long' }).click();
     await expect(page.getByLabel('Bambou đang ở Vịnh Hạ Long, mai về nhé!')).toBeVisible({ timeout: 20_000 }); // la carte postale
-    await expect(page.getByText('Chuyến sau 0/30')).toBeVisible(); // la jauge se remplit pour la prochaine aventure
+    await expect(page.getByText('Chuyến sau 0/60')).toBeVisible(); // la jauge se remplit pour la prochaine aventure
     await expect.poll(async () => (await adventuresOf(family, 'minh')).adventures.length).toBe(1);
     const [departed] = (await adventuresOf(family, 'minh')).adventures;
-    expect(departed).toMatchObject({ destination_slug: 'ha-long', energy_mark: 30, discovery_slug: null });
-    expect(await companionEnergy(family, 'minh')).toBe(30); // partir ne retire aucune énergie
+    expect(departed).toMatchObject({ destination_slug: 'ha-long', energy_mark: 60, discovery_slug: null });
+    expect(await companionEnergy(family, 'minh')).toBe(60); // partir ne retire aucune énergie
 
     // le lendemain (horloge simulée côté serveur : l'aventure a un jour de plus)
     await adventureNextDay(family, 'minh');
