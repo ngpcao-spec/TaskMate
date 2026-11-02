@@ -12,6 +12,7 @@ const minh = { id: 'c-minh', name: 'Minh', birth_date: '2009-03-01', color: '#1E
 const khang = { id: 'c-khang', name: 'Khang', birth_date: '2013-05-01', color: '#2EC4A6' } as ChildRow;
 const cam = { id: 'c-cam', name: 'Cam', birth_date: '2016-02-01', color: '#8B5CF6' } as ChildRow;
 let mockRole: 'parent' | 'child' = 'parent';
+let mockUi: 'v1' | 'v2' = 'v1';
 let mockChildren: ChildRow[] = [minh, khang];
 const mockCreate = jest.fn();
 const mockSeries = jest.fn();
@@ -19,7 +20,7 @@ const mockUpdateSeries = jest.fn();
 const mockUpdate = jest.fn();
 jest.mock('@/hooks/useDisplayedChild', () => ({
   useDisplayedChild: () => ({
-    me: { family: { timezone: 'Asia/Ho_Chi_Minh', id: 'f1' }, member: { id: 'm-p' } },
+    me: { family: { timezone: 'Asia/Ho_Chi_Minh', id: 'f1', ui_version: mockUi }, member: { id: 'm-p' } },
     viewer: { role: mockRole, memberId: mockRole === 'parent' ? 'm-p' : 'm-minh', childId: mockRole === 'child' ? 'c-minh' : null },
     children: mockChildren, child: minh, readOnly: false, select: jest.fn(),
   }),
@@ -36,7 +37,7 @@ jest.mock('@/hooks/useRecurrences', () => ({
 }));
 
 describe('TaskForm', () => {
-  beforeEach(() => { jest.clearAllMocks(); mockRole = 'parent'; mockChildren = [minh, khang]; });
+  beforeEach(() => { jest.clearAllMocks(); mockRole = 'parent'; mockUi = 'v1'; mockChildren = [minh, khang]; });
 
   it('Lưu désactivé tant que le titre est vide, puis crée la tâche (hors ligne : file optimiste)', async () => {
     await render(<TaskForm />);
@@ -122,5 +123,21 @@ describe('TaskForm', () => {
     await waitFor(() => expect(mockUpdateSeries).toHaveBeenCalledTimes(1));
     expect(mockUpdateSeries.mock.calls[0]?.[0]).toMatchObject({ id: 'rec1', patch: { title: 'Bài tập mới' } });
     expect(mockUpdate).not.toHaveBeenCalled();
+  });
+  it('D-106 : V2 : grille des 36 icônes, « Tự động » par défaut, l’icône choisie est enregistrée', async () => {
+    mockUi = 'v2';
+    await render(<TaskForm />);
+    expect(screen.getByRole('radio', { name: 'Tự động: Làm bài tập' }).props.accessibilityState).toMatchObject({ selected: true });
+    await fireEvent.press(screen.getByRole('radio', { name: 'Tập đàn' }));
+    await fireEvent.changeText(screen.getByLabelText('Tên công việc'), 'Tập piano');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Lưu' }).props.accessibilityState).toMatchObject({ disabled: false }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Lưu' }));
+    await waitFor(() => expect(mockCreate).toHaveBeenCalledTimes(1));
+    expect((mockCreate.mock.calls[0]?.[0] as { tasks: { icon?: string | null }[] }).tasks[0]).toMatchObject({ icon: 'piano' });
+  });
+
+  it('D-106 : V1 sans grille d’icônes', async () => {
+    await render(<TaskForm />);
+    expect(screen.queryByRole('radio', { name: 'Tập đàn' })).toBeNull();
   });
 });

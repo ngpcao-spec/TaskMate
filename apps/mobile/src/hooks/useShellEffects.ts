@@ -12,7 +12,8 @@ import { setAppBadge } from '@/pwa/appBadge';
  * Effets communs aux deux interfaces (V1 `(tabs)` et V2 `(v2)`, D-106) : pastille de l'app, temps réel, dernière activité (D-102), reprise après
  * rechargement (D-103), notifications et rappels. Une seule copie : les deux layouts l'appellent.
  */
-export function useShellEffects() {
+/** `primary` faux : un layout V1 ouvert PAR-DESSUS la V2 (sous-écran réutilisé) — pas de second abonnement temps réel ni de second ping. */
+export function useShellEffects(primary = true) {
   const me = useMe().data;
   const familyId = me?.family.id ?? null;
   const isParent = me?.member.role === 'parent';
@@ -20,8 +21,8 @@ export function useShellEffects() {
   const unread = useUnreadNotifications();
   const badge = badgeTotal(unread, approvals.total);
   useEffect(() => setAppBadge(badge), [badge]);
-  useRealtimeFamily(familyId);
-  useActivityPing(familyId !== null);
+  useRealtimeFamily(primary ? familyId : null);
+  useActivityPing(primary && familyId !== null);
   useResumeAfterReload();
   useNotificationSetup();
   useReminderSync();

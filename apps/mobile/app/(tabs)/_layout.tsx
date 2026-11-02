@@ -1,4 +1,5 @@
-import { Redirect, Tabs } from 'expo-router';
+import { Redirect, Tabs, usePathname } from 'expo-router';
+import { isV1TabRoot } from '@/domain/ui-version';
 import { ChartColumn, EllipsisVertical, House, Calendar } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -16,16 +17,20 @@ export default function TabsLayout() {
   const { t } = useTranslation();
   const wide = useIsWide();
   const route = useEntryRoute();
-  const { approvals } = useShellEffects(); // pastille, temps réel, activité (D-102), reprise (D-103), notifications : communs à la V2 (D-106)
+  const pathname = usePathname();
+  // pastille, temps réel, activité (D-102), reprise (D-103), notifications : communs à la V2 (D-106) ; déjà montés par la V2 quand une famille V2 ouvre un sous-écran V1
+  const { approvals } = useShellEffects(route !== '/v2');
   // Garde de routage : session perdue, appareil révoqué ou famille passée en V2 (D-106) → retour à l'aiguillage.
-  if (route !== 'loading' && route !== '/(tabs)/today') return <Redirect href="/" />;
+  // D-106 : une famille V2 ouvre les sous-écrans V1 réutilisés (`/more/children`, `/more/settings`…), sans la barre d'onglets V1 ; jamais une racine d'onglet.
+  const v2 = route === '/v2';
+  if (route !== 'loading' && route !== '/(tabs)/today' && !(v2 && !isV1TabRoot(pathname))) return <Redirect href="/" />;
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView edges={['top']} style={{ backgroundColor: colors.background }}>
         <SyncBanner />
       </SafeAreaView>
       <BottomBarContext.Provider value={!wide}>
-      <Tabs tabBar={(props) => <NavBar {...props} />} screenOptions={{ headerShown: false, ...(wide ? { tabBarPosition: 'left' as const } : {}) }}>
+      <Tabs tabBar={(props) => (v2 ? null : <NavBar {...props} />)} screenOptions={{ headerShown: false, ...(wide ? { tabBarPosition: 'left' as const } : {}) }}>
         <Tabs.Screen name="today" options={{ title: t('tabs.today'), tabBarIcon: ({ color, size }) => <House color={color} size={size} /> }} />
         <Tabs.Screen name="calendar" options={{ title: t('tabs.calendar'), tabBarIcon: ({ color, size }) => <Calendar color={color} size={size} /> }} />
         <Tabs.Screen name="stats" options={{ title: t('tabs.stats'), tabBarIcon: ({ color, size }) => <ChartColumn color={color} size={size} /> }} />

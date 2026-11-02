@@ -1,13 +1,10 @@
 import { Redirect } from 'expo-router';
-import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useMe } from '@/hooks/useMe';
-import { SceneHeader } from '@/v2/components/SceneHeader';
-import { v2Card, v2Colors, v2Spacing, v2Text } from '@/v2/theme';
+import { v2Colors } from '@/v2/theme';
 
-/** Aiguillage de la V2 : l'enfant vers ses onglets ; le parent vers les siens (lot A3 : accueil provisoire en attendant). */
+/** Aiguillage de la V2 (D-106) : l'enfant vers ses onglets, le parent vers les siens. */
 export default function V2Index() {
-  const { t } = useTranslation();
   const me = useMe().data;
   if (!me) {
     return (
@@ -16,18 +13,7 @@ export default function V2Index() {
       </View>
     );
   }
-  if (me.member.role === 'child') return <Redirect href="/v2/child/home" />;
-  return (
-    <View style={styles.screen}>
-      <SceneHeader scene="home" height={320} />
-      <View style={[v2Card, styles.card]}>
-        <Text style={v2Text.bodyBold}>{t('v2.placeholder')}</Text>
-      </View>
-    </View>
-  );
+  return <Redirect href={me.member.role === 'child' ? '/v2/child/home' : '/v2/parent/home'} />;
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: v2Colors.background, justifyContent: 'flex-start' },
-  card: { margin: v2Spacing.lg },
-});
+const styles = StyleSheet.create({ screen: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: v2Colors.background } });

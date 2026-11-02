@@ -355,7 +355,8 @@
       "endBeforeStart": "End must be after start",
       "pointsInvalid": "Points must be 0–1000",
       "childRequired": "Pick at least one child",
-      "weekdaysRequired": "Pick at least one day"
+      "weekdaysRequired": "Pick at least one day",
+      "iconInvalid": "Invalid icon"
     },
     "savedOffline": "Saved — will sync when back online",
     "repeat": "Repeat",
@@ -2166,6 +2167,63 @@
       "avatar": "My avatar",
       "notifications": "Notifications",
       "settings": "More settings"
+    },
+    "icons": {
+      "title": "Icon",
+      "auto": "Automatic: {{name}}",
+      "names": {
+        "reveil": "Wake up",
+        "brosse-a-dents": "Brush teeth",
+        "savon": "Wash hands",
+        "douche": "Shower",
+        "vetements": "Get dressed",
+        "lit": "Make the bed",
+        "petit-dejeuner": "Breakfast",
+        "boite-repas": "Lunch box",
+        "diner": "Dinner",
+        "verre-eau": "Drink water",
+        "fruits": "Fruit",
+        "cartable": "School bag",
+        "devoirs": "Homework",
+        "lecture": "Reading",
+        "ecriture": "Writing",
+        "maths": "Maths",
+        "langues": "Languages",
+        "dessin": "Drawing",
+        "piano": "Piano",
+        "football": "Football",
+        "natation": "Swimming",
+        "velo": "Cycling",
+        "course": "Running",
+        "yoga": "Yoga",
+        "ranger": "Tidy up",
+        "vaisselle": "Dishes",
+        "linge": "Laundry",
+        "poubelle": "Bins",
+        "arroser": "Water plants",
+        "animal": "Pet",
+        "cuisiner": "Cooking",
+        "appeler": "Phone call",
+        "gentillesse": "Kindness",
+        "dormir-tot": "Early bedtime",
+        "sans-ecran": "No screens",
+        "calme": "Calm"
+      }
+    },
+    "parent": {
+      "title": "{{name}} today",
+      "pickChild": "Choose a child",
+      "pandaOf": "{{child}}'s panda {{name}}",
+      "toValidate": "To approve",
+      "nothingToValidate": "Nothing to approve.",
+      "taskMeta": "{{date}} · {{points}} points",
+      "openQuiz": "Open review: {{title}}",
+      "quizScore": "{{score}}/{{total}} correct",
+      "day": "Their day"
+    },
+    "settings": {
+      "children": "Children",
+      "addChild": "Add a child"
     }
   }
 }
