@@ -38,14 +38,19 @@ describe('vidéo d’accueil V2 (D-106)', () => {
   it('web : <video> muette en boucle, webm puis mp4, cadrée sans déformation, décorative ; poster puis fondu de 200 ms', async () => {
     const { container } = await show();
     const video = all(container, 'video')[0]!;
-    expect(video.props).toMatchObject({ autoPlay: true, muted: true, loop: true, playsInline: true, preload: 'metadata', 'aria-hidden': true, tabIndex: -1 });
+    expect(video.props).toMatchObject({ autoPlay: true, muted: true, loop: true, playsInline: true, preload: 'auto', 'aria-hidden': true, tabIndex: -1 });
     expect(video.props.style).toMatchObject({ objectFit: 'cover' });
     expect(String((video.props.style as { objectPosition: string }).objectPosition)).toMatch(/^50% \d+(\.\d)?%$/);
     expect(all(container, 'source').map((s) => s.props.type)).toEqual(['video/webm', 'video/mp4']);
     expect(layer(container).props['aria-hidden']).toBe(true);
     const poster = () => all(container, 'img').find((i) => i.props['data-testid'] === 'v2-home-video-poster')!;
     expect(poster().props.style).toMatchObject({ opacity: 1, transition: 'opacity 200ms ease' });
-    await act(async () => (video.props.onCanPlay as () => void)());
+    // « prête » sans image peinte (iPhone) : le poster reste
+    await act(async () => (video.props.onPlaying as (e: object) => void)({ currentTarget: { paused: false, currentTime: 0 } }));
+    expect(poster().props.style).toMatchObject({ opacity: 1 });
+    expect(video.props.onCanPlay).toBeUndefined();
+    // première image peinte : fondu
+    await act(async () => (video.props.onTimeUpdate as (e: object) => void)({ currentTarget: { paused: false, currentTime: 0.04 } }));
     expect(poster().props.style).toMatchObject({ opacity: 0 });
   });
 
