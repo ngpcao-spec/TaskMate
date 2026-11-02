@@ -355,7 +355,8 @@
       "endBeforeStart": "La fin doit suivre le début",
       "pointsInvalid": "Les points vont de 0 à 1000",
       "childRequired": "Choisissez au moins un enfant",
-      "weekdaysRequired": "Choisissez au moins un jour"
+      "weekdaysRequired": "Choisissez au moins un jour",
+      "iconInvalid": "Icône invalide"
     },
     "savedOffline": "Enregistré — synchronisation au retour du réseau",
     "repeat": "Répétition",
@@ -2166,6 +2167,63 @@
       "avatar": "Mon avatar",
       "notifications": "Notifications",
       "settings": "Autres réglages"
+    },
+    "icons": {
+      "title": "Icône",
+      "auto": "Automatique : {{name}}",
+      "names": {
+        "reveil": "Réveil",
+        "brosse-a-dents": "Brossage des dents",
+        "savon": "Lavage des mains",
+        "douche": "Douche",
+        "vetements": "S'habiller",
+        "lit": "Faire son lit",
+        "petit-dejeuner": "Petit-déjeuner",
+        "boite-repas": "Boîte repas",
+        "diner": "Dîner",
+        "verre-eau": "Boire de l'eau",
+        "fruits": "Fruits",
+        "cartable": "Cartable",
+        "devoirs": "Devoirs",
+        "lecture": "Lecture",
+        "ecriture": "Écriture",
+        "maths": "Maths",
+        "langues": "Langues",
+        "dessin": "Dessin",
+        "piano": "Piano",
+        "football": "Football",
+        "natation": "Natation",
+        "velo": "Vélo",
+        "course": "Course",
+        "yoga": "Yoga",
+        "ranger": "Ranger",
+        "vaisselle": "Vaisselle",
+        "linge": "Linge",
+        "poubelle": "Poubelle",
+        "arroser": "Arroser",
+        "animal": "Animal",
+        "cuisiner": "Cuisiner",
+        "appeler": "Appeler",
+        "gentillesse": "Gentillesse",
+        "dormir-tot": "Dormir tôt",
+        "sans-ecran": "Sans écran",
+        "calme": "Calme"
+      }
+    },
+    "parent": {
+      "title": "Aujourd'hui pour {{name}}",
+      "pickChild": "Choisir un enfant",
+      "pandaOf": "Le panda {{name}} de {{child}}",
+      "toValidate": "À valider",
+      "nothingToValidate": "Rien à valider.",
+      "taskMeta": "{{date}} · {{points}} points",
+      "openQuiz": "Voir la révision : {{title}}",
+      "quizScore": "{{score}}/{{total}} juste(s)",
+      "day": "Sa journée"
+    },
+    "settings": {
+      "children": "Les enfants",
+      "addChild": "Ajouter un enfant"
     }
   }
 }

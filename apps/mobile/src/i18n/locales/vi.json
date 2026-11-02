@@ -355,7 +355,8 @@
       "endBeforeStart": "Giờ kết thúc phải sau giờ bắt đầu",
       "pointsInvalid": "Điểm phải từ 0 đến 1000",
       "childRequired": "Chọn ít nhất một bạn",
-      "weekdaysRequired": "Chọn ít nhất một ngày"
+      "weekdaysRequired": "Chọn ít nhất một ngày",
+      "iconInvalid": "Biểu tượng không hợp lệ"
     },
     "savedOffline": "Đã lưu — sẽ đồng bộ khi có mạng",
     "repeat": "Lặp lại",
@@ -2166,6 +2167,63 @@
       "avatar": "Ảnh đại diện của em",
       "notifications": "Thông báo",
       "settings": "Cài đặt khác"
+    },
+    "icons": {
+      "title": "Biểu tượng",
+      "auto": "Tự động: {{name}}",
+      "names": {
+        "reveil": "Thức dậy",
+        "brosse-a-dents": "Đánh răng",
+        "savon": "Rửa tay",
+        "douche": "Tắm",
+        "vetements": "Mặc quần áo",
+        "lit": "Dọn giường",
+        "petit-dejeuner": "Ăn sáng",
+        "boite-repas": "Hộp cơm",
+        "diner": "Ăn tối",
+        "verre-eau": "Uống nước",
+        "fruits": "Ăn trái cây",
+        "cartable": "Soạn cặp",
+        "devoirs": "Làm bài tập",
+        "lecture": "Đọc sách",
+        "ecriture": "Luyện viết",
+        "maths": "Học toán",
+        "langues": "Học ngoại ngữ",
+        "dessin": "Vẽ",
+        "piano": "Tập đàn",
+        "football": "Đá bóng",
+        "natation": "Bơi",
+        "velo": "Đạp xe",
+        "course": "Chạy bộ",
+        "yoga": "Yoga",
+        "ranger": "Dọn dẹp",
+        "vaisselle": "Rửa bát",
+        "linge": "Gấp quần áo",
+        "poubelle": "Đổ rác",
+        "arroser": "Tưới cây",
+        "animal": "Chăm thú cưng",
+        "cuisiner": "Nấu ăn",
+        "appeler": "Gọi điện",
+        "gentillesse": "Làm việc tốt",
+        "dormir-tot": "Ngủ sớm",
+        "sans-ecran": "Không màn hình",
+        "calme": "Thư giãn"
+      }
+    },
+    "parent": {
+      "title": "{{name}} hôm nay",
+      "pickChild": "Chọn con",
+      "pandaOf": "Panda {{name}} của {{child}}",
+      "toValidate": "Cần duyệt",
+      "nothingToValidate": "Không có gì chờ duyệt.",
+      "taskMeta": "{{date}} · {{points}} điểm",
+      "openQuiz": "Xem bài ôn: {{title}}",
+      "quizScore": "Đúng {{score}}/{{total}}",
+      "day": "Một ngày của con"
+    },
+    "settings": {
+      "children": "Các con",
+      "addChild": "Thêm con"
     }
   }
 }

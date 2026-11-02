@@ -278,3 +278,6 @@ Interrupteur par famille `families.ui_version` (V1 par défaut), basculé par l'
 
 ### Interface V2, lot A2 : écrans enfant (D-106) — 2026-11-02
 Onglets enfant V2 (Hôm nay, Phần thưởng, Phiêu lưu, Thống kê, Tôi). Hôm nay : décor et panda (marche dans le décor de la destination pendant l'aventure), carte d'aventure 60 ⚡ avec chemin, « Còn N việc », objectifs par moment de la journée, révision de la semaine, carte de fin de journée. Carte des 6 destinations, récompenses, semaine et série de jours, profil. E2E V2 sur une famille de test en `v2`.
+
+### Interface V2, lot A3 : écrans parent (D-106) — 2026-11-02
+Onglets parent V2 (Hôm nay, Lịch, Ôn tập, Phần thưởng, Cài đặt). Hôm nay : un enfant à la fois, « Cần duyệt » (tâches et quiz) puis sa journée, petit panda sans énergie. Lịch : calendrier et création avec la grille des 36 icônes (formulaire unique, V2 seulement). Révisions, récompenses et réglages : écrans V1 réutilisés ; espace admin depuis Cài đặt. E2E : validation depuis Hôm nay.

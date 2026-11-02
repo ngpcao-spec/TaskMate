@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { TASK_CATEGORIES } from '@/theme/categories';
+import { isGoalIcon } from './goal-icons';
 import type { TimeKind } from '@/types/models';
 
 export const DEFAULT_POINTS = 10;
@@ -28,6 +29,12 @@ export const taskFormSchema = z
     /** Répétition (parent) : none | daily | weekdays + jours ISO 1 (lundi) … 7 (dimanche). */
     repeat: z.enum(['none', 'daily', 'weekdays']).optional(),
     weekdays: z.array(z.number().int().min(1).max(7)).optional(),
+    /** Icône d'objectif (V2, D-106) : un des 36 slugs, `null` = icône de la catégorie ; absente = inchangée. */
+    icon: z
+      .string()
+      .nullable()
+      .optional()
+      .refine((v) => v === null || v === undefined || isGoalIcon(v), 'iconInvalid'),
   })
   .superRefine((v, ctx) => {
     const bad = (path: string, message: string) => ctx.addIssue({ code: 'custom', path: [path], message });
@@ -53,6 +60,8 @@ export type TaskInsertFields = {
   start_time: string | null;
   end_time: string | null;
   points: number;
+  /** D-106 : seulement si le formulaire l'a fournie (une écriture sans icône ne l'efface jamais). */
+  icon?: string | null;
 };
 
 /** Transforme le formulaire validé en champs de tâche (une par enfant ciblé). `deadline` → `end_time` (D-004). */
@@ -69,6 +78,7 @@ export function toTaskFields(v: z.infer<typeof taskFormSchema>, canSetPoints: bo
     end_time: v.timeKind === 'anytime' ? null : (v.endTime ?? null),
     // un enfant ne fixe jamais les points : 10 imposé (RLS/trigger côté serveur)
     points: canSetPoints ? v.points : DEFAULT_POINTS,
+    ...(v.icon !== undefined ? { icon: v.icon } : {}),
   }));
 }
 

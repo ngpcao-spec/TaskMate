@@ -89,3 +89,15 @@ describe('récurrence', () => {
     expect(rows[0]).toMatchObject({ rule: 'weekdays', weekdays: [1, 3, 5] });
   });
 });
+
+describe('icône d’objectif (D-106)', () => {
+  const base = { title: 'A', category: 'study' as const, date: '2026-11-02', timeKind: 'anytime' as const, points: 10, childIds: ['c1'] };
+  it('icône valide, nulle ou absente ; inconnue refusée', () => {
+    expect(taskFormSchema.safeParse({ ...base, icon: 'piano' }).success).toBe(true);
+    expect(taskFormSchema.safeParse({ ...base, icon: null }).success).toBe(true);
+    expect(taskFormSchema.safeParse({ ...base, icon: 'licorne' }).success).toBe(false);
+    expect(toTaskFields(taskFormSchema.parse({ ...base, icon: 'piano' }), true)[0]).toMatchObject({ icon: 'piano' });
+    expect('icon' in toTaskFields(taskFormSchema.parse(base), true)[0]!).toBe(false); // absente : jamais effacée
+    expect(toRecurrenceFields(taskFormSchema.parse({ ...base, repeat: 'daily', icon: 'velo' }), true)[0]).toMatchObject({ icon: 'velo', rule: 'daily' });
+  });
+});

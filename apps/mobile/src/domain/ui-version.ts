@@ -13,3 +13,7 @@ export const HOME_ROUTE: Record<UiVersion, '/(tabs)/today' | '/v2'> = { v1: '/(t
 export function uiVersionChanged(stored: string | null, current: UiVersion): boolean {
   return stored !== null && parseUiVersion(stored) !== current;
 }
+
+/** Racines des onglets V1 : une famille V2 n'y reste jamais (renvoyée vers `/v2`) ; les sous-écrans (`/more/…`) restent ouverts à la V2 (D-106). */
+export const V1_TAB_ROOTS = ['/', '/today', '/calendar', '/stats', '/more'] as const;
+export const isV1TabRoot = (pathname: string): boolean => (V1_TAB_ROOTS as readonly string[]).includes(pathname.replace(/\/+$/, '') || '/');
