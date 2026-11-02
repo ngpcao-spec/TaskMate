@@ -2099,7 +2099,7 @@
     },
     "dayPill": {
       "remaining": "Còn {{count}} việc hôm nay!",
-      "done": "Hôm nay xong hết rồi!"
+      "done": "Hôm nay: {{count}}/{{count}} việc ✓"
     },
     "section": {
       "morning": "Buổi sáng",
@@ -2129,11 +2129,10 @@
     },
     "celebration": {
       "title": "Xong hết rồi!",
-      "subtitle": "Mục tiêu hôm nay hoàn thành",
-      "s1": "Hoan hô! Tớ vui quá đi!",
-      "s2": "Giỏi quá! Hôm nay tụi mình làm hết rồi!",
-      "s3": "Đỉnh thật! Xong hết rồi đó.",
-      "s4": "Tốt lắm. Một ngày trọn vẹn.",
+      "s1": "Hoan hô! Mục tiêu hôm nay hoàn thành rồi, tớ vui quá!",
+      "s2": "Giỏi quá! Tụi mình hoàn thành mục tiêu hôm nay rồi!",
+      "s3": "Đỉnh thật! Mục tiêu hôm nay hoàn thành rồi.",
+      "s4": "Tốt lắm. Mục tiêu hôm nay đã hoàn thành.",
       "review": "Xem lại",
       "missing": "Còn {{n}} ⚡ nữa là đi được!"
     },

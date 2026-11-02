@@ -9,6 +9,8 @@ export const glass: Theme = {
     primaryLight: '#4C9DAA',
     mint: '#4FB5A5',
     background: '#9CB0C0',
+    /** voile sous la barre d'état translucide de l'iPhone (heure et batterie en blanc), en dégradé d'opacité (D-106) */
+    statusScrim: '#000000',
     backgroundTop: '#B1C4D2',
     backgroundBottom: '#9AAFC0',
     card: 'rgba(255,255,255,0.30)',

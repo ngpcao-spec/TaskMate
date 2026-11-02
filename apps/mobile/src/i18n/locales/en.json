@@ -2099,7 +2099,7 @@
     },
     "dayPill": {
       "remaining": "{{count}} left to do today!",
-      "done": "All done today!"
+      "done": "Today: {{count}}/{{count}} ✓"
     },
     "section": {
       "morning": "Morning",
@@ -2129,11 +2129,10 @@
     },
     "celebration": {
       "title": "All done!",
-      "subtitle": "Today's goals complete",
-      "s1": "Yay! I'm so happy!",
-      "s2": "Great job! We did everything today!",
-      "s3": "Awesome! All done.",
-      "s4": "Well done. A full day.",
+      "s1": "Yay! Today's goals are done, I'm so happy!",
+      "s2": "Great job! We reached all of today's goals!",
+      "s3": "Awesome! Today's goals are complete.",
+      "s4": "Well done. Today's goals are complete.",
       "review": "Review",
       "missing": "{{n}} more ⚡ and we can go!"
     },

@@ -14,6 +14,8 @@ export const kawaii: Theme = {
     primaryLight: '#BBD3F0',
     mint: '#9ED9B8',
     background: '#FBF3DF',
+    /** voile sous la barre d'état translucide de l'iPhone (heure et batterie en blanc), en dégradé d'opacité (D-106) */
+    statusScrim: '#000000',
     backgroundTop: '#FBF3DF',
     backgroundBottom: '#FBF3DF',
     card: '#FFFDF4',

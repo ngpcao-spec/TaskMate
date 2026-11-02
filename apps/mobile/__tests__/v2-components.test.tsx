@@ -63,7 +63,7 @@ describe('V2 : GoalSection et DayPill', () => {
     const { rerender } = await render(<DayPill remaining={3} total={5} />);
     expect(screen.getByText('Còn 3 việc hôm nay!')).toBeTruthy();
     await rerender(<DayPill remaining={0} total={5} />);
-    expect(screen.getByText('Hôm nay xong hết rồi!')).toBeTruthy();
+    expect(screen.getByText('Hôm nay: 5/5 việc ✓')).toBeTruthy();
     await rerender(<DayPill remaining={0} total={0} />);
     expect(screen.queryByText(/hôm nay/)).toBeNull();
   });
@@ -106,8 +106,8 @@ describe('V2 : CelebrationCard', () => {
     const onReview = jest.fn();
     await render(<CelebrationCard stage={2} pandaName="Bambou" action={{ kind: 'go' }} onGo={onGo} onReview={onReview} />);
     expect(screen.getByText('Xong hết rồi!')).toBeTruthy();
-    expect(screen.getByText('Mục tiêu hôm nay hoàn thành')).toBeTruthy();
-    expect(screen.getByText('Giỏi quá! Hôm nay tụi mình làm hết rồi!')).toBeTruthy();
+    expect(screen.queryByText('Mục tiêu hôm nay hoàn thành')).toBeNull(); // plus de ligne en double sous le titre
+    expect(screen.getByText('Giỏi quá! Tụi mình hoàn thành mục tiêu hôm nay rồi!')).toBeTruthy();
     expect(screen.getByLabelText('Panda Bambou, tự hào')).toBeTruthy();
     await fireEvent.press(screen.getByRole('button', { name: 'Đi phiêu lưu!' }));
     expect(onGo).toHaveBeenCalled();
@@ -117,7 +117,7 @@ describe('V2 : CelebrationCard', () => {
   it('jauge incomplète : l’énergie qui manque, pas de départ', async () => {
     await render(<CelebrationCard stage={4} pandaName="Bambou" action={{ kind: 'missing', energy: 18 }} onReview={jest.fn()} />);
     expect(screen.getByText('Còn 18 ⚡ nữa là đi được!')).toBeTruthy();
-    expect(screen.getByText('Tốt lắm. Một ngày trọn vẹn.')).toBeTruthy();
+    expect(screen.getByText('Tốt lắm. Mục tiêu hôm nay đã hoàn thành.')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Đi phiêu lưu!' })).toBeNull();
   });
 });

@@ -10,7 +10,11 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="TaskMate" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <!-- D-106 : la page s'étend SOUS la barre d'état de l'iPhone (décor V2 plein écran) ; chaque écran respecte la marge haute (env(safe-area-inset-top)).
+         iOS lit ce réglage au LANCEMENT de la PWA. Heure et batterie en blanc : voile sombre `StatusBarScrim` en haut de l'écran. -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <!-- couleur du navigateur : fond du thème (mise à jour par src/theme/index.ts ; la V2 la remplace par son fond) -->
+    <meta name="theme-color" content="#9CB0C0" />
     <!-- Gabarit PWA (sortie `single`, D-028). Reset react-native-web : https://necolas.github.io/react-native-web/docs/setup/#root-element -->
     <style id="expo-reset">
       html,

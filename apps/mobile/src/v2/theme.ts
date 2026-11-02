@@ -41,6 +41,8 @@ export const v2Colors = {
   scrim: '#FFF8EC',
   shadow: '#3B2A1E',
   /** boutons ronds du haut, posés sur le ciel du décor */
+  /** voile sous la barre d'état translucide (heure et batterie en blanc), en dégradé d'opacité (D-106) */
+  statusScrim: '#000000',
   topButton: '#FFF8EC',
   onTopButton: '#3B2A1E',
 } as const;

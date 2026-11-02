@@ -284,3 +284,6 @@ Onglets parent V2 (Hôm nay, Lịch, Ôn tập, Phần thưởng, Cài đặt). 
 
 ### V2 : vidéo d'accueil animée de Hôm nay enfant (D-106) — 2026-11-02
 À la maison, un enfant dont le panda est au stade teen voit le décor animé (vidéo en boucle, web) ; pendant une aventure, au retour, avec « réduire les animations » ou l'économie de données : décor fixe comme avant. Réaction au coche en fondu vers le panda fixe. Aucune règle ni donnée modifiée.
+
+### Barre d'état translucide sur iPhone (D-106) — 2026-11-02
+PWA iPhone : la page s'étend sous la barre d'état ; le décor et la vidéo V2 couvrent tout le haut de l'écran, comme dans Finch ; voile discret pour l'heure et la batterie ; aucun texte ni bouton sous la barre, en V1 comme en V2 (double marge des onglets V1 corrigée). Textes de fin de journée sans répétition. À relancer complètement (ou réinstaller) pour que l'iPhone prenne le nouveau réglage.

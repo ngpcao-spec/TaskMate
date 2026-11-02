@@ -12,6 +12,7 @@ export type ThemeColors = {
   primaryLight: string;
   mint: string;
   background: string;
+  statusScrim: string;
   backgroundTop: string;
   backgroundBottom: string;
   card: string;

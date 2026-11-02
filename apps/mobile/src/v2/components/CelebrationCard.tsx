@@ -15,7 +15,7 @@ type Props = {
   onReview: () => void;
 };
 
-/** Fin de journée (V2) : visage « fier », « Xong hết rồi! » dans la voix du stade, lien « Xem lại », et le départ si la jauge est pleine. */
+/** Fin de journée (V2) : visage « fier », titre « Xong hết rồi! », puis la phrase du panda selon son stade (sans répéter le titre), lien « Xem lại », et le départ si la jauge est pleine. */
 export function CelebrationCard({ stage, variant = 'boy', pandaName, action, onGo, onReview }: Props) {
   const { t } = useTranslation();
   return (
@@ -30,7 +30,6 @@ export function CelebrationCard({ stage, variant = 'boy', pandaName, action, onG
       <Text accessibilityRole="header" style={styles.title}>
         {t('v2.celebration.title')}
       </Text>
-      <Text style={styles.subtitle}>{t('v2.celebration.subtitle')}</Text>
       <Text style={styles.voice}>{t(`v2.celebration.s${stage}`)}</Text>
       {action?.kind === 'go' ? (
         <Pressable accessibilityRole="button" accessibilityLabel={t('adventure.go')} onPress={onGo} style={({ pressed }) => [styles.go, pressed ? styles.goPressed : null]}>
@@ -49,7 +48,6 @@ const styles = StyleSheet.create({
   card: { ...v2Card, alignItems: 'center', gap: v2Spacing.sm, paddingVertical: v2Spacing.xl },
   face: { width: 120, height: 120 },
   title: v2Text.title,
-  subtitle: { ...v2Text.body, color: v2Colors.textSecondary },
   voice: { ...v2Text.bodyBold, textAlign: 'center' },
   go: { marginTop: v2Spacing.sm, minHeight: 52, alignSelf: 'stretch', borderRadius: v2Radius.pill, backgroundColor: v2Colors.primary, alignItems: 'center', justifyContent: 'center' },
   goPressed: { backgroundColor: v2Colors.primaryPressed },
