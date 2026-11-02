@@ -9,14 +9,17 @@ export type HomeVideoConditions = {
   adventure: 'filling' | 'ready_to_go' | 'away' | 'back' | null | undefined;
   /** stade AFFICHÉ du panda (décalage choisi par l'enfant compris) */
   stage: number;
-  variant: string;
+  /** variante du panda ; absente (état enregistré avant D-106 dans le cache de l'appareil) = garçon */
+  variant: string | null | undefined;
   reduceMotion: boolean;
   /** `navigator.connection.saveData` (économie de données) */
   saveData: boolean;
+  /** web seulement : le natif n'a pas de vidéo d'accueil (décor fixe) */
+  web: boolean;
 };
 
 export function showHomeVideo(c: HomeVideoConditions): boolean {
-  return c.scene === 'home' && c.adventure !== 'away' && c.adventure !== 'back' && c.stage === 3 && c.variant === 'boy' && !c.reduceMotion && !c.saveData;
+  return c.web && c.scene === 'home' && c.adventure !== 'away' && c.adventure !== 'back' && c.stage === 3 && (c.variant ?? 'boy') === 'boy' && !c.reduceMotion && !c.saveData;
 }
 
 /** Géométrie de la vidéo fournie (720×1280) : le panda va de 48,5 % (oreilles) à 70,7 % (pieds) de la hauteur, centré en largeur. */

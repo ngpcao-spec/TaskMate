@@ -1,6 +1,6 @@
 import { homeVideoLayout, homeVideoSize, showHomeVideo } from './home-video';
 
-const ok = { scene: 'home', adventure: 'filling' as const, stage: 3, variant: 'boy', reduceMotion: false, saveData: false };
+const ok = { scene: 'home', adventure: 'filling' as const, stage: 3, variant: 'boy', reduceMotion: false, saveData: false, web: true };
 
 describe('vidéo d’accueil : quand l’afficher (D-106)', () => {
   it('toutes les conditions réunies', () => expect(showHomeVideo(ok)).toBe(true));
@@ -20,8 +20,10 @@ describe('vidéo d’accueil : quand l’afficher (D-106)', () => {
     for (const stage of [1, 2, 4]) expect(showHomeVideo({ ...ok, stage })).toBe(false);
   });
   it('variante fille : jamais (pas encore de vidéo)', () => expect(showHomeVideo({ ...ok, variant: 'girl' })).toBe(false));
+  it('variante absente (état mis en cache avant D-106) : garçon', () => expect(showHomeVideo({ ...ok, variant: undefined })).toBe(true));
   it('« réduire les animations » : jamais', () => expect(showHomeVideo({ ...ok, reduceMotion: true })).toBe(false));
   it('économie de données : jamais', () => expect(showHomeVideo({ ...ok, saveData: true })).toBe(false));
+  it('natif (iOS, Android) : jamais', () => expect(showHomeVideo({ ...ok, web: false })).toBe(false));
 });
 
 describe('vidéo d’accueil : source et cadrage', () => {

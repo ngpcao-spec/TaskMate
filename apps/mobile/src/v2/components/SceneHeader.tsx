@@ -17,6 +17,11 @@ type Props = {
   children?: ReactNode;
   /** calque posé sur le décor et le panda, sous les boutons du haut (vidéo d'accueil, D-106) */
   overlay?: ReactNode;
+  /**
+   * Décor fixe et panda masqués (fondu de 200 ms) : la vidéo d'accueil les remplace. Ils restent montés (libellé du panda lu par les lecteurs d'écran)
+   * et réapparaissent pendant une réaction. Sans cela, le décor fixe se voit à travers la vidéo tant qu'elle se charge (iPhone, D-106).
+   */
+  sceneHidden?: boolean;
   testID?: string;
 };
 
@@ -35,13 +40,15 @@ function RoundTop({ b }: { b: TopButton }) {
 }
 
 /** En-tête V2 : décor plein cadre (ciel en haut, sol libre au centre), boutons ronds du haut, panda posé sur le sol. */
-export function SceneHeader({ scene, height, left = [], right = [], children, overlay, testID }: Props) {
+export function SceneHeader({ scene, height, left = [], right = [], children, overlay, sceneHidden = false, testID }: Props) {
   const insets = useSafeAreaInsets();
   return (
     <View testID={testID} style={[styles.wrap, { height: height + insets.top }]}>
-      <Image source={sceneImage(scene)} resizeMode="cover" style={StyleSheet.absoluteFill} accessibilityIgnoresInvertColors importantForAccessibility="no" testID={`v2-scene-${scene}`} />
-      <View style={styles.groundLayer} pointerEvents="box-none">
-        <View style={styles.ground}>{children}</View>
+      <View testID="v2-scene-layer" style={[styles.sceneLayer, { opacity: sceneHidden ? 0 : 1 }]} pointerEvents="box-none">
+        <Image source={sceneImage(scene)} resizeMode="cover" style={StyleSheet.absoluteFill} accessibilityIgnoresInvertColors importantForAccessibility="no" testID={`v2-scene-${scene}`} />
+        <View style={styles.groundLayer} pointerEvents="box-none">
+          <View style={styles.ground}>{children}</View>
+        </View>
       </View>
       {overlay}
       <View style={[styles.top, { paddingTop: insets.top + v2Spacing.sm }]}>
@@ -60,6 +67,7 @@ const styles = StyleSheet.create({
   pressed: { transform: [{ scale: 0.94 }] },
   badge: { position: 'absolute', top: -2, right: -2, minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 4, backgroundColor: v2Colors.badge, alignItems: 'center', justifyContent: 'center' },
   badgeText: { ...v2Font(800, 11), color: v2Colors.onBadge },
+  sceneLayer: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, transitionProperty: 'opacity', transitionDuration: '200ms' } as never,
   groundLayer: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   // sol : bas du décor, où le panda marche
   ground: { position: 'absolute', left: v2Spacing.lg, right: v2Spacing.lg, bottom: v2Spacing.xl },
