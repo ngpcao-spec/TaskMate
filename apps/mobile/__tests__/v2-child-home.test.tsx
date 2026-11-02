@@ -8,7 +8,7 @@ import type { ChildRow, TaskRow } from '@/types/models';
 import V2ChildHome from '../app/(v2)/v2/child/home';
 
 const mockPush = jest.fn();
-jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockPush }) }));
+jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockPush }), useIsFocused: () => true }));
 jest.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }) }));
 const minh = { id: 'c-minh', name: 'Minh', birth_date: '2015-03-01', color: '#1E88F5' } as ChildRow;
 const task = (over: Partial<TaskRow>): TaskRow =>
@@ -75,6 +75,7 @@ describe('V2 : Hôm nay de l’enfant (D-106)', () => {
     await fireEvent.press(screen.getByRole('checkbox', { name: 'Làm toán' }));
     expect(mockToggle).toHaveBeenCalledWith(expect.objectContaining({ completed: true, asParent: false }));
     expect(usePandaReaction.getState()).toMatchObject({ childId: 'c-minh', energy: 15, active: true });
+    expect(screen.getByText('+15 ⚡')).toBeTruthy(); // bulle de réaction sur le décor (aussi pendant le fondu depuis la vidéo d'accueil)
   });
 
   it('tâche cochée : « chờ bố mẹ duyệt » ; tâche validée : case inactive', async () => {

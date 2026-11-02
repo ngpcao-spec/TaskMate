@@ -25,6 +25,10 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return; // Supabase, polices externes : réseau uniquement
 
+  // Vidéo d'accueil V2 (D-106) : réseau seulement. Le navigateur la lit par requêtes partielles (Range → 206), que le cache ne sait pas servir
+  // (Safari refuse une réponse complète à une requête partielle) ; jamais de 206 en cache.
+  if (request.headers.has('range') || request.destination === 'video' || request.destination === 'audio') return;
+
   // Fichiers hachés / icônes : cache d'abord (immuables)
   if (url.pathname.startsWith('/_expo/static/') || url.pathname.startsWith('/assets/') || url.pathname.startsWith('/icons/')) {
     event.respondWith(

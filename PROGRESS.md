@@ -281,3 +281,6 @@ Onglets enfant V2 (Hôm nay, Phần thưởng, Phiêu lưu, Thống kê, Tôi). 
 
 ### Interface V2, lot A3 : écrans parent (D-106) — 2026-11-02
 Onglets parent V2 (Hôm nay, Lịch, Ôn tập, Phần thưởng, Cài đặt). Hôm nay : un enfant à la fois, « Cần duyệt » (tâches et quiz) puis sa journée, petit panda sans énergie. Lịch : calendrier et création avec la grille des 36 icônes (formulaire unique, V2 seulement). Révisions, récompenses et réglages : écrans V1 réutilisés ; espace admin depuis Cài đặt. E2E : validation depuis Hôm nay.
+
+### V2 : vidéo d'accueil animée de Hôm nay enfant (D-106) — 2026-11-02
+À la maison, un enfant dont le panda est au stade teen voit le décor animé (vidéo en boucle, web) ; pendant une aventure, au retour, avec « réduire les animations » ou l'économie de données : décor fixe comme avant. Réaction au coche en fondu vers le panda fixe. Aucune règle ni donnée modifiée.
