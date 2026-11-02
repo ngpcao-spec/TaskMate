@@ -32,6 +32,7 @@ import { CelebrationCard } from '@/v2/components/CelebrationCard';
 import { DayPill } from '@/v2/components/DayPill';
 import { GoalRow } from '@/v2/components/GoalRow';
 import { GoalSection } from '@/v2/components/GoalSection';
+import { HomePoster } from '@/v2/components/HomePoster';
 import { HomeVideo } from '@/v2/components/HomeVideo';
 import { PandaSprite } from '@/v2/components/PandaSprite';
 import { SCENE_GROUND_OFFSET, SCENE_TOP_CLEAR, SceneHeader } from '@/v2/components/SceneHeader';
@@ -114,7 +115,8 @@ export default function V2ChildHome() {
             { key: 'calendar', Icon: CalendarDays, label: t('v2.top.calendar'), onPress: () => router.push('/v2/calendar') },
             { key: 'bell', Icon: Bell, label: unread > 0 ? t('v2.top.notificationsCount', { count: unread }) : t('v2.top.notifications'), onPress: () => router.push('/notifications'), badge: unread },
           ]}
-          sceneHidden={video && !reacting}
+          backdrop={video ? <HomePoster topClear={insets.top + SCENE_TOP_CLEAR} groundOffset={SCENE_GROUND_OFFSET} width={screenWidth} height={SCENE_HEIGHT + insets.top} /> : null}
+          backdropVisible={video && !reacting}
           overlay={video ? <HomeVideo visible={!reacting} active={focused} topClear={insets.top + SCENE_TOP_CLEAR} groundOffset={SCENE_GROUND_OFFSET} width={screenWidth} height={SCENE_HEIGHT + insets.top} /> : null}
         >
           {companion?.hasCompanion ? (

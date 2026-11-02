@@ -287,3 +287,6 @@ Onglets parent V2 (Hôm nay, Lịch, Ôn tập, Phần thưởng, Cài đặt). 
 
 ### Barre d'état translucide sur iPhone (D-106) — 2026-11-02
 PWA iPhone : la page s'étend sous la barre d'état ; le décor et la vidéo V2 couvrent tout le haut de l'écran, comme dans Finch ; voile discret pour l'heure et la batterie ; aucun texte ni bouton sous la barre, en V1 comme en V2 (double marge des onglets V1 corrigée). Textes de fin de journée sans répétition. À relancer complètement (ou réinstaller) pour que l'iPhone prenne le nouveau réglage.
+
+### iPhone : plus jamais d'en-tête vert vide sur Hôm nay (D-106) — 2026-11-02
+L'image fixe du panda dans sa maison s'affiche toujours à la place du décor ; la vidéo apparaît par-dessus seulement quand elle joue. Si l'iPhone refuse la lecture (mode économie d'énergie, batterie faible), l'image fixe reste.

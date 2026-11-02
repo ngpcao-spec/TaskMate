@@ -18,10 +18,12 @@ type Props = {
   /** calque posé sur le décor et le panda, sous les boutons du haut (vidéo d'accueil, D-106) */
   overlay?: ReactNode;
   /**
-   * Décor fixe et panda masqués (fondu de 200 ms) : la vidéo d'accueil les remplace. Ils restent montés (libellé du panda lu par les lecteurs d'écran)
-   * et réapparaissent pendant une réaction. Sans cela, le décor fixe se voit à travers la vidéo tant qu'elle se charge (iPhone, D-106).
+   * Image posée sur le décor fixe (aperçu de la vidéo d'accueil, D-106). Quand `backdropVisible`, elle couvre le décor et le panda dessiné est masqué
+   * (fondu de 200 ms ; il reste monté : son libellé est lu par les lecteurs d'écran) ; sinon (réaction au coche), décor fixe et panda reviennent.
+   * Jamais de calque vide : sur iPhone, une vidéo qui ne joue pas (lecture refusée, économie d'énergie) laisse voir cet aperçu, pas le fond.
    */
-  sceneHidden?: boolean;
+  backdrop?: ReactNode;
+  backdropVisible?: boolean;
   testID?: string;
 };
 
@@ -40,13 +42,18 @@ function RoundTop({ b }: { b: TopButton }) {
 }
 
 /** En-tête V2 : décor plein cadre (ciel en haut, sol libre au centre), boutons ronds du haut, panda posé sur le sol. */
-export function SceneHeader({ scene, height, left = [], right = [], children, overlay, sceneHidden = false, testID }: Props) {
+export function SceneHeader({ scene, height, left = [], right = [], children, overlay, backdrop, backdropVisible = false, testID }: Props) {
   const insets = useSafeAreaInsets();
   return (
     <View testID={testID} style={[styles.wrap, { height: height + insets.top }]}>
-      <View testID="v2-scene-layer" style={[styles.sceneLayer, { opacity: sceneHidden ? 0 : 1 }]} pointerEvents="box-none">
+      <View testID="v2-scene-layer" style={styles.sceneLayer} pointerEvents="box-none">
         <Image source={sceneImage(scene)} resizeMode="cover" style={StyleSheet.absoluteFill} accessibilityIgnoresInvertColors importantForAccessibility="no" testID={`v2-scene-${scene}`} />
-        <View style={styles.groundLayer} pointerEvents="box-none">
+        {backdrop ? (
+          <View testID="v2-scene-backdrop" style={[styles.fade, { opacity: backdropVisible ? 1 : 0 }]} pointerEvents="none">
+            {backdrop}
+          </View>
+        ) : null}
+        <View testID="v2-scene-ground" style={[styles.groundLayer, styles.fade, { opacity: backdrop && backdropVisible ? 0 : 1 }]} pointerEvents="box-none">
           <View style={styles.ground}>{children}</View>
         </View>
       </View>
@@ -67,7 +74,8 @@ const styles = StyleSheet.create({
   pressed: { transform: [{ scale: 0.94 }] },
   badge: { position: 'absolute', top: -2, right: -2, minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 4, backgroundColor: v2Colors.badge, alignItems: 'center', justifyContent: 'center' },
   badgeText: { ...v2Font(800, 11), color: v2Colors.onBadge },
-  sceneLayer: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, transitionProperty: 'opacity', transitionDuration: '200ms' } as never,
+  sceneLayer: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+  fade: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, transitionProperty: 'opacity', transitionDuration: '200ms' } as never,
   groundLayer: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   // sol : bas du décor, où le panda marche
   ground: { position: 'absolute', left: v2Spacing.lg, right: v2Spacing.lg, bottom: v2Spacing.xl },

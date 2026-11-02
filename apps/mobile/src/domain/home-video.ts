@@ -38,6 +38,8 @@ export type HomeVideoLayout = {
   /** haut (oreilles) et bas (pieds) du panda dans l'en-tête (px) */
   pandaTop: number;
   pandaBottom: number;
+  /** image affichée (cover) dans la boîte, en px : sert à poser l'aperçu fixe exactement là où la vidéo peindra sa première image */
+  image: { left: number; top: number; width: number; height: number };
 };
 
 /**
@@ -62,6 +64,7 @@ export function homeVideoLayout(o: { width: number; height: number; groundY: num
     objectPositionY: extra > 0 ? Math.round((offset / extra) * 1000) / 10 : 50,
     pandaTop: Math.round(HOME_VIDEO.headY * shown - offset),
     pandaBottom: Math.round(HOME_VIDEO.feetY * shown - offset),
+    image: { left: Math.round((boxWidth - HOME_VIDEO.width * scale) / 2), top: -Math.round(offset), width: Math.round(HOME_VIDEO.width * scale), height: Math.round(shown) },
   };
 }
 
@@ -81,5 +84,5 @@ export function homeVideoSources(userAgent: string, headerWidth: number): { key:
   return isAppleWebKit(userAgent) ? [mp4, webm] : [webm, mp4];
 }
 
-/** Le poster ne s'efface que quand la vidéo JOUE vraiment (une image peinte) : sur iPhone, « canplay » arrive avant la première image. */
+/** La vidéo n'apparaît (au-dessus de l'aperçu fixe) que quand la vidéo JOUE vraiment (une image peinte) : sur iPhone, « canplay » arrive avant la première image. */
 export const videoShowsFrames = (v: { paused: boolean; currentTime: number }): boolean => !v.paused && v.currentTime > 0;
