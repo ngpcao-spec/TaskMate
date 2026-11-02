@@ -3,6 +3,13 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useOnline, usePendingWrites } from '@/hooks/useSyncStatus';
 import { colors } from '@/theme/tokens';
 
+/** Le bandeau est-il affiché (hors ligne, ou écritures en attente) ? */
+export function useSyncBannerVisible(): boolean {
+  const online = useOnline();
+  const pending = usePendingWrites();
+  return !online || pending > 0;
+}
+
 /** Bandeau discret : hors ligne, ou N écritures en cours de synchronisation. Rien si tout est à jour. */
 export function SyncBanner() {
   const { t } = useTranslation();

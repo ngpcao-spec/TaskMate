@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button } from '@/components/ui';
 import { CRASH_KEY, crashReport, crashText } from '@/domain/crash-report';
 import { kvStorage } from '@/sync/storage';
@@ -27,7 +27,7 @@ export function AppErrorScreen({ error, retry }: Props) {
   }, [error, report]);
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, webSafeTop]}>
       <ScrollView contentContainerStyle={styles.content}>
         <Text accessibilityRole="header" style={styles.title}>{t('errorScreen.title')}</Text>
         <Text style={typography.body}>{t('errorScreen.body')}</Text>
@@ -39,6 +39,12 @@ export function AppErrorScreen({ error, retry }: Props) {
     </View>
   );
 }
+
+/**
+ * D-106 : barre d'état translucide (PWA iPhone). Cet écran s'affiche hors de tout fournisseur (il remplace l'arbre cassé) : la marge haute vient
+ * directement du CSS, jamais d'un hook.
+ */
+const webSafeTop = Platform.OS === 'web' ? ({ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' } as unknown as object) : null;
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },

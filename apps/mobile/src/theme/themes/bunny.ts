@@ -17,6 +17,8 @@ export const bunny: Theme = {
     primaryLight: '#FAD3DB',
     mint: '#B7E0CB',
     background: '#DCE6F4',
+    /** voile sous la barre d'état translucide de l'iPhone (heure et batterie en blanc), en dégradé d'opacité (D-106) */
+    statusScrim: '#000000',
     backgroundTop: '#E4ECF8',
     backgroundBottom: '#D5E1F2',
     card: '#FFFAF6',

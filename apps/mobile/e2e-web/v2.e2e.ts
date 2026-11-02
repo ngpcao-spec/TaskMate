@@ -35,7 +35,7 @@ test.describe('interface V2 : enfant (D-106)', () => {
     await page.getByRole('checkbox', { name: b }).click();
 
     await expect(page.getByText('Xong hết rồi!', { exact: true })).toBeVisible();
-    await expect(page.getByText('Mục tiêu hôm nay hoàn thành', { exact: true })).toBeVisible();
+    await expect(page.getByText('Hôm nay: 2/2 việc ✓', { exact: true })).toBeVisible();
     await expect(page.getByRole('checkbox', { name: a })).toHaveCount(0); // la liste est repliée
     await expect(page.getByText('Còn 45 ⚡ nữa là đi được!', { exact: true })).toBeVisible(); // 10 + 5 points = 15 ⚡ sur 60
     await expect.poll(async () => (await serverState(family, 'minh', b)).completed).toBe(true);

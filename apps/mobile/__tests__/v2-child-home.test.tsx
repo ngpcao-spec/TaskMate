@@ -89,7 +89,9 @@ describe('V2 : Hôm nay de l’enfant (D-106)', () => {
     mockTasks = mockTasks.map((x) => ({ ...x, completed_at: '2026-11-02T01:00:00Z' }));
     await render(<V2ChildHome />);
     expect(screen.getByText('Xong hết rồi!')).toBeTruthy();
-    expect(screen.getByText('Giỏi quá! Hôm nay tụi mình làm hết rồi!')).toBeTruthy();
+    expect(screen.getByText('Giỏi quá! Tụi mình hoàn thành mục tiêu hôm nay rồi!')).toBeTruthy();
+    expect(screen.getByText('Hôm nay: 3/3 việc ✓')).toBeTruthy(); // la pastille ne répète pas « xong hết rồi »
+    expect(screen.getAllByText(/xong hết rồi/i)).toHaveLength(1);
     expect(screen.getByText('Còn 42 ⚡ nữa là đi được!')).toBeTruthy();
     expect(screen.queryByRole('checkbox', { name: 'Làm toán' })).toBeNull();
     await fireEvent.press(screen.getByRole('link', { name: 'Xem lại' }));

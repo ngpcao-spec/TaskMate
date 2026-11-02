@@ -1,3 +1,4 @@
+import { setThemeColor } from '@/pwa/themeColor';
 import { bunny } from './themes/bunny';
 import { cosmos } from './themes/cosmos';
 import { glass } from './themes/glass';
@@ -24,7 +25,8 @@ export const theme: Theme = THEMES[parseThemeId(readStoredTheme())];
 /** Web : repères pour le CSS global (police arrondie des thèmes kawaii et cosmos) et couleur de la barre du navigateur / de la PWA. */
 if (typeof document !== 'undefined') {
   document.documentElement.dataset.theme = theme.id;
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme.browserColor);
+  // D-106 : la barre d'état est translucide ; derrière elle, la couleur de fond du thème
+  setThemeColor(theme.colors.background);
   document.body?.style.setProperty('background-color', theme.colors.background);
 }
 

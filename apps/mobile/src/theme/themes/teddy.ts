@@ -18,6 +18,8 @@ export const teddy: Theme = {
     primaryLight: '#F7CDD0',
     mint: '#A9CDB0',
     background: '#DDBFB2',
+    /** voile sous la barre d'état translucide de l'iPhone (heure et batterie en blanc), en dégradé d'opacité (D-106) */
+    statusScrim: '#000000',
     backgroundTop: '#E3C7BA',
     backgroundBottom: '#D6B5A7',
     card: '#F8E8DE',

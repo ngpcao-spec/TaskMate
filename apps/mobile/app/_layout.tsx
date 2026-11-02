@@ -7,7 +7,10 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppErrorScreen } from '@/components/AppErrorScreen';
 import { ToastHost } from '@/components/ToastHost';
 import { useAuthListener } from '@/hooks/useMe';
-import { useUiVersionSwitch } from '@/hooks/useUiVersion';
+import { useUiVersion, useUiVersionSwitch } from '@/hooks/useUiVersion';
+import { StatusBarScrim } from '@/components/StatusBarScrim';
+import { colors } from '@/theme/tokens';
+import { v2Colors } from '@/v2/theme';
 import { applyStoredLanguage } from '@/i18n/language';
 import { createQueryClient, CACHE_MAX_AGE } from '@/sync/client';
 import { setupNetworkListeners } from '@/sync/network';
@@ -23,6 +26,7 @@ const queryClient = createQueryClient();
 function Root() {
   useAuthListener();
   useUiVersionSwitch(); // V1 / V2 par famille (D-106) : purge du cache et retour à l'accueil quand la version change
+  const uiVersion = useUiVersion();
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
@@ -62,6 +66,8 @@ function Root() {
           </Stack>
         </ThemeProvider>
         <ToastHost />
+        {/* D-106 : barre d'état translucide (PWA iPhone) — voile pour l'heure et la batterie, au-dessus de tous les écrans */}
+        <StatusBarScrim color={uiVersion === 'v2' ? v2Colors.statusScrim : colors.statusScrim} />
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

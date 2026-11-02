@@ -1,5 +1,8 @@
 import { useFonts } from 'expo-font';
 import { Redirect, Stack } from 'expo-router';
+import { useEffect } from 'react';
+import { setThemeColor } from '@/pwa/themeColor';
+import { colors } from '@/theme/tokens';
 import { View } from 'react-native';
 import { useEntryRoute } from '@/hooks/useMe';
 import { useShellEffects } from '@/hooks/useShellEffects';
@@ -13,6 +16,11 @@ export default function V2Layout() {
   const route = useEntryRoute();
   useShellEffects();
   useFonts(V2_FONT_FILES);
+  // couleur du navigateur : le fond V2 (sous la barre d'état, le décor la recouvre) ; celle du thème V1 en sortant
+  useEffect(() => {
+    setThemeColor(v2Colors.background);
+    return () => setThemeColor(colors.background);
+  }, []);
   if (route !== 'loading' && route !== '/v2') return <Redirect href="/" />;
   return (
     <View style={{ flex: 1, backgroundColor: v2Colors.background }}>

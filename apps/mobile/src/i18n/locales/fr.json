@@ -2099,7 +2099,7 @@
     },
     "dayPill": {
       "remaining": "Encore {{count}} à faire aujourd'hui !",
-      "done": "Tout est fait aujourd'hui !"
+      "done": "Aujourd'hui : {{count}}/{{count}} ✓"
     },
     "section": {
       "morning": "Matin",
@@ -2129,11 +2129,10 @@
     },
     "celebration": {
       "title": "Tout est fait !",
-      "subtitle": "Objectifs du jour atteints",
-      "s1": "Youpi ! Je suis trop content !",
-      "s2": "Bravo ! On a tout fait aujourd'hui !",
-      "s3": "Trop fort ! Tout est fait.",
-      "s4": "Bien joué. Une journée bien remplie.",
+      "s1": "Youpi ! Les objectifs du jour sont atteints, je suis trop content !",
+      "s2": "Bravo ! On a atteint tous les objectifs du jour !",
+      "s3": "Trop fort ! Objectifs du jour atteints.",
+      "s4": "Bien joué. Les objectifs du jour sont atteints.",
       "review": "Revoir",
       "missing": "Encore {{n}} ⚡ et c'est parti !"
     },

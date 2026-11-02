@@ -18,6 +18,8 @@ export const cosmos: Theme = {
     primaryLight: '#FDE7C2',
     mint: '#8FD9C2',
     background: '#436079',
+    /** voile sous la barre d'état translucide de l'iPhone (heure et batterie en blanc), en dégradé d'opacité (D-106) */
+    statusScrim: '#000000',
     backgroundTop: '#53728F',
     backgroundBottom: '#3E5A75',
     card: '#3B556E',
