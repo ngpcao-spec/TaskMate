@@ -2147,6 +2147,25 @@
       "error": "Could not change the interface",
       "kpi": "Families on the V2 interface",
       "kpiCaption": "out of {{total}} families"
+    },
+    "rewards": {
+      "empty": "No rewards yet."
+    },
+    "map": {
+      "label": "Vietnam adventure map",
+      "here": "{{name}} is at {{destination}}"
+    },
+    "stats": {
+      "streak": "day(s) in a row",
+      "streakLabel": "{{count}} day(s) in a row",
+      "week": "My week",
+      "weekDone": "{{done}}/{{total}} goal(s) done",
+      "dayLabel": "{{day}}: {{done}} of {{total}}"
+    },
+    "me": {
+      "avatar": "My avatar",
+      "notifications": "Notifications",
+      "settings": "More settings"
     }
   }
 }

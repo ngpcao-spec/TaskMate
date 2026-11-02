@@ -19,6 +19,8 @@ export function CheckButton({ checked, label, onPress, disabled = false, size = 
       accessibilityRole="checkbox"
       accessibilityLabel={label}
       accessibilityState={{ checked, disabled }}
+      aria-checked={checked}
+      aria-disabled={disabled}
       disabled={disabled}
       onPress={onPress}
       hitSlop={4}

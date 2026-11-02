@@ -2147,6 +2147,25 @@
       "error": "Impossible de changer l'interface",
       "kpi": "Familles en interface V2",
       "kpiCaption": "sur {{total}} familles"
+    },
+    "rewards": {
+      "empty": "Pas encore de récompense."
+    },
+    "map": {
+      "label": "Carte des aventures du Vietnam",
+      "here": "{{name}} est à {{destination}}"
+    },
+    "stats": {
+      "streak": "jour(s) d'affilée réussi(s)",
+      "streakLabel": "{{count}} jour(s) d'affilée réussi(s)",
+      "week": "Ma semaine",
+      "weekDone": "{{done}}/{{total}} objectif(s) fait(s)",
+      "dayLabel": "{{day}} : {{done}} sur {{total}}"
+    },
+    "me": {
+      "avatar": "Mon avatar",
+      "notifications": "Notifications",
+      "settings": "Autres réglages"
     }
   }
 }

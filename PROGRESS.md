@@ -275,3 +275,6 @@ Le panda de l'enfant marche d'un bord à l'autre de son panneau, se retourne à 
 
 ### Interface V2 « style Finch », lot A1 : fondations et règles serveur (D-106) — 2026-11-02
 Interrupteur par famille `families.ui_version` (V1 par défaut), basculé par l'administrateur depuis la fiche famille (tracé) ; routage V1 / V2 (`/v2`), purge du cache au changement. Migration 37 : énergie = points de la tâche (et points attribués au quiz), aventure à 60, paliers d'amitié doublés, icônes d'objectifs (36) sur tâches et récurrences, variante du panda, heure de départ de l'aventure. Thème V2 (Nunito, contrastes AA), module d'images, composants de base. Aucun écran V1 ne change, sauf l'énergie affichée (points de la tâche).
+
+### Interface V2, lot A2 : écrans enfant (D-106) — 2026-11-02
+Onglets enfant V2 (Hôm nay, Phần thưởng, Phiêu lưu, Thống kê, Tôi). Hôm nay : décor et panda (marche dans le décor de la destination pendant l'aventure), carte d'aventure 60 ⚡ avec chemin, « Còn N việc », objectifs par moment de la journée, révision de la semaine, carte de fin de journée. Carte des 6 destinations, récompenses, semaine et série de jours, profil. E2E V2 sur une famille de test en `v2`.
