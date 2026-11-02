@@ -104,7 +104,11 @@ test.describe('interface V2 : vidéo d\'accueil (D-106)', () => {
     init?: () => void,
   ) {
     const ctx = await browser.newContext(options);
-    if (init) await ctx.addInitScript(init);
+    if (init) {
+      await ctx.addInitScript(init);
+      // et aucune image vidéo n'arrive jamais (l'attribut autoplay lance la lecture sans passer par play())
+      await ctx.route(/\.(mp4|webm)(\?.*)?$/, (r) => r.abort());
+    }
     await signInContext(ctx, family.khang);
     const page = await ctx.newPage();
     page.on('pageerror', (e) => console.log(`[v2-video] pageerror ${e.message.slice(0, 300)}`));
@@ -123,7 +127,7 @@ test.describe('interface V2 : vidéo d\'accueil (D-106)', () => {
     await expect(video).toBeAttached({ timeout: 20_000 });
     expect(await video.evaluate((v: HTMLVideoElement) => ({ muted: v.muted, loop: v.loop, sources: [...v.querySelectorAll('source')].map((x) => x.type) }))).toEqual({ muted: true, loop: true, sources: ['video/webm', 'video/mp4'] });
     // le libellé du panda reste lisible (PandaSprite sous la vidéo), la vidéo est décorative
-    await expect(page.getByLabel('Panda Bambou, bình tĩnh')).toBeAttached();
+    await expect(page.getByLabel(/^Panda Bambou, /)).toBeAttached(); // humeur selon l'heure locale (après 20 h : il dort)
     expect(await video.getAttribute('aria-hidden')).toBe('true');
     // l'aperçu fixe (Image React Native) remplace le décor ; la vidéo apparaît par-dessus dès qu'elle peint une image
     await expect(page.getByTestId('v2-home-video-poster')).toBeVisible();
@@ -152,7 +156,7 @@ test.describe('interface V2 : vidéo d\'accueil (D-106)', () => {
     }
   });
 
-  test('WebKit iPhone, lecture automatique refusée (économie d\'énergie) : l\'aperçu fixe remplace le décor, jamais un fond uni', async () => {
+  test('WebKit iPhone, vidéo qui ne joue jamais (lecture refusée, économie d\'énergie) : l\'aperçu fixe remplace le décor, jamais un fond uni', async () => {
     test.setTimeout(150_000);
     const family = await createFamily({ uiVersion: 'v2' });
     await seedCompanion(family, 'khang', 'Bambou');
