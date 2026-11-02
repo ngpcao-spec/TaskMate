@@ -23,9 +23,8 @@ const uri = (mod: unknown): string => {
  * - pause quand l'onglet est caché ou quand Hôm nay n'a plus le focus (`active`), reprise au retour ;
  * - `visible` faux (réaction au coche) : fondu vers le décor fixe, vidéo en pause.
  */
-export function HomeVideo({ visible, active, topClear, groundOffset }: HomeVideoProps) {
+export function HomeVideo({ visible, active, topClear, groundOffset, width, height }: HomeVideoProps) {
   const ref = useRef<HTMLVideoElement | null>(null);
-  const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   const [ready, setReady] = useState(false);
   const [hidden, setHidden] = useState(() => typeof document !== 'undefined' && document.hidden);
 
@@ -37,10 +36,11 @@ export function HomeVideo({ visible, active, topClear, groundOffset }: HomeVideo
   }, []);
 
   const playing = visible && active && !hidden;
-  useEffect(() => syncPlayback(ref.current, playing), [playing, size]);
+  useEffect(() => syncPlayback(ref.current, playing), [playing, width, height]);
 
-  const layout = size ? homeVideoLayout({ width: size.width, height: size.height, groundY: size.height - groundOffset, topClear }) : null;
-  const small = size ? homeVideoSize(size.width) === 'small' : true;
+  // taille connue d'avance (largeur de l'écran, hauteur de l'en-tête) : le poster s'affiche dès le premier rendu, sans attendre une mesure (iPhone : D-106)
+  const layout = width > 0 && height > 0 ? homeVideoLayout({ width, height, groundY: height - groundOffset, topClear }) : null;
+  const small = homeVideoSize(width) === 'small';
   const poster = uri(HOME_VIDEO_SOURCES.poster);
 
   return (
@@ -50,7 +50,6 @@ export function HomeVideo({ visible, active, topClear, groundOffset }: HomeVideo
       importantForAccessibility="no-hide-descendants"
       pointerEvents="none"
       style={[StyleSheet.absoluteFill, styles.layer, { opacity: visible ? 1 : 0 }]}
-      onLayout={(e) => setSize({ width: Math.round(e.nativeEvent.layout.width), height: Math.round(e.nativeEvent.layout.height) })}
     >
       {layout ? (
         <>
