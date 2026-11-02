@@ -81,3 +81,35 @@ export function completionBuckets(tasks: readonly StatTask[], period: StatsPerio
     return { ...r, total: inside.length, done: inside.filter((t) => t.completed_at !== null).length };
   });
 }
+
+/**
+ * Série de jours (interface V2, D-106) : nombre de jours CONSÉCUTIFS, en jours locaux de la famille, où au moins une tâche était prévue et où toutes
+ * ont été cochées. Le jour courant compte s'il est déjà fini ; sinon la série s'arrête à hier (elle n'est pas « cassée » avant la fin de la journée).
+ * Un jour sans tâche interrompt la série. Ne compare jamais deux enfants.
+ */
+export function dayStreak(tasks: readonly Pick<StatTask, 'date' | 'completed_at' | 'deleted_at'>[], today: string): number {
+  const byDay = new Map<string, { total: number; done: number }>();
+  for (const t of tasks) {
+    if (t.deleted_at || t.date > today) continue;
+    const d = byDay.get(t.date) ?? { total: 0, done: 0 };
+    d.total += 1;
+    if (t.completed_at !== null) d.done += 1;
+    byDay.set(t.date, d);
+  }
+  const complete = (day: string) => {
+    const d = byDay.get(day);
+    return !!d && d.total > 0 && d.done === d.total;
+  };
+  const prev = (day: string) => {
+    const [y, m, dd] = day.split('-').map(Number) as [number, number, number];
+    const x = new Date(Date.UTC(y, m - 1, dd - 1));
+    return `${x.getUTCFullYear()}-${String(x.getUTCMonth() + 1).padStart(2, '0')}-${String(x.getUTCDate()).padStart(2, '0')}`;
+  };
+  let day = complete(today) ? today : prev(today);
+  let n = 0;
+  while (complete(day)) {
+    n += 1;
+    day = prev(day);
+  }
+  return n;
+}

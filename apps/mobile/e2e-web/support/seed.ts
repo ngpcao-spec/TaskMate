@@ -25,7 +25,7 @@ const uid = () => Math.random().toString(36).slice(2, 10);
 const birth = (years: number) => new Date(Date.now() - years * 365.25 * 86_400_000).toISOString().slice(0, 10);
 
 /** Crée une famille isolée (parent + Minh + Khang) avec les droits du service local, sans passer par l'UI d'onboarding. */
-export async function createFamily(): Promise<FamilyFixture> {
+export async function createFamily(options: { uiVersion?: 'v1' | 'v2' } = {}): Promise<FamilyFixture> {
   const db = admin();
   const tag = uid();
   const password = `Pw-${tag}-1!`;
@@ -38,7 +38,8 @@ export async function createFamily(): Promise<FamilyFixture> {
   };
   const [parentUser, minhUser, khangUser] = await Promise.all([user(`ba-${tag}@e2e.test`, true), user(`minh-${tag}@e2e.test`), user(`khang-${tag}@e2e.test`)]);
 
-  const { data: family, error: fe } = await db.from('families').insert({ name: `Gia đình ${tag}` }).select('id').single();
+  // D-106 : une famille de test peut naître en interface V2 (le service local écrit la colonne, comme le ferait l'administrateur)
+  const { data: family, error: fe } = await db.from('families').insert({ name: `Gia đình ${tag}`, ui_version: options.uiVersion ?? 'v1' }).select('id').single();
   if (fe || !family) throw new Error(`families: ${fe?.message}`);
   const familyId = family.id;
 

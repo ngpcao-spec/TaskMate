@@ -1,4 +1,4 @@
-import { completionBuckets, computeStats, encouragementFor, formatRate, periodRange } from './stats';
+import { completionBuckets, computeStats, dayStreak, encouragementFor, formatRate, periodRange } from './stats';
 
 const t = (date: string, category: 'study' | 'sport' | 'chores' | 'personal' | 'other', done: boolean, deleted = false) => ({
   date, category, completed_at: done ? '2026-07-01T10:00:00Z' : null, deleted_at: deleted ? '2026-07-01T10:00:00Z' : null,
@@ -93,5 +93,20 @@ describe('completionBuckets (graphique en barres)', () => {
   });
   it('période sans tâche : barres à zéro, jamais NaN', () => {
     expect(completionBuckets([], 'week', '2026-06-29', '2026-07-05').every((x) => x.done === 0 && x.total === 0)).toBe(true);
+  });
+});
+
+describe('série de jours (V2, D-106)', () => {
+  const t = (date: string, done: boolean) => ({ date, completed_at: done ? 'x' : null, deleted_at: null });
+  it('jours consécutifs entièrement faits, aujourd’hui compris s’il est fini', () => {
+    expect(dayStreak([t('2026-11-01', true), t('2026-11-02', true), t('2026-10-31', true)], '2026-11-02')).toBe(3);
+    expect(dayStreak([t('2026-11-01', true), t('2026-11-02', false)], '2026-11-02')).toBe(1); // aujourd'hui pas fini : série jusqu'à hier
+    expect(dayStreak([t('2026-11-01', true), t('2026-11-01', false)], '2026-11-02')).toBe(0);
+  });
+  it('un jour sans tâche interrompt, une tâche supprimée ne compte pas, changement de mois', () => {
+    expect(dayStreak([t('2026-11-02', true), t('2026-10-31', true)], '2026-11-02')).toBe(1);
+    expect(dayStreak([t('2026-11-01', true), { date: '2026-11-01', completed_at: null, deleted_at: 'x' }, t('2026-10-31', true)], '2026-11-01')).toBe(2);
+    expect(dayStreak([t('2026-11-03', true)], '2026-11-02')).toBe(0);
+    expect(dayStreak([], '2026-11-02')).toBe(0);
   });
 });

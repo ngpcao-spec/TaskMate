@@ -2147,6 +2147,25 @@
       "error": "Chưa đổi được giao diện",
       "kpi": "Gia đình dùng giao diện V2",
       "kpiCaption": "trên {{total}} gia đình"
+    },
+    "rewards": {
+      "empty": "Chưa có phần thưởng nào."
+    },
+    "map": {
+      "label": "Bản đồ phiêu lưu Việt Nam",
+      "here": "{{name}} đang ở {{destination}}"
+    },
+    "stats": {
+      "streak": "ngày liên tiếp hoàn thành",
+      "streakLabel": "{{count}} ngày liên tiếp hoàn thành",
+      "week": "Tuần của em",
+      "weekDone": "Đã xong {{done}}/{{total}} việc",
+      "dayLabel": "{{day}}: {{done}} trên {{total}} việc"
+    },
+    "me": {
+      "avatar": "Ảnh đại diện của em",
+      "notifications": "Thông báo",
+      "settings": "Cài đặt khác"
     }
   }
 }

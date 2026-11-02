@@ -1,11 +1,22 @@
+import { Redirect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { useMe } from '@/hooks/useMe';
 import { SceneHeader } from '@/v2/components/SceneHeader';
 import { v2Card, v2Colors, v2Spacing, v2Text } from '@/v2/theme';
 
-/** Accueil V2 provisoire (lot A1 : fondations). Remplacé par les écrans enfant (A2) et parent (A3). */
-export default function V2Home() {
+/** Aiguillage de la V2 : l'enfant vers ses onglets ; le parent vers les siens (lot A3 : accueil provisoire en attendant). */
+export default function V2Index() {
   const { t } = useTranslation();
+  const me = useMe().data;
+  if (!me) {
+    return (
+      <View style={styles.screen}>
+        <ActivityIndicator color={v2Colors.primary} />
+      </View>
+    );
+  }
+  if (me.member.role === 'child') return <Redirect href="/v2/child/home" />;
   return (
     <View style={styles.screen}>
       <SceneHeader scene="home" height={320} />
@@ -17,6 +28,6 @@ export default function V2Home() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: v2Colors.background },
+  screen: { flex: 1, backgroundColor: v2Colors.background, justifyContent: 'flex-start' },
   card: { margin: v2Spacing.lg },
 });

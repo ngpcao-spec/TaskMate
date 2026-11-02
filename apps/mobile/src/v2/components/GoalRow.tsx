@@ -15,6 +15,8 @@ type Props = {
   pending?: boolean;
   /** absent : pas de bouton ✓ (ligne d'information, révision de la semaine) */
   onToggle?: () => void;
+  /** case visible mais inactive (tâche déjà validée par le parent : l'enfant ne la décoche plus) */
+  toggleDisabled?: boolean;
   /** appui sur la ligne (ouvrir le détail, ouvrir l'écran de révision) */
   onOpen?: () => void;
   /** texte sous le titre (heure, échéance…) */
@@ -23,7 +25,7 @@ type Props = {
 };
 
 /** Ligne d'objectif V2 : icône, titre, « 10 ⚡ », gros bouton ✓. */
-export function GoalRow({ icon, title, energy, checked, pending = false, onToggle, onOpen, subtitle, testID }: Props) {
+export function GoalRow({ icon, title, energy, checked, pending = false, onToggle, toggleDisabled = false, onOpen, subtitle, testID }: Props) {
   const { t } = useTranslation();
   const body = (
     <>
@@ -55,7 +57,7 @@ export function GoalRow({ icon, title, energy, checked, pending = false, onToggl
       ) : (
         <View style={styles.main}>{body}</View>
       )}
-      {onToggle ? <CheckButton checked={checked} label={title} onPress={onToggle} /> : null}
+      {onToggle ? <CheckButton checked={checked} label={title} onPress={onToggle} disabled={toggleDisabled} /> : null}
     </View>
   );
 }
