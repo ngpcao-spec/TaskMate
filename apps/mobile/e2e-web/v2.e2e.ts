@@ -62,8 +62,8 @@ test.describe('interface V2 : enfant (D-106)', () => {
     await expect(page).toHaveURL(/\/v2\/child\/home/, { timeout: 20_000 });
     await expect(page.getByTestId('v2-scene-ha-long')).toBeAttached({ timeout: 20_000 });
     await expect(page.getByLabel('Panda Bambou đang đi phiêu lưu').filter({ visible: true })).toBeVisible();
-    // l'onglet Phiêu lưu, déjà ouvert, reste monté (caché) avec sa propre carte : on ne regarde que l'élément visible
-    await expect(page.getByText('Đang phiêu lưu · về sáng mai', { exact: true }).filter({ visible: true })).toBeVisible();
+    // l'onglet Phiêu lưu, déjà ouvert, reste monté avec sa propre carte d'aventure : deux fois le même message
+    await expect(page.getByText('Đang phiêu lưu · về sáng mai', { exact: true }).first()).toBeVisible();
     await expect.poll(async () => (await adventuresOf(family, 'minh')).adventures.length).toBe(1);
     expect((await adventuresOf(family, 'minh')).adventures[0]).toMatchObject({ destination_slug: 'ha-long', energy_mark: 60 });
   });
