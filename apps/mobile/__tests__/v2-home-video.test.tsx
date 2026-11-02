@@ -35,7 +35,7 @@ describe('vidéo d’accueil V2 (D-106)', () => {
     expect(screen.toJSON()).toBeNull();
   });
 
-  it('web : <video> muette en boucle, webm puis mp4, cadrée sans déformation, décorative ; poster puis fondu de 200 ms', async () => {
+  it('web : <video> muette en boucle, webm puis mp4, cadrée sans déformation, décorative ; invisible jusqu\'à la première image peinte, puis fondu de 200 ms', async () => {
     const { container } = await show();
     const video = all(container, 'video')[0]!;
     expect(video.props).toMatchObject({ autoPlay: true, muted: true, loop: true, playsInline: true, preload: 'auto', 'aria-hidden': true, tabIndex: -1 });
@@ -43,22 +43,23 @@ describe('vidéo d’accueil V2 (D-106)', () => {
     expect(String((video.props.style as { objectPosition: string }).objectPosition)).toMatch(/^50% \d+(\.\d)?%$/);
     expect(all(container, 'source').map((s) => s.props.type)).toEqual(['video/webm', 'video/mp4']);
     expect(layer(container).props['aria-hidden']).toBe(true);
-    const poster = () => all(container, 'img').find((i) => i.props['data-testid'] === 'v2-home-video-poster')!;
-    expect(poster().props.style).toMatchObject({ opacity: 1, transition: 'opacity 200ms ease' });
-    // « prête » sans image peinte (iPhone) : le poster reste
+    // aucune <img> : l'aperçu fixe est une Image React Native posée par SceneHeader (HomePoster), visible même si la vidéo ne joue jamais
+    expect(all(container, 'img')).toHaveLength(0);
+    const box = () => all(container, 'div').find((d) => d.props['data-testid'] === 'v2-home-video-box')!;
+    expect(box().props.style).toMatchObject({ opacity: 0, transition: 'opacity 200ms ease' });
+    // « prête » sans image peinte (iPhone) : toujours invisible
     await act(async () => (video.props.onPlaying as (e: object) => void)({ currentTarget: { paused: false, currentTime: 0 } }));
-    expect(poster().props.style).toMatchObject({ opacity: 1 });
+    expect(box().props.style).toMatchObject({ opacity: 0 });
     expect(video.props.onCanPlay).toBeUndefined();
-    // première image peinte : fondu
+    // première image peinte : fondu vers la vidéo
     await act(async () => (video.props.onTimeUpdate as (e: object) => void)({ currentTarget: { paused: false, currentTime: 0.04 } }));
-    expect(poster().props.style).toMatchObject({ opacity: 0 });
+    expect(box().props.style).toMatchObject({ opacity: 1 });
   });
 
-  it('iPhone : le poster et la vidéo sont là dès le PREMIER rendu (aucune mesure attendue, pas de saut depuis le décor fixe)', async () => {
+  it('iPhone : la vidéo est là dès le PREMIER rendu (aucune mesure attendue)', async () => {
     const r = await render(<HomeVideo visible active {...base} width={390} />);
     const container = r.container as unknown as Node;
     expect(all(container, 'video')).toHaveLength(1);
-    expect(all(container, 'img').some((i) => i.props['data-testid'] === 'v2-home-video-poster')).toBe(true);
   });
 
   it.each([

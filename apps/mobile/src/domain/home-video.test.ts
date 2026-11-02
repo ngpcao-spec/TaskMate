@@ -54,6 +54,17 @@ describe('vidéo d’accueil : source et cadrage', () => {
     expect(l.boxWidth).toBe(120);
     expect(l.objectPositionY).toBe(50);
   });
+  it.each([375, 390, 430, 768])('aperçu fixe à %i px : même cadre que la vidéo (cover, sans déformation)', (width) => {
+    const l = homeVideoLayout({ width, height: 300, groundY: 276, topClear: 60 });
+    expect(l.image.width).toBeGreaterThanOrEqual(l.boxWidth);
+    expect(l.image.height).toBeGreaterThanOrEqual(300);
+    expect(Math.abs(l.image.width / l.image.height - 720 / 1280)).toBeLessThan(0.01);
+    expect(l.image.left).toBe(Math.round((l.boxWidth - l.image.width) / 2));
+    expect(l.image.top).toBeLessThanOrEqual(0);
+    expect(l.image.top + l.image.height).toBeGreaterThanOrEqual(300);
+    // pieds du panda (70,7 % de l'image) sur le sol
+    expect(Math.abs(l.image.top + 0.707 * l.image.height - 276)).toBeLessThanOrEqual(1);
+  });
 });
 
 describe('vidéo d’accueil : sources et poster (iPhone)', () => {

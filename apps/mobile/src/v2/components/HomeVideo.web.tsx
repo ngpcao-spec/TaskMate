@@ -16,11 +16,12 @@ const uri = (mod: unknown): string => {
 };
 
 /**
- * Vidéo d'accueil (web, D-106), posée par-dessus le décor fixe et le `PandaSprite` de `SceneHeader` (qui restent dessous : ils portent le libellé
- * d'accessibilité du panda et réapparaissent en fondu pendant une réaction). Décorative : `aria-hidden`, aucun focus.
+ * Vidéo d'accueil (web, D-106), posée par-dessus l'aperçu fixe (`HomePoster`, une `Image` React Native placée par `SceneHeader` à la place du décor ;
+ * le `PandaSprite` reste dessous, masqué : il porte le libellé d'accessibilité et réapparaît pendant une réaction). Décorative : `aria-hidden`, aucun focus.
  * - `<video autoPlay muted loop playsInline preload="auto">`, sources dans l'ordre de `homeVideoSources` (mp4 d'abord sur Safari / iPhone, webm ailleurs ;
  *   480 px sous 400 de large), cadrée par `homeVideoLayout` ;
- * - image fixe (poster) tant qu'aucune image n'est PEINTE (`playing` + `timeupdate`, pas `canplay` : sur iPhone il arrive avant), puis fondu de 200 ms ;
+ * - INVISIBLE tant qu'aucune image n'est PEINTE (`playing` + `timeupdate`, pas `canplay` : sur iPhone il arrive avant), puis fondu de 200 ms : avant,
+ *   et pour toujours si la lecture est refusée (économie d'énergie de l'iPhone), on voit l'aperçu fixe dessous, jamais un fond uni ;
  * - pause quand l'onglet est caché ou quand Hôm nay n'a plus le focus (`active`), reprise au retour ;
  * - `visible` faux (réaction au coche) : fondu vers le décor fixe, vidéo en pause.
  */
@@ -39,13 +40,12 @@ export function HomeVideo({ visible, active, topClear, groundOffset, width, heig
   const playing = visible && active && !hidden;
   useEffect(() => syncPlayback(ref.current, playing), [playing, width, height]);
 
-  // taille connue d'avance (largeur de l'écran, hauteur de l'en-tête) : le poster s'affiche dès le premier rendu, sans attendre une mesure (iPhone : D-106)
+  // taille connue d'avance (largeur de l'écran, hauteur de l'en-tête) : aucune mesure à attendre (iPhone : D-106)
   const layout = width > 0 && height > 0 ? homeVideoLayout({ width, height, groundY: height - groundOffset, topClear }) : null;
   const sources = homeVideoSources(typeof navigator === 'undefined' ? '' : navigator.userAgent, width);
   const markReady = (e: { currentTarget: { paused: boolean; currentTime: number } }) => {
     if (!ready && videoShowsFrames(e.currentTarget)) setReady(true);
   };
-  const poster = uri(HOME_VIDEO_SOURCES.poster);
 
   return (
     <View
@@ -56,43 +56,32 @@ export function HomeVideo({ visible, active, topClear, groundOffset, width, heig
       style={[StyleSheet.absoluteFill, styles.layer, { opacity: visible ? 1 : 0 }]}
     >
       {layout ? (
-        <>
-          {/* écran large : de part et d'autre de la boîte vidéo, l'image fixe floutée */}
-          {layout.boxLeft > 0 ? <img src={poster} alt="" aria-hidden style={{ ...fill, objectFit: 'cover', filter: 'blur(10px)', transform: 'scale(1.08)' }} /> : null}
-          <div
-            data-testid="v2-home-video-box"
-            data-panda-top={layout.pandaTop}
-            data-panda-bottom={layout.pandaBottom}
-            style={{ position: 'absolute', top: 0, bottom: 0, left: layout.boxLeft, width: layout.boxWidth, overflow: 'hidden' }}
+        <div
+          data-testid="v2-home-video-box"
+          data-panda-top={layout.pandaTop}
+          data-panda-bottom={layout.pandaBottom}
+          data-ready={ready ? 'true' : 'false'}
+          style={{ position: 'absolute', top: 0, bottom: 0, left: layout.boxLeft, width: layout.boxWidth, overflow: 'hidden', opacity: ready ? 1 : 0, transition: `opacity ${FADE_MS}ms ease` }}
+        >
+          <video
+            ref={ref}
+            data-testid="v2-home-video-element"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            aria-hidden
+            tabIndex={-1}
+            onPlaying={markReady}
+            onTimeUpdate={markReady}
+            style={{ ...fill, objectFit: 'cover', objectPosition: `50% ${layout.objectPositionY}%` }}
           >
-            <video
-              ref={ref}
-              data-testid="v2-home-video-element"
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="auto"
-              poster={poster}
-              aria-hidden
-              tabIndex={-1}
-              onPlaying={markReady}
-              onTimeUpdate={markReady}
-              style={{ ...fill, objectFit: 'cover', objectPosition: `50% ${layout.objectPositionY}%` }}
-            >
-              {sources.map((s) => (
-                <source key={s.key} src={uri(HOME_VIDEO_SOURCES[s.key])} type={s.type} />
-              ))}
-            </video>
-            <img
-              data-testid="v2-home-video-poster"
-              src={poster}
-              alt=""
-              aria-hidden
-              style={{ ...fill, objectFit: 'cover', objectPosition: `50% ${layout.objectPositionY}%`, opacity: ready ? 0 : 1, transition: `opacity ${FADE_MS}ms ease` }}
-            />
-          </div>
-        </>
+            {sources.map((s) => (
+              <source key={s.key} src={uri(HOME_VIDEO_SOURCES[s.key])} type={s.type} />
+            ))}
+          </video>
+        </div>
       ) : null}
     </View>
   );

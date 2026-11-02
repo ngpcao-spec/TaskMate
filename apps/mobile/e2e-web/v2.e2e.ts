@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, webkit, type Page } from '@playwright/test';
 import { adventuresOf, createFamily, seedCompanion, seedEnergy, seedTask, serverState, serviceClient, signInContext } from './support/seed';
 
 /**
@@ -97,7 +97,11 @@ test.describe('interface V2 : parent (D-106)', () => {
 
 test.describe('interface V2 : vidéo d\'accueil (D-106)', () => {
   /** Khang a 13 ans : panda TEEN (stade 3), la seule vidéo fournie. */
-  async function openTeen(browser: import('@playwright/test').Browser, family: Awaited<ReturnType<typeof createFamily>>, options: { reducedMotion?: 'reduce' } = {}) {
+  async function openTeen(
+    browser: import('@playwright/test').Browser,
+    family: Awaited<ReturnType<typeof createFamily>>,
+    options: import('@playwright/test').BrowserContextOptions = {},
+  ) {
     const ctx = await browser.newContext(options);
     await signInContext(ctx, family.khang);
     const page = await ctx.newPage();
@@ -117,8 +121,11 @@ test.describe('interface V2 : vidéo d\'accueil (D-106)', () => {
     await expect(video).toBeAttached({ timeout: 20_000 });
     expect(await video.evaluate((v: HTMLVideoElement) => ({ muted: v.muted, loop: v.loop, sources: [...v.querySelectorAll('source')].map((x) => x.type) }))).toEqual({ muted: true, loop: true, sources: ['video/webm', 'video/mp4'] });
     // le libellé du panda reste lisible (PandaSprite sous la vidéo), la vidéo est décorative
-    await expect(page.getByLabel('Panda Bambou, bình tĩnh')).toBeAttached();
+    await expect(page.getByLabel(/^Panda Bambou, /)).toBeAttached(); // humeur selon l'heure locale (après 20 h : il dort)
     expect(await video.getAttribute('aria-hidden')).toBe('true');
+    // l'aperçu fixe (Image React Native) remplace le décor ; la vidéo apparaît par-dessus dès qu'elle peint une image
+    await expect(page.getByTestId('v2-home-video-poster')).toBeVisible();
+    await expect(page.getByTestId('v2-home-video-box')).toHaveAttribute('data-ready', 'true', { timeout: 20_000 });
 
     for (const width of [375, 390, 430, 768]) {
       await page.setViewportSize({ width, height: 844 });
@@ -140,6 +147,33 @@ test.describe('interface V2 : vidéo d\'accueil (D-106)', () => {
         const jpeg = await page.screenshot({ type: 'jpeg', quality: 60, clip: { x: 0, y: 0, width, height: 640 } });
         console.log(`=====V2-CAPTURE-${width}-BEGIN=====\n${jpeg.toString('base64')}\n=====V2-CAPTURE-${width}-END=====`);
       }
+    }
+  });
+
+  // Une vidéo qui ne joue jamais (économie d'énergie de l'iPhone) ne s'émule pas : WebKit Linux lit les médias hors de l'interception réseau de
+  // Playwright. Ce test vérifie que l'aperçu fixe (Image React Native) couvre le décor sous WebKit ; la vidéo invisible tant qu'aucune image n'est
+  // peinte est vérifiée par __tests__/v2-home-video.test.tsx.
+  test('WebKit iPhone : l\'aperçu fixe (Image) remplace le décor dès l\'ouverture, panda dessiné masqué, jamais un fond uni', async () => {
+    test.setTimeout(150_000);
+    const family = await createFamily({ uiVersion: 'v2' });
+    await seedCompanion(family, 'khang', 'Bambou');
+    const wk = await webkit.launch();
+    try {
+      const page = await openTeen(wk, family, {
+        viewport: { width: 390, height: 844 },
+        userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1',
+      });
+      await expect(page.getByTestId('v2-home-video-element')).toBeAttached({ timeout: 20_000 });
+      const poster = page.getByTestId('v2-home-video-poster');
+      await expect(poster).toBeVisible();
+      await expect.poll(() => poster.locator('img').first().evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0), { timeout: 20_000 }).toBe(true);
+      await expect(page.getByTestId('v2-scene-backdrop')).toHaveCSS('opacity', '1');
+      await expect(page.getByTestId('v2-scene-ground')).toHaveCSS('opacity', '0'); // pas de deuxième panda par-dessus l'aperçu
+      await page.waitForTimeout(500);
+      const jpeg = await page.screenshot({ type: 'jpeg', quality: 60, clip: { x: 0, y: 0, width: 390, height: 640 } });
+      console.log(`=====V2-CAPTURE-WEBKIT-390-BEGIN=====\n${jpeg.toString('base64')}\n=====V2-CAPTURE-WEBKIT-390-END=====`);
+    } finally {
+      await wk.close();
     }
   });
 
