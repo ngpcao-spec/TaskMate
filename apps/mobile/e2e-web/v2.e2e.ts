@@ -135,6 +135,11 @@ test.describe('interface V2 : vidéo d\'accueil (D-106)', () => {
       expect(Math.abs(b.x + b.width / 2 - width / 2)).toBeLessThanOrEqual(2); // centré
       await page.screenshot({ path: test.info().outputPath(`v2-video-${width}.png`) });
       await page.screenshot({ path: `test-results/v2-captures/v2-video-${width}.png` });
+      // 375 et 430 px : aussi dans le journal CI (JPEG compressé, base64) pour le rapport, l'artefact n'étant pas toujours téléchargeable
+      if (width === 375 || width === 430) {
+        const jpeg = await page.screenshot({ type: 'jpeg', quality: 60, clip: { x: 0, y: 0, width, height: 640 } });
+        console.log(`=====V2-CAPTURE-${width}-BEGIN=====\n${jpeg.toString('base64')}\n=====V2-CAPTURE-${width}-END=====`);
+      }
     }
   });
 
