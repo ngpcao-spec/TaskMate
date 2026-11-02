@@ -12,7 +12,9 @@ test.describe('PWA', () => {
     for (const icon of manifest.icons) expect((await request.get(new URL(icon.src, page.url()).href)).ok()).toBe(true);
     await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveCount(1);
     await expect(page.locator('meta[name="apple-mobile-web-app-capable"]')).toHaveCount(1);
-    await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content', '#3C536C');
+    // D-106 : couleur de fond du thème (barre d'état translucide), page étendue sous la barre d'état
+    await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content', '#9CB0C0');
+    await expect(page.locator('meta[name="apple-mobile-web-app-status-bar-style"]')).toHaveAttribute('content', 'black-translucent');
   });
 
   test('le service worker met l\'app en cache : démarrage hors ligne', async ({ page, context }) => {

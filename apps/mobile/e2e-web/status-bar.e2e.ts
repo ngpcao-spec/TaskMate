@@ -76,11 +76,12 @@ for (const phone of PHONES) {
     const back = new Date(Date.parse(`${today}T00:00:00Z`) + 86_400_000).toISOString().slice(0, 10);
     const { error } = await serviceClient().from('child_adventures').insert({ id: crypto.randomUUID(), child_id: v2.khang.childId as string, family_id: v2.familyId, destination_slug: 'hoi-an', departed_on: today, returns_on: back, energy_mark: 0 });
     if (error) throw new Error(error.message);
-    await child.reload();
-    await expect(child.getByTestId('v2-scene-hoi-an')).toBeAttached({ timeout: 20_000 });
-    await expect(child.getByTestId('v2-home-video-element')).toHaveCount(0);
-    expect((await child.getByTestId('v2-scene-hoi-an').boundingBox())!.y).toBeLessThanOrEqual(0.5);
-    await check(child, 'v2-enfant-voyage', phone);
+    // nouvel appareil (cache vide) : l'état d'aventure persisté du précédent serait encore frais
+    const traveller = await openAs(browser, v2.khang, phone);
+    await expect(traveller.getByTestId('v2-scene-hoi-an')).toBeAttached({ timeout: 20_000 });
+    await expect(traveller.getByTestId('v2-home-video-element')).toHaveCount(0);
+    expect((await traveller.getByTestId('v2-scene-hoi-an').boundingBox())!.y).toBeLessThanOrEqual(0.5);
+    await check(traveller, 'v2-enfant-voyage', phone);
 
     // V2 parent
     const parent = await openAs(browser, v2.parent, phone);
