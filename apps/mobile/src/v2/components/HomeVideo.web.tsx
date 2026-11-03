@@ -1,5 +1,5 @@
 import { Asset } from 'expo-asset';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { homeVideoLayout, homeVideoSources, videoShowsFrames } from '@/domain/home-video';
 import { CROSSFADE_MS, READY_TIMEOUT_MS, type PandaAnim } from '@/domain/panda-animation';
@@ -27,7 +27,9 @@ const layerOf = (clip: HomeClip): Layer => ({ id: layerId(clip), name: clip.name
 export function nextLayers(cur: Layer[], wanted: HomeClip, still: boolean, wasStill: boolean): Layer[] {
   if (still) return [];
   if (wasStill) return [layerOf(wanted)];
-  if (cur.some((l) => l.id === layerId(wanted))) return cur;
+  // déjà là (ex. retour au repos pendant le fondu vers une réaction) : elle redevient la couche du dessus, celles au-dessus partent
+  const idx = cur.findIndex((l) => l.id === layerId(wanted));
+  if (idx >= 0) return idx === cur.length - 1 ? cur : cur.slice(0, idx + 1);
   const front = [...cur].reverse().find((l) => l.painted) ?? cur[0];
   return front ? [front, layerOf(wanted)] : [layerOf(wanted)];
 }
@@ -56,6 +58,16 @@ export function HomeVideo({ video, clip, still, prefetch, onStarted, onEnded, on
   }
   const [hidden, setHidden] = useState(() => typeof document !== 'undefined' && document.hidden);
   const els = useRef(new Map<string, HTMLVideoElement>());
+  // la couche s'enregistre (élément monté) ou se retire (démonté : source libérée)
+  const register = useCallback((id: string, el: HTMLVideoElement | null) => {
+    if (el) {
+      els.current.set(id, el);
+      return;
+    }
+    const old = els.current.get(id);
+    if (old) release(old);
+    els.current.delete(id);
+  }, []);
   const live = useRef<{ layers: Layer[]; onStarted?: HomeVideoProps['onStarted']; onEnded?: HomeVideoProps['onEnded']; onFailed?: HomeVideoProps['onFailed'] }>({ layers });
   useEffect(() => {
     live.current = { layers, onStarted, onEnded, onFailed };
@@ -178,26 +190,13 @@ export function HomeVideo({ video, clip, still, prefetch, onStarted, onEnded, on
             <img data-testid="v2-home-video-still" src={uri(still)} alt="" aria-hidden style={{ ...fill, objectFit: 'cover', objectPosition: `50% ${layout.objectPositionY}%` }} />
           ) : (
             layers.map((l) => (
-              <video
+              <LayerVideo
                 key={l.id}
-                ref={(el) => {
-                  if (el) els.current.set(l.id, el);
-                  else {
-                    const old = els.current.get(l.id);
-                    if (old) release(old);
-                    els.current.delete(l.id);
-                  }
-                }}
-                data-testid="v2-home-video-element"
+                id={l.id}
+                register={register}
                 data-anim={l.name}
                 data-painted={l.painted ? 'true' : 'false'}
-                autoPlay
-                muted
                 loop={l.loop}
-                playsInline
-                preload="auto"
-                aria-hidden
-                tabIndex={-1}
                 onPlaying={(e) => markPainted(l.id, l.name, e.currentTarget)}
                 onTimeUpdate={(e) => markPainted(l.id, l.name, e.currentTarget)}
                 onEnded={() => {
@@ -210,12 +209,39 @@ export function HomeVideo({ video, clip, still, prefetch, onStarted, onEnded, on
                   // l'échec de la DERNIÈRE source (aucune lisible) arrive sur `<source>`, pas sur `<video>`
                   <source key={s.key} src={uri(l.sources[s.key])} type={s.type} onError={i === sources.length - 1 ? () => fail(l) : undefined} />
                 ))}
-              </video>
+              </LayerVideo>
             ))
           )}
         </div>
       ) : null}
     </View>
+  );
+}
+
+type LayerVideoProps = {
+  id: string;
+  register: (id: string, el: HTMLVideoElement | null) => void;
+  'data-anim': string;
+  'data-painted': string;
+  loop: boolean;
+  onPlaying: (e: { currentTarget: HTMLVideoElement }) => void;
+  onTimeUpdate: (e: { currentTarget: HTMLVideoElement }) => void;
+  onEnded: () => void;
+  onError: () => void;
+  style: object;
+  children: ReactNode;
+};
+
+/**
+ * Une couche du lecteur (même `<video>` pour le repos et toutes les réactions) : sa fonction `ref` est STABLE (sinon chaque rendu détacherait et
+ * rechargerait la vidéo). `muted`, `playsInline`, `autoPlay` ; `loop` pour le repos seulement.
+ */
+function LayerVideo({ id, register, loop, children, ...rest }: LayerVideoProps) {
+  const ref = useCallback((el: HTMLVideoElement | null) => register(id, el), [id, register]);
+  return (
+    <video ref={ref} data-testid="v2-home-video-element" autoPlay muted loop={loop} playsInline preload="auto" aria-hidden tabIndex={-1} {...rest}>
+      {children}
+    </video>
   );
 }
 

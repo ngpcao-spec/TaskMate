@@ -65,6 +65,22 @@ describe('panda vidéo : un seul lecteur pour le repos et les réactions (D-106)
     expect(onEnded).toHaveBeenCalledWith('happy');
   });
 
+  it('fin d’une réaction PENDANT le fondu (repos encore dessous) : retour immédiat au repos, jamais bloqué sur la réaction', async () => {
+    const onEnded = jest.fn();
+    const r = await render(<HomeVideo {...base} onEnded={onEnded} />);
+    const c = r.container as unknown as Node;
+    await paint(videos(c)[0]!);
+    await r.rerender(<HomeVideo {...base} clip={clip('curious')} onEnded={onEnded} />);
+    await paint(videos(c)[1]!);
+    expect(box(c).props['data-anim']).toBe('curious');
+    // `ended` avant la fin du fondu de 150 ms : le gestionnaire redemande le repos
+    await act(async () => (videos(c)[1]!.props.onEnded as () => void)());
+    await r.rerender(<HomeVideo {...base} clip={null} onEnded={onEnded} />);
+    await act(async () => jest.advanceTimersByTime(500));
+    expect(videos(c).map((v) => v.props['data-anim'])).toEqual(['idle']);
+    expect(box(c).props['data-anim']).toBe('idle');
+  });
+
   it('réaction pas prête en 1,5 s : abandonnée, le panda reste au repos', async () => {
     const onFailed = jest.fn();
     const r = await render(<HomeVideo {...base} onFailed={onFailed} />);
