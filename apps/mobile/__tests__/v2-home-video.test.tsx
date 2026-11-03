@@ -1,18 +1,16 @@
 import { act, render, screen } from '@testing-library/react-native';
 import { HomeVideo } from '@/v2/components/HomeVideo.web';
 import { HomeVideo as NativeHomeVideo } from '@/v2/components/HomeVideo';
-import { HomePoster } from '@/v2/components/HomePoster';
-import { homeVideoLayout } from '@/domain/home-video';
 
 jest.mock('expo-asset', () => ({ Asset: { fromModule: (m: unknown) => ({ uri: `asset:${String(m)}` }) } }));
 // chaque fichier vidéo devient un nom lisible (les `require` du module `src/v2/video.ts`)
-const mockEntry = (key: string, feetY: number, headY: number, maxFill?: number) => ({
+const mockEntry = (key: string, feetY: number, headY: number) => ({
   key,
   sources: { webm: `${key}.webm`, mp4: `${key}.mp4`, mp4Small: `${key}@480`, poster: `${key}-poster` },
-  geometry: { width: 720, height: 1280, headY, feetY, maxFill },
+  geometry: { width: 720, height: 1280, headY, feetY },
 });
 const TEEN = mockEntry('home-teen', 0.707, 0.485);
-const DONG_HANH = mockEntry('home-dong-hanh', 0.736, 0.438, 0.74);
+const DONG_HANH = mockEntry('home-dong-hanh', 0.688, 0.485);
 
 type Node = { type: string; props: Record<string, unknown>; children: unknown[]; queryAll: (p: (n: Node) => boolean) => Node[] };
 const listeners: Record<string, () => void> = {};
@@ -110,31 +108,5 @@ describe('vidéo d’accueil V2 (D-106)', () => {
     expect(pos).toMatch(/^50% \d+(\.\d)?%$/);
     expect(pos).not.toBe(teenPos);
   });
-
-  it('stade 4 (đồng hành) à 390 px : boîte plus étroite que l’écran, centrée, bords fondus ; teen pleine largeur sans fondu', async () => {
-    const box = (c: Node) => c.queryAll((n) => n.props['data-testid'] === 'v2-home-video-box')[0]!.props.style as Record<string, unknown>;
-    const teen = await show({ topClear: 107 }, 390);
-    expect(box(teen.container)).toMatchObject({ left: 0, width: 390, maskImage: undefined });
-    await teen.unmount();
-    const { container } = await show({ video: DONG_HANH, topClear: 107 }, 390);
-    const s = box(container);
-    expect(s.width as number).toBeLessThan(390);
-    expect(s.left).toBe(Math.round((390 - (s.width as number)) / 2));
-    expect(String(s.maskImage)).toContain('linear-gradient(to right, transparent 0, #000 24px');
-    expect(s.WebkitMaskImage).toBe(s.maskImage);
-  });
-
-  it('aperçu fixe du stade 4 à 390 px : côtés floutés calés sur la ligne de sol, boîte aux bords fondus ; teen sans côtés', async () => {
-    const H = { includeHiddenElements: true };
-    const props = { topClear: 107, groundOffset: 24, width: 390, height: 347 };
-    const teen = await render(<HomePoster video={TEEN} {...props} />);
-    expect(screen.queryByTestId('v2-home-video-backdrop', H)).toBeNull();
-    await teen.unmount();
-    await render(<HomePoster video={DONG_HANH} {...props} />);
-    const l = homeVideoLayout({ width: 390, height: 347, groundY: 323, topClear: 107 }, DONG_HANH.geometry);
-    const flat = (id: string) => Object.assign({}, ...[screen.getByTestId(id, H).props.style].flat(3).filter(Boolean)) as Record<string, unknown>;
-    expect(flat('v2-home-video-backdrop')).toMatchObject(l.backdrop);
-    expect(flat('v2-home-video-poster-box')).toMatchObject({ left: l.boxLeft, width: l.boxWidth });
-    expect(String(flat('v2-home-video-poster-box').maskImage)).toContain('#000 24px');
-  });
 });
+

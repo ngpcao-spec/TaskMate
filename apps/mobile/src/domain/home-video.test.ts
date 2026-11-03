@@ -1,4 +1,4 @@
-import { HOME_VIDEO, HOME_VIDEO_FEATHER, featherMask, homeVideoLayout, homeVideoSize, homeVideoSources, showHomeVideo, videoShowsFrames } from './home-video';
+import { HOME_VIDEO, homeVideoLayout, homeVideoSize, homeVideoSources, showHomeVideo, videoShowsFrames } from './home-video';
 
 const ok = { scene: 'home', adventure: 'filling' as const, hasStageVideo: true, variant: 'boy', reduceMotion: false, saveData: false, web: true };
 
@@ -88,8 +88,8 @@ describe('vidéo d’accueil : sources et poster (iPhone)', () => {
 });
 
 describe('vidéo d’accueil : cadrage par vidéo (D-106, đồng hành)', () => {
-  // géométrie mesurée sur l'aperçu fourni : panda filmé de plus près que le teen, pieds plus bas (73,6 % contre 70,7 %) ; `maxFill` = celui de la table
-  const DONG_HANH = { width: 720, height: 1280, headY: 0.438, feetY: 0.736, maxFill: 0.74 };
+  // géométrie mesurée sur l'aperçu (plan large) : panda un peu plus petit que le teen, pieds plus hauts (68,8 % contre 70,7 %)
+  const DONG_HANH = { width: 720, height: 1280, headY: 0.485, feetY: 0.688 };
   // iPhone : barre d'état 47 pt, en-tête 300 + 47, sol à 24 pt du bas, boutons du haut 47 + 8 + 44 + 8
   const phone = (width: number) => ({ width, height: 347, groundY: 323, topClear: 107 });
   it.each([390, 430])('%i px : pieds sur la même ligne de sol que le teen, panda entier sous les boutons, centré', (width) => {
@@ -99,43 +99,12 @@ describe('vidéo d’accueil : cadrage par vidéo (D-106, đồng hành)', () =>
     expect(Math.abs(teen.pandaBottom - 323)).toBeLessThanOrEqual(1);
     expect(dh.pandaTop).toBeGreaterThanOrEqual(107);
     expect(dh.boxLeft).toBe(Math.round((width - dh.boxWidth) / 2));
-    // même ligne de sol mais pieds plus bas dans l'image : l'object-position diffère (une valeur par vidéo, calculée)
+    // plan large : pleine largeur sur téléphone, comme le teen
+    expect(dh.boxWidth).toBe(width);
+    expect(dh.pandaBottom - dh.pandaTop).toBeLessThanOrEqual(teen.pandaBottom - teen.pandaTop);
+    // même ligne de sol mais pieds plus hauts dans l'image : l'object-position diffère (une valeur par vidéo, calculée)
     expect(dh.objectPositionY).not.toBe(teen.objectPositionY);
     expect(Math.abs(dh.image.top + DONG_HANH.feetY * dh.image.height - 323)).toBeLessThanOrEqual(1);
-  });
-  it.each([390, 430])('%i px : panda đồng hành de la taille du teen (plus « trop proche »), boîte réduite aux bords fondus', (width) => {
-    const teen = homeVideoLayout(phone(width));
-    const dh = homeVideoLayout(phone(width), DONG_HANH);
-    const size = (l: { pandaTop: number; pandaBottom: number }) => l.pandaBottom - l.pandaTop;
-    expect(size(dh)).toBeLessThanOrEqual(Math.ceil(0.74 * (323 - 107)) + 1);
-    // même taille à 10 % près (avant : environ 1,35 × le teen à 390 px)
-    expect(size(dh)).toBeGreaterThanOrEqual(size(teen) * 0.9);
-    expect(size(dh)).toBeLessThanOrEqual(size(teen) * 1.1);
-    expect(dh.boxWidth).toBeLessThan(width);
-    expect(dh.feather).toBe(Math.min(HOME_VIDEO_FEATHER, dh.boxLeft));
-    expect(dh.image.width).toBeGreaterThanOrEqual(dh.boxWidth);
-  });
-  it.each([390, 430, 768])('%i px : fond flouté des côtés sur toute la largeur, son sol sur la même ligne que la vidéo', (width) => {
-    const l = homeVideoLayout(phone(width), DONG_HANH);
-    expect(l.backdrop.width).toBeGreaterThanOrEqual(width);
-    expect(l.backdrop.height).toBeGreaterThanOrEqual(347);
-    expect(l.backdrop.top).toBeLessThanOrEqual(0);
-    expect(l.backdrop.top + l.backdrop.height).toBeGreaterThanOrEqual(347);
-    expect(l.backdrop.left).toBe(Math.round((width - l.backdrop.width) / 2));
-    expect(Math.abs(l.backdrop.top + DONG_HANH.feetY * l.backdrop.height - 323)).toBeLessThanOrEqual(1);
-    expect(Math.abs(l.backdrop.width / l.backdrop.height - 720 / 1280)).toBeLessThan(0.01);
-  });
-  it('teen à 390 px : pleine largeur, aucun fondu (inchangé)', () => {
-    const l = homeVideoLayout(phone(390));
-    expect(l.boxLeft).toBe(0);
-    expect(l.feather).toBe(0);
-  });
-  it('masque de fondu : rien sans fondu, dégradé gauche et droite sinon', () => {
-    expect(featherMask(0)).toBeUndefined();
-    expect(featherMask(24)).toBe('linear-gradient(to right, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%)');
-  });
-  it('maxFill absent = 1 (géométrie inchangée)', () => {
-    expect(homeVideoLayout(phone(430), { ...HOME_VIDEO, maxFill: 1 })).toEqual(homeVideoLayout(phone(430)));
   });
   it('défaut = géométrie teen', () => {
     expect(homeVideoLayout(phone(390))).toEqual(homeVideoLayout(phone(390), HOME_VIDEO));
