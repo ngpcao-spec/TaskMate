@@ -1,6 +1,8 @@
 import { act, render, screen } from '@testing-library/react-native';
 import { HomeVideo } from '@/v2/components/HomeVideo.web';
 import { HomeVideo as NativeHomeVideo } from '@/v2/components/HomeVideo';
+import { HomePoster } from '@/v2/components/HomePoster';
+import { homeVideoLayout } from '@/domain/home-video';
 
 jest.mock('expo-asset', () => ({ Asset: { fromModule: (m: unknown) => ({ uri: `asset:${String(m)}` }) } }));
 // chaque fichier vidéo devient un nom lisible (les `require` du module `src/v2/video.ts`)
@@ -120,5 +122,19 @@ describe('vidéo d’accueil V2 (D-106)', () => {
     expect(s.left).toBe(Math.round((390 - (s.width as number)) / 2));
     expect(String(s.maskImage)).toContain('linear-gradient(to right, transparent 0, #000 24px');
     expect(s.WebkitMaskImage).toBe(s.maskImage);
+  });
+
+  it('aperçu fixe du stade 4 à 390 px : côtés floutés calés sur la ligne de sol, boîte aux bords fondus ; teen sans côtés', async () => {
+    const H = { includeHiddenElements: true };
+    const props = { topClear: 107, groundOffset: 24, width: 390, height: 347 };
+    const teen = await render(<HomePoster video={TEEN} {...props} />);
+    expect(screen.queryByTestId('v2-home-video-backdrop', H)).toBeNull();
+    await teen.unmount();
+    await render(<HomePoster video={DONG_HANH} {...props} />);
+    const l = homeVideoLayout({ width: 390, height: 347, groundY: 323, topClear: 107 }, DONG_HANH.geometry);
+    const flat = (id: string) => Object.assign({}, ...[screen.getByTestId(id, H).props.style].flat(3).filter(Boolean)) as Record<string, unknown>;
+    expect(flat('v2-home-video-backdrop')).toMatchObject(l.backdrop);
+    expect(flat('v2-home-video-poster-box')).toMatchObject({ left: l.boxLeft, width: l.boxWidth });
+    expect(String(flat('v2-home-video-poster-box').maskImage)).toContain('#000 24px');
   });
 });

@@ -47,6 +47,11 @@ export type HomeVideoLayout = {
   pandaBottom: number;
   /** largeur (px) du fondu des bords gauche et droit de la boîte quand elle est plus étroite que l'en-tête (0 = pleine largeur, pas de fondu) */
   feather: number;
+  /**
+   * fond des côtés (aperçu flouté) quand la boîte est plus étroite que l'en-tête, en px dans l'en-tête : la même image en cover sur TOUTE la largeur,
+   * calée pour que son sol tombe sur la même ligne que celui de la vidéo (sinon les côtés montreraient du ciel à hauteur du sable)
+   */
+  backdrop: { left: number; top: number; width: number; height: number };
   /** image affichée (cover) dans la boîte, en px : sert à poser l'aperçu fixe exactement là où la vidéo peindra sa première image */
   image: { left: number; top: number; width: number; height: number };
 };
@@ -75,6 +80,9 @@ export function homeVideoLayout(o: { width: number; height: number; groundY: num
   const extra = Math.max(0, shown - o.height);
   const offset = Math.max(0, Math.min(extra, g.feetY * shown - o.groundY));
   const boxLeft = Math.round((o.width - boxWidth) / 2);
+  const bgScale = Math.max(o.width / g.width, o.height / g.height);
+  const bgShown = g.height * bgScale;
+  const bgOffset = Math.max(0, Math.min(bgShown - o.height, g.feetY * bgShown - o.groundY));
   return {
     boxWidth,
     boxLeft,
@@ -82,6 +90,7 @@ export function homeVideoLayout(o: { width: number; height: number; groundY: num
     objectPositionY: extra > 0 ? Math.round((offset / extra) * 1000) / 10 : 50,
     pandaTop: Math.round(g.headY * shown - offset),
     pandaBottom: Math.round(g.feetY * shown - offset),
+    backdrop: { left: Math.round((o.width - g.width * bgScale) / 2), top: -Math.round(bgOffset), width: Math.round(g.width * bgScale), height: Math.round(bgShown) },
     image: { left: Math.round((boxWidth - g.width * scale) / 2), top: -Math.round(offset), width: Math.round(g.width * scale), height: Math.round(shown) },
   };
 }

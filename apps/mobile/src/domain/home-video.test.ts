@@ -115,6 +115,16 @@ describe('vidéo d’accueil : cadrage par vidéo (D-106, đồng hành)', () =>
     expect(dh.feather).toBe(Math.min(HOME_VIDEO_FEATHER, dh.boxLeft));
     expect(dh.image.width).toBeGreaterThanOrEqual(dh.boxWidth);
   });
+  it.each([390, 430, 768])('%i px : fond flouté des côtés sur toute la largeur, son sol sur la même ligne que la vidéo', (width) => {
+    const l = homeVideoLayout(phone(width), DONG_HANH);
+    expect(l.backdrop.width).toBeGreaterThanOrEqual(width);
+    expect(l.backdrop.height).toBeGreaterThanOrEqual(347);
+    expect(l.backdrop.top).toBeLessThanOrEqual(0);
+    expect(l.backdrop.top + l.backdrop.height).toBeGreaterThanOrEqual(347);
+    expect(l.backdrop.left).toBe(Math.round((width - l.backdrop.width) / 2));
+    expect(Math.abs(l.backdrop.top + DONG_HANH.feetY * l.backdrop.height - 323)).toBeLessThanOrEqual(1);
+    expect(Math.abs(l.backdrop.width / l.backdrop.height - 720 / 1280)).toBeLessThan(0.01);
+  });
   it('teen à 390 px : pleine largeur, aucun fondu (inchangé)', () => {
     const l = homeVideoLayout(phone(390));
     expect(l.boxLeft).toBe(0);
