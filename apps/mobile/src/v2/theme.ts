@@ -35,6 +35,9 @@ export const v2Colors = {
   tabBar: '#FFF8EC',
   tabActive: '#276B2B',
   tabInactive: '#6F5A4A',
+  /** onglets sur le fond sable qui prolonge la vidéo d'accueil (D-106) : plus foncés, contraste ≥ 4,5:1 sur chaque `groundColor` (vérifié par test) */
+  tabActiveOnScene: '#1F5A23',
+  tabInactiveOnScene: '#5A4637',
   badge: '#C2410C',
   onBadge: '#FFFFFF',
   /** voile sous une carte posée sur le décor (opaque : jamais de fond translucide sous du texte) */

@@ -1,4 +1,15 @@
+import { v2Colors } from './theme';
 import { HOME_VIDEOS, homeVideoForStage } from './video';
+
+const lum = (hex: string) => {
+  const f = (c: number) => ((c /= 255) <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)) as [number, number, number];
+  return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+};
+const contrast = (a: string, b: string) => {
+  const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x) as [number, number];
+  return (hi + 0.05) / (lo + 0.05);
+};
 
 describe('table stade → vidéo d’accueil (D-106)', () => {
   it('les 4 stades ont leur vidéo : 1 → home-be, 2 → home-nhi, 3 → home-teen, 4 → home-dong-hanh', () => {
@@ -43,5 +54,10 @@ describe('table stade → vidéo d’accueil (D-106)', () => {
     const teen = homeVideoForStage(3)!.geometry;
     expect(be.headY).toBeGreaterThan(teen.headY);
     expect(be.feetY).not.toBe(teen.feetY);
+  });
+  it('barre d’onglets sur le sable de chaque vidéo : libellés lisibles (contraste ≥ 4,5:1), texte principal aussi', () => {
+    for (const e of Object.values(HOME_VIDEOS)) {
+      for (const fg of [v2Colors.tabActiveOnScene, v2Colors.tabInactiveOnScene, v2Colors.text]) expect([e!.key, fg, contrast(fg, e!.groundColor) >= 4.5]).toEqual([e!.key, fg, true]);
+    }
   });
 });

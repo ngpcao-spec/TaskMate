@@ -4,6 +4,7 @@ import { Platform, StyleSheet } from 'react-native';
 import type { AdventureState } from '@/domain/adventure';
 import type { CompanionState } from '@/domain/panda';
 import type { WeeklyGroup } from '@/hooks/useWeeklyQuizzes';
+import { useHomeScene } from '@/store/homeScene';
 import { usePandaReaction } from '@/store/pandaReaction';
 import type { ChildRow, TaskRow } from '@/types/models';
 import { homeVideoForStage } from '@/v2/video';
@@ -198,12 +199,16 @@ describe('V2 : vidéo d’accueil dans Hôm nay (D-106)', () => {
       const color = homeVideoForStage(stage)!.groundColor;
       expect(StyleSheet.flatten(screen.getByTestId('v2-child-home').props.style).backgroundColor).toBe(color);
       expect(String(StyleSheet.flatten(screen.getByTestId('v2-scene-extend', H).props.style).backgroundImage)).toContain(color);
+      // la barre d'onglets (layout) lit la même couleur tant que l'écran a le focus ; effacée en quittant l'écran
+      expect(useHomeScene.getState().color).toBe(color);
       await view.unmount();
+      expect(useHomeScene.getState().color).toBeNull();
     }
     mockCompanion = { ...teen, variant: 'girl' };
     await render(<V2ChildHome />);
     expect(StyleSheet.flatten(screen.getByTestId('v2-child-home').props.style).backgroundColor).toBe(v2Colors.background);
     expect(screen.queryByTestId('v2-scene-extend', H)).toBeNull();
+    expect(useHomeScene.getState().color).toBeNull();
   });
   it('natif : ni aperçu ni vidéo, décor et panda visibles', async () => {
     jest.replaceProperty(Platform, 'OS', 'ios');

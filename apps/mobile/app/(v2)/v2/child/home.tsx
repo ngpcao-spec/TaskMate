@@ -1,6 +1,6 @@
 import { useIsFocused, useRouter } from 'expo-router';
 import { Bell, CalendarDays, Menu } from 'lucide-react-native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Platform, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -26,6 +26,7 @@ import { useReduceMotion } from '@/hooks/useReduceMotion';
 import { prefersSaveData } from '@/services/saveData';
 import { toggleVars, useTasks, useToggleTask } from '@/hooks/useTasks';
 import { useWeeklyQuizzes } from '@/hooks/useWeeklyQuizzes';
+import { useHomeScene } from '@/store/homeScene';
 import { usePandaReaction } from '@/store/pandaReaction';
 import { AdventureCard } from '@/v2/components/AdventureCard';
 import { CelebrationCard } from '@/v2/components/CelebrationCard';
@@ -72,12 +73,28 @@ export default function V2ChildHome() {
   const insets = useSafeAreaInsets();
   const screenWidth = useWindowDimensions().width;
   const [reviewKey, setReviewKey] = useState<string | null>(null);
+  const setSceneColor = useHomeScene((s) => s.setColor);
 
   const tasks = tasksQuery.data ?? [];
   const complete = dayComplete(tasks);
   // « Xem lại » vaut pour CET état de la journée : décocher (ou recocher) une tâche change la clé, la carte de fin revient quand tout est refait
   const doneKey = tasks.map((x) => `${x.id}:${x.completed_at ?? ''}`).join('|');
   const reviewing = reviewKey === doneKey;
+
+  const away = adventure?.state === 'away' ? adventure.active : null;
+  const back = adventure?.state === 'back';
+  const scene = away ? away.destination : 'home';
+  // D-106 : vidéo d'accueil (maison, panda du stade AFFICHÉ) à la place du décor fixe et du panda, si toutes les conditions sont réunies (web seulement)
+  const stageVideo = companion?.hasCompanion ? homeVideoForStage(companion.stage) : null;
+  const video =
+    !!companion?.hasCompanion &&
+    showHomeVideo({ scene, adventure: adventure?.state, hasStageVideo: stageVideo !== null, variant: companion.variant, reduceMotion, saveData: prefersSaveData(), web: Platform.OS === 'web' });
+  // D-106 : avec la vidéo, le fond sous l'en-tête ET la barre d'onglets prolongent la vidéo (couleur de son sable) au lieu du vert / crème du thème
+  const extendColor = video && stageVideo ? stageVideo.groundColor : null;
+  useEffect(() => {
+    setSceneColor(focused ? extendColor : null);
+  }, [focused, extendColor, setSceneColor]);
+  useEffect(() => () => setSceneColor(null), [setSceneColor]);
 
   if (!d || !d.child) {
     return (
@@ -90,9 +107,6 @@ export default function V2ChildHome() {
   const pandaName = companion?.name ?? DEFAULT_PANDA_NAME;
   const done = tasks.length - remainingCount(tasks);
   const mood: PandaMood = reacting ? 'tres-heureux' : pandaMood(done, tasks.length, localHourOf(nowTime));
-  const away = adventure?.state === 'away' ? adventure.active : null;
-  const back = adventure?.state === 'back';
-  const scene = away ? away.destination : 'home';
   const progress = away
     ? awayProgress(away.departedAt ? Date.parse(away.departedAt) : null, instantInTz(away.returnsOn, RETURN_MORNING, tz).getTime(), now.getTime())
     : 0;
@@ -100,14 +114,7 @@ export default function V2ChildHome() {
   const groups = groupByDaySection(tasks, banner !== null);
   const showList = !complete || reviewing;
   const goAdventure = () => router.push('/v2/child/adventure');
-  // D-106 : vidéo d'accueil (maison, panda du stade AFFICHÉ : teen, đồng hành) à la place du décor fixe et du panda, si toutes les conditions sont réunies (web seulement)
-  const stageVideo = companion?.hasCompanion ? homeVideoForStage(companion.stage) : null;
-  const video =
-    !!companion?.hasCompanion &&
-    showHomeVideo({ scene, adventure: adventure?.state, hasStageVideo: stageVideo !== null, variant: companion.variant, reduceMotion, saveData: prefersSaveData(), web: Platform.OS === 'web' });
 
-  // D-106 : avec la vidéo, le fond sous l'en-tête prolonge la vidéo (couleur de son sable) au lieu du vert du thème
-  const extendColor = video && stageVideo ? stageVideo.groundColor : null;
 
   return (
     <View testID="v2-child-home" style={[styles.screen, extendColor ? { backgroundColor: extendColor } : null]}>

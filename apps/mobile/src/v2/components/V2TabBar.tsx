@@ -6,14 +6,22 @@ import { v2Colors, v2Font, v2Shadow, v2Spacing, V2_TOUCH } from '../theme';
 
 export type V2Tab = { key: string; label: string; Icon: LucideIcon; active: boolean; onPress: () => void; badge?: number };
 
-/** Barre d'onglets V2 : 5 onglets, icône + libellé, pastille (ex. trouvaille qui attend). */
-export function V2TabBar({ tabs }: { tabs: V2Tab[] }) {
+/**
+ * Barre d'onglets V2 : 5 onglets, icône + libellé, pastille (ex. trouvaille qui attend).
+ * `sceneColor` (Hôm nay enfant avec la vidéo d'accueil, D-106) : la barre prend cette couleur, sans coins arrondis ni ombre, pour prolonger la vidéo
+ * jusqu'en bas de l'écran ; icônes et libellés passent aux teintes foncées `tabActiveOnScene` / `tabInactiveOnScene` (contraste ≥ 4,5:1).
+ */
+export function V2TabBar({ tabs, sceneColor = null }: { tabs: V2Tab[]; sceneColor?: string | null }) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   return (
-    <View accessibilityRole="tablist" style={[styles.bar, { paddingBottom: Math.max(insets.bottom, v2Spacing.sm) }]}>
+    <View
+      accessibilityRole="tablist"
+      testID="v2-tabbar"
+      style={[styles.bar, { paddingBottom: Math.max(insets.bottom, v2Spacing.sm) }, sceneColor ? { backgroundColor: sceneColor, borderTopLeftRadius: 0, borderTopRightRadius: 0, shadowOpacity: 0, elevation: 0, boxShadow: 'none' } : null]}
+    >
       {tabs.map((tab) => {
-        const color = tab.active ? v2Colors.tabActive : v2Colors.tabInactive;
+        const color = sceneColor ? (tab.active ? v2Colors.tabActiveOnScene : v2Colors.tabInactiveOnScene) : tab.active ? v2Colors.tabActive : v2Colors.tabInactive;
         const label = tab.badge ? t('v2.tabs.badge', { label: tab.label, count: tab.badge }) : tab.label;
         return (
           <Pressable key={tab.key} accessibilityRole="tab" accessibilityLabel={label} accessibilityState={{ selected: tab.active }} onPress={tab.onPress} style={styles.tab} testID={`v2-tab-${tab.key}`}>

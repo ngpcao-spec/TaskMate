@@ -3,6 +3,7 @@ import { ChartColumn, House, Map as MapIcon, Star, UserRound } from 'lucide-reac
 import { useTranslation } from 'react-i18next';
 import { useAdventure } from '@/hooks/useAdventure';
 import { useMe } from '@/hooks/useMe';
+import { useHomeScene } from '@/store/homeScene';
 import { V2TabBar, type V2Tab } from '@/v2/components/V2TabBar';
 
 const ICONS = { home: House, rewards: Star, adventure: MapIcon, stats: ChartColumn, me: UserRound } as const;
@@ -15,12 +16,14 @@ export default function V2ChildLayout() {
   const me = useMe().data;
   const childId = me?.member.role === 'child' ? me.member.child_id : null;
   const adventure = useAdventure(childId, !!childId).data;
+  const sceneColor = useHomeScene((s) => s.color);
   if (me && me.member.role !== 'child') return <Redirect href="/v2" />;
   return (
     <Tabs
       screenOptions={{ headerShown: false }}
       tabBar={({ state, navigation }) => (
         <V2TabBar
+          sceneColor={sceneColor}
           tabs={state.routes.filter((r) => isTab(r.name)).map((r): V2Tab => {
             const name = r.name as TabName;
             return {
