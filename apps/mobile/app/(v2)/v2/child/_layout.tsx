@@ -1,12 +1,13 @@
 import { Redirect, Tabs } from 'expo-router';
-import { ChartColumn, House, Map as MapIcon, Star, UserRound } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useAdventure } from '@/hooks/useAdventure';
 import { useMe } from '@/hooks/useMe';
 import { useHomeScene } from '@/store/homeScene';
+import type { TabStickerName } from '@/v2/components/TabSticker';
 import { V2TabBar, type V2Tab } from '@/v2/components/V2TabBar';
 
-const ICONS = { home: House, rewards: Star, adventure: MapIcon, stats: ChartColumn, me: UserRound } as const;
+/** icône « autocollant » de chaque onglet (dessins originaux, `TabSticker`) */
+const ICONS = { home: 'home', rewards: 'rewards', adventure: 'adventure', stats: 'stats', me: 'me' } as const satisfies Record<string, TabStickerName>;
 type TabName = keyof typeof ICONS;
 const isTab = (n: string): n is TabName => n in ICONS;
 
@@ -29,7 +30,7 @@ export default function V2ChildLayout() {
             return {
               key: name,
               label: t(`v2.tabs.${name}`),
-              Icon: ICONS[name],
+              sticker: ICONS[name],
               active: state.routes[state.index]?.key === r.key,
               badge: name === 'adventure' && adventure?.state === 'back' ? 1 : undefined,
               onPress: () => navigation.navigate(r.name),

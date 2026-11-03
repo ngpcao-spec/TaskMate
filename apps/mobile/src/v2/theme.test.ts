@@ -17,7 +17,7 @@ const READABLE: [V2ColorKey, V2ColorKey][] = [
   ['onPrimary', 'primary'], ['onPrimary', 'primaryPressed'], ['primary', 'card'], ['primary', 'primarySoft'],
   ['energyText', 'card'], ['energyText', 'energySoft'], ['onEnergy', 'energy'],
   ['pending', 'pendingSoft'], ['pending', 'card'], ['danger', 'card'], ['onDanger', 'danger'],
-  ['tabActive', 'tabBar'], ['tabInactive', 'tabBar'], ['onBadge', 'badge'], ['onTopButton', 'topButton'],
+  ['tabActive', 'tabBar'], ['tabInactive', 'tabBar'], ['tabActive', 'tabActiveBg'], ['tabActiveOnScene', 'tabActiveBgOnScene'], ['onBadge', 'badge'], ['onTopButton', 'topButton'],
 ];
 
 describe('style V2 (D-106)', () => {

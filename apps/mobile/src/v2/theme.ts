@@ -37,6 +37,11 @@ export const v2Colors = {
   tabInactive: '#6F5A4A',
   /** onglets sur le fond sable qui prolonge la vidéo d'accueil (D-106) : plus foncés, contraste ≥ 4,5:1 sur chaque `groundColor` (vérifié par test) */
   tabActiveOnScene: '#1F5A23',
+  /** carré clair derrière l'onglet actif (icônes « autocollant », D-106) : sur la barre crème / sur le sable de la vidéo */
+  tabActiveBg: '#F1E3C6',
+  tabActiveBgOnScene: '#FCEACB',
+  /** contour blanc des pastilles numérotées des onglets */
+  badgeRing: '#FFFFFF',
   tabInactiveOnScene: '#5A4637',
   badge: '#C2410C',
   onBadge: '#FFFFFF',

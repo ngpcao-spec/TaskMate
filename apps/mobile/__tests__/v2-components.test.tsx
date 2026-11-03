@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native';
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import { House, Star } from 'lucide-react-native';
+import { Star } from 'lucide-react-native';
 import type { AdventureState } from '@/domain/adventure';
 import { AdventureCard } from '@/v2/components/AdventureCard';
 import { CelebrationCard } from '@/v2/components/CelebrationCard';
@@ -10,7 +10,8 @@ import { GoalRow } from '@/v2/components/GoalRow';
 import { GoalSection } from '@/v2/components/GoalSection';
 import { PandaSprite } from '@/v2/components/PandaSprite';
 import { SceneHeader } from '@/v2/components/SceneHeader';
-import { V2TabBar } from '@/v2/components/V2TabBar';
+import { TAB_STICKERS, TabSticker } from '@/v2/components/TabSticker';
+import { V2TabBar, type V2Tab } from '@/v2/components/V2TabBar';
 import { v2Colors } from '@/v2/theme';
 import '@/i18n';
 
@@ -130,24 +131,38 @@ describe('V2 : barre d’onglets, en-tête, panda', () => {
     await render(
       <V2TabBar
         tabs={[
-          { key: 'home', label: 'Hôm nay', Icon: House, active: true, onPress: jest.fn() },
-          { key: 'adventure', label: 'Phiêu lưu', Icon: Star, active: false, onPress, badge: 1 },
+          { key: 'home', label: 'Hôm nay', sticker: 'home', active: true, onPress: jest.fn() },
+          { key: 'adventure', label: 'Phiêu lưu', sticker: 'adventure', active: false, onPress, badge: 1 },
         ]}
       />,
     );
     expect(screen.getByRole('tab', { name: 'Hôm nay' }).props.accessibilityState).toMatchObject({ selected: true });
     await fireEvent.press(screen.getByRole('tab', { name: 'Phiêu lưu, có 1 điều mới' }));
     expect(onPress).toHaveBeenCalled();
+    // style « autocollant » : icône dessinée, carré clair derrière l'onglet actif seulement, pastille numérotée
+    expect(screen.getByTestId('v2-tab-sticker-home', { includeHiddenElements: true })).toBeTruthy();
+    expect(StyleSheet.flatten(screen.getByTestId('v2-tab-home-tile').props.style).backgroundColor).toBe(v2Colors.tabActiveBg);
+    expect(StyleSheet.flatten(screen.getByTestId('v2-tab-adventure-tile').props.style).backgroundColor).toBeUndefined();
+    expect(screen.getByText('1', { includeHiddenElements: true })).toBeTruthy();
+  });
+  it('pastille : « 9+ » au-delà de 9', async () => {
+    await render(<V2TabBar tabs={[{ key: 'home', label: 'Hôm nay', sticker: 'home', active: true, onPress: jest.fn(), badge: 12 }]} />);
+    expect(screen.getByText('9+', { includeHiddenElements: true })).toBeTruthy();
+  });
+  it.each(TAB_STICKERS)('icône « autocollant » %s : dessinée', async (name) => {
+    await render(<TabSticker name={name} />);
+    expect(screen.getByTestId(`v2-tab-sticker-${name}`, { includeHiddenElements: true })).toBeTruthy();
   });
   it('onglets sur le sable de la vidéo d’accueil : couleur du fond, sans coins arrondis, teintes foncées', async () => {
-    const tabs = [
-      { key: 'home', label: 'Hôm nay', Icon: House, active: true, onPress: jest.fn() },
-      { key: 'adventure', label: 'Phiêu lưu', Icon: Star, active: false, onPress: jest.fn() },
+    const tabs: V2Tab[] = [
+      { key: 'home', label: 'Hôm nay', sticker: 'home', active: true, onPress: jest.fn() },
+      { key: 'adventure', label: 'Phiêu lưu', sticker: 'adventure', active: false, onPress: jest.fn() },
     ];
     const { rerender } = await render(<V2TabBar tabs={tabs} sceneColor="#F7D495" />);
     expect(StyleSheet.flatten(screen.getByTestId('v2-tabbar').props.style)).toMatchObject({ backgroundColor: '#F7D495', borderTopLeftRadius: 0, borderTopRightRadius: 0 });
     expect(StyleSheet.flatten(screen.getByText('Hôm nay').props.style).color).toBe(v2Colors.tabActiveOnScene);
     expect(StyleSheet.flatten(screen.getByText('Phiêu lưu').props.style).color).toBe(v2Colors.tabInactiveOnScene);
+    expect(StyleSheet.flatten(screen.getByTestId('v2-tab-home-tile').props.style).backgroundColor).toBe(v2Colors.tabActiveBgOnScene);
     await rerender(<V2TabBar tabs={tabs} />);
     expect(StyleSheet.flatten(screen.getByTestId('v2-tabbar').props.style)).toMatchObject({ backgroundColor: v2Colors.tabBar, borderTopLeftRadius: 24 });
     expect(StyleSheet.flatten(screen.getByText('Hôm nay').props.style).color).toBe(v2Colors.tabActive);
