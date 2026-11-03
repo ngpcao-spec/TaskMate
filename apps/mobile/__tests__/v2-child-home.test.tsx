@@ -167,9 +167,9 @@ describe('V2 : vidéo d’accueil dans Hôm nay (D-106)', () => {
     expect(opacityOf('v2-scene-backdrop')).toBe(0);
     expect(groundOpacity()).toBe(1);
   });
-  it('web, stades affichés 2 (nhí) et 4 (đồng hành) : leur vidéo ; stade 1 : décor fixe et panda dessiné', async () => {
+  it('web, les 4 stades affichés (décalage compris) ont leur vidéo ; variante fille : décor fixe et panda dessiné', async () => {
     jest.replaceProperty(Platform, 'OS', 'web');
-    for (const stage of [2, 4] as const) {
+    for (const stage of [1, 2, 4] as const) {
       mockCompanion = { ...teen, stage };
       const view = await render(<V2ChildHome />);
       expect(screen.getByTestId('v2-home-video-poster', H)).toBeTruthy();
@@ -181,11 +181,12 @@ describe('V2 : vidéo d’accueil dans Hôm nay (D-106)', () => {
     const shifted = await render(<V2ChildHome />);
     expect(screen.getByTestId('v2-home-video-poster', H)).toBeTruthy();
     await shifted.unmount();
-    mockCompanion = { ...teen, stage: 1 };
-    const v = await render(<V2ChildHome />);
+    // conditions inchangées : pas de vidéo pour la variante fille (pas encore de fichiers)
+    mockCompanion = { ...teen, stage: 1, variant: 'girl' };
+    const girl = await render(<V2ChildHome />);
     expect(screen.queryByTestId('v2-home-video-poster', H)).toBeNull();
     expect(groundOpacity()).toBe(1);
-    await v.unmount();
+    await girl.unmount();
   });
   it('natif : ni aperçu ni vidéo, décor et panda visibles', async () => {
     jest.replaceProperty(Platform, 'OS', 'ios');
