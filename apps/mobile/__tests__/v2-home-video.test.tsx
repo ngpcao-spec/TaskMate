@@ -10,7 +10,7 @@ const mockEntry = (key: string, feetY: number, headY: number) => ({
   geometry: { width: 720, height: 1280, headY, feetY },
 });
 const TEEN = mockEntry('home-teen', 0.707, 0.485);
-const DONG_HANH = mockEntry('home-dong-hanh', 0.736, 0.438);
+const DONG_HANH = mockEntry('home-dong-hanh', 0.688, 0.485);
 
 type Node = { type: string; props: Record<string, unknown>; children: unknown[]; queryAll: (p: (n: Node) => boolean) => Node[] };
 const listeners: Record<string, () => void> = {};

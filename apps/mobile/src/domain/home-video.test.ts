@@ -88,8 +88,8 @@ describe('vidéo d’accueil : sources et poster (iPhone)', () => {
 });
 
 describe('vidéo d’accueil : cadrage par vidéo (D-106, đồng hành)', () => {
-  // géométrie mesurée sur l'aperçu fourni : panda plus grand que le teen, pieds plus bas (73,6 % contre 70,7 %)
-  const DONG_HANH = { width: 720, height: 1280, headY: 0.438, feetY: 0.736 };
+  // géométrie mesurée sur l'aperçu (plan large) : panda un peu plus petit que le teen, pieds plus hauts (68,8 % contre 70,7 %)
+  const DONG_HANH = { width: 720, height: 1280, headY: 0.485, feetY: 0.688 };
   // iPhone : barre d'état 47 pt, en-tête 300 + 47, sol à 24 pt du bas, boutons du haut 47 + 8 + 44 + 8
   const phone = (width: number) => ({ width, height: 347, groundY: 323, topClear: 107 });
   it.each([390, 430])('%i px : pieds sur la même ligne de sol que le teen, panda entier sous les boutons, centré', (width) => {
@@ -99,7 +99,10 @@ describe('vidéo d’accueil : cadrage par vidéo (D-106, đồng hành)', () =>
     expect(Math.abs(teen.pandaBottom - 323)).toBeLessThanOrEqual(1);
     expect(dh.pandaTop).toBeGreaterThanOrEqual(107);
     expect(dh.boxLeft).toBe(Math.round((width - dh.boxWidth) / 2));
-    // même ligne de sol mais pieds plus bas dans l'image : l'object-position diffère (une valeur par vidéo, calculée)
+    // plan large : pleine largeur sur téléphone, comme le teen
+    expect(dh.boxWidth).toBe(width);
+    expect(dh.pandaBottom - dh.pandaTop).toBeLessThanOrEqual(teen.pandaBottom - teen.pandaTop);
+    // même ligne de sol mais pieds plus hauts dans l'image : l'object-position diffère (une valeur par vidéo, calculée)
     expect(dh.objectPositionY).not.toBe(teen.objectPositionY);
     expect(Math.abs(dh.image.top + DONG_HANH.feetY * dh.image.height - 323)).toBeLessThanOrEqual(1);
   });

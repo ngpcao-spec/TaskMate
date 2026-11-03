@@ -20,10 +20,10 @@ describe('table stade → vidéo d’accueil (D-106)', () => {
       expect(e!.geometry.feetY).toBeLessThan(0.85);
     }
   });
-  it('đồng hành : panda plus grand que le teen, pieds plus bas', () => {
+  it('đồng hành (plan large) : panda entier, pas plus grand que le teen, pieds plus hauts', () => {
     const teen = homeVideoForStage(3)!.geometry;
     const dh = homeVideoForStage(4)!.geometry;
-    expect(dh.feetY - dh.headY).toBeGreaterThan(teen.feetY - teen.headY);
-    expect(dh.feetY).toBeGreaterThan(teen.feetY);
+    expect(dh.feetY - dh.headY).toBeLessThanOrEqual(teen.feetY - teen.headY);
+    expect(dh.feetY).toBeLessThan(teen.feetY);
   });
 });

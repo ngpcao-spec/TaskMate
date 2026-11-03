@@ -2,7 +2,7 @@ import type { HomeVideoGeometry } from '@/domain/home-video';
 
 /**
  * Vidéos d'accueil de la V2 (D-106) : décor `home` animé avec le panda du stade AFFICHÉ (720×1280, 9:16, sans son, boucle raccordée).
- * TOUS les `require` des vidéos sont ICI (jamais dans un écran). Fichiers fournis (branches `assets/v2-video`, `assets/v2-video-dong-hanh`), jamais modifiés.
+ * TOUS les `require` des vidéos sont ICI (jamais dans un écran). Fichiers fournis par Teo (branches `assets/v2-video`, `assets/v2-video-dong-hanh`, puis vidéo đồng hành « plan large » réencodée sans le son), jamais retouchés.
  *
  * TABLE stade → vidéo : ajouter un stade (1 « bé », 2 « nhí ») = déposer ses 4 fichiers et ajouter UNE entrée ici (sources + géométrie mesurée sur
  * l'aperçu : haut de la pousse `headY` et bas des pieds `feetY`, en fraction de la hauteur). Un stade absent garde le décor fixe + `PandaSprite`.
@@ -23,7 +23,8 @@ export const HOME_VIDEOS: Readonly<Partial<Record<number, HomeVideoEntry>>> = {
     },
     geometry: { width: 720, height: 1280, headY: 0.485, feetY: 0.707 },
   },
-  // 5,5 s ; même décor et même cadrage de prise de vue, mais panda plus grand : de 43,8 % (pousse) à 73,6 % (pieds), mesuré sur l'aperçu
+  // 6 s ; plan large fourni par Teo le 2026-11-03 (remplace la première version, panda filmé de trop près) : de 48,5 % (pousse) à 68,8 % (pieds),
+  // mesuré sur l'aperçu ; panda un peu plus petit que le teen
   4: {
     key: 'home-dong-hanh',
     sources: {
@@ -32,7 +33,7 @@ export const HOME_VIDEOS: Readonly<Partial<Record<number, HomeVideoEntry>>> = {
       mp4Small: require('../../assets/v2/video/home-dong-hanh@480.mp4'),
       poster: require('../../assets/v2/video/home-dong-hanh-poster.webp'),
     },
-    geometry: { width: 720, height: 1280, headY: 0.438, feetY: 0.736 },
+    geometry: { width: 720, height: 1280, headY: 0.485, feetY: 0.688 },
   },
 };
 
