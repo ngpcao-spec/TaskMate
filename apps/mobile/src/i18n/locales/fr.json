@@ -2137,7 +2137,8 @@
       "missing": "Encore {{n}} ⚡ et c'est parti !"
     },
     "panda": {
-      "walking": "Le panda {{name}} part à l'aventure"
+      "walking": "Le panda {{name}} part à l'aventure",
+      "touch": "Toucher {{name}}"
     },
     "placeholder": "La nouvelle interface est en préparation.",
     "admin": {

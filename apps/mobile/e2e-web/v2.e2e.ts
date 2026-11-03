@@ -209,6 +209,109 @@ test.describe('interface V2 : vidéo d\'accueil (D-106)', () => {
     });
   }
 
+  // Panda vidéo du stade 1 (D-106) : réactions jouées par le même lecteur ; la fin des vidéos est SIMULÉE par un événement `ended`
+  // (le gestionnaire n'utilise aucun minuteur pour la fin), ce qui garde le test court et indépendant de la durée des fichiers.
+  async function openBe(browser: import('@playwright/test').Browser, tasks: string[], blocked?: RegExp) {
+    const family = await createFamily({ uiVersion: 'v2' });
+    const birth = new Date(Date.now() - 4 * 365.25 * 86_400_000).toISOString().slice(0, 10);
+    const { error } = await serviceClient().from('children').update({ birth_date: birth }).eq('id', family.khang.childId as string);
+    if (error) throw new Error(`children: ${error.message}`);
+    await seedCompanion(family, 'khang', 'Bambou');
+    for (const t of tasks) await seedTask(family, 'khang', t, 10);
+    const ctx = await browser.newContext();
+    // fichier rendu indisponible AVANT l'ouverture (même la préparation légère échoue)
+    if (blocked) await ctx.route(blocked, (r) => r.abort());
+    await signInContext(ctx, family.khang);
+    const page = await ctx.newPage();
+    page.on('pageerror', (e) => console.log(`[v2-panda] pageerror ${e.message.slice(0, 300)}`));
+    page.on('dialog', (d) => void d.accept());
+    await page.goto('/');
+    await expect(page).toHaveURL(/\/v2\/child\/home/, { timeout: 20_000 });
+    await expect(page.getByTestId('v2-home-video-box')).toHaveAttribute('data-anim', 'idle', { timeout: 20_000 });
+    return { family, page };
+  }
+  const box = (page: import('@playwright/test').Page) => page.getByTestId('v2-home-video-box');
+  /** fin réelle simulée : l'événement `ended` de la vidéo de la réaction en cours */
+  async function endReaction(page: import('@playwright/test').Page, anim: 'happy' | 'curious' | 'sleep') {
+    await expect(box(page)).toHaveAttribute('data-anim', anim, { timeout: 10_000 });
+    await page.locator(`video[data-anim="${anim}"]`).evaluate((v: HTMLVideoElement) => v.dispatchEvent(new Event('ended')));
+  }
+
+  test('panda vidéo stade 1 : repos, « content » à la coche, « curieux » au toucher, toucher ignoré pendant « content », une seule animation par tâche, arrière-plan', async ({ browser }) => {
+    test.setTimeout(150_000);
+    const a = 'Đánh răng bé';
+    const b = 'Tưới cây bé';
+    const { page } = await openBe(browser, [a, b]);
+    // 1. repos en boucle
+    expect(await page.locator('video[data-anim="idle"]').evaluate((v: HTMLVideoElement) => v.loop && v.muted)).toBe(true);
+    // 3. toucher → curieux → repos
+    const touch = page.getByRole('button', { name: 'Chạm vào Bambou' });
+    const hit = (await touch.boundingBox())!;
+    expect(hit.width).toBeGreaterThanOrEqual(44);
+    expect(hit.height).toBeGreaterThanOrEqual(44);
+    const bell = (await page.getByTestId('v2-top-bell').boundingBox())!;
+    expect(hit.y).toBeGreaterThanOrEqual(bell.y + bell.height); // ne recouvre pas les boutons du haut
+    await touch.click();
+    await endReaction(page, 'curious');
+    await expect(box(page)).toHaveAttribute('data-anim', 'idle', { timeout: 10_000 });
+    // 2. coche → content (la coche passe tout de suite)
+    await page.getByRole('checkbox', { name: a }).click();
+    await expect(page.getByRole('checkbox', { name: a })).toBeChecked();
+    await expect(box(page)).toHaveAttribute('data-anim', 'happy', { timeout: 10_000 });
+    // 4. toucher pendant content : content continue
+    await touch.click({ force: true });
+    await page.waitForTimeout(400);
+    await expect(box(page)).toHaveAttribute('data-anim', 'happy');
+    expect(await page.locator('video[data-anim="curious"]').count()).toBe(0);
+    // 6. arrière-plan puis retour : pause puis reprise, l'image reste
+    await page.evaluate(() => {
+      Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    await expect.poll(() => page.locator('video[data-anim="happy"]').evaluate((v: HTMLVideoElement) => v.paused)).toBe(true);
+    await page.evaluate(() => {
+      Object.defineProperty(document, 'hidden', { configurable: true, get: () => false });
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    await expect(box(page)).toHaveCSS('opacity', '1');
+    await endReaction(page, 'happy');
+    await expect(box(page)).toHaveAttribute('data-anim', 'idle', { timeout: 10_000 });
+    // 8. même tâche décochée puis recochée le même jour : une seule animation
+    await page.getByRole('checkbox', { name: a }).click();
+    await expect(page.getByRole('checkbox', { name: a })).not.toBeChecked();
+    await page.getByRole('checkbox', { name: a }).click();
+    await expect(page.getByRole('checkbox', { name: a })).toBeChecked();
+    await page.waitForTimeout(600);
+    await expect(box(page)).toHaveAttribute('data-anim', 'idle');
+    expect(await page.locator('video[data-anim="happy"]').count()).toBe(0);
+  });
+
+  test('panda vidéo stade 1 : dernière tâche cochée → content puis coucher, image endormie qui reste (même après rechargement) ; vidéo indisponible → image fixe', async ({ browser }) => {
+    test.setTimeout(150_000);
+    const a = 'Đọc sách bé';
+    const { page } = await openBe(browser, [a], /be-curious/);
+    // 7. vidéo indisponible : la réaction est abandonnée (au plus 1,5 s), le panda reste au repos, jamais d'écran noir
+    await page.getByRole('button', { name: 'Chạm vào Bambou' }).click();
+    await page.waitForTimeout(2000);
+    await expect(box(page)).toHaveAttribute('data-anim', 'idle');
+    await expect(box(page)).toHaveCSS('opacity', '1');
+    expect(await page.locator('video[data-anim="curious"]').count()).toBe(0);
+    // 5. dernière tâche → content puis coucher puis image endormie
+    await page.getByRole('checkbox', { name: a }).click();
+    await endReaction(page, 'happy');
+    await endReaction(page, 'sleep');
+    await expect(box(page)).toHaveAttribute('data-anim', 'sleep-still', { timeout: 10_000 });
+    await expect(page.getByTestId('v2-home-video-still')).toBeVisible();
+    await page.waitForTimeout(1000);
+    await expect(box(page)).toHaveAttribute('data-anim', 'sleep-still'); // aucun retour automatique
+    // même jour, nouvel affichage : image endormie directement, sans rejouer la vidéo
+    await page.reload();
+    await expect(box(page)).toHaveAttribute('data-anim', 'sleep-still', { timeout: 20_000 });
+    expect(await page.locator('video[data-anim="sleep"]').count()).toBe(0);
+    const jpeg = await page.screenshot({ type: 'jpeg', quality: 60, clip: { x: 0, y: 0, width: page.viewportSize()!.width, height: 640 } });
+    console.log(`=====V2-CAPTURE-BE-SLEEP-BEGIN=====\n${jpeg.toString('base64')}\n=====V2-CAPTURE-BE-SLEEP-END=====`);
+  });
+
   // Une vidéo qui ne joue jamais (économie d'énergie de l'iPhone) ne s'émule pas : WebKit Linux lit les médias hors de l'interception réseau de
   // Playwright. Ce test vérifie que l'aperçu fixe (Image React Native) couvre le décor sous WebKit ; la vidéo invisible tant qu'aucune image n'est
   // peinte est vérifiée par __tests__/v2-home-video.test.tsx.

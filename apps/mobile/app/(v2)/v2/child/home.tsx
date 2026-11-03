@@ -2,7 +2,7 @@ import { useIsFocused, useRouter } from 'expo-router';
 import { Bell, CalendarDays, Menu } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Platform, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PandaSetupCard } from '@/components/companion/PandaSetupCard';
 import { ChildSetupGate } from '@/components/onboarding/ChildSetupGate';
@@ -10,7 +10,7 @@ import { awayProgress, RETURN_MORNING } from '@/domain/adventure';
 import { celebrationAction, dayComplete, groupByDaySection, remainingCount } from '@/domain/day-sections';
 import { timeInTz, todayInTz } from '@/domain/family-time';
 import { goalIconFor, WEEKLY_REVIEW_ICON } from '@/domain/goal-icons';
-import { showHomeVideo } from '@/domain/home-video';
+import { homeMediaMode, homeVideoLayout, pandaHitRect } from '@/domain/home-video';
 import { DEFAULT_PANDA_NAME, localHourOf, pandaMood, type PandaMood } from '@/domain/panda';
 import { taskPermissions } from '@/domain/permissions';
 import { instantInTz } from '@/domain/reminders';
@@ -28,6 +28,7 @@ import { toggleVars, useTasks, useToggleTask } from '@/hooks/useTasks';
 import { useWeeklyQuizzes } from '@/hooks/useWeeklyQuizzes';
 import { useHomeScene } from '@/store/homeScene';
 import { usePandaReaction } from '@/store/pandaReaction';
+import { usePandaAnimation } from '@/hooks/usePandaAnimation';
 import { AdventureCard } from '@/v2/components/AdventureCard';
 import { CelebrationCard } from '@/v2/components/CelebrationCard';
 import { DayPill } from '@/v2/components/DayPill';
@@ -35,7 +36,7 @@ import { GoalRow } from '@/v2/components/GoalRow';
 import { GoalSection } from '@/v2/components/GoalSection';
 import { HomePoster } from '@/v2/components/HomePoster';
 import { HomeVideo } from '@/v2/components/HomeVideo';
-import { homeVideoForStage } from '@/v2/video';
+import { homeReactionsForStage, homeVideoForStage } from '@/v2/video';
 import { PandaSprite } from '@/v2/components/PandaSprite';
 import { SCENE_GROUND_OFFSET, SCENE_TOP_CLEAR, SceneHeader } from '@/v2/components/SceneHeader';
 import { V2_MAX_WIDTH } from '@/v2/components/V2Screen';
@@ -86,11 +87,27 @@ export default function V2ChildHome() {
   const scene = away ? away.destination : 'home';
   // D-106 : vidéo d'accueil (maison, panda du stade AFFICHÉ) à la place du décor fixe et du panda, si toutes les conditions sont réunies (web seulement)
   const stageVideo = companion?.hasCompanion ? homeVideoForStage(companion.stage) : null;
-  const video =
-    !!companion?.hasCompanion &&
-    showHomeVideo({ scene, adventure: adventure?.state, hasStageVideo: stageVideo !== null, variant: companion.variant, reduceMotion, saveData: prefersSaveData(), web: Platform.OS === 'web' });
-  // D-106 : avec la vidéo, le fond sous l'en-tête ET la barre d'onglets prolongent la vidéo (couleur de son sable) au lieu du vert / crème du thème
-  const extendColor = video && stageVideo ? stageVideo.groundColor : null;
+  const stage = companion?.stage ?? 0;
+  // panda vidéo (D-106) : `video`, `still` (images fixes : moins d'animations, économie de données, hors ligne ; stades à réactions seulement) ou `off`
+  const media = companion?.hasCompanion
+    ? homeMediaMode({
+        scene,
+        adventure: adventure?.state,
+        hasStageVideo: stageVideo !== null,
+        variant: companion.variant,
+        reduceMotion,
+        saveData: prefersSaveData(),
+        web: Platform.OS === 'web',
+        hasReactions: homeReactionsForStage(stage) !== null,
+        offline: Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.onLine === false,
+      })
+    : 'off';
+  const video = media === 'video';
+  // gestionnaire unique des animations du panda (repos, content, curieux, endormi) ; fin de journée = règle existante (`dayComplete`)
+  const anim = usePandaAnimation({ childId, stage, today, dayDone: complete, mode: media });
+  const reactionVideo = video && anim.reactions !== null;
+  // D-106 : avec la vidéo (ou ses images fixes), le fond sous l'en-tête ET la barre d'onglets prolongent la vidéo (couleur de son sable)
+  const extendColor = media !== 'off' && stageVideo ? stageVideo.groundColor : null;
   useEffect(() => {
     setSceneColor(focused ? extendColor : null);
   }, [focused, extendColor, setSceneColor]);
@@ -114,6 +131,23 @@ export default function V2ChildHome() {
   const groups = groupByDaySection(tasks, banner !== null);
   const showList = !complete || reviewing;
   const goAdventure = () => router.push('/v2/child/adventure');
+  const headerH = SCENE_HEIGHT + insets.top;
+  const topClear = insets.top + SCENE_TOP_CLEAR;
+  // toucher le panda (`curious`) : zone calquée sur le panda dans la vidéo, jamais sur les boutons du haut ni sur la carte posée en bas de l'en-tête
+  const hit =
+    reactionVideo && stageVideo && anim.reactions?.curious && screenWidth > 0
+      ? pandaHitRect(homeVideoLayout({ width: screenWidth, height: headerH, groundY: headerH - SCENE_GROUND_OFFSET, topClear }, stageVideo.geometry), {
+          topClear,
+          bottomLimit: headerH - SCENE_GROUND_OFFSET + v2Spacing.sm,
+          width: screenWidth,
+        })
+      : null;
+  const reactionBubble =
+    reacting && reactionEnergy > 0 ? (
+      <View style={styles.reaction} pointerEvents="none">
+        <Text style={styles.reactionText}>{t('panda.reaction', { energy: reactionEnergy })}</Text>
+      </View>
+    ) : null;
 
 
   return (
@@ -127,10 +161,48 @@ export default function V2ChildHome() {
             { key: 'calendar', Icon: CalendarDays, label: t('v2.top.calendar'), onPress: () => router.push('/v2/calendar') },
             { key: 'bell', Icon: Bell, label: unread > 0 ? t('v2.top.notificationsCount', { count: unread }) : t('v2.top.notifications'), onPress: () => router.push('/notifications'), badge: unread },
           ]}
-          backdrop={video && stageVideo ? <HomePoster video={stageVideo} topClear={insets.top + SCENE_TOP_CLEAR} groundOffset={SCENE_GROUND_OFFSET} width={screenWidth} height={SCENE_HEIGHT + insets.top} /> : null}
-          backdropVisible={video && !reacting}
+          backdrop={
+            media !== 'off' && stageVideo ? (
+              <HomePoster video={stageVideo} image={anim.still} topClear={topClear} groundOffset={SCENE_GROUND_OFFSET} width={screenWidth} height={headerH} />
+            ) : null
+          }
+          // stades à réactions vidéo : la vidéo joue « content » elle-même (jamais de fondu vers le décor fixe) ; autres stades : comme avant
+          backdropVisible={media !== 'off' && (reactionVideo || media === 'still' || !reacting)}
           extendColor={extendColor}
-          overlay={video && stageVideo ? <HomeVideo video={stageVideo} visible={!reacting} active={focused} topClear={insets.top + SCENE_TOP_CLEAR} groundOffset={SCENE_GROUND_OFFSET} width={screenWidth} height={SCENE_HEIGHT + insets.top} /> : null}
+          overlay={
+            video && stageVideo ? (
+              <>
+                <HomeVideo
+                  video={stageVideo}
+                  clip={anim.clip}
+                  still={anim.still}
+                  prefetch={reactionVideo ? [anim.reactions?.happy, anim.reactions?.curious, anim.reactions?.sleep].filter((r) => r !== undefined).map((r) => r.sources) : undefined}
+                  onEnded={anim.onEnded}
+                  onFailed={anim.onFailed}
+                  visible={reactionVideo || !reacting}
+                  active={focused}
+                  topClear={topClear}
+                  groundOffset={SCENE_GROUND_OFFSET}
+                  width={screenWidth}
+                  height={headerH}
+                />
+                {reactionVideo && reactionBubble ? (
+                  <View style={[styles.bubbleRow, { top: Math.max(topClear, (hit?.top ?? topClear) - 36) }]} pointerEvents="none">
+                    {reactionBubble}
+                  </View>
+                ) : null}
+                {hit ? (
+                  <Pressable
+                    testID="v2-panda-touch"
+                    accessibilityRole="button"
+                    accessibilityLabel={t('v2.panda.touch', { name: pandaName })}
+                    onPress={anim.onTouched}
+                    style={[styles.hit, { left: hit.left, top: hit.top, width: hit.width, height: hit.height }]}
+                  />
+                ) : null}
+              </>
+            ) : null
+          }
         >
           {companion?.hasCompanion ? (
             <PandaSprite
@@ -145,11 +217,7 @@ export default function V2ChildHome() {
               hopKey={hopKey}
             />
           ) : null}
-          {reacting && reactionEnergy > 0 ? (
-            <View style={styles.reaction} pointerEvents="none">
-              <Text style={styles.reactionText}>{t('panda.reaction', { energy: reactionEnergy })}</Text>
-            </View>
-          ) : null}
+          {reactionVideo ? null : reactionBubble}
         </SceneHeader>
 
         <View style={styles.content}>
@@ -201,7 +269,10 @@ export default function V2ChildHome() {
                         toggleDisabled={!perms.canToggle}
                         onToggle={() => {
                           // le panda réagit tout de suite (même hors ligne), avant toute réponse du serveur (D-104)
-                          if (task.completed_at === null) react(child.id, task.points);
+                          if (task.completed_at === null) {
+                            react(child.id, task.points);
+                            anim.onChecked(task.id); // panda vidéo : « content », une fois par tâche et par jour
+                          }
                           toggle.mutate(toggleVars(task, task.completed_at === null, false));
                         }}
                       />
@@ -233,5 +304,8 @@ const styles = StyleSheet.create({
   scroll: { paddingBottom: v2Spacing.xl },
   reaction: { position: 'absolute', top: 0, alignSelf: 'center', backgroundColor: v2Colors.card, borderRadius: v2Radius.pill, paddingHorizontal: v2Spacing.md, paddingVertical: 4 },
   reactionText: { ...v2Font(800, 16), color: v2Colors.energyText },
+  hit: { position: 'absolute' },
+  // bulle « +N ⚡ » au-dessus du panda vidéo (stades à réactions vidéo)
+  bubbleRow: { position: 'absolute', left: 0, right: 0, height: 32, alignItems: 'center' },
   content: { padding: v2Spacing.lg, gap: v2Spacing.md, marginTop: -v2Spacing.xl, width: '100%', maxWidth: V2_MAX_WIDTH, alignSelf: 'center' },
 });

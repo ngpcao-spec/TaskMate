@@ -2137,7 +2137,8 @@
       "missing": "Còn {{n}} ⚡ nữa là đi được!"
     },
     "panda": {
-      "walking": "Panda {{name}} đang đi phiêu lưu"
+      "walking": "Panda {{name}} đang đi phiêu lưu",
+      "touch": "Chạm vào {{name}}"
     },
     "placeholder": "Giao diện mới đang được chuẩn bị.",
     "admin": {

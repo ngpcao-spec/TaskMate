@@ -2137,7 +2137,8 @@
       "missing": "{{n}} more ⚡ and we can go!"
     },
     "panda": {
-      "walking": "Panda {{name}} is off on an adventure"
+      "walking": "Panda {{name}} is off on an adventure",
+      "touch": "Tap {{name}}"
     },
     "placeholder": "The new interface is being prepared.",
     "admin": {
