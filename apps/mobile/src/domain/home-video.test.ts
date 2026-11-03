@@ -110,3 +110,19 @@ describe('vidéo d’accueil : cadrage par vidéo (D-106, đồng hành)', () =>
     expect(homeVideoLayout(phone(390))).toEqual(homeVideoLayout(phone(390), HOME_VIDEO));
   });
 });
+
+describe('vidéo d’accueil : cadrage par vidéo (D-106, nhí)', () => {
+  // géométrie mesurée sur toutes les images : la patte qui salue ne dépasse jamais la pousse ; pieds plus bas que le teen
+  const NHI = { width: 720, height: 1280, headY: 0.485, feetY: 0.73 };
+  const phone = (width: number) => ({ width, height: 347, groundY: 323, topClear: 107 });
+  it.each([390, 430])('%i px : pleine largeur, pieds sur la ligne de sol, panda entier sous les boutons, object-position propre', (width) => {
+    const teen = homeVideoLayout(phone(width));
+    const l = homeVideoLayout(phone(width), NHI);
+    expect(l.boxWidth).toBe(width);
+    expect(l.boxLeft).toBe(0);
+    expect(Math.abs(l.pandaBottom - 323)).toBeLessThanOrEqual(1);
+    expect(l.pandaTop).toBeGreaterThanOrEqual(107);
+    expect(l.objectPositionY).not.toBe(teen.objectPositionY);
+    expect(Math.abs(l.image.top + NHI.feetY * l.image.height - 323)).toBeLessThanOrEqual(1);
+  });
+});

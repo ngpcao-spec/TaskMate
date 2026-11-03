@@ -167,20 +167,25 @@ describe('V2 : vidéo d’accueil dans Hôm nay (D-106)', () => {
     expect(opacityOf('v2-scene-backdrop')).toBe(0);
     expect(groundOpacity()).toBe(1);
   });
-  it('web, stade affiché 4 (đồng hành) : la vidéo đồng hành ; stades 1 et 2 : décor fixe et panda dessiné', async () => {
+  it('web, stades affichés 2 (nhí) et 4 (đồng hành) : leur vidéo ; stade 1 : décor fixe et panda dessiné', async () => {
     jest.replaceProperty(Platform, 'OS', 'web');
-    mockCompanion = { ...teen, stage: 4 };
-    const view = await render(<V2ChildHome />);
-    expect(screen.getByTestId('v2-home-video-poster', H)).toBeTruthy();
-    expect(groundOpacity()).toBe(0);
-    await view.unmount();
-    for (const stage of [1, 2] as const) {
+    for (const stage of [2, 4] as const) {
       mockCompanion = { ...teen, stage };
-      const v = await render(<V2ChildHome />);
-      expect(screen.queryByTestId('v2-home-video-poster', H)).toBeNull();
-      expect(groundOpacity()).toBe(1);
-      await v.unmount();
+      const view = await render(<V2ChildHome />);
+      expect(screen.getByTestId('v2-home-video-poster', H)).toBeTruthy();
+      expect(groundOpacity()).toBe(0);
+      await view.unmount();
     }
+    // stade 3 avec le décalage −1 : le stade AFFICHÉ (2) choisit la vidéo
+    mockCompanion = { ...teen, stage: 2, stageOffset: -1 };
+    const shifted = await render(<V2ChildHome />);
+    expect(screen.getByTestId('v2-home-video-poster', H)).toBeTruthy();
+    await shifted.unmount();
+    mockCompanion = { ...teen, stage: 1 };
+    const v = await render(<V2ChildHome />);
+    expect(screen.queryByTestId('v2-home-video-poster', H)).toBeNull();
+    expect(groundOpacity()).toBe(1);
+    await v.unmount();
   });
   it('natif : ni aperçu ni vidéo, décor et panda visibles', async () => {
     jest.replaceProperty(Platform, 'OS', 'ios');
