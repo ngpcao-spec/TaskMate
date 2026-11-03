@@ -4,7 +4,13 @@ import { HomeVideo as NativeHomeVideo } from '@/v2/components/HomeVideo';
 
 jest.mock('expo-asset', () => ({ Asset: { fromModule: (m: unknown) => ({ uri: `asset:${String(m)}` }) } }));
 // chaque fichier vidéo devient un nom lisible (les `require` du module `src/v2/video.ts`)
-jest.mock('@/v2/video', () => ({ HOME_VIDEO_SOURCES: { webm: 'home-teen.webm', mp4: 'home-teen.mp4', mp4Small: 'home-teen@480', poster: 'home-teen-poster' } }));
+const mockEntry = (key: string, feetY: number, headY: number) => ({
+  key,
+  sources: { webm: `${key}.webm`, mp4: `${key}.mp4`, mp4Small: `${key}@480`, poster: `${key}-poster` },
+  geometry: { width: 720, height: 1280, headY, feetY },
+});
+const TEEN = mockEntry('home-teen', 0.707, 0.485);
+const DONG_HANH = mockEntry('home-dong-hanh', 0.736, 0.438);
 
 type Node = { type: string; props: Record<string, unknown>; children: unknown[]; queryAll: (p: (n: Node) => boolean) => Node[] };
 const listeners: Record<string, () => void> = {};
@@ -16,7 +22,7 @@ jest.mock('@/v2/videoPlayback', () => ({ syncPlayback: (_el: unknown, playing: b
 const all = (container: Node, type: string) => container.queryAll((n) => n.type === type);
 const layer = (container: Node) => container.queryAll((n) => n.props.testID === 'v2-home-video')[0]!;
 
-const base = { topClear: 60, groundOffset: 24, height: 347 };
+const base = { video: TEEN, topClear: 60, groundOffset: 24, height: 347 };
 async function show(props: Partial<Parameters<typeof HomeVideo>[0]> = {}, width = 390) {
   const r = await render(<HomeVideo visible active {...base} width={width} {...props} />);
   return { ...r, container: r.container as unknown as Node };
@@ -87,4 +93,20 @@ describe('vidéo d’accueil V2 (D-106)', () => {
     expect(mockSync).toHaveBeenLastCalledWith(false);
     expect(layer(r.container).props.style).toEqual(expect.arrayContaining([expect.objectContaining({ opacity: 0 })]));
   });
+
+  it.each([
+    [390, 'home-dong-hanh@480'],
+    [430, 'home-dong-hanh.mp4'],
+  ])('stade 4 (đồng hành) à %i px : ses propres fichiers, et un object-position calculé pour ses pieds', async (width, expected) => {
+    const teen = await show({}, width);
+    const teenPos = (all(teen.container, 'video')[0]!.props.style as { objectPosition: string }).objectPosition;
+    await teen.unmount();
+    const { container } = await show({ video: DONG_HANH }, width);
+    const sources = all(container, 'source').map((s) => String(s.props.src));
+    expect(sources).toEqual(['asset:home-dong-hanh.webm', `asset:${expected}`]);
+    const pos = (all(container, 'video')[0]!.props.style as { objectPosition: string }).objectPosition;
+    expect(pos).toMatch(/^50% \d+(\.\d)?%$/);
+    expect(pos).not.toBe(teenPos);
+  });
 });
+

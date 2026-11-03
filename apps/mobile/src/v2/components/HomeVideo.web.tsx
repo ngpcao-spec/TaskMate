@@ -2,7 +2,6 @@ import { Asset } from 'expo-asset';
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { homeVideoLayout, homeVideoSources, videoShowsFrames } from '@/domain/home-video';
-import { HOME_VIDEO_SOURCES } from '../video';
 import { syncPlayback } from '../videoPlayback';
 import type { HomeVideoProps } from './HomeVideo';
 
@@ -25,7 +24,7 @@ const uri = (mod: unknown): string => {
  * - pause quand l'onglet est caché ou quand Hôm nay n'a plus le focus (`active`), reprise au retour ;
  * - `visible` faux (réaction au coche) : fondu vers le décor fixe, vidéo en pause.
  */
-export function HomeVideo({ visible, active, topClear, groundOffset, width, height }: HomeVideoProps) {
+export function HomeVideo({ video, visible, active, topClear, groundOffset, width, height }: HomeVideoProps) {
   const ref = useRef<HTMLVideoElement | null>(null);
   const [ready, setReady] = useState(false);
   const [hidden, setHidden] = useState(() => typeof document !== 'undefined' && document.hidden);
@@ -41,7 +40,7 @@ export function HomeVideo({ visible, active, topClear, groundOffset, width, heig
   useEffect(() => syncPlayback(ref.current, playing), [playing, width, height]);
 
   // taille connue d'avance (largeur de l'écran, hauteur de l'en-tête) : aucune mesure à attendre (iPhone : D-106)
-  const layout = width > 0 && height > 0 ? homeVideoLayout({ width, height, groundY: height - groundOffset, topClear }) : null;
+  const layout = width > 0 && height > 0 ? homeVideoLayout({ width, height, groundY: height - groundOffset, topClear }, video.geometry) : null;
   const sources = homeVideoSources(typeof navigator === 'undefined' ? '' : navigator.userAgent, width);
   const markReady = (e: { currentTarget: { paused: boolean; currentTime: number } }) => {
     if (!ready && videoShowsFrames(e.currentTarget)) setReady(true);
@@ -64,6 +63,7 @@ export function HomeVideo({ visible, active, topClear, groundOffset, width, heig
           style={{ position: 'absolute', top: 0, bottom: 0, left: layout.boxLeft, width: layout.boxWidth, overflow: 'hidden', opacity: ready ? 1 : 0, transition: `opacity ${FADE_MS}ms ease` }}
         >
           <video
+            key={video.key}
             ref={ref}
             data-testid="v2-home-video-element"
             autoPlay
@@ -78,7 +78,7 @@ export function HomeVideo({ visible, active, topClear, groundOffset, width, heig
             style={{ ...fill, objectFit: 'cover', objectPosition: `50% ${layout.objectPositionY}%` }}
           >
             {sources.map((s) => (
-              <source key={s.key} src={uri(HOME_VIDEO_SOURCES[s.key])} type={s.type} />
+              <source key={s.key} src={uri(video.sources[s.key])} type={s.type} />
             ))}
           </video>
         </div>
