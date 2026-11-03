@@ -1,11 +1,12 @@
 import { Redirect, Tabs } from 'expo-router';
-import { BookOpen, CalendarDays, House, Settings, Star } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useApprovalCounts } from '@/hooks/useApprovals';
 import { useMe } from '@/hooks/useMe';
+import type { TabStickerName } from '@/v2/components/TabSticker';
 import { V2TabBar, type V2Tab } from '@/v2/components/V2TabBar';
 
-const ICONS = { home: House, calendar: CalendarDays, review: BookOpen, rewards: Star, settings: Settings } as const;
+/** icône « autocollant » de chaque onglet (dessins originaux, `TabSticker`) */
+const ICONS = { home: 'home', calendar: 'calendar', review: 'review', rewards: 'rewards', settings: 'settings' } as const satisfies Record<string, TabStickerName>;
 type TabName = keyof typeof ICONS;
 const isTab = (n: string): n is TabName => n in ICONS;
 
@@ -26,7 +27,7 @@ export default function V2ParentLayout() {
             return {
               key: name,
               label: t(`v2.tabs.${name === 'home' ? 'home' : name}`),
-              Icon: ICONS[name],
+              sticker: ICONS[name],
               active: state.routes[state.index]?.key === r.key,
               badge: name === 'home' && counts.tasks > 0 ? counts.tasks : name === 'rewards' && counts.requests > 0 ? counts.requests : undefined,
               onPress: () => navigation.navigate(r.name),
