@@ -72,3 +72,61 @@ export const HOME_VIDEOS: Readonly<Partial<Record<number, HomeVideoEntry>>> = {
 
 /** Vidéo d'accueil du stade AFFICHÉ (décalage compris) ; `null` = pas de vidéo pour ce stade (décor fixe + `PandaSprite`). */
 export const homeVideoForStage = (stage: number): HomeVideoEntry | null => HOME_VIDEOS[stage] ?? null;
+
+/**
+ * Réactions du panda vidéo (D-106) : vidéos NON bouclées, même décor, même cadrage et même position du panda que la vidéo de repos du stade
+ * (donc même géométrie, même `object-position`). TABLE stade → réactions disponibles : un stade absent (2, 3, 4 aujourd'hui) n'a aucune réaction
+ * vidéo (`happy` garde le fondu vers le décor fixe et le `PandaSprite` « très heureux » ; toucher et coucher sans effet visible). Ajouter un stade
+ * = déposer ses fichiers et écrire UNE entrée ici. `sleepEnd` : dernière image du panda endormi, gardée après le coucher.
+ */
+export type HomeReactionClip = { key: string; sources: HomeVideoSources };
+export type HomeReactions = { happy?: HomeReactionClip; curious?: HomeReactionClip; sleep?: HomeReactionClip; sleepEnd?: unknown };
+
+export const HOME_REACTIONS: Readonly<Partial<Record<number, HomeReactions>>> = {
+  1: {
+    // il applaudit, 6 s
+    happy: {
+      key: 'be-happy',
+      sources: {
+        webm: require('../../assets/v2/video/reactions/be-happy.webm'),
+        mp4: require('../../assets/v2/video/reactions/be-happy.mp4'),
+        mp4Small: require('../../assets/v2/video/reactions/be-happy@480.mp4'),
+        poster: require('../../assets/v2/video/reactions/be-happy-poster.webp'),
+      },
+    },
+    // il regarde autour de lui, penche la tête, sourit, 8 s
+    curious: {
+      key: 'be-curious',
+      sources: {
+        webm: require('../../assets/v2/video/reactions/be-curious.webm'),
+        mp4: require('../../assets/v2/video/reactions/be-curious.mp4'),
+        mp4Small: require('../../assets/v2/video/reactions/be-curious@480.mp4'),
+        poster: require('../../assets/v2/video/reactions/be-curious-poster.webp'),
+      },
+    },
+    // il bâille et s'endort, 8 s
+    sleep: {
+      key: 'be-sleep',
+      sources: {
+        webm: require('../../assets/v2/video/reactions/be-sleep.webm'),
+        mp4: require('../../assets/v2/video/reactions/be-sleep.mp4'),
+        mp4Small: require('../../assets/v2/video/reactions/be-sleep@480.mp4'),
+        poster: require('../../assets/v2/video/reactions/be-sleep-poster.webp'),
+      },
+    },
+    sleepEnd: require('../../assets/v2/video/reactions/be-sleep-end.webp'),
+  },
+};
+
+/** Réactions vidéo du stade AFFICHÉ ; `null` = aucune (comportement d'avant). */
+export const homeReactionsForStage = (stage: number): HomeReactions | null => HOME_REACTIONS[stage] ?? null;
+
+/** Réactions qui ont une vidéo pour ce stade (le coucher exige aussi son image de fin). */
+export function availableReactions(r: HomeReactions | null): Set<'happy' | 'curious' | 'sleep'> {
+  const out = new Set<'happy' | 'curious' | 'sleep'>();
+  if (!r) return out;
+  if (r.happy) out.add('happy');
+  if (r.curious) out.add('curious');
+  if (r.sleep && r.sleepEnd) out.add('sleep');
+  return out;
+}

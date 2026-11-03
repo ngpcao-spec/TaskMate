@@ -1,5 +1,5 @@
 import { v2Colors } from './theme';
-import { HOME_VIDEOS, homeVideoForStage } from './video';
+import { availableReactions, HOME_REACTIONS, HOME_VIDEOS, homeReactionsForStage, homeVideoForStage } from './video';
 
 const lum = (hex: string) => {
   const f = (c: number) => ((c /= 255) <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
@@ -59,5 +59,17 @@ describe('table stade → vidéo d’accueil (D-106)', () => {
     for (const e of Object.values(HOME_VIDEOS)) {
       for (const fg of [v2Colors.tabActiveOnScene, v2Colors.tabInactiveOnScene, v2Colors.text]) expect([e!.key, fg, contrast(fg, e!.groundColor) >= 4.5]).toEqual([e!.key, fg, true]);
     }
+  });
+  it('réactions vidéo : stade 1 seulement (content, curieux, endormi + image de fin) ; stades 2, 3, 4 : aucune', () => {
+    expect([...availableReactions(homeReactionsForStage(1))].sort()).toEqual(['curious', 'happy', 'sleep']);
+    for (const stage of [2, 3, 4, 0]) expect(availableReactions(homeReactionsForStage(stage)).size).toBe(0);
+    const be = HOME_REACTIONS[1]!;
+    for (const clip of [be.happy, be.curious, be.sleep]) {
+      for (const k of ['webm', 'mp4', 'mp4Small', 'poster'] as const) expect(clip!.sources[k]).toBeTruthy();
+      expect(clip!.key).toMatch(/^be-/);
+    }
+    expect(be.sleepEnd).toBeTruthy();
+    // sans image de fin, pas de coucher (jamais d'écran noir après la vidéo)
+    expect(availableReactions({ ...be, sleepEnd: undefined }).has('sleep')).toBe(false);
   });
 });

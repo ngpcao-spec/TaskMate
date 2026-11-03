@@ -23,6 +23,18 @@ export function showHomeVideo(c: HomeVideoConditions): boolean {
   return c.web && c.scene === 'home' && c.adventure !== 'away' && c.adventure !== 'back' && c.hasStageVideo && (c.variant ?? 'boy') === 'boy' && !c.reduceMotion && !c.saveData;
 }
 
+/**
+ * Panda vidéo (D-106) : `video` (vidéo d'accueil et réactions), `still` (images fixes : poster du repos, image endormie le soir) ou `off`.
+ * Images fixes seulement pour un stade qui a des réactions vidéo (stade 1 aujourd'hui), quand tout le reste est réuni mais que l'utilisateur
+ * demande moins d'animations, économise ses données ou est hors ligne. Les autres stades gardent le comportement d'avant (décor fixe + PandaSprite).
+ */
+export function homeMediaMode(c: HomeVideoConditions & { hasReactions: boolean; offline: boolean }): 'video' | 'still' | 'off' {
+  if (!c.offline && showHomeVideo(c)) return 'video';
+  if (!c.hasReactions) return 'off';
+  const base = c.web && c.scene === 'home' && c.adventure !== 'away' && c.adventure !== 'back' && c.hasStageVideo && (c.variant ?? 'boy') === 'boy';
+  return base && (c.reduceMotion || c.saveData || c.offline) ? 'still' : 'off';
+}
+
 /** Géométrie d'une vidéo d'accueil : taille et position verticale du panda (haut de la pousse, bas des pieds) en fraction de la hauteur, centré en largeur. */
 export type HomeVideoGeometry = { width: number; height: number; headY: number; feetY: number };
 /** Géométrie de la vidéo teen (720×1280) : le panda va de 48,5 % à 70,7 % de la hauteur. Valeur par défaut du cadrage. */
@@ -89,3 +101,26 @@ export function homeVideoSources(userAgent: string, headerWidth: number): { key:
 
 /** La vidéo n'apparaît (au-dessus de l'aperçu fixe) que quand la vidéo JOUE vraiment (une image peinte) : sur iPhone, « canplay » arrive avant la première image. */
 export const videoShowsFrames = (v: { paused: boolean; currentTime: number }): boolean => !v.paused && v.currentTime > 0;
+
+/** Cible tactile minimale (pt). */
+export const MIN_HIT = 44;
+
+/**
+ * Zone tactile du panda (toucher → `curious`, D-106), en px dans l'en-tête : le rectangle du panda dans la vidéo (haut de la pousse → pieds, centré),
+ * un peu élargi, au moins 44 × 44 ; jamais au-dessus de `topClear` (boutons du haut) ni sous `bottomLimit` (carte Phiêu lưu posée sur l'en-tête).
+ */
+export function pandaHitRect(
+  l: Pick<HomeVideoLayout, 'boxLeft' | 'boxWidth' | 'pandaTop' | 'pandaBottom'>,
+  o: { topClear: number; bottomLimit: number; width: number },
+): { left: number; top: number; width: number; height: number } {
+  const span = Math.max(0, l.pandaBottom - l.pandaTop);
+  const margin = 6;
+  const top = Math.max(o.topClear, l.pandaTop - margin);
+  const bottom = Math.min(o.bottomLimit, l.pandaBottom + margin);
+  const height = Math.max(MIN_HIT, bottom - top);
+  // le panda fait à peu près sa hauteur en largeur (assis comme debout, pousse comprise) : un peu plus large que lui
+  const width = Math.min(o.width, Math.max(MIN_HIT, Math.round(span * 1.1)));
+  const centerX = l.boxLeft + l.boxWidth / 2;
+  const left = Math.max(0, Math.min(o.width - width, Math.round(centerX - width / 2)));
+  return { left, top: Math.min(top, o.bottomLimit - height), width, height };
+}

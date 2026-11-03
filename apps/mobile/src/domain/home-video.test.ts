@@ -1,4 +1,4 @@
-import { HOME_VIDEO, homeVideoLayout, homeVideoSize, homeVideoSources, showHomeVideo, videoShowsFrames } from './home-video';
+import { homeMediaMode, MIN_HIT, pandaHitRect, HOME_VIDEO, homeVideoLayout, homeVideoSize, homeVideoSources, showHomeVideo, videoShowsFrames } from './home-video';
 
 const ok = { scene: 'home', adventure: 'filling' as const, hasStageVideo: true, variant: 'boy', reduceMotion: false, saveData: false, web: true };
 
@@ -141,5 +141,43 @@ describe('vidéo d’accueil : cadrage par vidéo (D-106, bé assis)', () => {
     // assis, pousse comprise : à peu près la hauteur du teen (pas plus de 10 % de plus)
     expect(l.pandaBottom - l.pandaTop).toBeLessThanOrEqual((teen.pandaBottom - teen.pandaTop) * 1.1);
     expect(l.objectPositionY).not.toBe(teen.objectPositionY);
+  });
+});
+
+
+describe('panda vidéo : zone tactile et mode d’affichage (D-106)', () => {
+  const BE = { width: 720, height: 1280, headY: 0.5, feetY: 0.725 };
+  const phone = (width: number) => ({ width, height: 347, groundY: 323, topClear: 107 });
+  it.each([375, 390, 430])('%i px : la zone suit le panda (≥ 44 × 44, un peu plus large), sous les boutons, au-dessus de la carte', (width) => {
+    const l = homeVideoLayout(phone(width), BE);
+    const r = pandaHitRect(l, { topClear: 107, bottomLimit: 331, width });
+    expect(r.width).toBeGreaterThanOrEqual(MIN_HIT);
+    expect(r.height).toBeGreaterThanOrEqual(MIN_HIT);
+    expect(r.top).toBeGreaterThanOrEqual(107);
+    expect(r.top + r.height).toBeLessThanOrEqual(331);
+    expect(r.top).toBeLessThanOrEqual(l.pandaTop);
+    expect(r.top + r.height).toBeGreaterThanOrEqual(l.pandaBottom);
+    expect(Math.abs(r.left + r.width / 2 - width / 2)).toBeLessThanOrEqual(1);
+    expect(r.width).toBeLessThan(width / 2); // pas tout le décor
+  });
+  it('panda minuscule : la zone garde 44 × 44', () => {
+    const r = pandaHitRect({ boxLeft: 0, boxWidth: 390, pandaTop: 300, pandaBottom: 310 }, { topClear: 100, bottomLimit: 331, width: 390 });
+    expect(r).toMatchObject({ width: 44, height: 44 });
+    expect(r.top + r.height).toBeLessThanOrEqual(331);
+  });
+  const ok = { scene: 'home', adventure: 'filling' as const, hasStageVideo: true, variant: 'boy', reduceMotion: false, saveData: false, web: true, hasReactions: true, offline: false };
+  it('vidéo quand tout est réuni ; images fixes (stade à réactions) si moins d’animations, économie de données ou hors ligne', () => {
+    expect(homeMediaMode(ok)).toBe('video');
+    expect(homeMediaMode({ ...ok, reduceMotion: true })).toBe('still');
+    expect(homeMediaMode({ ...ok, saveData: true })).toBe('still');
+    expect(homeMediaMode({ ...ok, offline: true })).toBe('still');
+  });
+  it('stades sans réactions : comportement d’avant (vidéo, ou décor fixe et panda dessiné)', () => {
+    expect(homeMediaMode({ ...ok, hasReactions: false })).toBe('video');
+    expect(homeMediaMode({ ...ok, hasReactions: false, reduceMotion: true })).toBe('off');
+  });
+  it('jamais en voyage, au retour, en variante fille ni sur le natif', () => {
+    for (const c of [{ adventure: 'away' as const }, { adventure: 'back' as const }, { variant: 'girl' }, { web: false }, { scene: 'ha-long' }])
+      expect(homeMediaMode({ ...ok, reduceMotion: true, ...c })).toBe('off');
   });
 });

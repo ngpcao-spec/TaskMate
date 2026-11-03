@@ -1,0 +1,120 @@
+import { useCallback, useMemo, useState } from 'react';
+import {
+  animEnded,
+  animFailed,
+  applyDayPlan,
+  firstCheckToday,
+  initialPandaAnim,
+  rememberCheck,
+  requestAnim,
+  sleepPlan,
+  type PandaAnim,
+  type PandaAnimState,
+} from '@/domain/panda-animation';
+import { kvStorage } from '@/sync/storage';
+import type { HomeClip } from '@/v2/components/HomeVideo';
+import { availableReactions, homeReactionsForStage, type HomeReactions } from '@/v2/video';
+
+/** Mémoire locale (par enfant) : jour du dernier coucher joué, coches déjà célébrées aujourd'hui. Lecture et écriture protégées (try/catch). */
+const SLEEP_KEY = (childId: string) => `taskmate-panda-sleep:${childId}`;
+const HAPPY_KEY = (childId: string) => `taskmate-panda-happy:${childId}`;
+
+function read(key: string): string | null {
+  try {
+    return kvStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+function write(key: string, value: string): void {
+  try {
+    kvStorage.setItem(key, value);
+  } catch {
+    // stockage indisponible : l'animation pourra rejouer, rien de grave
+  }
+}
+function readSeen(childId: string): string[] {
+  try {
+    const v = JSON.parse(read(HAPPY_KEY(childId)) ?? '[]') as unknown;
+    return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+export type PandaAnimation = {
+  /** réactions vidéo de ce stade (`null` : aucune, comportement d'avant) */
+  reactions: HomeReactions | null;
+  state: PandaAnimState;
+  /** vidéo à jouer (réaction en cours) ; `null` = repos */
+  clip: HomeClip | null;
+  /** image fixe du panda endormi, quand il dort */
+  still: unknown;
+  /** coche ACCEPTÉE localement par l'enfant : `happy`, une fois par tâche et par jour */
+  onChecked: (taskId: string) => void;
+  /** toucher du panda : `curious` */
+  onTouched: () => void;
+  onEnded: (name: PandaAnim) => void;
+  onFailed: (name: PandaAnim) => void;
+};
+
+/**
+ * Gestionnaire unique des animations du panda vidéo (D-106) : branche la machine d'états pure (`domain/panda-animation`) sur Hôm nay.
+ * `mode` : `video` (réactions jouées), `still` (moins d'animations, économie de données, hors ligne : images fixes seulement), `off` (pas de
+ * panda vidéo). `dayDone` = fin de journée EXISTANTE (`dayComplete` : ≥ 1 tâche, toutes cochées). Le coucher se joue une fois par enfant et par
+ * jour local ; ensuite (même jour) l'image endormie s'affiche directement ; une tâche décochée ou un nouveau jour réveille le panda.
+ * Aucun effet : la fin de journée est une règle pure (`applyDayPlan`) appliquée au rendu et avant chaque événement.
+ */
+export function usePandaAnimation(o: { childId: string | null; stage: number; today: string; dayDone: boolean; mode: 'video' | 'still' | 'off' }): PandaAnimation {
+  const { childId, stage, today, dayDone, mode } = o;
+  const reactions = mode === 'off' ? null : homeReactionsForStage(stage);
+  const available = useMemo(() => (mode === 'video' ? availableReactions(reactions) : new Set<never>()), [mode, reactions]);
+  const canSleep = !!childId && availableReactions(reactions).has('sleep');
+  const [base, setBase] = useState<PandaAnimState>(initialPandaAnim);
+  // relu à chaque rendu (localStorage, peu coûteux) ; `version` force un rendu après écriture
+  const [, setVersion] = useState(0);
+  const playedOn = childId ? read(SLEEP_KEY(childId)) : null;
+  const plan = sleepPlan(dayDone, playedOn, today);
+  const stillsOnly = mode === 'still';
+  const apply = useCallback((s: PandaAnimState) => applyDayPlan(s, plan, stillsOnly, canSleep), [plan, stillsOnly, canSleep]);
+  const state = apply(base);
+
+  const markSlept = useCallback(() => {
+    if (!childId) return;
+    write(SLEEP_KEY(childId), today);
+    setVersion((v) => v + 1);
+  }, [childId, today]);
+
+  const onChecked = useCallback(
+    (taskId: string) => {
+      if (!childId || !available.has('happy')) return;
+      const seen = readSeen(childId);
+      if (!firstCheckToday(seen, taskId, today)) return;
+      write(HAPPY_KEY(childId), JSON.stringify(rememberCheck(seen, taskId, today)));
+      setBase((s) => requestAnim(apply(s), 'happy', Date.now(), available));
+    },
+    [childId, available, today, apply],
+  );
+  const onTouched = useCallback(() => setBase((s) => requestAnim(apply(s), 'curious', Date.now(), available)), [available, apply]);
+  const onEnded = useCallback(
+    (name: PandaAnim) => {
+      if (name === 'sleep') markSlept();
+      setBase((s) => animEnded(apply(s), name, Date.now()));
+    },
+    [apply, markSlept],
+  );
+  const onFailed = useCallback(
+    (name: PandaAnim) => {
+      // coucher impossible à jouer (lecture refusée…) : image endormie, et on ne retente pas ce jour-là
+      if (name === 'sleep') markSlept();
+      setBase((s) => animFailed(apply(s), name, Date.now()));
+    },
+    [apply, markSlept],
+  );
+
+  const current = state.current;
+  const reaction = current === 'idle' || state.asleep ? undefined : reactions?.[current];
+  const clip: HomeClip | null = reaction ? { name: current, key: reaction.key, sources: reaction.sources, loop: false, serial: state.serial } : null;
+  const still = state.asleep && reactions?.sleepEnd ? reactions.sleepEnd : undefined;
+  return { reactions, state, clip, still, onChecked, onTouched, onEnded, onFailed };
+}
