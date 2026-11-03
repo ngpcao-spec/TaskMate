@@ -1,3 +1,4 @@
+import { StyleSheet } from 'react-native';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { House, Star } from 'lucide-react-native';
 import type { AdventureState } from '@/domain/adventure';
@@ -10,6 +11,7 @@ import { GoalSection } from '@/v2/components/GoalSection';
 import { PandaSprite } from '@/v2/components/PandaSprite';
 import { SceneHeader } from '@/v2/components/SceneHeader';
 import { V2TabBar } from '@/v2/components/V2TabBar';
+import { v2Colors } from '@/v2/theme';
 import '@/i18n';
 
 jest.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }) }));
@@ -136,6 +138,19 @@ describe('V2 : barre d’onglets, en-tête, panda', () => {
     expect(screen.getByRole('tab', { name: 'Hôm nay' }).props.accessibilityState).toMatchObject({ selected: true });
     await fireEvent.press(screen.getByRole('tab', { name: 'Phiêu lưu, có 1 điều mới' }));
     expect(onPress).toHaveBeenCalled();
+  });
+  it('onglets sur le sable de la vidéo d’accueil : couleur du fond, sans coins arrondis, teintes foncées', async () => {
+    const tabs = [
+      { key: 'home', label: 'Hôm nay', Icon: House, active: true, onPress: jest.fn() },
+      { key: 'adventure', label: 'Phiêu lưu', Icon: Star, active: false, onPress: jest.fn() },
+    ];
+    const { rerender } = await render(<V2TabBar tabs={tabs} sceneColor="#F7D495" />);
+    expect(StyleSheet.flatten(screen.getByTestId('v2-tabbar').props.style)).toMatchObject({ backgroundColor: '#F7D495', borderTopLeftRadius: 0, borderTopRightRadius: 0 });
+    expect(StyleSheet.flatten(screen.getByText('Hôm nay').props.style).color).toBe(v2Colors.tabActiveOnScene);
+    expect(StyleSheet.flatten(screen.getByText('Phiêu lưu').props.style).color).toBe(v2Colors.tabInactiveOnScene);
+    await rerender(<V2TabBar tabs={tabs} />);
+    expect(StyleSheet.flatten(screen.getByTestId('v2-tabbar').props.style)).toMatchObject({ backgroundColor: v2Colors.tabBar, borderTopLeftRadius: 24 });
+    expect(StyleSheet.flatten(screen.getByText('Hôm nay').props.style).color).toBe(v2Colors.tabActive);
   });
   it('en-tête : décor, boutons du haut (≥ 44 pt) avec libellé', async () => {
     const onPress = jest.fn();
