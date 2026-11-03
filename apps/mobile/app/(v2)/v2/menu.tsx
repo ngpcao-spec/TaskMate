@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { V2Screen } from '@/v2/components/V2Screen';
 import { v2Card, v2Colors, v2Spacing, v2Text, V2_TOUCH } from '@/v2/theme';
 
-/** Menu du haut (V2) : Lịch (calendrier V1 réutilisé) et réglages rapides. */
+/** Menu du haut (V2) : Lịch (calendrier V1 réutilisé) et réglages rapides ; bouton retour vers Hôm nay (la PWA n'a pas celui du navigateur). */
 export default function V2Menu() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -15,7 +15,7 @@ export default function V2Menu() {
     { key: 'settings', Icon: Settings, label: t('v2.me.settings'), go: () => router.push('/v2/settings') },
   ];
   return (
-    <V2Screen title={t('v2.top.menu')}>
+    <V2Screen title={t('v2.top.menu')} back testID="v2-menu">
       <View style={[v2Card, styles.group]}>
         {rows.map((r) => (
           <Pressable key={r.key} accessibilityRole="button" accessibilityLabel={r.label} onPress={r.go} style={styles.row}>

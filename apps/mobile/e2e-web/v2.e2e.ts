@@ -113,6 +113,20 @@ test.describe('interface V2 : vidéo d\'accueil (D-106)', () => {
     return page;
   }
 
+  test('Menu du haut : le bouton retour ramène à Hôm nay (la PWA n\'a pas de bouton retour du navigateur)', async ({ browser }) => {
+    const family = await createFamily({ uiVersion: 'v2' });
+    await seedCompanion(family, 'khang', 'Bambou');
+    const page = await openTeen(browser, family);
+    await page.getByTestId('v2-top-menu').click();
+    await expect(page).toHaveURL(/\/v2\/menu/);
+    await page.getByTestId('v2-back').click();
+    await expect(page).toHaveURL(/\/v2\/child\/home/);
+    // rouvert directement (aucun historique) : retour à l'accueil quand même
+    await page.goto('/v2/menu');
+    await page.getByTestId('v2-back').click();
+    await expect(page).toHaveURL(/\/v2\/child\/home/, { timeout: 20_000 });
+  });
+
   test('stade 3 à la maison : la vidéo remplace le décor ; panda entier, centré, entre les boutons et la carte, à 375, 390, 430 et 768 px', async ({ browser }) => {
     test.setTimeout(150_000);
     const family = await createFamily({ uiVersion: 'v2' });
