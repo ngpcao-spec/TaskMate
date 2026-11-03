@@ -96,7 +96,7 @@ test.describe('interface V2 : parent (D-106)', () => {
 });
 
 test.describe('interface V2 : vidéo d\'accueil (D-106)', () => {
-  /** Khang a 13 ans : panda TEEN (stade 3) ; Minh a 17 ans : panda ĐỒNG HÀNH (stade 4). */
+  /** Khang a 13 ans : panda TEEN (stade 3, NHÍ avec le décalage −1) ; Minh a 17 ans : panda ĐỒNG HÀNH (stade 4). */
   async function openTeen(
     browser: import('@playwright/test').Browser,
     family: Awaited<ReturnType<typeof createFamily>>,
@@ -151,36 +151,42 @@ test.describe('interface V2 : vidéo d\'accueil (D-106)', () => {
     }
   });
 
-  test('stade 4 (đồng hành) à la maison : SA vidéo, panda entier, pieds sur la ligne de sol, centré, à 390 et 430 px', async ({ browser }) => {
-    test.setTimeout(150_000);
-    const family = await createFamily({ uiVersion: 'v2' });
-    await seedCompanion(family, 'minh', 'Bambou');
-    const page = await openTeen(browser, family, {}, 'minh');
-    const video = page.getByTestId('v2-home-video-element');
-    await expect(video).toBeAttached({ timeout: 20_000 });
-    expect(await video.evaluate((v: HTMLVideoElement) => [...v.querySelectorAll('source')].map((x) => x.getAttribute('src') ?? ''))).toEqual([
-      expect.stringContaining('home-dong-hanh'),
-      expect.stringContaining('home-dong-hanh'),
-    ]);
-    await expect(page.getByTestId('v2-home-video-box')).toHaveAttribute('data-ready', 'true', { timeout: 20_000 });
-    for (const width of [390, 430]) {
-      await page.setViewportSize({ width, height: 844 });
-      const box = page.getByTestId('v2-home-video-box');
-      await expect(box).toBeVisible();
-      await page.waitForTimeout(300);
-      const b = (await box.boundingBox())!;
-      const top = b.y + Number(await box.getAttribute('data-panda-top'));
-      const bottom = b.y + Number(await box.getAttribute('data-panda-bottom'));
-      const buttons = (await page.getByTestId('v2-top-bell').boundingBox())!;
-      const card = (await page.getByTestId('v2-adventure-filling').boundingBox())!;
-      expect(top).toBeGreaterThanOrEqual(buttons.y + buttons.height);
-      expect(bottom).toBeLessThanOrEqual(card.y + 2);
-      expect(Math.abs(b.x + b.width / 2 - width / 2)).toBeLessThanOrEqual(2);
-      await page.screenshot({ path: `test-results/v2-captures/v2-video-dong-hanh-${width}.png` });
-      const jpeg = await page.screenshot({ type: 'jpeg', quality: 60, clip: { x: 0, y: 0, width, height: 640 } });
-      console.log(`=====V2-CAPTURE-DH-${width}-BEGIN=====\n${jpeg.toString('base64')}\n=====V2-CAPTURE-DH-${width}-END=====`);
-    }
-  });
+  // stade 4 : Minh (17 ans) ; stade 2 : Khang (13 ans, stade 3) avec le décalage −1 choisi par l'enfant (le stade AFFICHÉ choisit la vidéo)
+  for (const c of [
+    { stage: 4, name: 'đồng hành', who: 'minh' as const, offset: 0 as const, key: 'home-dong-hanh', tag: 'DH', file: 'dong-hanh' },
+    { stage: 2, name: 'nhí', who: 'khang' as const, offset: -1 as const, key: 'home-nhi', tag: 'NHI', file: 'nhi' },
+  ]) {
+    test(`stade ${c.stage} (${c.name}) à la maison : SA vidéo, panda entier, pieds sur la ligne de sol, centré, à 390 et 430 px`, async ({ browser }) => {
+      test.setTimeout(150_000);
+      const family = await createFamily({ uiVersion: 'v2' });
+      await seedCompanion(family, c.who, 'Bambou', 'kind', c.offset);
+      const page = await openTeen(browser, family, {}, c.who);
+      const video = page.getByTestId('v2-home-video-element');
+      await expect(video).toBeAttached({ timeout: 20_000 });
+      expect(await video.evaluate((v: HTMLVideoElement) => [...v.querySelectorAll('source')].map((x) => x.getAttribute('src') ?? ''))).toEqual([
+        expect.stringContaining(c.key),
+        expect.stringContaining(c.key),
+      ]);
+      await expect(page.getByTestId('v2-home-video-box')).toHaveAttribute('data-ready', 'true', { timeout: 20_000 });
+      for (const width of [390, 430]) {
+        await page.setViewportSize({ width, height: 844 });
+        const box = page.getByTestId('v2-home-video-box');
+        await expect(box).toBeVisible();
+        await page.waitForTimeout(300);
+        const b = (await box.boundingBox())!;
+        const top = b.y + Number(await box.getAttribute('data-panda-top'));
+        const bottom = b.y + Number(await box.getAttribute('data-panda-bottom'));
+        const buttons = (await page.getByTestId('v2-top-bell').boundingBox())!;
+        const card = (await page.getByTestId('v2-adventure-filling').boundingBox())!;
+        expect(top).toBeGreaterThanOrEqual(buttons.y + buttons.height);
+        expect(bottom).toBeLessThanOrEqual(card.y + 2);
+        expect(Math.abs(b.x + b.width / 2 - width / 2)).toBeLessThanOrEqual(2);
+        await page.screenshot({ path: `test-results/v2-captures/v2-video-${c.file}-${width}.png` });
+        const jpeg = await page.screenshot({ type: 'jpeg', quality: 60, clip: { x: 0, y: 0, width, height: 640 } });
+        console.log(`=====V2-CAPTURE-${c.tag}-${width}-BEGIN=====\n${jpeg.toString('base64')}\n=====V2-CAPTURE-${c.tag}-${width}-END=====`);
+      }
+    });
+  }
 
   // Une vidéo qui ne joue jamais (économie d'énergie de l'iPhone) ne s'émule pas : WebKit Linux lit les médias hors de l'interception réseau de
   // Playwright. Ce test vérifie que l'aperçu fixe (Image React Native) couvre le décor sous WebKit ; la vidéo invisible tant qu'aucune image n'est

@@ -200,8 +200,10 @@ export async function companionEnergy(family: FamilyFixture, child: 'minh' | 'kh
 }
 
 /** Panda d'un enfant, créé par le service local (sans passer par l'étape « Panda của em »). */
-export async function seedCompanion(family: FamilyFixture, child: 'minh' | 'khang', name: string, trait = 'kind'): Promise<void> {
-  const { error } = await admin().from('companions').insert({ child_id: family[child].childId as string, family_id: family.familyId, name, trait: trait as 'kind' });
+export async function seedCompanion(family: FamilyFixture, child: 'minh' | 'khang', name: string, trait = 'kind', stageOffset: -1 | 0 | 1 = 0): Promise<void> {
+  const { error } = await admin()
+    .from('companions')
+    .insert({ child_id: family[child].childId as string, family_id: family.familyId, name, trait: trait as 'kind', stage_offset: stageOffset });
   if (error) throw new Error(`companions: ${error.message}`);
 }
 
