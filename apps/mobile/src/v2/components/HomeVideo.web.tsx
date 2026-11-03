@@ -1,7 +1,7 @@
 import { Asset } from 'expo-asset';
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { homeVideoLayout, homeVideoSources, videoShowsFrames } from '@/domain/home-video';
+import { featherMask, homeVideoLayout, homeVideoSources, videoShowsFrames } from '@/domain/home-video';
 import { syncPlayback } from '../videoPlayback';
 import type { HomeVideoProps } from './HomeVideo';
 
@@ -42,6 +42,7 @@ export function HomeVideo({ video, visible, active, topClear, groundOffset, widt
   // taille connue d'avance (largeur de l'écran, hauteur de l'en-tête) : aucune mesure à attendre (iPhone : D-106)
   const layout = width > 0 && height > 0 ? homeVideoLayout({ width, height, groundY: height - groundOffset, topClear }, video.geometry) : null;
   const sources = homeVideoSources(typeof navigator === 'undefined' ? '' : navigator.userAgent, width);
+  const mask = layout ? featherMask(layout.feather) : undefined;
   const markReady = (e: { currentTarget: { paused: boolean; currentTime: number } }) => {
     if (!ready && videoShowsFrames(e.currentTarget)) setReady(true);
   };
@@ -60,7 +61,7 @@ export function HomeVideo({ video, visible, active, topClear, groundOffset, widt
           data-panda-top={layout.pandaTop}
           data-panda-bottom={layout.pandaBottom}
           data-ready={ready ? 'true' : 'false'}
-          style={{ position: 'absolute', top: 0, bottom: 0, left: layout.boxLeft, width: layout.boxWidth, overflow: 'hidden', opacity: ready ? 1 : 0, transition: `opacity ${FADE_MS}ms ease` }}
+          style={{ position: 'absolute', top: 0, bottom: 0, left: layout.boxLeft, width: layout.boxWidth, overflow: 'hidden', opacity: ready ? 1 : 0, transition: `opacity ${FADE_MS}ms ease`, maskImage: mask, WebkitMaskImage: mask }}
         >
           <video
             key={video.key}

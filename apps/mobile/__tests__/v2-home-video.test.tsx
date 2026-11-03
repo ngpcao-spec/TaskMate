@@ -4,13 +4,13 @@ import { HomeVideo as NativeHomeVideo } from '@/v2/components/HomeVideo';
 
 jest.mock('expo-asset', () => ({ Asset: { fromModule: (m: unknown) => ({ uri: `asset:${String(m)}` }) } }));
 // chaque fichier vidéo devient un nom lisible (les `require` du module `src/v2/video.ts`)
-const mockEntry = (key: string, feetY: number, headY: number) => ({
+const mockEntry = (key: string, feetY: number, headY: number, maxFill?: number) => ({
   key,
   sources: { webm: `${key}.webm`, mp4: `${key}.mp4`, mp4Small: `${key}@480`, poster: `${key}-poster` },
-  geometry: { width: 720, height: 1280, headY, feetY },
+  geometry: { width: 720, height: 1280, headY, feetY, maxFill },
 });
 const TEEN = mockEntry('home-teen', 0.707, 0.485);
-const DONG_HANH = mockEntry('home-dong-hanh', 0.736, 0.438);
+const DONG_HANH = mockEntry('home-dong-hanh', 0.736, 0.438, 0.74);
 
 type Node = { type: string; props: Record<string, unknown>; children: unknown[]; queryAll: (p: (n: Node) => boolean) => Node[] };
 const listeners: Record<string, () => void> = {};
@@ -108,5 +108,17 @@ describe('vidéo d’accueil V2 (D-106)', () => {
     expect(pos).toMatch(/^50% \d+(\.\d)?%$/);
     expect(pos).not.toBe(teenPos);
   });
-});
 
+  it('stade 4 (đồng hành) à 390 px : boîte plus étroite que l’écran, centrée, bords fondus ; teen pleine largeur sans fondu', async () => {
+    const box = (c: Node) => c.queryAll((n) => n.props['data-testid'] === 'v2-home-video-box')[0]!.props.style as Record<string, unknown>;
+    const teen = await show({ topClear: 107 }, 390);
+    expect(box(teen.container)).toMatchObject({ left: 0, width: 390, maskImage: undefined });
+    await teen.unmount();
+    const { container } = await show({ video: DONG_HANH, topClear: 107 }, 390);
+    const s = box(container);
+    expect(s.width as number).toBeLessThan(390);
+    expect(s.left).toBe(Math.round((390 - (s.width as number)) / 2));
+    expect(String(s.maskImage)).toContain('linear-gradient(to right, transparent 0, #000 24px');
+    expect(s.WebkitMaskImage).toBe(s.maskImage);
+  });
+});

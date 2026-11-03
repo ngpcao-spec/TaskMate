@@ -1,5 +1,5 @@
 import { Image, StyleSheet, View } from 'react-native';
-import { homeVideoLayout } from '@/domain/home-video';
+import { featherMask, homeVideoLayout } from '@/domain/home-video';
 import type { HomeVideoEntry } from '../video';
 
 type Props = { video: HomeVideoEntry; topClear: number; groundOffset: number; width: number; height: number };
@@ -13,10 +13,13 @@ type Props = { video: HomeVideoEntry; topClear: number; groundOffset: number; wi
 export function HomePoster({ video, topClear, groundOffset, width, height }: Props) {
   if (width <= 0 || height <= 0) return null;
   const l = homeVideoLayout({ width, height, groundY: height - groundOffset, topClear }, video.geometry);
+  const mask = featherMask(l.feather);
+  // fondu des bords (web) : `mask-image` passe tel quel par react-native-web ; ignoré ailleurs (le natif n'affiche pas l'aperçu de la vidéo)
+  const edge = mask ? ({ maskImage: mask, WebkitMaskImage: mask } as object) : null;
   return (
     <View testID="v2-home-video-poster" style={StyleSheet.absoluteFill} pointerEvents="none" importantForAccessibility="no-hide-descendants">
       {l.boxLeft > 0 ? <Image source={video.sources.poster as number} resizeMode="cover" blurRadius={10} style={StyleSheet.absoluteFill} accessibilityIgnoresInvertColors /> : null}
-      <View style={[styles.box, { left: l.boxLeft, width: l.boxWidth }]}>
+      <View testID="v2-home-video-poster-box" style={[styles.box, { left: l.boxLeft, width: l.boxWidth }, edge]}>
         <Image
           source={video.sources.poster as number}
           resizeMode="stretch"
