@@ -1,5 +1,5 @@
 import { Image, StyleSheet, View } from 'react-native';
-import { homeVideoLayout } from '@/domain/home-video';
+import { featherMask, homeVideoLayout } from '@/domain/home-video';
 import type { HomeVideoEntry } from '../video';
 
 type Props = { video: HomeVideoEntry; topClear: number; groundOffset: number; width: number; height: number };
@@ -8,15 +8,27 @@ type Props = { video: HomeVideoEntry; topClear: number; groundOffset: number; wi
  * Aperçu fixe de la vidéo d'accueil (D-106) : première image de la vidéo, posée À LA PLACE du décor fixe, exactement là où la vidéo peindra
  * (`homeVideoLayout().image`, cover sans déformation). C'est une `Image` React Native, comme le décor : elle s'affiche sur iPhone même quand la
  * vidéo ne joue pas (lecture automatique refusée, économie d'énergie, chargement lent) — la vidéo ne fait qu'apparaître par-dessus quand elle joue.
- * Écran large : de part et d'autre de la boîte, la même image floutée.
+ * Boîte plus étroite que l'en-tête (écran large, panda limité par `maxFill`) : de part et d'autre, la même image floutée, sol sur la même ligne.
  */
 export function HomePoster({ video, topClear, groundOffset, width, height }: Props) {
   if (width <= 0 || height <= 0) return null;
   const l = homeVideoLayout({ width, height, groundY: height - groundOffset, topClear }, video.geometry);
+  const mask = featherMask(l.feather);
+  // fondu des bords (web) : `mask-image` passe tel quel par react-native-web ; ignoré ailleurs (le natif n'affiche pas l'aperçu de la vidéo)
+  const edge = mask ? ({ maskImage: mask, WebkitMaskImage: mask } as object) : null;
   return (
     <View testID="v2-home-video-poster" style={StyleSheet.absoluteFill} pointerEvents="none" importantForAccessibility="no-hide-descendants">
-      {l.boxLeft > 0 ? <Image source={video.sources.poster as number} resizeMode="cover" blurRadius={10} style={StyleSheet.absoluteFill} accessibilityIgnoresInvertColors /> : null}
-      <View style={[styles.box, { left: l.boxLeft, width: l.boxWidth }]}>
+      {l.boxLeft > 0 ? (
+        <Image
+          testID="v2-home-video-backdrop"
+          source={video.sources.poster as number}
+          resizeMode="stretch"
+          blurRadius={10}
+          style={[styles.image, { left: l.backdrop.left, top: l.backdrop.top, width: l.backdrop.width, height: l.backdrop.height }]}
+          accessibilityIgnoresInvertColors
+        />
+      ) : null}
+      <View testID="v2-home-video-poster-box" style={[styles.box, { left: l.boxLeft, width: l.boxWidth }, edge]}>
         <Image
           source={video.sources.poster as number}
           resizeMode="stretch"

@@ -20,6 +20,12 @@ describe('table stade → vidéo d’accueil (D-106)', () => {
       expect(e!.geometry.feetY).toBeLessThan(0.85);
     }
   });
+  it('đồng hành filmé de plus près : taille limitée (maxFill < 1) ; teen sans limite', () => {
+    expect(homeVideoForStage(3)!.geometry.maxFill ?? 1).toBe(1);
+    const fill = homeVideoForStage(4)!.geometry.maxFill!;
+    expect(fill).toBeGreaterThan(0.5);
+    expect(fill).toBeLessThan(1);
+  });
   it('đồng hành : panda plus grand que le teen, pieds plus bas', () => {
     const teen = homeVideoForStage(3)!.geometry;
     const dh = homeVideoForStage(4)!.geometry;
