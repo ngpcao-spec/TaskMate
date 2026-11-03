@@ -10,7 +10,11 @@ import type { HomeVideoGeometry } from '@/domain/home-video';
  * Le cadrage (`object-position`) est calculé par vidéo à partir de sa géométrie (`homeVideoLayout`) : les pieds tombent toujours sur la ligne de sol.
  */
 export type HomeVideoSources = { webm: unknown; mp4: unknown; mp4Small: unknown; poster: unknown };
-export type HomeVideoEntry = { key: string; sources: HomeVideoSources; geometry: HomeVideoGeometry };
+/**
+ * `groundColor` : couleur du sable au BAS visible de la vidéo (médiane de la dernière bande affichée à 375–430 px, mesurée sur l'aperçu). Quand la
+ * vidéo est affichée, le fond de l'écran sous l'en-tête prend cette couleur (prolongement de la vidéo, fondu au bas de l'en-tête).
+ */
+export type HomeVideoEntry = { key: string; sources: HomeVideoSources; geometry: HomeVideoGeometry; groundColor: string };
 
 export const HOME_VIDEOS: Readonly<Partial<Record<number, HomeVideoEntry>>> = {
   // 5,5 s ; panda ASSIS : de 50,0 % (pousse) à 72,5 % (coussinets), mesuré sur toutes les images (tête plus basse, même hauteur que le teen
@@ -25,6 +29,7 @@ export const HOME_VIDEOS: Readonly<Partial<Record<number, HomeVideoEntry>>> = {
       poster: require('../../assets/v2/video/home-be-poster.webp'),
     },
     geometry: { width: 720, height: 1280, headY: 0.5, feetY: 0.725 },
+    groundColor: '#F7D495',
   },
   // 5,5 s ; le panda salue de la patte : de 48,5 % (pousse) à 73,0 % (pieds), mesuré sur toutes les images (la patte ne dépasse jamais la tête)
   2: {
@@ -36,6 +41,7 @@ export const HOME_VIDEOS: Readonly<Partial<Record<number, HomeVideoEntry>>> = {
       poster: require('../../assets/v2/video/home-nhi-poster.webp'),
     },
     geometry: { width: 720, height: 1280, headY: 0.485, feetY: 0.73 },
+    groundColor: '#F7D095',
   },
   // 9,5 s ; panda de 48,5 % (pousse) à 70,7 % (pieds)
   3: {
@@ -47,6 +53,7 @@ export const HOME_VIDEOS: Readonly<Partial<Record<number, HomeVideoEntry>>> = {
       poster: require('../../assets/v2/video/home-teen-poster.webp'),
     },
     geometry: { width: 720, height: 1280, headY: 0.485, feetY: 0.707 },
+    groundColor: '#FAD195',
   },
   // 6 s ; plan large fourni par Teo le 2026-11-03 (remplace la première version, panda filmé de trop près) : de 48,5 % (pousse) à 68,8 % (pieds),
   // mesuré sur l'aperçu ; panda un peu plus petit que le teen
@@ -59,6 +66,7 @@ export const HOME_VIDEOS: Readonly<Partial<Record<number, HomeVideoEntry>>> = {
       poster: require('../../assets/v2/video/home-dong-hanh-poster.webp'),
     },
     geometry: { width: 720, height: 1280, headY: 0.485, feetY: 0.688 },
+    groundColor: '#F8CA8A',
   },
 };
 

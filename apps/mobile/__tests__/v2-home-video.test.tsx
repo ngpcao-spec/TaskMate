@@ -8,6 +8,7 @@ const mockEntry = (key: string, feetY: number, headY: number) => ({
   key,
   sources: { webm: `${key}.webm`, mp4: `${key}.mp4`, mp4Small: `${key}@480`, poster: `${key}-poster` },
   geometry: { width: 720, height: 1280, headY, feetY },
+  groundColor: '#FAD195',
 });
 const TEEN = mockEntry('home-teen', 0.707, 0.485);
 const DONG_HANH = mockEntry('home-dong-hanh', 0.688, 0.485);

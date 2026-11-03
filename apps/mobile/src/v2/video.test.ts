@@ -20,6 +20,10 @@ describe('table stade → vidéo d’accueil (D-106)', () => {
       expect(e!.geometry.headY).toBeGreaterThan(0.3);
       expect(e!.geometry.feetY).toBeGreaterThan(e!.geometry.headY);
       expect(e!.geometry.feetY).toBeLessThan(0.85);
+      // couleur du sable au bas visible : hex opaque, claire (le texte des cartes reste lisible dessus)
+      expect(e!.groundColor).toMatch(/^#[0-9A-F]{6}$/);
+      const [r, g, b] = [1, 3, 5].map((i) => parseInt(e!.groundColor.slice(i, i + 2), 16));
+      expect(0.299 * r! + 0.587 * g! + 0.114 * b!).toBeGreaterThan(180);
     }
   });
   it('đồng hành (plan large) : panda entier, pas plus grand que le teen, pieds plus hauts', () => {

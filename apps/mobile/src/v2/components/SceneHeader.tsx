@@ -5,6 +5,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { sceneImage } from '../images';
 import { v2Colors, v2Font, v2Radius, v2Shadow, v2Spacing, V2_TOUCH } from '../theme';
 
+/** Hauteur (pt) du fondu au bas de l'en-tête quand le décor est prolongé (sous les pieds du panda : le sol est à `SCENE_GROUND_OFFSET`). */
+export const EXTEND_FADE = 20;
+
 export type TopButton = { key: string; Icon: LucideIcon; label: string; onPress: () => void; badge?: number };
 
 type Props = {
@@ -24,6 +27,11 @@ type Props = {
    */
   backdrop?: ReactNode;
   backdropVisible?: boolean;
+  /**
+   * Couleur qui prolonge le décor sous l'en-tête (vidéo d'accueil, D-106) : l'en-tête perd ses coins arrondis du bas et un fondu vers cette couleur
+   * adoucit son bord, pour que le fond de l'écran (de la même couleur) continue la vidéo sans jointure.
+   */
+  extendColor?: string | null;
   testID?: string;
 };
 
@@ -42,10 +50,10 @@ function RoundTop({ b }: { b: TopButton }) {
 }
 
 /** En-tête V2 : décor plein cadre (ciel en haut, sol libre au centre), boutons ronds du haut, panda posé sur le sol. */
-export function SceneHeader({ scene, height, left = [], right = [], children, overlay, backdrop, backdropVisible = false, testID }: Props) {
+export function SceneHeader({ scene, height, left = [], right = [], children, overlay, backdrop, backdropVisible = false, extendColor = null, testID }: Props) {
   const insets = useSafeAreaInsets();
   return (
-    <View testID={testID} style={[styles.wrap, { height: height + insets.top }]}>
+    <View testID={testID} style={[styles.wrap, { height: height + insets.top }, extendColor ? { backgroundColor: extendColor, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 } : null]}>
       <View testID="v2-scene-layer" style={styles.sceneLayer} pointerEvents="box-none">
         <Image source={sceneImage(scene)} resizeMode="cover" style={StyleSheet.absoluteFill} accessibilityIgnoresInvertColors importantForAccessibility="no" testID={`v2-scene-${scene}`} />
         {backdrop ? (
@@ -58,6 +66,14 @@ export function SceneHeader({ scene, height, left = [], right = [], children, ov
         </View>
       </View>
       {overlay}
+      {extendColor ? (
+        <View
+          testID="v2-scene-extend"
+          pointerEvents="none"
+          importantForAccessibility="no-hide-descendants"
+          style={[styles.extend, { backgroundImage: `linear-gradient(to bottom, transparent, ${extendColor})` } as object]}
+        />
+      ) : null}
       <View style={[styles.top, { paddingTop: insets.top + v2Spacing.sm }]}>
         <View style={styles.group}>{left.map((b) => <RoundTop key={b.key} b={b} />)}</View>
         <View style={styles.group}>{right.map((b) => <RoundTop key={b.key} b={b} />)}</View>
@@ -76,6 +92,8 @@ const styles = StyleSheet.create({
   badgeText: { ...v2Font(800, 11), color: v2Colors.onBadge },
   sceneLayer: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   fade: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, transitionProperty: 'opacity', transitionDuration: '200ms' } as never,
+  // fondu du bas de l'en-tête vers la couleur qui le prolonge (web : `background-image` passe tel quel par react-native-web)
+  extend: { position: 'absolute', left: 0, right: 0, bottom: 0, height: EXTEND_FADE },
   groundLayer: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   // sol : bas du décor, où le panda marche
   ground: { position: 'absolute', left: v2Spacing.lg, right: v2Spacing.lg, bottom: v2Spacing.xl },
