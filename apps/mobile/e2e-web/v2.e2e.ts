@@ -96,14 +96,15 @@ test.describe('interface V2 : parent (D-106)', () => {
 });
 
 test.describe('interface V2 : vidéo d\'accueil (D-106)', () => {
-  /** Khang a 13 ans : panda TEEN (stade 3), la seule vidéo fournie. */
+  /** Khang a 13 ans : panda TEEN (stade 3) ; Minh a 17 ans : panda ĐỒNG HÀNH (stade 4). */
   async function openTeen(
     browser: import('@playwright/test').Browser,
     family: Awaited<ReturnType<typeof createFamily>>,
     options: import('@playwright/test').BrowserContextOptions = {},
+    who: 'khang' | 'minh' = 'khang',
   ) {
     const ctx = await browser.newContext(options);
-    await signInContext(ctx, family.khang);
+    await signInContext(ctx, family[who]);
     const page = await ctx.newPage();
     page.on('pageerror', (e) => console.log(`[v2-video] pageerror ${e.message.slice(0, 300)}`));
     page.on('dialog', (d) => void d.accept());
@@ -142,11 +143,42 @@ test.describe('interface V2 : vidéo d\'accueil (D-106)', () => {
       expect(Math.abs(b.x + b.width / 2 - width / 2)).toBeLessThanOrEqual(2); // centré
       await page.screenshot({ path: test.info().outputPath(`v2-video-${width}.png`) });
       await page.screenshot({ path: `test-results/v2-captures/v2-video-${width}.png` });
-      // 375 et 430 px : aussi dans le journal CI (JPEG compressé, base64) pour le rapport, l'artefact n'étant pas toujours téléchargeable
-      if (width === 375 || width === 430) {
+      // 375, 390 et 430 px : aussi dans le journal CI (JPEG compressé, base64) pour le rapport, l'artefact n'étant pas toujours téléchargeable
+      if (width === 375 || width === 390 || width === 430) {
         const jpeg = await page.screenshot({ type: 'jpeg', quality: 60, clip: { x: 0, y: 0, width, height: 640 } });
         console.log(`=====V2-CAPTURE-${width}-BEGIN=====\n${jpeg.toString('base64')}\n=====V2-CAPTURE-${width}-END=====`);
       }
+    }
+  });
+
+  test('stade 4 (đồng hành) à la maison : SA vidéo, panda entier, pieds sur la ligne de sol, centré, à 390 et 430 px', async ({ browser }) => {
+    test.setTimeout(150_000);
+    const family = await createFamily({ uiVersion: 'v2' });
+    await seedCompanion(family, 'minh', 'Bambou');
+    const page = await openTeen(browser, family, {}, 'minh');
+    const video = page.getByTestId('v2-home-video-element');
+    await expect(video).toBeAttached({ timeout: 20_000 });
+    expect(await video.evaluate((v: HTMLVideoElement) => [...v.querySelectorAll('source')].map((x) => x.getAttribute('src') ?? ''))).toEqual([
+      expect.stringContaining('home-dong-hanh'),
+      expect.stringContaining('home-dong-hanh'),
+    ]);
+    await expect(page.getByTestId('v2-home-video-box')).toHaveAttribute('data-ready', 'true', { timeout: 20_000 });
+    for (const width of [390, 430]) {
+      await page.setViewportSize({ width, height: 844 });
+      const box = page.getByTestId('v2-home-video-box');
+      await expect(box).toBeVisible();
+      await page.waitForTimeout(300);
+      const b = (await box.boundingBox())!;
+      const top = b.y + Number(await box.getAttribute('data-panda-top'));
+      const bottom = b.y + Number(await box.getAttribute('data-panda-bottom'));
+      const buttons = (await page.getByTestId('v2-top-bell').boundingBox())!;
+      const card = (await page.getByTestId('v2-adventure-filling').boundingBox())!;
+      expect(top).toBeGreaterThanOrEqual(buttons.y + buttons.height);
+      expect(bottom).toBeLessThanOrEqual(card.y + 2);
+      expect(Math.abs(b.x + b.width / 2 - width / 2)).toBeLessThanOrEqual(2);
+      await page.screenshot({ path: `test-results/v2-captures/v2-video-dong-hanh-${width}.png` });
+      const jpeg = await page.screenshot({ type: 'jpeg', quality: 60, clip: { x: 0, y: 0, width, height: 640 } });
+      console.log(`=====V2-CAPTURE-DH-${width}-BEGIN=====\n${jpeg.toString('base64')}\n=====V2-CAPTURE-DH-${width}-END=====`);
     }
   });
 

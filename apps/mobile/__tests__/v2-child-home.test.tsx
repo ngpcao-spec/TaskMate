@@ -167,6 +167,21 @@ describe('V2 : vidéo d’accueil dans Hôm nay (D-106)', () => {
     expect(opacityOf('v2-scene-backdrop')).toBe(0);
     expect(groundOpacity()).toBe(1);
   });
+  it('web, stade affiché 4 (đồng hành) : la vidéo đồng hành ; stades 1 et 2 : décor fixe et panda dessiné', async () => {
+    jest.replaceProperty(Platform, 'OS', 'web');
+    mockCompanion = { ...teen, stage: 4 };
+    const view = await render(<V2ChildHome />);
+    expect(screen.getByTestId('v2-home-video-poster', H)).toBeTruthy();
+    expect(groundOpacity()).toBe(0);
+    await view.unmount();
+    for (const stage of [1, 2] as const) {
+      mockCompanion = { ...teen, stage };
+      const v = await render(<V2ChildHome />);
+      expect(screen.queryByTestId('v2-home-video-poster', H)).toBeNull();
+      expect(groundOpacity()).toBe(1);
+      await v.unmount();
+    }
+  });
   it('natif : ni aperçu ni vidéo, décor et panda visibles', async () => {
     jest.replaceProperty(Platform, 'OS', 'ios');
     await render(<V2ChildHome />);

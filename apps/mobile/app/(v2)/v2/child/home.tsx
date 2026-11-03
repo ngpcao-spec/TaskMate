@@ -34,6 +34,7 @@ import { GoalRow } from '@/v2/components/GoalRow';
 import { GoalSection } from '@/v2/components/GoalSection';
 import { HomePoster } from '@/v2/components/HomePoster';
 import { HomeVideo } from '@/v2/components/HomeVideo';
+import { homeVideoForStage } from '@/v2/video';
 import { PandaSprite } from '@/v2/components/PandaSprite';
 import { SCENE_GROUND_OFFSET, SCENE_TOP_CLEAR, SceneHeader } from '@/v2/components/SceneHeader';
 import { V2_MAX_WIDTH } from '@/v2/components/V2Screen';
@@ -99,10 +100,11 @@ export default function V2ChildHome() {
   const groups = groupByDaySection(tasks, banner !== null);
   const showList = !complete || reviewing;
   const goAdventure = () => router.push('/v2/child/adventure');
-  // D-106 : vidéo d'accueil (maison, panda teen) à la place du décor fixe et du panda, si toutes les conditions sont réunies (web seulement)
+  // D-106 : vidéo d'accueil (maison, panda du stade AFFICHÉ : teen, đồng hành) à la place du décor fixe et du panda, si toutes les conditions sont réunies (web seulement)
+  const stageVideo = companion?.hasCompanion ? homeVideoForStage(companion.stage) : null;
   const video =
     !!companion?.hasCompanion &&
-    showHomeVideo({ scene, adventure: adventure?.state, stage: companion.stage, variant: companion.variant, reduceMotion, saveData: prefersSaveData(), web: Platform.OS === 'web' });
+    showHomeVideo({ scene, adventure: adventure?.state, hasStageVideo: stageVideo !== null, variant: companion.variant, reduceMotion, saveData: prefersSaveData(), web: Platform.OS === 'web' });
 
   return (
     <View style={styles.screen}>
@@ -115,9 +117,9 @@ export default function V2ChildHome() {
             { key: 'calendar', Icon: CalendarDays, label: t('v2.top.calendar'), onPress: () => router.push('/v2/calendar') },
             { key: 'bell', Icon: Bell, label: unread > 0 ? t('v2.top.notificationsCount', { count: unread }) : t('v2.top.notifications'), onPress: () => router.push('/notifications'), badge: unread },
           ]}
-          backdrop={video ? <HomePoster topClear={insets.top + SCENE_TOP_CLEAR} groundOffset={SCENE_GROUND_OFFSET} width={screenWidth} height={SCENE_HEIGHT + insets.top} /> : null}
+          backdrop={video && stageVideo ? <HomePoster video={stageVideo} topClear={insets.top + SCENE_TOP_CLEAR} groundOffset={SCENE_GROUND_OFFSET} width={screenWidth} height={SCENE_HEIGHT + insets.top} /> : null}
           backdropVisible={video && !reacting}
-          overlay={video ? <HomeVideo visible={!reacting} active={focused} topClear={insets.top + SCENE_TOP_CLEAR} groundOffset={SCENE_GROUND_OFFSET} width={screenWidth} height={SCENE_HEIGHT + insets.top} /> : null}
+          overlay={video && stageVideo ? <HomeVideo video={stageVideo} visible={!reacting} active={focused} topClear={insets.top + SCENE_TOP_CLEAR} groundOffset={SCENE_GROUND_OFFSET} width={screenWidth} height={SCENE_HEIGHT + insets.top} /> : null}
         >
           {companion?.hasCompanion ? (
             <PandaSprite

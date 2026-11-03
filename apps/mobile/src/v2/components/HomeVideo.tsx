@@ -1,5 +1,9 @@
+import type { HomeVideoEntry } from '../video';
+
 /** Natif (iOS / Android) : pas de vidéo d'accueil pour l'instant (aucune nouvelle dépendance native) — décor fixe + `PandaSprite` (D-106). */
 export type HomeVideoProps = {
+  /** vidéo du stade affiché (`homeVideoForStage`) : sources et géométrie du panda */
+  video: HomeVideoEntry;
   visible: boolean;
   active: boolean;
   topClear: number;

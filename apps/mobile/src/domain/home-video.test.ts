@@ -1,6 +1,6 @@
-import { homeVideoLayout, homeVideoSize, homeVideoSources, showHomeVideo, videoShowsFrames } from './home-video';
+import { HOME_VIDEO, homeVideoLayout, homeVideoSize, homeVideoSources, showHomeVideo, videoShowsFrames } from './home-video';
 
-const ok = { scene: 'home', adventure: 'filling' as const, stage: 3, variant: 'boy', reduceMotion: false, saveData: false, web: true };
+const ok = { scene: 'home', adventure: 'filling' as const, hasStageVideo: true, variant: 'boy', reduceMotion: false, saveData: false, web: true };
 
 describe('vidéo d’accueil : quand l’afficher (D-106)', () => {
   it('toutes les conditions réunies', () => expect(showHomeVideo(ok)).toBe(true));
@@ -16,8 +16,8 @@ describe('vidéo d’accueil : quand l’afficher (D-106)', () => {
     expect(showHomeVideo({ ...ok, scene: 'ha-long' })).toBe(false);
     expect(showHomeVideo({ ...ok, scene: 'phong-nha' })).toBe(false);
   });
-  it('stade affiché autre que teen (décalage compris) : jamais', () => {
-    for (const stage of [1, 2, 4]) expect(showHomeVideo({ ...ok, stage })).toBe(false);
+  it('aucune vidéo pour le stade affiché (décalage compris : stades 1 et 2 aujourd’hui) : jamais', () => {
+    expect(showHomeVideo({ ...ok, hasStageVideo: false })).toBe(false);
   });
   it('variante fille : jamais (pas encore de vidéo)', () => expect(showHomeVideo({ ...ok, variant: 'girl' })).toBe(false));
   it('variante absente (état mis en cache avant D-106) : garçon', () => expect(showHomeVideo({ ...ok, variant: undefined })).toBe(true));
@@ -84,5 +84,26 @@ describe('vidéo d’accueil : sources et poster (iPhone)', () => {
     expect(videoShowsFrames({ paused: true, currentTime: 0 })).toBe(false);
     expect(videoShowsFrames({ paused: false, currentTime: 0 })).toBe(false);
     expect(videoShowsFrames({ paused: false, currentTime: 0.04 })).toBe(true);
+  });
+});
+
+describe('vidéo d’accueil : cadrage par vidéo (D-106, đồng hành)', () => {
+  // géométrie mesurée sur l'aperçu fourni : panda plus grand que le teen, pieds plus bas (73,6 % contre 70,7 %)
+  const DONG_HANH = { width: 720, height: 1280, headY: 0.438, feetY: 0.736 };
+  // iPhone : barre d'état 47 pt, en-tête 300 + 47, sol à 24 pt du bas, boutons du haut 47 + 8 + 44 + 8
+  const phone = (width: number) => ({ width, height: 347, groundY: 323, topClear: 107 });
+  it.each([390, 430])('%i px : pieds sur la même ligne de sol que le teen, panda entier sous les boutons, centré', (width) => {
+    const teen = homeVideoLayout(phone(width));
+    const dh = homeVideoLayout(phone(width), DONG_HANH);
+    expect(Math.abs(dh.pandaBottom - 323)).toBeLessThanOrEqual(1);
+    expect(Math.abs(teen.pandaBottom - 323)).toBeLessThanOrEqual(1);
+    expect(dh.pandaTop).toBeGreaterThanOrEqual(107);
+    expect(dh.boxLeft).toBe(Math.round((width - dh.boxWidth) / 2));
+    // même ligne de sol mais pieds plus bas dans l'image : l'object-position diffère (une valeur par vidéo, calculée)
+    expect(dh.objectPositionY).not.toBe(teen.objectPositionY);
+    expect(Math.abs(dh.image.top + DONG_HANH.feetY * dh.image.height - 323)).toBeLessThanOrEqual(1);
+  });
+  it('défaut = géométrie teen', () => {
+    expect(homeVideoLayout(phone(390))).toEqual(homeVideoLayout(phone(390), HOME_VIDEO));
   });
 });
