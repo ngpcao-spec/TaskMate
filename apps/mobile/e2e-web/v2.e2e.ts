@@ -151,14 +151,21 @@ test.describe('interface V2 : vidéo d\'accueil (D-106)', () => {
     }
   });
 
-  // stade 4 : Minh (17 ans) ; stade 2 : Khang (13 ans, stade 3) avec le décalage −1 choisi par l'enfant (le stade AFFICHÉ choisit la vidéo)
+  // stade 4 : Minh (17 ans) ; stade 2 : Khang (13 ans, stade 3) avec le décalage −1 choisi par l'enfant (le stade AFFICHÉ choisit la vidéo) ; stade 1 : Khang à 4 ans
   for (const c of [
     { stage: 4, name: 'đồng hành', who: 'minh' as const, offset: 0 as const, key: 'home-dong-hanh', tag: 'DH', file: 'dong-hanh' },
     { stage: 2, name: 'nhí', who: 'khang' as const, offset: -1 as const, key: 'home-nhi', tag: 'NHI', file: 'nhi' },
-  ]) {
+    // stade 1 : Khang rajeuni à 4 ans par le service (aucun enfant de la famille de test n'a moins de 6 ans)
+    { stage: 1, name: 'bé', who: 'khang' as const, offset: 0 as const, key: 'home-be', tag: 'BE', file: 'be', ageYears: 4 },
+  ] as { stage: number; name: string; who: 'minh' | 'khang'; offset: -1 | 0; key: string; tag: string; file: string; ageYears?: number }[]) {
     test(`stade ${c.stage} (${c.name}) à la maison : SA vidéo, panda entier, pieds sur la ligne de sol, centré, à 390 et 430 px`, async ({ browser }) => {
       test.setTimeout(150_000);
       const family = await createFamily({ uiVersion: 'v2' });
+      if (c.ageYears !== undefined) {
+        const birth = new Date(Date.now() - c.ageYears * 365.25 * 86_400_000).toISOString().slice(0, 10);
+        const { error } = await serviceClient().from('children').update({ birth_date: birth }).eq('id', family[c.who].childId as string);
+        if (error) throw new Error(`children: ${error.message}`);
+      }
       await seedCompanion(family, c.who, 'Bambou', 'kind', c.offset);
       const page = await openTeen(browser, family, {}, c.who);
       const video = page.getByTestId('v2-home-video-element');

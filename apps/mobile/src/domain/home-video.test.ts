@@ -126,3 +126,20 @@ describe('vidéo d’accueil : cadrage par vidéo (D-106, nhí)', () => {
     expect(Math.abs(l.image.top + NHI.feetY * l.image.height - 323)).toBeLessThanOrEqual(1);
   });
 });
+
+describe('vidéo d’accueil : cadrage par vidéo (D-106, bé assis)', () => {
+  // géométrie mesurée sur toutes les images : panda assis, de 50 % (pousse) à 72,5 % (coussinets)
+  const BE = { width: 720, height: 1280, headY: 0.5, feetY: 0.725 };
+  const phone = (width: number) => ({ width, height: 347, groundY: 323, topClear: 107 });
+  it.each([390, 430])('%i px : pleine largeur, pieds sur la ligne de sol, panda entier entre les boutons et la carte, object-position propre', (width) => {
+    const teen = homeVideoLayout(phone(width));
+    const l = homeVideoLayout(phone(width), BE);
+    expect(l.boxWidth).toBe(width);
+    expect(l.boxLeft).toBe(0);
+    expect(Math.abs(l.pandaBottom - 323)).toBeLessThanOrEqual(1);
+    expect(l.pandaTop).toBeGreaterThanOrEqual(107);
+    // assis, pousse comprise : à peu près la hauteur du teen (pas plus de 10 % de plus)
+    expect(l.pandaBottom - l.pandaTop).toBeLessThanOrEqual((teen.pandaBottom - teen.pandaTop) * 1.1);
+    expect(l.objectPositionY).not.toBe(teen.objectPositionY);
+  });
+});

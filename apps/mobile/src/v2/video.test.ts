@@ -1,17 +1,18 @@
 import { HOME_VIDEOS, homeVideoForStage } from './video';
 
 describe('table stade → vidéo d’accueil (D-106)', () => {
-  it('stade 2 → home-nhi, stade 3 → home-teen, stade 4 → home-dong-hanh', () => {
+  it('les 4 stades ont leur vidéo : 1 → home-be, 2 → home-nhi, 3 → home-teen, 4 → home-dong-hanh', () => {
+    expect(homeVideoForStage(1)?.key).toBe('home-be');
     expect(homeVideoForStage(2)?.key).toBe('home-nhi');
     expect(homeVideoForStage(3)?.key).toBe('home-teen');
     expect(homeVideoForStage(4)?.key).toBe('home-dong-hanh');
   });
-  it('stade 1 (et tout autre) : pas de vidéo → décor fixe + PandaSprite', () => {
-    for (const stage of [0, 1, 5, Number.NaN]) expect(homeVideoForStage(stage)).toBeNull();
+  it('stade hors 1..4 : pas de vidéo → décor fixe + PandaSprite', () => {
+    for (const stage of [0, 5, -1, 1.5, Number.NaN]) expect(homeVideoForStage(stage)).toBeNull();
   });
   it('chaque entrée a ses 4 fichiers et une géométrie plausible (720×1280, pousse au-dessus des pieds)', () => {
     const entries = Object.values(HOME_VIDEOS);
-    expect(entries.length).toBeGreaterThanOrEqual(3);
+    expect(entries.length).toBe(4);
     expect(new Set(entries.map((e) => e!.key)).size).toBe(entries.length);
     for (const e of entries) {
       for (const k of ['webm', 'mp4', 'mp4Small', 'poster'] as const) expect(e!.sources[k]).toBeTruthy();
@@ -32,5 +33,11 @@ describe('table stade → vidéo d’accueil (D-106)', () => {
     const nhi = homeVideoForStage(2)!.geometry;
     expect(nhi.feetY).toBeGreaterThan(teen.feetY);
     expect(nhi.headY).toBe(teen.headY);
+  });
+  it('bé (assis) : tête plus basse que le teen, pieds sur une ligne propre → object-position calculé', () => {
+    const be = homeVideoForStage(1)!.geometry;
+    const teen = homeVideoForStage(3)!.geometry;
+    expect(be.headY).toBeGreaterThan(teen.headY);
+    expect(be.feetY).not.toBe(teen.feetY);
   });
 });
