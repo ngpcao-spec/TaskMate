@@ -106,8 +106,11 @@ export default function V2ChildHome() {
     !!companion?.hasCompanion &&
     showHomeVideo({ scene, adventure: adventure?.state, hasStageVideo: stageVideo !== null, variant: companion.variant, reduceMotion, saveData: prefersSaveData(), web: Platform.OS === 'web' });
 
+  // D-106 : avec la vidéo, le fond sous l'en-tête prolonge la vidéo (couleur de son sable) au lieu du vert du thème
+  const extendColor = video && stageVideo ? stageVideo.groundColor : null;
+
   return (
-    <View style={styles.screen}>
+    <View testID="v2-child-home" style={[styles.screen, extendColor ? { backgroundColor: extendColor } : null]}>
       <ScrollView role="main" contentContainerStyle={styles.scroll}>
         <SceneHeader
           scene={scene}
@@ -119,6 +122,7 @@ export default function V2ChildHome() {
           ]}
           backdrop={video && stageVideo ? <HomePoster video={stageVideo} topClear={insets.top + SCENE_TOP_CLEAR} groundOffset={SCENE_GROUND_OFFSET} width={screenWidth} height={SCENE_HEIGHT + insets.top} /> : null}
           backdropVisible={video && !reacting}
+          extendColor={extendColor}
           overlay={video && stageVideo ? <HomeVideo video={stageVideo} visible={!reacting} active={focused} topClear={insets.top + SCENE_TOP_CLEAR} groundOffset={SCENE_GROUND_OFFSET} width={screenWidth} height={SCENE_HEIGHT + insets.top} /> : null}
         >
           {companion?.hasCompanion ? (

@@ -6,6 +6,8 @@ import type { CompanionState } from '@/domain/panda';
 import type { WeeklyGroup } from '@/hooks/useWeeklyQuizzes';
 import { usePandaReaction } from '@/store/pandaReaction';
 import type { ChildRow, TaskRow } from '@/types/models';
+import { homeVideoForStage } from '@/v2/video';
+import { v2Colors } from '@/v2/theme';
 import V2ChildHome from '../app/(v2)/v2/child/home';
 
 const mockPush = jest.fn();
@@ -187,6 +189,21 @@ describe('V2 : vidéo d’accueil dans Hôm nay (D-106)', () => {
     expect(screen.queryByTestId('v2-home-video-poster', H)).toBeNull();
     expect(groundOpacity()).toBe(1);
     await girl.unmount();
+  });
+  it('web, vidéo affichée : le fond sous l\'en-tête prolonge la vidéo (couleur de son sable, fondu, sans coins arrondis) ; sans vidéo : vert du thème', async () => {
+    jest.replaceProperty(Platform, 'OS', 'web');
+    for (const stage of [1, 2, 3, 4] as const) {
+      mockCompanion = { ...teen, stage };
+      const view = await render(<V2ChildHome />);
+      const color = homeVideoForStage(stage)!.groundColor;
+      expect(StyleSheet.flatten(screen.getByTestId('v2-child-home').props.style).backgroundColor).toBe(color);
+      expect(String(StyleSheet.flatten(screen.getByTestId('v2-scene-extend', H).props.style).backgroundImage)).toContain(color);
+      await view.unmount();
+    }
+    mockCompanion = { ...teen, variant: 'girl' };
+    await render(<V2ChildHome />);
+    expect(StyleSheet.flatten(screen.getByTestId('v2-child-home').props.style).backgroundColor).toBe(v2Colors.background);
+    expect(screen.queryByTestId('v2-scene-extend', H)).toBeNull();
   });
   it('natif : ni aperçu ni vidéo, décor et panda visibles', async () => {
     jest.replaceProperty(Platform, 'OS', 'ios');
