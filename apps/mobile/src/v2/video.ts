@@ -77,10 +77,14 @@ export const homeVideoForStage = (stage: number): HomeVideoEntry | null => HOME_
  * Réactions du panda vidéo (D-106) : vidéos NON bouclées, même décor, même cadrage et même position du panda que la vidéo de repos du stade
  * (donc même géométrie, même `object-position`). TABLE stade → réactions disponibles : un stade absent (2, 3, 4 aujourd'hui) n'a aucune réaction
  * vidéo (`happy` garde le fondu vers le décor fixe et le `PandaSprite` « très heureux » ; toucher et coucher sans effet visible). Ajouter un stade
- * = déposer ses fichiers et écrire UNE entrée ici. `sleepEnd` : dernière image du panda endormi, gardée après le coucher.
+ * = déposer ses fichiers et écrire UNE entrée ici. `sleepEnd` : image du panda endormi.
  */
 export type HomeReactionClip = { key: string; sources: HomeVideoSources };
-export type HomeReactions = { happy?: HomeReactionClip; curious?: HomeReactionClip; sleep?: HomeReactionClip; sleepEnd?: unknown };
+/**
+ * `sleep` : transition jouée une fois à la fin de la journée ; `sleepLoop` : panda endormi en boucle ensuite (sans elle : image `sleepEnd`) ;
+ * `sleepEnd` : image du panda endormi (images fixes, lecture refusée, aperçu sous la boucle).
+ */
+export type HomeReactions = { happy?: HomeReactionClip; curious?: HomeReactionClip; sleep?: HomeReactionClip; sleepLoop?: HomeReactionClip; sleepEnd?: unknown };
 
 export const HOME_REACTIONS: Readonly<Partial<Record<number, HomeReactions>>> = {
   1: {
@@ -104,8 +108,18 @@ export const HOME_REACTIONS: Readonly<Partial<Record<number, HomeReactions>>> = 
         poster: require('../../assets/v2/video/reactions/be-curious-poster.webp'),
       },
     },
-    // il bâille et s'endort, 8 s
+    // fin de journée : TRANSITION jouée une fois (assis → il se couche → il s'endort, 8 s)…
     sleep: {
+      key: 'be-fall-asleep',
+      sources: {
+        webm: require('../../assets/v2/video/reactions/be-fall-asleep.webm'),
+        mp4: require('../../assets/v2/video/reactions/be-fall-asleep.mp4'),
+        mp4Small: require('../../assets/v2/video/reactions/be-fall-asleep@480.mp4'),
+        poster: require('../../assets/v2/video/reactions/be-fall-asleep-poster.webp'),
+      },
+    },
+    // … puis il RESTE endormi : vidéo du sommeil (« zzz », 8 s) en boucle, jusqu'au réveil (tâche décochée, nouveau jour)
+    sleepLoop: {
       key: 'be-sleep',
       sources: {
         webm: require('../../assets/v2/video/reactions/be-sleep.webm'),

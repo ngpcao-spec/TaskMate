@@ -53,7 +53,8 @@ jest.mock('@/hooks/useTasks', () => ({
 
 const be: CompanionState = { hasCompanion: true, name: 'Bambou', trait: 'kind', variant: 'boy', stage: 1, stageOffset: 0, energyTotal: 20, level: 1, nextLevelAt: 100 };
 const H = { includeHiddenElements: true } as const;
-const anim = () => mockVideo?.clip?.name ?? (mockVideo?.still !== undefined ? 'asleep' : 'idle');
+/** `asleep` = le panda RESTE endormi : vidéo du sommeil en boucle (ou image endormie en images fixes) */
+const anim = () => (mockVideo?.clip?.name === 'sleep' && mockVideo.clip.loop) || mockVideo?.still !== undefined ? 'asleep' : (mockVideo?.clip?.name ?? 'idle');
 const ended = async (name: 'happy' | 'curious' | 'sleep') => act(async () => mockVideo!.onEnded!(name));
 const check = async (title: string) => fireEvent.press(screen.getByRole('checkbox', { name: title }));
 
@@ -73,7 +74,7 @@ describe('panda vidéo du stade 1 dans Hôm nay (D-106)', () => {
   it('1. ouverture : la vidéo de repos démarre, les réactions sont préparées légèrement', async () => {
     await render(<V2ChildHome />);
     expect(anim()).toBe('idle');
-    expect(mockVideo!.prefetch).toHaveLength(3);
+    expect(mockVideo!.prefetch).toHaveLength(4); // content, curieux, transition du coucher, sommeil en boucle
     expect(mockVideo!.visible).toBe(true);
   });
 
@@ -109,7 +110,7 @@ describe('panda vidéo du stade 1 dans Hôm nay (D-106)', () => {
     expect(mockVideo!.clip!.serial).toBe(serial);
   });
 
-  it('5. dernière tâche cochée : « content » puis coucher, puis image endormie qui reste (même après un nouvel affichage le même jour)', async () => {
+  it('5. dernière tâche cochée : « content », puis la transition (il se couche et s’endort), puis il RESTE endormi (sommeil en boucle, même après un nouvel affichage le même jour)', async () => {
     mockTasks = [task({ completed_at: '2026-11-02T01:00:00Z' }), task({ id: 't2', title: 'Làm toán', points: 15 })];
     const r = await render(<V2ChildHome />);
     await check('Làm toán');
@@ -119,17 +120,21 @@ describe('panda vidéo du stade 1 dans Hôm nay (D-106)', () => {
     await r.rerender(<V2ChildHome />);
     expect(anim()).toBe('happy');
     await ended('happy');
-    expect(anim()).toBe('sleep');
+    // la transition : une seule lecture
+    expect(mockVideo!.clip).toMatchObject({ name: 'sleep', key: 'be-fall-asleep', loop: false });
     expect(screen.getByText(/Tốt lắm|hoàn thành/i, H)).toBeTruthy(); // la carte de fin de journée reste là
     await ended('sleep');
-    expect(anim()).toBe('asleep');
+    // il reste endormi : le sommeil en boucle, l'aperçu dessous montre le panda endormi (jamais le panda éveillé si la boucle ne joue pas)
+    expect(mockVideo!.clip).toMatchObject({ name: 'sleep', key: 'be-sleep', loop: true });
+    expect(mockVideo!.still).toBeUndefined();
+    expect(screen.getByTestId('v2-home-video-poster-still', H)).toBeTruthy();
     await r.rerender(<V2ChildHome />);
     expect(anim()).toBe('asleep');
-    // nouvel affichage le même jour : image endormie directement, sans rejouer la vidéo
+    // nouvel affichage le même jour : directement endormi, sans rejouer la transition
     await r.unmount();
     await render(<V2ChildHome />);
     expect(anim()).toBe('asleep');
-    expect(mockVideo!.clip).toBeNull();
+    expect(mockVideo!.clip).toMatchObject({ key: 'be-sleep', loop: true });
   });
 
   it('coucher : jamais pour une tâche cochée tant qu’il en reste ; réveil quand une tâche est décochée, et au nouveau jour', async () => {
@@ -147,11 +152,18 @@ describe('panda vidéo du stade 1 dans Hôm nay (D-106)', () => {
     expect(anim()).toBe('idle');
   });
 
-  it('7. vidéo indisponible : repos (réaction) ou image endormie (coucher), jamais d’écran noir', async () => {
-    await render(<V2ChildHome />);
+  it('7. vidéo indisponible : repos (réaction) ou endormi (transition du coucher), jamais d’écran noir', async () => {
+    const r = await render(<V2ChildHome />);
     await check('Đánh răng');
     await act(async () => mockVideo!.onFailed!('happy'));
     expect(anim()).toBe('idle');
+    // transition impossible : directement endormi (boucle, aperçu endormi dessous)
+    mockTasks = mockTasks.map((x) => ({ ...x, completed_at: '2026-11-02T02:00:00Z' }));
+    await r.rerender(<V2ChildHome />);
+    expect(mockVideo!.clip).toMatchObject({ key: 'be-fall-asleep' });
+    await act(async () => mockVideo!.onFailed!('sleep'));
+    expect(anim()).toBe('asleep');
+    expect(screen.getByTestId('v2-home-video-poster-still', H)).toBeTruthy();
   });
 
   it('8. même tâche cochée deux fois (décochée puis recochée, ou rejouée) : une seule animation', async () => {
