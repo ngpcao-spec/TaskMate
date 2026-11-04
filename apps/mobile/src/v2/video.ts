@@ -176,7 +176,7 @@ export const HOME_REACTIONS: Readonly<Partial<Record<number, HomeReactions>>> = 
   },
   // stade 3 (teen, 11–14 ans), vidéos fournies par Teo le 2026-11-04 : même décor et même cadrage que `home-teen`
   3: {
-    // il s'approche, applaudit et saute de joie, 8 s
+    // il applaudit et saute de joie sur place, 6 s (vidéo remplacée par Teo le 2026-11-04 : la première s'avançait vers la caméra)
     happy: {
       key: 'teen-happy',
       sources: {
