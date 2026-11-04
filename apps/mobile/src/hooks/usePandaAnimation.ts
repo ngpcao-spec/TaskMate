@@ -67,8 +67,17 @@ export type PandaAnimation = {
  * jour local ; ensuite (même jour) l'image endormie s'affiche directement ; une tâche décochée ou un nouveau jour réveille le panda.
  * Aucun effet : la fin de journée est une règle pure (`applyDayPlan`) appliquée au rendu et avant chaque événement.
  */
-export function usePandaAnimation(o: { childId: string | null; stage: number; today: string; dayDone: boolean; mode: 'video' | 'still' | 'off' }): PandaAnimation {
+export function usePandaAnimation(o: {
+  childId: string | null;
+  stage: number;
+  today: string;
+  dayDone: boolean;
+  /** tâches chargées : avant, « journée pas finie » ne veut rien dire (sinon chaque ouverture ressemblerait à une fin de journée) */
+  ready?: boolean;
+  mode: 'video' | 'still' | 'off';
+}): PandaAnimation {
   const { childId, stage, today, dayDone, mode } = o;
+  const ready = o.ready ?? true;
   const reactions = mode === 'off' ? null : homeReactionsForStage(stage);
   const available = useMemo(() => (mode === 'video' ? availableReactions(reactions) : new Set<never>()), [mode, reactions]);
   const canSleep = !!childId && availableReactions(reactions).has('sleep');
@@ -76,7 +85,15 @@ export function usePandaAnimation(o: { childId: string | null; stage: number; to
   // relu à chaque rendu (localStorage, peu coûteux) ; `version` force un rendu après écriture
   const [, setVersion] = useState(0);
   const playedOn = childId ? read(SLEEP_KEY(childId)) : null;
-  const plan = sleepPlan(dayDone, playedOn, today);
+  // journée finie SOUS LES YEUX de l'enfant (dernière tâche cochée, écran ouvert) : le coucher se rejoue, même s'il a déjà été joué aujourd'hui
+  // (tâche décochée puis recochée). La règle « une fois par jour » ne vaut que pour un nouvel affichage de l'écran.
+  const [watch, setWatch] = useState<{ day: string; done: boolean | null; live: boolean }>({ day: today, done: null, live: false });
+  let live = watch.day === today && watch.live;
+  if (ready && (watch.day !== today || watch.done !== dayDone)) {
+    live = watch.day === today && (watch.done === false && dayDone ? true : dayDone && watch.live);
+    setWatch({ day: today, done: dayDone, live });
+  }
+  const plan = sleepPlan(dayDone, live ? null : playedOn, today);
   const stillsOnly = mode === 'still';
   const apply = useCallback((s: PandaAnimState) => applyDayPlan(s, plan, stillsOnly, canSleep), [plan, stillsOnly, canSleep]);
   const state = apply(base);
