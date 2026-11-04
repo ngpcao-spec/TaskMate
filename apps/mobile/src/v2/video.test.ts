@@ -60,19 +60,21 @@ describe('table stade → vidéo d’accueil (D-106)', () => {
       for (const fg of [v2Colors.tabActiveOnScene, v2Colors.tabInactiveOnScene, v2Colors.text]) expect([e!.key, fg, contrast(fg, e!.groundColor) >= 4.5]).toEqual([e!.key, fg, true]);
     }
   });
-  it('réactions vidéo : stade 1 seulement (content, curieux, endormi + image de fin) ; stades 2, 3, 4 : aucune', () => {
-    expect([...availableReactions(homeReactionsForStage(1))].sort()).toEqual(['curious', 'happy', 'sleep']);
-    for (const stage of [2, 3, 4, 0]) expect(availableReactions(homeReactionsForStage(stage)).size).toBe(0);
-    const be = HOME_REACTIONS[1]!;
-    for (const clip of [be.happy, be.curious, be.sleep]) {
-      for (const k of ['webm', 'mp4', 'mp4Small', 'poster'] as const) expect(clip!.sources[k]).toBeTruthy();
-      expect(clip!.key).toMatch(/^be-/);
+  it('réactions vidéo : stades 1 (bé) et 2 (nhí), content, curieux, endormi + image de fin ; stades 3, 4 : aucune', () => {
+    for (const [stage, prefix] of [[1, 'be'], [2, 'nhi']] as const) {
+      expect([...availableReactions(homeReactionsForStage(stage))].sort()).toEqual(['curious', 'happy', 'sleep']);
+      const r = HOME_REACTIONS[stage]!;
+      for (const clip of [r.happy, r.curious, r.sleep, r.sleepLoop]) {
+        for (const k of ['webm', 'mp4', 'mp4Small', 'poster'] as const) expect(clip!.sources[k]).toBeTruthy();
+        expect(clip!.key.startsWith(`${prefix}-`)).toBe(true);
+      }
+      expect(r.sleepEnd).toBeTruthy();
+      // fin de journée : transition (une lecture) puis sommeil en boucle, deux vidéos distinctes
+      expect(r.sleep!.key).toBe(`${prefix}-fall-asleep`);
+      expect(r.sleepLoop!.key).toBe(`${prefix}-sleep`);
     }
-    expect(be.sleepEnd).toBeTruthy();
-    // fin de journée : transition (une lecture) puis sommeil en boucle, deux vidéos distinctes
-    expect(be.sleep!.key).toBe('be-fall-asleep');
-    expect(be.sleepLoop!.key).toBe('be-sleep');
-    for (const k of ['webm', 'mp4', 'mp4Small', 'poster'] as const) expect(be.sleepLoop!.sources[k]).toBeTruthy();
+    for (const stage of [3, 4, 0]) expect(availableReactions(homeReactionsForStage(stage)).size).toBe(0);
+    const be = HOME_REACTIONS[1]!;
     // sans image de fin, pas de coucher (jamais d'écran noir après la vidéo)
     expect(availableReactions({ ...be, sleepEnd: undefined }).has('sleep')).toBe(false);
   });

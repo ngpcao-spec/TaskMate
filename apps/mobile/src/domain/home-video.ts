@@ -25,7 +25,7 @@ export function showHomeVideo(c: HomeVideoConditions): boolean {
 
 /**
  * Panda vidéo (D-106) : `video` (vidéo d'accueil et réactions), `still` (images fixes : poster du repos, image endormie le soir) ou `off`.
- * Images fixes seulement pour un stade qui a des réactions vidéo (stade 1 aujourd'hui), quand tout le reste est réuni mais que l'utilisateur
+ * Images fixes seulement pour un stade qui a des réactions vidéo (stades 1 et 2 aujourd'hui), quand tout le reste est réuni mais que l'utilisateur
  * demande moins d'animations, économise ses données ou est hors ligne. Les autres stades gardent le comportement d'avant (décor fixe + PandaSprite).
  */
 export function homeMediaMode(c: HomeVideoConditions & { hasReactions: boolean; offline: boolean }): 'video' | 'still' | 'off' {

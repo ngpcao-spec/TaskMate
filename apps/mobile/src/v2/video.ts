@@ -75,7 +75,7 @@ export const homeVideoForStage = (stage: number): HomeVideoEntry | null => HOME_
 
 /**
  * Réactions du panda vidéo (D-106) : vidéos NON bouclées, même décor, même cadrage et même position du panda que la vidéo de repos du stade
- * (donc même géométrie, même `object-position`). TABLE stade → réactions disponibles : un stade absent (2, 3, 4 aujourd'hui) n'a aucune réaction
+ * (donc même géométrie, même `object-position`). TABLE stade → réactions disponibles : un stade absent (3, 4 aujourd'hui) n'a aucune réaction
  * vidéo (`happy` garde le fondu vers le décor fixe et le `PandaSprite` « très heureux » ; toucher et coucher sans effet visible). Ajouter un stade
  * = déposer ses fichiers et écrire UNE entrée ici. `sleepEnd` : image du panda endormi.
  */
@@ -129,6 +129,50 @@ export const HOME_REACTIONS: Readonly<Partial<Record<number, HomeReactions>>> = 
       },
     },
     sleepEnd: require('../../assets/v2/video/reactions/be-sleep-end.webp'),
+  },
+  // stade 2 (nhí, 6–10 ans), vidéos fournies par Teo le 2026-11-04 : même décor et même cadrage que `home-nhi`
+  2: {
+    // il saute de joie, bras en l'air, 8 s
+    happy: {
+      key: 'nhi-happy',
+      sources: {
+        webm: require('../../assets/v2/video/reactions/nhi-happy.webm'),
+        mp4: require('../../assets/v2/video/reactions/nhi-happy.mp4'),
+        mp4Small: require('../../assets/v2/video/reactions/nhi-happy@480.mp4'),
+        poster: require('../../assets/v2/video/reactions/nhi-happy-poster.webp'),
+      },
+    },
+    // il regarde à gauche puis à droite, puis salue de la patte, 8 s
+    curious: {
+      key: 'nhi-curious',
+      sources: {
+        webm: require('../../assets/v2/video/reactions/nhi-curious.webm'),
+        mp4: require('../../assets/v2/video/reactions/nhi-curious.mp4'),
+        mp4Small: require('../../assets/v2/video/reactions/nhi-curious@480.mp4'),
+        poster: require('../../assets/v2/video/reactions/nhi-curious-poster.webp'),
+      },
+    },
+    // fin de journée : TRANSITION jouée une fois (debout → il s'assoit → il se couche → il s'endort, 10 s)…
+    sleep: {
+      key: 'nhi-fall-asleep',
+      sources: {
+        webm: require('../../assets/v2/video/reactions/nhi-fall-asleep.webm'),
+        mp4: require('../../assets/v2/video/reactions/nhi-fall-asleep.mp4'),
+        mp4Small: require('../../assets/v2/video/reactions/nhi-fall-asleep@480.mp4'),
+        poster: require('../../assets/v2/video/reactions/nhi-fall-asleep-poster.webp'),
+      },
+    },
+    // … puis il RESTE endormi (« zzz », 10 s) en boucle
+    sleepLoop: {
+      key: 'nhi-sleep',
+      sources: {
+        webm: require('../../assets/v2/video/reactions/nhi-sleep.webm'),
+        mp4: require('../../assets/v2/video/reactions/nhi-sleep.mp4'),
+        mp4Small: require('../../assets/v2/video/reactions/nhi-sleep@480.mp4'),
+        poster: require('../../assets/v2/video/reactions/nhi-sleep-poster.webp'),
+      },
+    },
+    sleepEnd: require('../../assets/v2/video/reactions/nhi-sleep-end.webp'),
   },
 };
 
