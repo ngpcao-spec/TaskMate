@@ -159,8 +159,9 @@ describe('V2 : vidéo d’accueil dans Hôm nay (D-106)', () => {
   });
   afterEach(() => jest.restoreAllMocks());
 
-  it('web, stade 3 à la maison : l\'aperçu fixe de la vidéo couvre le décor, panda dessiné masqué (jamais un fond vide) ; décor et panda pendant une réaction', async () => {
+  it('web, stade 4 à la maison : l\'aperçu fixe de la vidéo couvre le décor, panda dessiné masqué (jamais un fond vide) ; décor et panda pendant une réaction (stade sans réaction vidéo)', async () => {
     jest.replaceProperty(Platform, 'OS', 'web');
+    mockCompanion = { ...teen, stage: 4 };
     await render(<V2ChildHome />);
     expect(screen.getByTestId('v2-home-video-poster', H)).toBeTruthy();
     expect(opacityOf('v2-scene-backdrop')).toBe(1);

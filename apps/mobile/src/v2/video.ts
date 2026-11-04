@@ -75,7 +75,7 @@ export const homeVideoForStage = (stage: number): HomeVideoEntry | null => HOME_
 
 /**
  * Réactions du panda vidéo (D-106) : vidéos NON bouclées, même décor, même cadrage et même position du panda que la vidéo de repos du stade
- * (donc même géométrie, même `object-position`). TABLE stade → réactions disponibles : un stade absent (3, 4 aujourd'hui) n'a aucune réaction
+ * (donc même géométrie, même `object-position`). TABLE stade → réactions disponibles : un stade absent (4 aujourd'hui) n'a aucune réaction
  * vidéo (`happy` garde le fondu vers le décor fixe et le `PandaSprite` « très heureux » ; toucher et coucher sans effet visible). Ajouter un stade
  * = déposer ses fichiers et écrire UNE entrée ici. `sleepEnd` : image du panda endormi.
  */
@@ -173,6 +173,50 @@ export const HOME_REACTIONS: Readonly<Partial<Record<number, HomeReactions>>> = 
       },
     },
     sleepEnd: require('../../assets/v2/video/reactions/nhi-sleep-end.webp'),
+  },
+  // stade 3 (teen, 11–14 ans), vidéos fournies par Teo le 2026-11-04 : même décor et même cadrage que `home-teen`
+  3: {
+    // il s'approche, applaudit et saute de joie, 8 s
+    happy: {
+      key: 'teen-happy',
+      sources: {
+        webm: require('../../assets/v2/video/reactions/teen-happy.webm'),
+        mp4: require('../../assets/v2/video/reactions/teen-happy.mp4'),
+        mp4Small: require('../../assets/v2/video/reactions/teen-happy@480.mp4'),
+        poster: require('../../assets/v2/video/reactions/teen-happy-poster.webp'),
+      },
+    },
+    // il regarde autour de lui, se gratte la tête, puis salue, 8 s
+    curious: {
+      key: 'teen-curious',
+      sources: {
+        webm: require('../../assets/v2/video/reactions/teen-curious.webm'),
+        mp4: require('../../assets/v2/video/reactions/teen-curious.mp4'),
+        mp4Small: require('../../assets/v2/video/reactions/teen-curious@480.mp4'),
+        poster: require('../../assets/v2/video/reactions/teen-curious-poster.webp'),
+      },
+    },
+    // fin de journée : TRANSITION jouée une fois (il bâille → s'assoit → se couche → s'endort, 8 s)…
+    sleep: {
+      key: 'teen-fall-asleep',
+      sources: {
+        webm: require('../../assets/v2/video/reactions/teen-fall-asleep.webm'),
+        mp4: require('../../assets/v2/video/reactions/teen-fall-asleep.mp4'),
+        mp4Small: require('../../assets/v2/video/reactions/teen-fall-asleep@480.mp4'),
+        poster: require('../../assets/v2/video/reactions/teen-fall-asleep-poster.webp'),
+      },
+    },
+    // … puis il RESTE endormi (« zzz », casque sur les oreilles, 8 s) en boucle
+    sleepLoop: {
+      key: 'teen-sleep',
+      sources: {
+        webm: require('../../assets/v2/video/reactions/teen-sleep.webm'),
+        mp4: require('../../assets/v2/video/reactions/teen-sleep.mp4'),
+        mp4Small: require('../../assets/v2/video/reactions/teen-sleep@480.mp4'),
+        poster: require('../../assets/v2/video/reactions/teen-sleep-poster.webp'),
+      },
+    },
+    sleepEnd: require('../../assets/v2/video/reactions/teen-sleep-end.webp'),
   },
 };
 

@@ -218,8 +218,8 @@ describe('panda vidéo du stade 1 dans Hôm nay (D-106)', () => {
     }
   });
 
-  it('stade 3 : comportement d’avant (aucune réaction vidéo, pas de zone tactile, fondu vers le décor pendant « content »)', async () => {
-    mockCompanion = { ...be, stage: 3 };
+  it('stade 4 : comportement d’avant (aucune réaction vidéo, pas de zone tactile, fondu vers le décor pendant « content »)', async () => {
+    mockCompanion = { ...be, stage: 4 };
     await render(<V2ChildHome />);
     expect(screen.queryByRole('button', { name: 'Chạm vào Bambou' })).toBeNull();
     await check('Đánh răng');
