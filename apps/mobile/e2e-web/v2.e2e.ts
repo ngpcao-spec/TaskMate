@@ -286,7 +286,7 @@ test.describe('interface V2 : vidéo d\'accueil (D-106)', () => {
     expect(await page.locator('video[data-anim="happy"]').count()).toBe(0);
   });
 
-  test('panda vidéo stade 1 : dernière tâche cochée → content puis coucher, image endormie qui reste (même après rechargement) ; vidéo indisponible → image fixe', async ({ browser }) => {
+  test('panda vidéo stade 1 : dernière tâche cochée → content, transition, puis sommeil en boucle qui reste (même après rechargement) ; vidéo indisponible → repos', async ({ browser }) => {
     test.setTimeout(150_000);
     const a = 'Đọc sách bé';
     const { page } = await openBe(browser, [a], /be-curious/);
@@ -296,18 +296,19 @@ test.describe('interface V2 : vidéo d\'accueil (D-106)', () => {
     await expect(box(page)).toHaveAttribute('data-anim', 'idle');
     await expect(box(page)).toHaveCSS('opacity', '1');
     expect(await page.locator('video[data-anim="curious"]').count()).toBe(0);
-    // 5. dernière tâche → content puis coucher puis image endormie
+    // 5. dernière tâche → content, puis la transition (il se couche et s'endort), puis il RESTE endormi : sommeil en boucle
     await page.getByRole('checkbox', { name: a }).click();
     await endReaction(page, 'happy');
-    await endReaction(page, 'sleep');
-    await expect(box(page)).toHaveAttribute('data-anim', 'sleep-still', { timeout: 10_000 });
-    await expect(page.getByTestId('v2-home-video-still')).toBeVisible();
+    await expect(box(page)).toHaveAttribute('data-clip', 'be-fall-asleep', { timeout: 10_000 });
+    await page.locator('video[data-clip="be-fall-asleep"]').evaluate((v: HTMLVideoElement) => v.dispatchEvent(new Event('ended')));
+    await expect(box(page)).toHaveAttribute('data-clip', 'be-sleep', { timeout: 10_000 });
+    expect(await page.locator('video[data-clip="be-sleep"]').evaluate((v: HTMLVideoElement) => v.loop)).toBe(true);
     await page.waitForTimeout(1000);
-    await expect(box(page)).toHaveAttribute('data-anim', 'sleep-still'); // aucun retour automatique
-    // même jour, nouvel affichage : image endormie directement, sans rejouer la vidéo
+    await expect(box(page)).toHaveAttribute('data-clip', 'be-sleep'); // aucun retour automatique au repos
+    // même jour, nouvel affichage : directement endormi (boucle), sans rejouer la transition
     await page.reload();
-    await expect(box(page)).toHaveAttribute('data-anim', 'sleep-still', { timeout: 20_000 });
-    expect(await page.locator('video[data-anim="sleep"]').count()).toBe(0);
+    await expect(box(page)).toHaveAttribute('data-clip', 'be-sleep', { timeout: 20_000 });
+    expect(await page.locator('video[data-clip="be-fall-asleep"]').count()).toBe(0);
     const jpeg = await page.screenshot({ type: 'jpeg', quality: 60, clip: { x: 0, y: 0, width: page.viewportSize()!.width, height: 640 } });
     console.log(`=====V2-CAPTURE-BE-SLEEP-BEGIN=====\n${jpeg.toString('base64')}\n=====V2-CAPTURE-BE-SLEEP-END=====`);
   });

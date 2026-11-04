@@ -17,11 +17,11 @@ const uri = (mod: unknown): string => {
 };
 
 /** Une couche `<video>` : au plus DEUX à la fois (celle qu'on voit, celle qui se prépare), fondu croisé entre elles. */
-type Layer = { id: string; name: PandaAnim; sources: HomeVideoSources; loop: boolean; painted: boolean };
+type Layer = { id: string; name: PandaAnim; key: string; sources: HomeVideoSources; loop: boolean; painted: boolean };
 type Stack = { layers: Layer[]; wantedId: string; still: boolean };
 
-const layerId = (clip: HomeClip) => (clip.name === 'idle' ? `idle:${clip.key}` : `${clip.name}:${clip.key}:${clip.serial}`);
-const layerOf = (clip: HomeClip): Layer => ({ id: layerId(clip), name: clip.name, sources: clip.sources, loop: clip.loop, painted: false });
+const layerId = (clip: HomeClip) => (clip.name === 'idle' || clip.loop ? `${clip.name}:${clip.key}` : `${clip.name}:${clip.key}:${clip.serial}`);
+const layerOf = (clip: HomeClip): Layer => ({ id: layerId(clip), name: clip.name, key: clip.key, sources: clip.sources, loop: clip.loop, painted: false });
 
 /** Couches après une nouvelle demande : la couche visible reste, la nouvelle se prépare par-dessus (une préparation en cours est remplacée). */
 export function nextLayers(cur: Layer[], wanted: HomeClip, still: boolean, wasStill: boolean): Layer[] {
@@ -82,8 +82,10 @@ export function HomeVideo({ video, clip, still, prefetch, onStarted, onEnded, on
 
   // réaction demandée : abandonnée si elle ne peint rien en 1,5 s (le repos, lui, n'est jamais abandonné : l'aperçu fixe reste dessous)
   const wantedName = wanted.name;
+  const wantedLoops = wanted.loop;
   useEffect(() => {
-    if (wantedName === 'idle' || showingStill) return;
+    // une vidéo en boucle (repos, sommeil) n'est jamais abandonnée : l'aperçu fixe dessous montre le bon état en attendant
+    if (wantedLoops || showingStill) return;
     const t = setTimeout(() => {
       const l = live.current.layers.find((x) => x.id === wantedId);
       if (!l || l.painted) return;
@@ -91,7 +93,7 @@ export function HomeVideo({ video, clip, still, prefetch, onStarted, onEnded, on
       live.current.onFailed?.(wantedName);
     }, READY_TIMEOUT_MS);
     return () => clearTimeout(t);
-  }, [wantedId, wantedName, showingStill]);
+  }, [wantedId, wantedName, wantedLoops, showingStill]);
 
   // démontage : sources libérées
   useEffect(() => {
@@ -167,7 +169,8 @@ export function HomeVideo({ video, clip, still, prefetch, onStarted, onEnded, on
   const layout = width > 0 && height > 0 ? homeVideoLayout({ width, height, groundY: height - groundOffset, topClear }, video.geometry) : null;
   const sources = homeVideoSources(ua, width);
   const shown = showingStill || layers.some((l) => l.painted);
-  const current = showingStill ? 'sleep-still' : ([...layers].reverse().find((l) => l.painted)?.name ?? 'none');
+  const shownLayer = [...layers].reverse().find((l) => l.painted);
+  const current = showingStill ? 'sleep-still' : (shownLayer?.name ?? 'none');
 
   return (
     <View
@@ -184,6 +187,7 @@ export function HomeVideo({ video, clip, still, prefetch, onStarted, onEnded, on
           data-panda-bottom={layout.pandaBottom}
           data-ready={shown ? 'true' : 'false'}
           data-anim={current}
+          data-clip={showingStill ? 'still' : (shownLayer?.key ?? 'none')}
           style={{ position: 'absolute', top: 0, bottom: 0, left: layout.boxLeft, width: layout.boxWidth, overflow: 'hidden', opacity: shown ? 1 : 0, transition: `opacity ${FADE_MS}ms ease` }}
         >
           {showingStill ? (
@@ -195,6 +199,7 @@ export function HomeVideo({ video, clip, still, prefetch, onStarted, onEnded, on
                 id={l.id}
                 register={register}
                 data-anim={l.name}
+                data-clip={l.key}
                 data-painted={l.painted ? 'true' : 'false'}
                 loop={l.loop}
                 onPlaying={(e) => markPainted(l.id, l.name, e.currentTarget)}
@@ -222,6 +227,7 @@ type LayerVideoProps = {
   id: string;
   register: (id: string, el: HTMLVideoElement | null) => void;
   'data-anim': string;
+  'data-clip': string;
   'data-painted': string;
   loop: boolean;
   onPlaying: (e: { currentTarget: HTMLVideoElement }) => void;

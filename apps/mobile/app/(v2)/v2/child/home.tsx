@@ -163,7 +163,7 @@ export default function V2ChildHome() {
           ]}
           backdrop={
             media !== 'off' && stageVideo ? (
-              <HomePoster video={stageVideo} image={anim.still} topClear={topClear} groundOffset={SCENE_GROUND_OFFSET} width={screenWidth} height={headerH} />
+              <HomePoster video={stageVideo} image={anim.poster} topClear={topClear} groundOffset={SCENE_GROUND_OFFSET} width={screenWidth} height={headerH} />
             ) : null
           }
           // stades à réactions vidéo : la vidéo joue « content » elle-même (jamais de fondu vers le décor fixe) ; autres stades : comme avant
@@ -176,7 +176,7 @@ export default function V2ChildHome() {
                   video={stageVideo}
                   clip={anim.clip}
                   still={anim.still}
-                  prefetch={reactionVideo ? [anim.reactions?.happy, anim.reactions?.curious, anim.reactions?.sleep].filter((r) => r !== undefined).map((r) => r.sources) : undefined}
+                  prefetch={reactionVideo ? [anim.reactions?.happy, anim.reactions?.curious, anim.reactions?.sleep, anim.reactions?.sleepLoop].filter((r) => r !== undefined).map((r) => r.sources) : undefined}
                   onEnded={anim.onEnded}
                   onFailed={anim.onFailed}
                   visible={reactionVideo || !reacting}

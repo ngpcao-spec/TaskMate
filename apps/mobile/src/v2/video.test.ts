@@ -69,6 +69,10 @@ describe('table stade → vidéo d’accueil (D-106)', () => {
       expect(clip!.key).toMatch(/^be-/);
     }
     expect(be.sleepEnd).toBeTruthy();
+    // fin de journée : transition (une lecture) puis sommeil en boucle, deux vidéos distinctes
+    expect(be.sleep!.key).toBe('be-fall-asleep');
+    expect(be.sleepLoop!.key).toBe('be-sleep');
+    for (const k of ['webm', 'mp4', 'mp4Small', 'poster'] as const) expect(be.sleepLoop!.sources[k]).toBeTruthy();
     // sans image de fin, pas de coucher (jamais d'écran noir après la vidéo)
     expect(availableReactions({ ...be, sleepEnd: undefined }).has('sleep')).toBe(false);
   });

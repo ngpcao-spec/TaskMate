@@ -106,6 +106,22 @@ describe('panda vidéo : un seul lecteur pour le repos et les réactions (D-106)
     expect(videos(c).map((v) => v.props['data-anim'])).toEqual(['idle']);
   });
 
+  it('sommeil en boucle : jamais abandonné (aucun délai), `loop` actif, fondu depuis la fin de la transition', async () => {
+    const onFailed = jest.fn();
+    const sleepLoop: HomeClip = { name: 'sleep', key: 'be-sleep', sources: src('be-sleep'), loop: true, serial: 0 };
+    const r = await render(<HomeVideo {...base} clip={clip('sleep')} onFailed={onFailed} />);
+    const c = r.container as unknown as Node;
+    await paint(videos(c)[0]!);
+    await r.rerender(<HomeVideo {...base} clip={sleepLoop} onFailed={onFailed} />);
+    expect(videos(c)[1]!.props).toMatchObject({ loop: true, 'data-clip': 'be-sleep' });
+    await act(async () => jest.advanceTimersByTime(5000));
+    expect(onFailed).not.toHaveBeenCalled();
+    await paint(videos(c)[1]!);
+    await act(async () => jest.advanceTimersByTime(150));
+    expect(videos(c).map((v) => v.props['data-clip'])).toEqual(['be-sleep']);
+    expect(box(c).props['data-clip']).toBe('be-sleep');
+  });
+
   it('panda endormi : image fixe à la place de toute vidéo ; au réveil, le repos repart d’une couche neuve', async () => {
     const r = await render(<HomeVideo {...base} still="be-sleep-end" />);
     const c = r.container as unknown as Node;

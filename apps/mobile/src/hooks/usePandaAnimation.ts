@@ -48,8 +48,10 @@ export type PandaAnimation = {
   state: PandaAnimState;
   /** vidéo à jouer (réaction en cours) ; `null` = repos */
   clip: HomeClip | null;
-  /** image fixe du panda endormi, quand il dort */
+  /** image fixe à la place de toute vidéo (panda endormi en images fixes, ou sans vidéo de sommeil en boucle) */
   still: unknown;
+  /** image de l'aperçu sous la vidéo : le panda endormi quand il dort (jamais le panda éveillé si la boucle ne joue pas) */
+  poster: unknown;
   /** coche ACCEPTÉE localement par l'enfant : `happy`, une fois par tâche et par jour */
   onChecked: (taskId: string) => void;
   /** toucher du panda : `curious` */
@@ -114,7 +116,14 @@ export function usePandaAnimation(o: { childId: string | null; stage: number; to
 
   const current = state.current;
   const reaction = current === 'idle' || state.asleep ? undefined : reactions?.[current];
-  const clip: HomeClip | null = reaction ? { name: current, key: reaction.key, sources: reaction.sources, loop: false, serial: state.serial } : null;
-  const still = state.asleep && reactions?.sleepEnd ? reactions.sleepEnd : undefined;
-  return { reactions, state, clip, still, onChecked, onTouched, onEnded, onFailed };
+  // endormi : la vidéo du sommeil en boucle (le panda RESTE endormi) ; en images fixes ou sans boucle, l'image du panda endormi
+  const loop = state.asleep && mode === 'video' ? reactions?.sleepLoop : undefined;
+  const clip: HomeClip | null = loop
+    ? { name: 'sleep', key: loop.key, sources: loop.sources, loop: true, serial: 0 }
+    : reaction
+      ? { name: current, key: reaction.key, sources: reaction.sources, loop: false, serial: state.serial }
+      : null;
+  const sleeping = state.asleep && reactions?.sleepEnd ? reactions.sleepEnd : undefined;
+  const still = loop ? undefined : sleeping;
+  return { reactions, state, clip, still, poster: sleeping, onChecked, onTouched, onEnded, onFailed };
 }
