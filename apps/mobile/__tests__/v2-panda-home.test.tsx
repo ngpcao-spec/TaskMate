@@ -152,6 +152,28 @@ describe('panda vidéo du stade 1 dans Hôm nay (D-106)', () => {
     expect(anim()).toBe('idle');
   });
 
+  it('déjà couché aujourd’hui, tâche décochée puis recochée sous les yeux de l’enfant : la transition se REJOUE (pas directement la boucle)', async () => {
+    mockStore.set('taskmate-panda-sleep:c-minh', '2026-11-02');
+    mockTasks = [task({ completed_at: '2026-11-02T01:00:00Z' }), task({ id: 't2', title: 'Làm toán', completed_at: '2026-11-02T01:00:00Z' })];
+    const r = await render(<V2ChildHome />);
+    // ouverture, journée déjà finie et coucher déjà joué : directement endormi, sans transition
+    expect(mockVideo!.clip).toMatchObject({ key: 'be-sleep', loop: true });
+    // décoche : réveil
+    mockTasks = [task({ completed_at: '2026-11-02T01:00:00Z' }), task({ id: 't2', title: 'Làm toán' })];
+    await r.rerender(<V2ChildHome />);
+    expect(anim()).toBe('idle');
+    // recoche : la journée se termine à l'écran → transition, puis boucle
+    mockTasks = [task({ completed_at: '2026-11-02T01:00:00Z' }), task({ id: 't2', title: 'Làm toán', completed_at: '2026-11-02T03:00:00Z' })];
+    await r.rerender(<V2ChildHome />);
+    expect(mockVideo!.clip).toMatchObject({ key: 'be-fall-asleep', loop: false });
+    await ended('sleep');
+    expect(mockVideo!.clip).toMatchObject({ key: 'be-sleep', loop: true });
+    // nouvel affichage le même jour : la boucle seule
+    await r.unmount();
+    await render(<V2ChildHome />);
+    expect(mockVideo!.clip).toMatchObject({ key: 'be-sleep', loop: true });
+  });
+
   it('7. vidéo indisponible : repos (réaction) ou endormi (transition du coucher), jamais d’écran noir', async () => {
     const r = await render(<V2ChildHome />);
     await check('Đánh răng');

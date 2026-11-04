@@ -104,7 +104,7 @@ export default function V2ChildHome() {
     : 'off';
   const video = media === 'video';
   // gestionnaire unique des animations du panda (repos, content, curieux, endormi) ; fin de journée = règle existante (`dayComplete`)
-  const anim = usePandaAnimation({ childId, stage, today, dayDone: complete, mode: media });
+  const anim = usePandaAnimation({ childId, stage, today, dayDone: complete, ready: !tasksQuery.isPending, mode: media });
   const reactionVideo = video && anim.reactions !== null;
   // D-106 : avec la vidéo (ou ses images fixes), le fond sous l'en-tête ET la barre d'onglets prolongent la vidéo (couleur de son sable)
   const extendColor = media !== 'off' && stageVideo ? stageVideo.groundColor : null;
