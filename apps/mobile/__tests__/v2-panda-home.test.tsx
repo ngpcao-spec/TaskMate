@@ -219,11 +219,11 @@ describe('panda vidéo du stade 1 dans Hôm nay (D-106)', () => {
     }
   });
 
-  it('stade 4 : « content » seulement (vidéo jouée à la coche, pas de zone tactile, la vidéo reste visible)', async () => {
+  it('stade 4 : sans « curieux » (vidéo « content » jouée à la coche, pas de zone tactile, la vidéo reste visible)', async () => {
     mockCompanion = { ...be, stage: 4 };
     await render(<V2ChildHome />);
     expect(screen.queryByRole('button', { name: 'Chạm vào Bambou' })).toBeNull();
-    expect(mockVideo!.prefetch).toHaveLength(1);
+    expect(mockVideo!.prefetch).toHaveLength(3); // content, transition du coucher, sommeil en boucle
     await check('Đánh răng');
     expect(anim()).toBe('happy');
     expect(mockVideo!.visible).toBe(true);
