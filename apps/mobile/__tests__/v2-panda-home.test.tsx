@@ -6,6 +6,7 @@ import type { CompanionState } from '@/domain/panda';
 import type { HomeVideoProps } from '@/v2/components/HomeVideo';
 import { usePandaReaction } from '@/store/pandaReaction';
 import type { ChildRow, TaskRow } from '@/types/models';
+import * as videoModule from '@/v2/video';
 import V2ChildHome from '../app/(v2)/v2/child/home';
 
 /**
@@ -218,12 +219,29 @@ describe('panda vidéo du stade 1 dans Hôm nay (D-106)', () => {
     }
   });
 
-  it('stade 4 : comportement d’avant (aucune réaction vidéo, pas de zone tactile, fondu vers le décor pendant « content »)', async () => {
+  it('stade 4 : « content » seulement (vidéo jouée à la coche, pas de zone tactile, la vidéo reste visible)', async () => {
     mockCompanion = { ...be, stage: 4 };
     await render(<V2ChildHome />);
     expect(screen.queryByRole('button', { name: 'Chạm vào Bambou' })).toBeNull();
+    expect(mockVideo!.prefetch).toHaveLength(1);
     await check('Đánh răng');
-    expect(mockVideo!.clip).toBeNull();
-    expect(mockVideo!.visible).toBe(false);
+    expect(anim()).toBe('happy');
+    expect(mockVideo!.visible).toBe(true);
+    await ended('happy');
+    expect(anim()).toBe('idle');
+  });
+
+  it('stade sans réaction vidéo : comportement d’avant (pas de zone tactile, fondu vers le décor pendant « content »)', async () => {
+    jest.spyOn(videoModule, 'homeReactionsForStage').mockReturnValue(null);
+    try {
+      mockCompanion = { ...be, stage: 4 };
+      await render(<V2ChildHome />);
+      expect(screen.queryByRole('button', { name: 'Chạm vào Bambou' })).toBeNull();
+      await check('Đánh răng');
+      expect(mockVideo!.clip).toBeNull();
+      expect(mockVideo!.visible).toBe(false);
+    } finally {
+      jest.restoreAllMocks();
+    }
   });
 });

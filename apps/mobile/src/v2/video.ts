@@ -75,7 +75,7 @@ export const homeVideoForStage = (stage: number): HomeVideoEntry | null => HOME_
 
 /**
  * Réactions du panda vidéo (D-106) : vidéos NON bouclées, même décor, même cadrage et même position du panda que la vidéo de repos du stade
- * (donc même géométrie, même `object-position`). TABLE stade → réactions disponibles : un stade absent (4 aujourd'hui) n'a aucune réaction
+ * (donc même géométrie, même `object-position`). TABLE stade → réactions disponibles : un stade absent n'a aucune réaction
  * vidéo (`happy` garde le fondu vers le décor fixe et le `PandaSprite` « très heureux » ; toucher et coucher sans effet visible). Ajouter un stade
  * = déposer ses fichiers et écrire UNE entrée ici. `sleepEnd` : image du panda endormi.
  */
@@ -217,6 +217,19 @@ export const HOME_REACTIONS: Readonly<Partial<Record<number, HomeReactions>>> = 
       },
     },
     sleepEnd: require('../../assets/v2/video/reactions/teen-sleep-end.webp'),
+  },
+  // stade 4 (đồng hành, 15 ans et plus) : « content » seulement (vidéo fournie par Teo le 2026-11-05 : il salue de la patte, carnet sous le bras, 6 s),
+  // même décor et même cadrage que `home-dong-hanh` ; sans `curious` ni coucher : pas de zone tactile, fin de journée inchangée
+  4: {
+    happy: {
+      key: 'dong-hanh-happy',
+      sources: {
+        webm: require('../../assets/v2/video/reactions/dong-hanh-happy.webm'),
+        mp4: require('../../assets/v2/video/reactions/dong-hanh-happy.mp4'),
+        mp4Small: require('../../assets/v2/video/reactions/dong-hanh-happy@480.mp4'),
+        poster: require('../../assets/v2/video/reactions/dong-hanh-happy-poster.webp'),
+      },
+    },
   },
 };
 
