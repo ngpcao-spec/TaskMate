@@ -218,9 +218,10 @@ export const HOME_REACTIONS: Readonly<Partial<Record<number, HomeReactions>>> = 
     },
     sleepEnd: require('../../assets/v2/video/reactions/teen-sleep-end.webp'),
   },
-  // stade 4 (đồng hành, 15 ans et plus) : « content » seulement (vidéo fournie par Teo le 2026-11-05 : il salue de la patte, carnet sous le bras, 6 s),
-  // même décor et même cadrage que `home-dong-hanh` ; sans `curious` ni coucher : pas de zone tactile, fin de journée inchangée
+  // stade 4 (đồng hành, 15 ans et plus), vidéos fournies par Teo le 2026-11-05 : même décor et même cadrage que `home-dong-hanh` ;
+  // pas de `curious` : pas de zone tactile
   4: {
+    // il salue de la patte, carnet sous le bras, 6 s
     happy: {
       key: 'dong-hanh-happy',
       sources: {
@@ -230,6 +231,27 @@ export const HOME_REACTIONS: Readonly<Partial<Record<number, HomeReactions>>> = 
         poster: require('../../assets/v2/video/reactions/dong-hanh-happy-poster.webp'),
       },
     },
+    // fin de journée : TRANSITION jouée une fois (il bâille, s'assoit, pose son carnet, se couche, s'endort, 8 s)…
+    sleep: {
+      key: 'dong-hanh-fall-asleep',
+      sources: {
+        webm: require('../../assets/v2/video/reactions/dong-hanh-fall-asleep.webm'),
+        mp4: require('../../assets/v2/video/reactions/dong-hanh-fall-asleep.mp4'),
+        mp4Small: require('../../assets/v2/video/reactions/dong-hanh-fall-asleep@480.mp4'),
+        poster: require('../../assets/v2/video/reactions/dong-hanh-fall-asleep-poster.webp'),
+      },
+    },
+    // … puis il RESTE endormi (« zzz », tête sur son carnet, 8 s) en boucle ; panda un peu plus petit qu'à la fin de la transition (raccord visible)
+    sleepLoop: {
+      key: 'dong-hanh-sleep',
+      sources: {
+        webm: require('../../assets/v2/video/reactions/dong-hanh-sleep.webm'),
+        mp4: require('../../assets/v2/video/reactions/dong-hanh-sleep.mp4'),
+        mp4Small: require('../../assets/v2/video/reactions/dong-hanh-sleep@480.mp4'),
+        poster: require('../../assets/v2/video/reactions/dong-hanh-sleep-poster.webp'),
+      },
+    },
+    sleepEnd: require('../../assets/v2/video/reactions/dong-hanh-sleep-end.webp'),
   },
 };
 
