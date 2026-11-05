@@ -7,6 +7,7 @@ import type { WeeklyGroup } from '@/hooks/useWeeklyQuizzes';
 import { useHomeScene } from '@/store/homeScene';
 import { usePandaReaction } from '@/store/pandaReaction';
 import type { ChildRow, TaskRow } from '@/types/models';
+import * as videoModule from '@/v2/video';
 import { homeVideoForStage } from '@/v2/video';
 import { v2Colors } from '@/v2/theme';
 import V2ChildHome from '../app/(v2)/v2/child/home';
@@ -161,6 +162,7 @@ describe('V2 : vidéo d’accueil dans Hôm nay (D-106)', () => {
 
   it('web, stade 4 à la maison : l\'aperçu fixe de la vidéo couvre le décor, panda dessiné masqué (jamais un fond vide) ; décor et panda pendant une réaction (stade sans réaction vidéo)', async () => {
     jest.replaceProperty(Platform, 'OS', 'web');
+    jest.spyOn(videoModule, 'homeReactionsForStage').mockReturnValue(null);
     mockCompanion = { ...teen, stage: 4 };
     await render(<V2ChildHome />);
     expect(screen.getByTestId('v2-home-video-poster', H)).toBeTruthy();

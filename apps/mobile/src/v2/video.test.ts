@@ -60,7 +60,7 @@ describe('table stade → vidéo d’accueil (D-106)', () => {
       for (const fg of [v2Colors.tabActiveOnScene, v2Colors.tabInactiveOnScene, v2Colors.text]) expect([e!.key, fg, contrast(fg, e!.groundColor) >= 4.5]).toEqual([e!.key, fg, true]);
     }
   });
-  it('réactions vidéo : stades 1 (bé), 2 (nhí) et 3 (teen), content, curieux, endormi + image de fin ; stade 4 : aucune', () => {
+  it('réactions vidéo : stades 1 (bé), 2 (nhí) et 3 (teen), content, curieux, endormi + image de fin ; stade 4 : « content » seulement', () => {
     for (const [stage, prefix] of [[1, 'be'], [2, 'nhi'], [3, 'teen']] as const) {
       expect([...availableReactions(homeReactionsForStage(stage))].sort()).toEqual(['curious', 'happy', 'sleep']);
       const r = HOME_REACTIONS[stage]!;
@@ -73,7 +73,13 @@ describe('table stade → vidéo d’accueil (D-106)', () => {
       expect(r.sleep!.key).toBe(`${prefix}-fall-asleep`);
       expect(r.sleepLoop!.key).toBe(`${prefix}-sleep`);
     }
-    for (const stage of [4, 0]) expect(availableReactions(homeReactionsForStage(stage)).size).toBe(0);
+    // stade 4 : « content » seulement (pas de toucher ni de coucher vidéo)
+    expect([...availableReactions(homeReactionsForStage(4))]).toEqual(['happy']);
+    const dh = HOME_REACTIONS[4]!;
+    for (const k of ['webm', 'mp4', 'mp4Small', 'poster'] as const) expect(dh.happy!.sources[k]).toBeTruthy();
+    expect(dh.happy!.key).toBe('dong-hanh-happy');
+    expect([dh.curious, dh.sleep, dh.sleepLoop, dh.sleepEnd]).toEqual([undefined, undefined, undefined, undefined]);
+    expect(availableReactions(homeReactionsForStage(0)).size).toBe(0);
     const be = HOME_REACTIONS[1]!;
     // sans image de fin, pas de coucher (jamais d'écran noir après la vidéo)
     expect(availableReactions({ ...be, sleepEnd: undefined }).has('sleep')).toBe(false);
