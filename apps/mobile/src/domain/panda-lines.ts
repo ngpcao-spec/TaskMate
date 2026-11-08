@@ -17,11 +17,19 @@ export type PandaSituation =
   | 'adventure_away'
   | 'adventure_back'
   | 'adventure_duplicate'
+  // D-107 : le grand départ (départ, mot sur la porte, retour avec le paquet) et une invitation par destination
+  | 'adventure_leave'
+  | 'adventure_note'
+  | 'adventure_home_gift'
+  | InviteSituation
   | StorySituation;
 
 /** Destinations du catalogue des aventures (D-105) : leur slug donne la clé de récit (`story_ha_long`…). */
 export const STORY_DESTINATIONS = ['ha-long', 'hoi-an', 'mekong', 'da-lat', 'sa-pa', 'phong-nha'] as const;
-export type StorySituation = `story_${'ha_long' | 'hoi_an' | 'mekong' | 'da_lat' | 'sa_pa' | 'phong_nha'}`;
+type DestinationKey = 'ha_long' | 'hoi_an' | 'mekong' | 'da_lat' | 'sa_pa' | 'phong_nha';
+export type StorySituation = `story_${DestinationKey}`;
+/** D-107 : invitation au voyage (feuille « carte postale »), une par destination. */
+export type InviteSituation = `adventure_invite_${DestinationKey}`;
 
 /** Nombre de variantes écrites par situation (2 à 3). */
 export const LINE_VARIANTS: Record<PandaSituation, number> = {
@@ -36,6 +44,15 @@ export const LINE_VARIANTS: Record<PandaSituation, number> = {
   adventure_away: 2,
   adventure_back: 2,
   adventure_duplicate: 2,
+  adventure_leave: 2,
+  adventure_note: 2,
+  adventure_home_gift: 2,
+  adventure_invite_ha_long: 2,
+  adventure_invite_hoi_an: 2,
+  adventure_invite_mekong: 2,
+  adventure_invite_da_lat: 2,
+  adventure_invite_sa_pa: 2,
+  adventure_invite_phong_nha: 2,
   story_ha_long: 2,
   story_hoi_an: 2,
   story_mekong: 2,
@@ -48,6 +65,11 @@ export const LINE_VARIANTS: Record<PandaSituation, number> = {
 export function storySituation(destination: string): StorySituation | null {
   const key = `story_${destination.replace(/-/g, '_')}`;
   return key in LINE_VARIANTS ? (key as StorySituation) : null;
+}
+/** D-107 : situation d'invitation d'une destination (slug du catalogue) ; `null` pour une destination sans invitation écrite. */
+export function inviteSituation(destination: string): InviteSituation | null {
+  const key = `adventure_invite_${destination.replace(/-/g, '_')}`;
+  return key in LINE_VARIANTS ? (key as InviteSituation) : null;
 }
 export const PANDA_SITUATIONS = Object.keys(LINE_VARIANTS) as PandaSituation[];
 

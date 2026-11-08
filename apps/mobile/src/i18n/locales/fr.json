@@ -1984,6 +1984,168 @@
           "v1": "Phong Nha est une merveille de la nature. Voici un souvenir.",
           "v2": "Une belle expédition souterraine. J'ai rapporté ceci."
         }
+      },
+      "adventure_invite_ha_long": {
+        "s1": {
+          "v1": "Panda veut faire du bateau à Ha Long !",
+          "v2": "On va à la mer à Ha Long ?"
+        },
+        "s2": {
+          "v1": "Tu veux faire du bateau dans la baie d'Ha Long avec moi ?",
+          "v2": "On va voir les îles d'Ha Long ?"
+        },
+        "s3": {
+          "v1": "On navigue entre les pitons d'Ha Long ?",
+          "v2": "Ha Long nous attend. On y va ?"
+        },
+        "s4": {
+          "v1": "Une journée dans la baie d'Ha Long, ça te dit ?",
+          "v2": "J'aimerais voir le lever du soleil sur Ha Long. Tu viens ?"
+        }
+      },
+      "adventure_invite_hoi_an": {
+        "s1": {
+          "v1": "Panda veut voir les lanternes de Hoi An !",
+          "v2": "On va à Hoi An ?"
+        },
+        "s2": {
+          "v1": "Tu veux voir les lanternes de Hoi An avec moi ?",
+          "v2": "On va voir le pont couvert de Hoi An ?"
+        },
+        "s3": {
+          "v1": "Une balade à Hoi An quand les lanternes s'allument ?",
+          "v2": "Hoi An est trop belle. On y va ?"
+        },
+        "s4": {
+          "v1": "La vieille ville de Hoi An est superbe le soir. Ça te dit ?",
+          "v2": "J'aimerais flâner dans Hoi An. Tu viens ?"
+        }
+      },
+      "adventure_invite_mekong": {
+        "s1": {
+          "v1": "Panda veut faire de la barque sur le fleuve !",
+          "v2": "On va cueillir des fruits ?"
+        },
+        "s2": {
+          "v1": "Tu veux faire de la barque sur le Mékong avec moi ?",
+          "v2": "On va visiter les vergers du Mékong ?"
+        },
+        "s3": {
+          "v1": "On descend les canaux du Mékong en barque ?",
+          "v2": "Plein de fruits au Mékong. On y va ?"
+        },
+        "s4": {
+          "v1": "Une matinée sur le delta du Mékong, ça te dit ?",
+          "v2": "J'aimerais voir un marché flottant. Tu viens ?"
+        }
+      },
+      "adventure_invite_da_lat": {
+        "s1": {
+          "v1": "Panda veut cueillir des fraises à Da Lat !",
+          "v2": "On va à Da Lat ?"
+        },
+        "s2": {
+          "v1": "Tu veux faire du vélo autour du lac de Da Lat avec moi ?",
+          "v2": "On va voir les fleurs dorées de Da Lat ?"
+        },
+        "s3": {
+          "v1": "Il fait frais à Da Lat. On va cueillir des fraises ?",
+          "v2": "Un tour à vélo autour du lac de Da Lat ?"
+        },
+        "s4": {
+          "v1": "Da Lat est très agréable en ce moment. Ça te dit ?",
+          "v2": "J'aimerais marcher dans les pinèdes de Da Lat. Tu viens ?"
+        }
+      },
+      "adventure_invite_sa_pa": {
+        "s1": {
+          "v1": "Panda veut toucher les nuages à Sa Pa !",
+          "v2": "On va à Sa Pa ?"
+        },
+        "s2": {
+          "v1": "Tu veux voir les rizières en terrasses de Sa Pa avec moi ?",
+          "v2": "On monte toucher les nuages à Sa Pa ?"
+        },
+        "s3": {
+          "v1": "On grimpe voir les rizières de Sa Pa ?",
+          "v2": "À Sa Pa, les nuages sont sous nos pieds. On y va ?"
+        },
+        "s4": {
+          "v1": "Les rizières en terrasses de Sa Pa sont magnifiques. Ça te dit ?",
+          "v2": "J'aimerais voir les nuages sur les montagnes de Sa Pa. Tu viens ?"
+        }
+      },
+      "adventure_invite_phong_nha": {
+        "s1": {
+          "v1": "Panda veut entrer dans la grotte !",
+          "v2": "On va voir les grottes ?"
+        },
+        "s2": {
+          "v1": "Tu veux entrer en bateau dans la grotte de Phong Nha avec moi ?",
+          "v2": "On part explorer les grottes ?"
+        },
+        "s3": {
+          "v1": "On explore la grotte de Phong Nha ? Prends ta lampe !",
+          "v2": "Ça brille de partout dans les grottes de Phong Nha. On y va ?"
+        },
+        "s4": {
+          "v1": "Les grottes de Phong Nha sont immenses. Ça te dit ?",
+          "v2": "J'aimerais entrer en barque dans Phong Nha. Tu viens ?"
+        }
+      },
+      "adventure_leave": {
+        "s1": {
+          "v1": "Panda y va ! Panda rentre demain !",
+          "v2": "Au revoir {{name}} ! À demain !"
+        },
+        "s2": {
+          "v1": "En route ! Je rentre demain matin !",
+          "v2": "J'y vais ! On se revoit demain matin !"
+        },
+        "s3": {
+          "v1": "C’est parti ! Je rentre demain matin.",
+          "v2": "J’y vais ! À demain matin."
+        },
+        "s4": {
+          "v1": "Je pars. Je rentre demain matin.",
+          "v2": "À demain matin."
+        }
+      },
+      "adventure_note": {
+        "s1": {
+          "v1": "Panda est à {{destination}}, il rentre demain !",
+          "v2": "Panda est parti à {{destination}} !"
+        },
+        "s2": {
+          "v1": "Je suis à {{destination}}, je rentre demain matin !",
+          "v2": "Parti à {{destination}}, à demain matin !"
+        },
+        "s3": {
+          "v1": "Parti à {{destination}}, retour demain matin !",
+          "v2": "Petit tour à {{destination}}, je rentre demain."
+        },
+        "s4": {
+          "v1": "Je suis à {{destination}}, retour demain matin.",
+          "v2": "En voyage à {{destination}}, à demain matin."
+        }
+      },
+      "adventure_home_gift": {
+        "s1": {
+          "v1": "Panda est rentré ! Panda a un cadeau pour {{name}} !",
+          "v2": "{{name}}, Panda a un cadeau !"
+        },
+        "s2": {
+          "v1": "Je suis rentré ! J'ai un cadeau pour {{name}} !",
+          "v2": "Me revoilà ! Ce cadeau est pour {{name}} !"
+        },
+        "s3": {
+          "v1": "De retour ! J'ai un cadeau pour {{name}}.",
+          "v2": "Bien rentré ! Ouvre le cadeau, {{name}}."
+        },
+        "s4": {
+          "v1": "Je suis rentré. Un petit cadeau pour {{name}}.",
+          "v2": "Beau voyage. Ce cadeau est pour {{name}}."
+        }
       }
     }
   },
@@ -2077,7 +2239,9 @@
       "phong-nha-boussole": "boussole",
       "phong-nha-lampe": "lampe",
       "phong-nha-fougere": "fougère"
-    }
+    },
+    "gaugeWaiting": "Le prochain voyage t'attend !",
+    "gaugeWaitingLabel": "Le prochain voyage t'attend ! {{value}} sur {{cost}} d'énergie"
   },
   "v2": {
     "tabs": {
@@ -2122,10 +2286,14 @@
       "ready": "Plein d'énergie !",
       "away": "En aventure · retour demain matin",
       "pathLabel": "{{name}} est en route, {{percent}} % du chemin",
-      "back": "{{name}} est rentré ! Ouvrons son sac",
+      "back": "{{name}} est rentré ! Ouvre le cadeau",
       "open": "Ouvrir le sac",
       "start": "⚡",
-      "finish": "?"
+      "finish": "?",
+      "choose": "Choisir la destination",
+      "awayAt": "{{name}} est à {{destination}} · retour demain matin",
+      "openGift": "Ouvrir le cadeau",
+      "reaction": "+{{energy}} ⚡"
     },
     "celebration": {
       "title": "Tout est fait !",
@@ -2138,7 +2306,8 @@
     },
     "panda": {
       "walking": "Le panda {{name}} part à l'aventure",
-      "touch": "Toucher {{name}}"
+      "touch": "Toucher {{name}}",
+      "letsGo": "Partons à l'aventure !"
     },
     "placeholder": "La nouvelle interface est en préparation.",
     "admin": {
@@ -2224,6 +2393,22 @@
     "settings": {
       "children": "Les enfants",
       "addChild": "Ajouter un enfant"
+    },
+    "trip": {
+      "go": "En route !",
+      "later": "Plus tard",
+      "close": "Fermer",
+      "busy": "{{name}} est déjà en voyage, au prochain !",
+      "level": "Niveau actuel : {{level}}",
+      "finds": "Trouvailles de ce lieu",
+      "sheetLabel": "Carte postale : {{destination}}",
+      "skip": "Passer",
+      "store": "Ranger dans le carnet",
+      "signature": "— {{name}}",
+      "homeLabel": "Maison de {{name}}",
+      "leaving": "{{name}} part pour {{destination}}",
+      "coming": "{{name}} rentre à la maison",
+      "gift": "Cadeau de {{destination}}"
     }
   }
 }

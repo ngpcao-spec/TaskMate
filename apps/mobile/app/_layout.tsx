@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppErrorScreen } from '@/components/AppErrorScreen';
 import { ToastHost } from '@/components/ToastHost';
+import { V2ConfirmHost } from '@/v2/components/V2ConfirmHost';
 import { useAuthListener } from '@/hooks/useMe';
 import { useUiVersion, useUiVersionSwitch } from '@/hooks/useUiVersion';
 import { StatusBarScrim } from '@/components/StatusBarScrim';
@@ -66,6 +67,8 @@ function Root() {
           </Stack>
         </ThemeProvider>
         <ToastHost />
+        {/* D-107 : famille V2 = confirmations dans une feuille V2, jamais de fenêtre système */}
+        <V2ConfirmHost enabled={uiVersion === 'v2'} />
         {/* D-106 : barre d'état translucide (PWA iPhone) — voile pour l'heure et la batterie, au-dessus de tous les écrans */}
         <StatusBarScrim color={uiVersion === 'v2' ? v2Colors.statusScrim : colors.statusScrim} />
       </SafeAreaProvider>

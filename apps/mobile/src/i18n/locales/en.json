@@ -1984,6 +1984,168 @@
           "v1": "Phong Nha is a natural wonder. Here is a keepsake.",
           "v2": "A great underground expedition. I brought this back."
         }
+      },
+      "adventure_invite_ha_long": {
+        "s1": {
+          "v1": "Panda wants to sail at Ha Long!",
+          "v2": "Seaside at Ha Long?"
+        },
+        "s2": {
+          "v1": "Do you want to go sailing in Ha Long Bay with me?",
+          "v2": "Shall we go see the islands of Ha Long?"
+        },
+        "s3": {
+          "v1": "Sail between Ha Long's rocky islands?",
+          "v2": "Ha Long is waiting for us. Shall we?"
+        },
+        "s4": {
+          "v1": "A day on Ha Long Bay, what do you think?",
+          "v2": "I'd love to see sunrise over Ha Long. Coming along?"
+        }
+      },
+      "adventure_invite_hoi_an": {
+        "s1": {
+          "v1": "Panda wants to see the lanterns in Hoi An!",
+          "v2": "Hoi An, maybe?"
+        },
+        "s2": {
+          "v1": "Do you want to see the lanterns in Hoi An with me?",
+          "v2": "Shall we visit Hoi An's covered bridge?"
+        },
+        "s3": {
+          "v1": "A walk in Hoi An when the lanterns light up?",
+          "v2": "Hoi An is so pretty. Shall we?"
+        },
+        "s4": {
+          "v1": "Hoi An's old town is lovely at night. Interested?",
+          "v2": "I'd like a stroll through Hoi An. Coming along?"
+        }
+      },
+      "adventure_invite_mekong": {
+        "s1": {
+          "v1": "Panda wants a boat ride on the river!",
+          "v2": "Fruit picking?"
+        },
+        "s2": {
+          "v1": "Do you want a boat ride on the Mekong with me?",
+          "v2": "Shall we visit the Mekong orchards?"
+        },
+        "s3": {
+          "v1": "Drift down the Mekong canals by boat?",
+          "v2": "Loads of fruit in the Mekong. Shall we?"
+        },
+        "s4": {
+          "v1": "A morning on the Mekong Delta, what do you think?",
+          "v2": "I'd like to see a floating market. Coming along?"
+        }
+      },
+      "adventure_invite_da_lat": {
+        "s1": {
+          "v1": "Panda wants to pick strawberries in Da Lat!",
+          "v2": "Da Lat, maybe?"
+        },
+        "s2": {
+          "v1": "Do you want to bike around the lake in Da Lat with me?",
+          "v2": "Shall we see Da Lat's golden flowers?"
+        },
+        "s3": {
+          "v1": "It's cool in Da Lat. Strawberry picking?",
+          "v2": "A bike ride around the lake in Da Lat?"
+        },
+        "s4": {
+          "v1": "Da Lat is lovely this time of year. Interested?",
+          "v2": "I'd like a walk in Da Lat's pine hills. Coming along?"
+        }
+      },
+      "adventure_invite_sa_pa": {
+        "s1": {
+          "v1": "Panda wants to touch the clouds in Sa Pa!",
+          "v2": "Sa Pa, maybe?"
+        },
+        "s2": {
+          "v1": "Do you want to see the rice terraces of Sa Pa with me?",
+          "v2": "Shall we climb up and touch the clouds in Sa Pa?"
+        },
+        "s3": {
+          "v1": "Hike up to Sa Pa's rice terraces?",
+          "v2": "In Sa Pa the clouds are under your feet. Shall we?"
+        },
+        "s4": {
+          "v1": "Sa Pa's rice terraces are beautiful. Interested?",
+          "v2": "I'd love to see the clouds over Sa Pa. Coming along?"
+        }
+      },
+      "adventure_invite_phong_nha": {
+        "s1": {
+          "v1": "Panda wants to go in the cave!",
+          "v2": "Cave time?"
+        },
+        "s2": {
+          "v1": "Do you want to take a boat into Phong Nha cave with me?",
+          "v2": "Shall we go explore the caves?"
+        },
+        "s3": {
+          "v1": "Explore Phong Nha cave? Bring a torch!",
+          "v2": "The caves of Phong Nha sparkle. Shall we?"
+        },
+        "s4": {
+          "v1": "The caves of Phong Nha are vast. Interested?",
+          "v2": "I'd like to boat into Phong Nha. Coming along?"
+        }
+      },
+      "adventure_leave": {
+        "s1": {
+          "v1": "Panda is off! Back tomorrow!",
+          "v2": "Bye {{name}}! See you tomorrow!"
+        },
+        "s2": {
+          "v1": "Let's go! I'll be back tomorrow morning!",
+          "v2": "I'm off! See you tomorrow morning!"
+        },
+        "s3": {
+          "v1": "Off we go! Back tomorrow morning.",
+          "v2": "Heading out! See you tomorrow morning."
+        },
+        "s4": {
+          "v1": "I'm setting off. Back tomorrow morning.",
+          "v2": "See you tomorrow morning."
+        }
+      },
+      "adventure_note": {
+        "s1": {
+          "v1": "Panda went to {{destination}}, back tomorrow!",
+          "v2": "Panda is off to {{destination}}!"
+        },
+        "s2": {
+          "v1": "I'm in {{destination}}, back tomorrow morning!",
+          "v2": "Off to {{destination}}, see you tomorrow morning!"
+        },
+        "s3": {
+          "v1": "Gone to {{destination}}, back tomorrow morning!",
+          "v2": "Quick trip to {{destination}}, back tomorrow."
+        },
+        "s4": {
+          "v1": "I'm in {{destination}}, back tomorrow morning.",
+          "v2": "Travelling in {{destination}}, see you tomorrow."
+        }
+      },
+      "adventure_home_gift": {
+        "s1": {
+          "v1": "Panda is back! Panda has a gift for {{name}}!",
+          "v2": "{{name}}, Panda has a gift!"
+        },
+        "s2": {
+          "v1": "I'm back! I've got a gift for {{name}}!",
+          "v2": "Here I am! This gift is for {{name}}!"
+        },
+        "s3": {
+          "v1": "Back home! I've got a gift for {{name}}.",
+          "v2": "Made it back! Open the gift, {{name}}."
+        },
+        "s4": {
+          "v1": "I'm back. A little gift for {{name}}.",
+          "v2": "A lovely trip. This gift is for {{name}}."
+        }
       }
     }
   },
@@ -2077,7 +2239,9 @@
       "phong-nha-boussole": "compass",
       "phong-nha-lampe": "lamp",
       "phong-nha-fougere": "fern"
-    }
+    },
+    "gaugeWaiting": "Next trip is waiting!",
+    "gaugeWaitingLabel": "Next trip is waiting! {{value}} of {{cost}} energy"
   },
   "v2": {
     "tabs": {
@@ -2122,10 +2286,14 @@
       "ready": "Full of energy!",
       "away": "On an adventure · back tomorrow morning",
       "pathLabel": "{{name}} is on the way, {{percent}}% of the path",
-      "back": "{{name}} is back! Let's open the bag",
+      "back": "{{name}} is back! Open the gift",
       "open": "Open the bag",
       "start": "⚡",
-      "finish": "?"
+      "finish": "?",
+      "choose": "Choose a destination",
+      "awayAt": "{{name}} is in {{destination}} · back tomorrow morning",
+      "openGift": "Open the gift",
+      "reaction": "+{{energy}} ⚡"
     },
     "celebration": {
       "title": "All done!",
@@ -2138,7 +2306,8 @@
     },
     "panda": {
       "walking": "Panda {{name}} is off on an adventure",
-      "touch": "Tap {{name}}"
+      "touch": "Tap {{name}}",
+      "letsGo": "Let's go on an adventure!"
     },
     "placeholder": "The new interface is being prepared.",
     "admin": {
@@ -2224,6 +2393,22 @@
     "settings": {
       "children": "Children",
       "addChild": "Add a child"
+    },
+    "trip": {
+      "go": "Let's go!",
+      "later": "Later",
+      "close": "Close",
+      "busy": "{{name}} is already travelling, next time!",
+      "level": "Current level: {{level}}",
+      "finds": "Finds from here",
+      "sheetLabel": "Postcard: {{destination}}",
+      "skip": "Skip",
+      "store": "Add to journal",
+      "signature": "— {{name}}",
+      "homeLabel": "{{name}}'s home",
+      "leaving": "{{name}} is setting off for {{destination}}",
+      "coming": "{{name}} is coming home",
+      "gift": "Gift from {{destination}}"
     }
   }
 }

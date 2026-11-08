@@ -1,7 +1,7 @@
 import en from '@/i18n/locales/en.json';
 import fr from '@/i18n/locales/fr.json';
 import vi from '@/i18n/locales/vi.json';
-import { greetingFor, LINE_VARIANTS, PANDA_SITUATIONS, pandaLineKey, pandaLineKeys, pandaLineParams, pandaSituation, pickPandaLine, STORY_DESTINATIONS, storySituation } from './panda-lines';
+import { greetingFor, inviteSituation, LINE_VARIANTS, PANDA_SITUATIONS, pandaLineKey, pandaLineKeys, pandaLineParams, pandaSituation, pickPandaLine, STORY_DESTINATIONS, storySituation } from './panda-lines';
 import type { PandaStage } from './panda';
 
 const STAGES: PandaStage[] = [1, 2, 3, 4];
@@ -75,6 +75,22 @@ describe('textes dans les trois langues', () => {
       for (const s of ['adventure_ready', 'adventure_away', 'adventure_back', 'adventure_duplicate', ...STORY_DESTINATIONS.map((d) => storySituation(d)!)] as const) {
         for (const st of STAGES) for (const key of pandaLineKeys(st, s)) expect(lookup(locale, key) as string).not.toMatch(/nourri|affamé|faim|hungry|starv|fed me|đói|bỏ rơi|perdu|lost|triste|sad|buồn/i);
       }
+    }
+  });
+  it('grand départ (D-107) : invitation par destination, départ, mot, retour avec le paquet ; exemple imposé ; jamais de culpabilité', () => {
+    expect(lookup(vi, 'panda.lines.adventure_invite_ha_long.s2.v1')).toBe('Cậu muốn đi thuyền ở Vịnh Hạ Long với tớ không?');
+    expect(lookup(vi, 'panda.lines.adventure_leave.s2.v1')).toBe('Đi thôi! Sáng mai tớ về nhé!');
+    expect(lookup(vi, 'panda.lines.adventure_note.s2.v1')).toBe('Tớ đi {{destination}}, sáng mai về nhé!');
+    expect(lookup(vi, 'panda.lines.adventure_home_gift.s2.v1')).toBe('Tớ về rồi! Có quà cho {{name}} nè!');
+    for (const d of STORY_DESTINATIONS) expect(inviteSituation(d)).toBe(`adventure_invite_${d.replace(/-/g, '_')}`);
+    expect(inviteSituation('atlantide')).toBeNull();
+    const trip = ['adventure_leave', 'adventure_note', 'adventure_home_gift', ...STORY_DESTINATIONS.map((d) => inviteSituation(d)!)] as const;
+    for (const locale of Object.values(LOCALES)) {
+      for (const s of trip) {
+        for (const st of STAGES) for (const key of pandaLineKeys(st, s)) expect(lookup(locale, key) as string).not.toMatch(/nourri|affamé|faim|hungry|starv|fed me|đói|bỏ rơi|perdu|lost|triste|sad|buồn|vite|hurry|nhanh lên/i);
+      }
+      // le mot sur la porte nomme toujours la destination
+      for (const st of STAGES) for (const key of pandaLineKeys(st, 'adventure_note')) expect(lookup(locale, key) as string).toContain('{{destination}}');
     }
   });
   it('« nothing_yet_evening » : jamais de reproche', () => {

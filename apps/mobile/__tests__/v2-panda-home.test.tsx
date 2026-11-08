@@ -42,7 +42,8 @@ const adventure: AdventureState = {
   gauge: 18, cost: 60, state: 'filling', level: 1, today: '2026-11-02', active: null, last: null, unlocked: ['ha-long'],
   destinations: [{ slug: 'ha-long', minLevel: 1, discoveries: [] }], found: [], foundCount: 0, totalCount: 30,
 };
-jest.mock('@/hooks/useAdventure', () => ({ useAdventure: () => ({ data: adventure }), useAdventurePending: () => false }));
+const mockCollect = { mutate: jest.fn(), data: undefined as unknown, variables: undefined as unknown };
+jest.mock('@/hooks/useAdventure', () => ({ useAdventure: () => ({ data: adventure }), useAdventurePending: () => false, useCollectAdventure: () => mockCollect }));
 jest.mock('@/hooks/useNow', () => ({ useNow: () => new Date(mockToday) }));
 jest.mock('@/hooks/useWeeklyQuizzes', () => ({ useWeeklyQuizzes: () => ({ groups: [], isPending: false }) }));
 jest.mock('@/hooks/useNotifications', () => ({ useUnreadNotifications: () => 0 }));
@@ -109,6 +110,26 @@ describe('panda vidéo du stade 1 dans Hôm nay (D-106)', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Chạm vào Bambou' }));
     expect(anim()).toBe('happy');
     expect(mockVideo!.clip!.serial).toBe(serial);
+  });
+
+  it('D-107 : jauge d’aventure pleine, dernière tâche cochée : « content » puis repos, JAMAIS de coucher ; il dit « Đi phiêu lưu thôi! »', async () => {
+    Object.assign(adventure, { state: 'ready_to_go', gauge: 60 });
+    try {
+      mockTasks = [task({ completed_at: '2026-11-02T01:00:00Z' }), task({ id: 't2', title: 'Làm toán', points: 15 })];
+      const r = await render(<V2ChildHome />);
+      expect(screen.getByText('Đi phiêu lưu thôi!')).toBeTruthy();
+      await check('Làm toán');
+      expect(anim()).toBe('happy');
+      mockTasks = mockTasks.map((x) => ({ ...x, completed_at: '2026-11-02T02:00:00Z' }));
+      await r.rerender(<V2ChildHome />);
+      await ended('happy');
+      expect(anim()).toBe('idle'); // éveillé, il attend le départ
+      await r.unmount();
+      await render(<V2ChildHome />); // nouvel affichage, journée finie : toujours éveillé
+      expect(anim()).toBe('idle');
+    } finally {
+      Object.assign(adventure, { state: 'filling', gauge: 18 });
+    }
   });
 
   it('5. dernière tâche cochée : « content », puis la transition (il se couche et s’endort), puis il RESTE endormi (sommeil en boucle, même après un nouvel affichage le même jour)', async () => {

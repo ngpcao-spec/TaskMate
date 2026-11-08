@@ -19,16 +19,26 @@ type Props = {
   onOpenBag?: () => void;
   /** écriture en attente (hors ligne) : boutons désactivés */
   busy?: boolean;
+  /** D-107 : énergie de la coche qui vient d'avoir lieu (panda absent pendant le voyage : « +N ⚡ » s'affiche sur la jauge) */
+  reactionEnergy?: number;
 };
 
-function Gauge({ value, cost, labelKey, valueKey }: { value: number; cost: number; labelKey: string; valueKey: string }) {
+function Gauge({ value, cost, labelKey, valueKey, plus = 0 }: { value: number; cost: number; labelKey: string; valueKey: string; plus?: number }) {
   const { t } = useTranslation();
   const pct = cost > 0 ? Math.round((Math.min(value, cost) / cost) * 100) : 0;
   return (
     <View style={styles.gaugeRow} accessibilityRole="progressbar" accessibilityLabel={t(labelKey, { value, cost })} accessibilityValue={{ min: 0, max: cost, now: Math.min(value, cost) }}>
-      <Text style={styles.gaugeText} importantForAccessibility="no">
-        {t(valueKey, { value, cost })} ⚡
-      </Text>
+      <View style={styles.gaugeHead}>
+        <Text style={styles.gaugeText} importantForAccessibility="no">
+          {t(valueKey, { value, cost })}
+          {valueKey === 'adventure.gaugeWaiting' ? '' : ' ⚡'}
+        </Text>
+        {plus > 0 ? (
+          <Text style={styles.plus} testID="v2-adventure-plus" accessibilityLiveRegion="polite">
+            {t('v2.adventure.reaction', { energy: plus })}
+          </Text>
+        ) : null}
+      </View>
       <View style={styles.track}>
         <View style={[styles.fill, { width: `${pct}%` }]} />
       </View>
@@ -44,20 +54,24 @@ function PrimaryButton({ label, onPress, disabled }: { label: string; onPress?: 
   );
 }
 
-/** Carte d'aventure de Hôm nay (V2) : jauge « Phiêu lưu 18/60 » ⚡, départ, voyage (chemin ⚡ → ?), retour. */
-export function AdventureCard({ adventure, pandaName, variant = 'boy', progress = 0, onMap, onGo, onOpenBag, busy = false }: Props) {
+/**
+ * Carte d'aventure de Hôm nay (V2) : jauge « Phiêu lưu 18/60 » ⚡ ; jauge pleine : « Chọn nơi đến » (onglet Phiêu lưu, D-107) ; en voyage :
+ * « {name} đang ở {destination} · về sáng mai », chemin ⚡ → ? et « Chuyến tiếp theo đang chờ! » ; retour : « Mở quà ».
+ */
+export function AdventureCard({ adventure, pandaName, variant = 'boy', progress = 0, onMap, onGo, onOpenBag, busy = false, reactionEnergy = 0 }: Props) {
   const { t } = useTranslation();
   const p = Math.max(0, Math.min(1, progress));
+  const destination = adventure.active ? t(`adventure.destinations.${adventure.active.destination}`) : '';
   return (
     <View style={styles.card} testID={`v2-adventure-${adventure.state}`}>
       <View style={styles.head}>
         <View style={styles.headText}>
           {adventure.state === 'away' ? (
-            <Text style={styles.title}>{t('v2.adventure.away')}</Text>
+            <Text style={styles.title}>{t('v2.adventure.awayAt', { name: pandaName, destination })}</Text>
           ) : adventure.state === 'back' ? (
             <Text style={styles.title}>{t('v2.adventure.back', { name: pandaName })}</Text>
           ) : (
-            <Gauge value={adventure.gauge} cost={adventure.cost} labelKey="adventure.gaugeLabel" valueKey="adventure.gauge" />
+            <Gauge value={adventure.gauge} cost={adventure.cost} labelKey="adventure.gaugeLabel" valueKey="adventure.gauge" plus={reactionEnergy} />
           )}
         </View>
         <Pressable accessibilityRole="button" accessibilityLabel={t('v2.adventure.mapButton')} onPress={onMap} style={styles.mapBtn} testID="v2-adventure-map">
@@ -77,16 +91,16 @@ export function AdventureCard({ adventure, pandaName, variant = 'boy', progress 
             </View>
             <Text style={styles.endpoint} importantForAccessibility="no">{t('v2.adventure.finish')}</Text>
           </View>
-          <Gauge value={adventure.gauge} cost={adventure.cost} labelKey="adventure.gaugeNextLabel" valueKey="adventure.gaugeNext" />
+          <Gauge value={adventure.gauge} cost={adventure.cost} labelKey="adventure.gaugeWaitingLabel" valueKey="adventure.gaugeWaiting" plus={reactionEnergy} />
         </>
       ) : null}
       {adventure.state === 'ready_to_go' ? (
         <>
           <Text style={styles.sub}>{t('v2.adventure.ready')}</Text>
-          <PrimaryButton label={t('adventure.go')} onPress={onGo} disabled={busy} />
+          <PrimaryButton label={t('v2.adventure.choose')} onPress={onGo} disabled={busy} />
         </>
       ) : null}
-      {adventure.state === 'back' ? <PrimaryButton label={t('v2.adventure.open')} onPress={onOpenBag} disabled={busy} /> : null}
+      {adventure.state === 'back' && onOpenBag ? <PrimaryButton label={t('v2.adventure.openGift')} onPress={onOpenBag} disabled={busy} /> : null}
     </View>
   );
 }
@@ -100,7 +114,9 @@ const styles = StyleSheet.create({
   sub: v2Text.body,
   mapBtn: { width: V2_TOUCH, height: V2_TOUCH, borderRadius: V2_TOUCH / 2, backgroundColor: v2Colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
   gaugeRow: { gap: 6 },
-  gaugeText: { ...v2Text.bodyBold, color: v2Colors.energyText },
+  gaugeHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: v2Spacing.sm },
+  gaugeText: { ...v2Text.bodyBold, color: v2Colors.energyText, flexShrink: 1 },
+  plus: { ...v2Text.bodyBold, color: v2Colors.energyText, backgroundColor: v2Colors.energySoft, borderRadius: v2Radius.pill, paddingHorizontal: v2Spacing.sm, paddingVertical: 2 },
   track: { height: 12, borderRadius: 6, backgroundColor: v2Colors.track, overflow: 'hidden' },
   fill: { height: '100%', borderRadius: 6, backgroundColor: v2Colors.energy },
   path: { flexDirection: 'row', alignItems: 'center', gap: v2Spacing.sm, minHeight: HEAD + 8 },

@@ -75,8 +75,11 @@ export function usePandaAnimation(o: {
   /** tâches chargées : avant, « journée pas finie » ne veut rien dire (sinon chaque ouverture ressemblerait à une fin de journée) */
   ready?: boolean;
   mode: 'video' | 'still' | 'off';
+  /** D-107 : jauge d'aventure pleine : le panda ne s'endort pas (il attend le départ) */
+  gaugeFull?: boolean;
 }): PandaAnimation {
   const { childId, stage, today, dayDone, mode } = o;
+  const gaugeFull = o.gaugeFull ?? false;
   const ready = o.ready ?? true;
   const reactions = mode === 'off' ? null : homeReactionsForStage(stage);
   const available = useMemo(() => (mode === 'video' ? availableReactions(reactions) : new Set<never>()), [mode, reactions]);
@@ -93,7 +96,7 @@ export function usePandaAnimation(o: {
     live = watch.day === today && (watch.done === false && dayDone ? true : dayDone && watch.live);
     setWatch({ day: today, done: dayDone, live });
   }
-  const plan = sleepPlan(dayDone, live ? null : playedOn, today);
+  const plan = sleepPlan(dayDone, live ? null : playedOn, today, gaugeFull);
   const stillsOnly = mode === 'still';
   const apply = useCallback((s: PandaAnimState) => applyDayPlan(s, plan, stillsOnly, canSleep), [plan, stillsOnly, canSleep]);
   const state = apply(base);

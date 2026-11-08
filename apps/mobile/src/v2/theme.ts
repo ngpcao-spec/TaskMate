@@ -53,7 +53,18 @@ export const v2Colors = {
   statusScrim: '#000000',
   topButton: '#FFF8EC',
   onTopButton: '#3B2A1E',
+  /** voile sous une feuille du bas (D-107), posé avec `SHEET_SCRIM_OPACITY` : aucun texte dessus */
+  sheetScrim: '#3B2A1E',
+  /** lueur du paquet ouvert et confettis du retour (D-107) */
+  glow: '#FFE7A3',
+  confettiA: '#F59E0B',
+  confettiB: '#4CAF50',
+  confettiC: '#E86A92',
+  /** encre du mot épinglé (sur le papier crème de `note.webp`) */
+  ink: '#3B2A1E',
 } as const;
+/** Opacité du voile sous une feuille du bas (D-107). */
+export const SHEET_SCRIM_OPACITY = 0.45;
 export type V2ColorKey = keyof typeof v2Colors;
 
 export const v2Radius = { card: 24, pill: 999, control: 16, small: 12 } as const;
@@ -71,6 +82,8 @@ export const V2_FONT_FILES = {
   Nunito_600SemiBold: require('../../assets/fonts/nunito/Nunito_600SemiBold.ttf'),
   Nunito_700Bold: require('../../assets/fonts/nunito/Nunito_700Bold.ttf'),
   Nunito_800ExtraBold: require('../../assets/fonts/nunito/Nunito_800ExtraBold.ttf'),
+  // D-107 : écriture « manuscrite » du mot épinglé sur la porte (même source OFL que les autres poids)
+  Nunito_700Bold_Italic: require('../../assets/fonts/nunito/Nunito_700Bold_Italic.ttf'),
 } as const;
 
 export type V2Weight = 600 | 700 | 800;
@@ -82,6 +95,17 @@ export function v2Font(weight: V2Weight, size: number): TextStyle {
   return {
     fontFamily: Platform.OS === 'web' ? `${family}, Nunito, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif` : family,
     fontWeight: String(weight) as TextStyle['fontWeight'],
+    fontSize: size,
+    color: v2Colors.text,
+  };
+}
+
+/** Écriture « manuscrite » (Nunito 700 italique) : mot épinglé du voyage (D-107). */
+export function v2Handwriting(size: number): TextStyle {
+  return {
+    fontFamily: Platform.OS === 'web' ? 'Nunito_700Bold_Italic, Nunito, system-ui, sans-serif' : 'Nunito_700Bold_Italic',
+    fontStyle: 'italic',
+    fontWeight: '700',
     fontSize: size,
     color: v2Colors.text,
   };

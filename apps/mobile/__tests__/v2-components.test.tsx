@@ -81,24 +81,27 @@ describe('V2 : AdventureCard', () => {
     expect(onMap).toHaveBeenCalled();
     expect(screen.queryByRole('button', { name: 'Đi phiêu lưu!' })).toBeNull();
   });
-  it('jauge pleine : départ', async () => {
+  it('jauge pleine (D-107) : « Chọn nơi đến » ouvre l’onglet Phiêu lưu', async () => {
     const onGo = jest.fn();
     await render(<AdventureCard adventure={adv({ gauge: 60, state: 'ready_to_go' })} pandaName="Bambou" onMap={jest.fn()} onGo={onGo} />);
-    await fireEvent.press(screen.getByRole('button', { name: 'Đi phiêu lưu!' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Chọn nơi đến' }));
     expect(onGo).toHaveBeenCalled();
   });
-  it('en voyage : message, chemin ⚡ → ? selon l’avancée, jauge suivante', async () => {
+  it('en voyage (D-107) : « {name} đang ở {destination} · về sáng mai », chemin ⚡ → ? selon l’avancée, « Chuyến tiếp theo đang chờ! » avec la barre', async () => {
     const active = { id: 'a', destination: 'ha-long', departedOn: '2026-11-01', returnsOn: '2026-11-02' };
-    await render(<AdventureCard adventure={adv({ state: 'away', gauge: 5, active })} pandaName="Bambou" progress={0.42} onMap={jest.fn()} />);
-    expect(screen.getByText('Đang phiêu lưu · về sáng mai')).toBeTruthy();
+    await render(<AdventureCard adventure={adv({ state: 'away', gauge: 5, active })} pandaName="Bambou" progress={0.42} onMap={jest.fn()} reactionEnergy={10} />);
+    expect(screen.getByText('Bambou đang ở Vịnh Hạ Long · về sáng mai')).toBeTruthy();
     expect(screen.getByLabelText('Bambou đang trên đường, đã đi 42%')).toBeTruthy();
-    expect(screen.getByLabelText('Chuyến sau: 5 trên 60 năng lượng')).toBeTruthy();
+    expect(screen.getByText('Chuyến tiếp theo đang chờ!')).toBeTruthy();
+    expect(screen.queryByText(/Chuyến sau|5\/60/)).toBeNull();
+    expect(screen.getByLabelText('Chuyến tiếp theo đang chờ! 5 trên 60 năng lượng').props.accessibilityValue).toMatchObject({ now: 5, max: 60 });
+    expect(screen.getByText('+10 ⚡')).toBeTruthy(); // coche pendant le voyage : sur la jauge
   });
-  it('retour : ouvrir le sac', async () => {
+  it('retour : « Mở quà »', async () => {
     const onOpenBag = jest.fn();
     await render(<AdventureCard adventure={adv({ state: 'back' })} pandaName="Bambou" onMap={jest.fn()} onOpenBag={onOpenBag} />);
-    expect(screen.getByText('Bambou về rồi! Mở túi xem nào')).toBeTruthy();
-    await fireEvent.press(screen.getByRole('button', { name: 'Mở túi' }));
+    expect(screen.getByText('Bambou về rồi! Mở quà xem nào')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Mở quà' }));
     expect(onOpenBag).toHaveBeenCalled();
   });
 });
