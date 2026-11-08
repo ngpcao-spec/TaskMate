@@ -10,6 +10,7 @@ import { V2Button } from './V2Button';
 import { V2Sheet } from './V2Sheet';
 
 const FIND = 52;
+const POSTCARD_W = Math.min(POSTCARD_MAX_WIDTH, 230);
 
 type Props = {
   visible: boolean;
@@ -141,8 +142,9 @@ export function PostcardSheet({ visible, destination, adventure, stage, pandaNam
 
 const styles = StyleSheet.create({
   cardWrap: { alignItems: 'center' },
-  // assez petite pour que « Lên đường! » reste visible sans défiler sur un téléphone (390 × 844)
-  card: { width: '100%', maxWidth: Math.min(POSTCARD_MAX_WIDTH, 250), aspectRatio: 1 / POSTCARD_RATIO },
+  // taille FIXE (une largeur en % + aspectRatio laisse un grand blanc sur le web) : assez petite pour que « Lên đường! » reste visible sans
+  // défiler sur un téléphone (390 × 844)
+  card: { width: POSTCARD_W, height: Math.round(POSTCARD_W * POSTCARD_RATIO) },
   dim: { opacity: 0.4 },
   name: { ...v2Text.title, textAlign: 'center' },
   lockBox: { alignItems: 'center', gap: 2 },
