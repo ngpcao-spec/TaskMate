@@ -55,7 +55,7 @@ export function SceneHeader({ scene, height, left = [], right = [], children, ov
   return (
     <View testID={testID} style={[styles.wrap, { height: height + insets.top }, extendColor ? { backgroundColor: extendColor, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 } : null]}>
       <View testID="v2-scene-layer" style={styles.sceneLayer} pointerEvents="box-none">
-        <Image source={sceneImage(scene)} resizeMode="cover" style={StyleSheet.absoluteFill} accessibilityIgnoresInvertColors importantForAccessibility="no" testID={`v2-scene-${scene}`} />
+        <Image source={sceneImage(scene)} resizeMode="cover" style={styles.scene} accessibilityIgnoresInvertColors importantForAccessibility="no" testID={`v2-scene-${scene}`} />
         {backdrop ? (
           <View testID="v2-scene-backdrop" style={[styles.fade, { opacity: backdropVisible ? 1 : 0 }]} pointerEvents="none">
             {backdrop}
@@ -90,6 +90,8 @@ const styles = StyleSheet.create({
   pressed: { transform: [{ scale: 0.94 }] },
   badge: { position: 'absolute', top: -2, right: -2, minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 4, backgroundColor: v2Colors.badge, alignItems: 'center', justifyContent: 'center' },
   badgeText: { ...v2Font(800, 11), color: v2Colors.onBadge },
+  // web : sans largeur ni hauteur explicites, une image locale garde sa taille d'origine (720 px) au lieu de couvrir l'en-tête
+  scene: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' },
   sceneLayer: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   fade: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, transitionProperty: 'opacity', transitionDuration: '200ms' } as never,
   // fondu du bas de l'en-tête vers la couleur qui le prolonge (web : `background-image` passe tel quel par react-native-web)

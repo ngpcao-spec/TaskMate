@@ -35,7 +35,7 @@ export function TripNote({ left, top, text, signature, onPress }: Props) {
       onPress={onPress}
       style={[styles.note, { left: left - NOTE_SIZE / 2, top: top - NOTE_SIZE / 2 }]}
     >
-      <Image source={tripImage('note')} style={StyleSheet.absoluteFill} resizeMode="contain" importantForAccessibility="no" />
+      <Image source={tripImage('note')} style={styles.paperImg} resizeMode="contain" importantForAccessibility="no" />
       <View style={styles.paper} importantForAccessibility="no-hide-descendants">
         <Text style={[styles.text, { fontSize: size, lineHeight: Math.round(size * 1.2) }]} numberOfLines={2}>
           {text}
@@ -50,6 +50,8 @@ export function TripNote({ left, top, text, signature, onPress }: Props) {
 
 const styles = StyleSheet.create({
   note: { position: 'absolute', width: NOTE_SIZE, height: NOTE_SIZE },
+  // taille explicite : sur le web, une image locale sans largeur ni hauteur garde sa taille d'origine (512 px)
+  paperImg: { position: 'absolute', top: 0, left: 0, width: NOTE_SIZE, height: NOTE_SIZE },
   // zone d'écriture du papier (sous l'épingle, hors du coin replié)
   paper: { position: 'absolute', ...PAPER, justifyContent: 'center', gap: 1 },
   text: { ...v2Handwriting(9), color: v2Colors.ink, textAlign: 'center' },

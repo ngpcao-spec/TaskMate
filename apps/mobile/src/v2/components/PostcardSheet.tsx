@@ -141,7 +141,8 @@ export function PostcardSheet({ visible, destination, adventure, stage, pandaNam
 
 const styles = StyleSheet.create({
   cardWrap: { alignItems: 'center' },
-  card: { width: '100%', maxWidth: POSTCARD_MAX_WIDTH, aspectRatio: 1 / POSTCARD_RATIO },
+  // assez petite pour que « Lên đường! » reste visible sans défiler sur un téléphone (390 × 844)
+  card: { width: '100%', maxWidth: Math.min(POSTCARD_MAX_WIDTH, 250), aspectRatio: 1 / POSTCARD_RATIO },
   dim: { opacity: 0.4 },
   name: { ...v2Text.title, textAlign: 'center' },
   lockBox: { alignItems: 'center', gap: 2 },

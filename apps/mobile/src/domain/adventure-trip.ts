@@ -123,7 +123,7 @@ export function coverPoint(box: { width: number; height: number }, ratio: number
  */
 export function noteFontSize(text: string, width: number, lines = 2): number {
   const chars = Math.max(1, text.trim().length);
-  // largeur moyenne d'un caractère Nunito italique ≈ 0,52 × la taille
-  const fit = (width * lines) / (chars * 0.52);
+  // largeur moyenne d'un caractère Nunito italique ≈ 0,55 × la taille, plus une marge pour les coupures de ligne
+  const fit = (width * lines * 0.85) / (chars * 0.55);
   return Math.max(6, Math.min(11, Math.floor(fit * 10) / 10));
 }

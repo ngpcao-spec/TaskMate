@@ -123,28 +123,38 @@ test.describe('interface V2 : enfant (D-106)', () => {
 
     // le lendemain (dates de l'aventure reculées d'un jour) : le panda rentre avec un paquet
     await adventureNextDay(family, 'minh');
-    await page.reload();
-    await expect(page).toHaveURL(/\/v2\/child\/home/, { timeout: 20_000 });
-    const gift = page.getByRole('button', { name: 'Mở quà' }).and(page.getByTestId('v2-trip-gift-button'));
+    // nouvel appareil (cache vide) : l'état d'aventure persisté du précédent serait encore frais (moins de 30 s)
+    const ctx2 = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    await signInContext(ctx2, family.minh);
+    const back = await ctx2.newPage();
+    back.on('pageerror', (e) => console.log(`[v2-voyage] pageerror ${e.message.slice(0, 300)}`));
+    back.on('dialog', (d) => {
+      dialogs.push(`${d.type()}: ${d.message()}`);
+      void d.dismiss();
+    });
+    await back.goto('/');
+    await expect(back).toHaveURL(/\/v2\/child\/home/, { timeout: 20_000 });
+    await expect(back.getByTestId('v2-trip-walk-in').or(back.getByTestId('v2-trip-gift-button'))).toBeAttached({ timeout: 20_000 });
+    const gift = back.getByRole('button', { name: 'Mở quà' }).and(back.getByTestId('v2-trip-gift-button'));
     await expect(gift).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByText(/Có quà cho Minh|Quà này cho Minh|quà nhỏ cho Minh|dành cho Minh|Minh mở quà/).first()).toBeVisible();
+    await expect(back.getByText(/Có quà cho Minh|Quà này cho Minh|quà nhỏ cho Minh|dành cho Minh|Minh mở quà/).first()).toBeVisible();
     const box = (await gift.boundingBox())!;
     expect(Math.min(box.width, box.height)).toBeGreaterThanOrEqual(44);
     await gift.click();
-    await expect(page.getByTestId('v2-trip-reveal')).toBeVisible({ timeout: 20_000 });
+    await expect(back.getByTestId('v2-trip-reveal')).toBeVisible({ timeout: 20_000 });
     await expect.poll(async () => (await adventuresOf(family, 'minh')).journal.length).toBe(1);
     const slug = (await adventuresOf(family, 'minh')).journal[0]!.discovery_slug as string;
     const name = (vi.adventure.discoveries as Record<string, string>)[slug]!;
-    await expect(page.getByTestId('v2-trip-reveal').getByText(name, { exact: true })).toBeVisible();
-    await capture(page, 'GIFT');
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.getByRole('button', { name: 'Cất vào sổ' }).click();
-    await expect(page.getByTestId('v2-trip-reveal')).toHaveCount(0);
+    await expect(back.getByTestId('v2-trip-reveal').getByText(name, { exact: true })).toBeVisible();
+    await capture(back, 'GIFT');
+    await back.setViewportSize({ width: 390, height: 844 });
+    await back.getByRole('button', { name: 'Cất vào sổ' }).click();
+    await expect(back.getByTestId('v2-trip-reveal')).toHaveCount(0);
     // rouverte : la séquence ne se rejoue jamais, aucun nouveau tirage
-    await page.reload();
-    await expect(page.getByLabel(/^Phiêu lưu: \d+ trên 60 năng lượng$/)).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByTestId('v2-trip-gift-button')).toHaveCount(0);
-    await expect(page.getByTestId('v2-trip-reveal')).toHaveCount(0);
+    await back.reload();
+    await expect(back.getByLabel(/^Phiêu lưu: \d+ trên 60 năng lượng$/)).toBeVisible({ timeout: 20_000 });
+    await expect(back.getByTestId('v2-trip-gift-button')).toHaveCount(0);
+    await expect(back.getByTestId('v2-trip-reveal')).toHaveCount(0);
     expect((await adventuresOf(family, 'minh')).journal).toEqual([{ discovery_slug: slug, times_found: 1 }]);
     expect(dialogs).toEqual([]);
   });
@@ -421,7 +431,7 @@ test.describe('interface V2 : vidéo d\'accueil (D-106)', () => {
     }
   });
 
-  test('pendant une aventure : décor de la destination, sans vidéo ; « réduire les animations » : jamais de vidéo', async ({ browser }) => {
+  test('pendant une aventure (D-107) : maison vide, sans vidéo ni panda ; « réduire les animations » : jamais de vidéo, départ direct', async ({ browser }) => {
     test.setTimeout(150_000);
     const family = await createFamily({ uiVersion: 'v2' });
     await seedCompanion(family, 'khang', 'Bambou');
@@ -433,11 +443,13 @@ test.describe('interface V2 : vidéo d\'accueil (D-106)', () => {
 
     const page = await openTeen(browser, family);
     await expect(page.getByTestId('v2-home-video-element')).toBeAttached({ timeout: 20_000 });
-    await page.getByRole('button', { name: 'Đi phiêu lưu!' }).click();
+    await page.getByRole('button', { name: 'Chọn nơi đến' }).click();
     await page.getByRole('button', { name: 'Vịnh Hạ Long' }).click();
+    await page.getByTestId('v2-postcard-go').click();
     await expect(page).toHaveURL(/\/v2\/child\/home/, { timeout: 20_000 });
-    await expect(page.getByTestId('v2-scene-ha-long')).toBeAttached({ timeout: 20_000 });
+    await expect(page.getByTestId('v2-trip-note')).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByTestId('v2-scene-home').first()).toBeAttached();
     await expect(page.getByTestId('v2-home-video-element')).toHaveCount(0);
-    await expect(page.getByLabel('Panda Bambou đang đi phiêu lưu').first()).toBeVisible();
+    await expect(page.getByTestId('v2-panda')).toHaveCount(0);
   });
 });

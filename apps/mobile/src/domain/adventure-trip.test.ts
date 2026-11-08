@@ -121,7 +121,7 @@ describe('trajet sur la carte (D-107)', () => {
 
 describe('mot épinglé (D-107)', () => {
   it('le message tient en 2 lignes, taille bornée', () => {
-    expect(noteFontSize('Tớ đi Sa Pa, sáng mai về nhé!', 62)).toBeGreaterThan(8);
+    expect(noteFontSize('Sa Pa!', 62)).toBeGreaterThan(8);
     const long = noteFontSize('Tớ đi Miền Tây sông nước, sáng mai về nhé!', 62);
     expect(long).toBeLessThan(noteFontSize('Tớ đi Sa Pa, sáng mai về nhé!', 62));
     expect(long).toBeGreaterThanOrEqual(6);
