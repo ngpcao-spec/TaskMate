@@ -1,9 +1,31 @@
 {
-  "_doc": "Centre de chaque clairière de la carte, en fraction de la largeur (x) et de la hauteur (y) de l'image map-vietnam.webp (1086x1448). Rayon horizontal approx. 0.08 de la largeur.",
-  "sa-pa":     { "x": 0.343, "y": 0.075 },
-  "ha-long":   { "x": 0.651, "y": 0.162 },
-  "phong-nha": { "x": 0.556, "y": 0.300 },
-  "hoi-an":    { "x": 0.727, "y": 0.435 },
-  "da-lat":    { "x": 0.647, "y": 0.630 },
-  "mekong":    { "x": 0.430, "y": 0.834 }
+  "_doc": "Centre de chaque clairière de la carte, en fraction de la largeur (x) et de la hauteur (y) de l'image map-vietnam.webp (1086x1448). Rayon horizontal approx. 0.08 de la largeur. 'home' = point de départ (maison du panda), placé sur les collines à gauche, hors clairière.",
+  "sa-pa": {
+    "x": 0.343,
+    "y": 0.075
+  },
+  "ha-long": {
+    "x": 0.651,
+    "y": 0.162
+  },
+  "phong-nha": {
+    "x": 0.556,
+    "y": 0.3
+  },
+  "hoi-an": {
+    "x": 0.727,
+    "y": 0.435
+  },
+  "da-lat": {
+    "x": 0.647,
+    "y": 0.63
+  },
+  "mekong": {
+    "x": 0.43,
+    "y": 0.834
+  },
+  "home": {
+    "x": 0.22,
+    "y": 0.42
+  }
 }
