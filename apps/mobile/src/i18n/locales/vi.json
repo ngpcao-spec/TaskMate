@@ -1984,6 +1984,168 @@
           "v1": "Phong Nha là một kỳ quan thiên nhiên. Đây là kỷ niệm.",
           "v2": "Một chuyến thám hiểm hang động thú vị. Mình mang về món này."
         }
+      },
+      "adventure_invite_ha_long": {
+        "s1": {
+          "v1": "Panda muốn đi thuyền ở Hạ Long!",
+          "v2": "Đi biển Hạ Long nha!"
+        },
+        "s2": {
+          "v1": "Cậu muốn đi thuyền ở Vịnh Hạ Long với tớ không?",
+          "v2": "Tụi mình đi ngắm đảo ở Hạ Long nhé?"
+        },
+        "s3": {
+          "v1": "Đi thuyền giữa các đảo đá ở Hạ Long không bạn?",
+          "v2": "Hạ Long đang chờ tụi mình đó. Đi không?"
+        },
+        "s4": {
+          "v1": "Một ngày trên Vịnh Hạ Long, bạn thấy sao?",
+          "v2": "Mình muốn ngắm bình minh ở Hạ Long. Đi cùng nhé?"
+        }
+      },
+      "adventure_invite_hoi_an": {
+        "s1": {
+          "v1": "Panda muốn xem đèn lồng ở Hội An!",
+          "v2": "Đi Hội An nha!"
+        },
+        "s2": {
+          "v1": "Cậu muốn đi xem đèn lồng ở Hội An với tớ không?",
+          "v2": "Tụi mình qua Chùa Cầu ở Hội An nhé?"
+        },
+        "s3": {
+          "v1": "Dạo phố cổ Hội An lúc lên đèn không bạn?",
+          "v2": "Hội An đẹp lắm đó. Mình đi nhé?"
+        },
+        "s4": {
+          "v1": "Phố cổ Hội An về đêm rất đẹp. Bạn muốn đi không?",
+          "v2": "Mình muốn dạo một vòng Hội An. Đi cùng nhé?"
+        }
+      },
+      "adventure_invite_mekong": {
+        "s1": {
+          "v1": "Panda muốn đi xuồng ở miền Tây!",
+          "v2": "Đi hái trái cây nha!"
+        },
+        "s2": {
+          "v1": "Cậu muốn đi xuồng trên sông với tớ không?",
+          "v2": "Tụi mình ghé vườn trái cây miền Tây nhé?"
+        },
+        "s3": {
+          "v1": "Đi xuồng qua kênh rạch miền Tây không bạn?",
+          "v2": "Miền Tây nhiều trái cây lắm. Đi không?"
+        },
+        "s4": {
+          "v1": "Một buổi sáng trên sông nước miền Tây, bạn thấy sao?",
+          "v2": "Mình muốn ghé chợ nổi miền Tây. Đi cùng nhé?"
+        }
+      },
+      "adventure_invite_da_lat": {
+        "s1": {
+          "v1": "Panda muốn đi Đà Lạt hái dâu!",
+          "v2": "Đi Đà Lạt nha!"
+        },
+        "s2": {
+          "v1": "Cậu muốn đạp xe quanh hồ ở Đà Lạt với tớ không?",
+          "v2": "Tụi mình đi ngắm hoa dã quỳ ở Đà Lạt nhé?"
+        },
+        "s3": {
+          "v1": "Đà Lạt se lạnh, đi hái dâu không bạn?",
+          "v2": "Đạp xe quanh hồ Đà Lạt nhé?"
+        },
+        "s4": {
+          "v1": "Đà Lạt mùa này rất dễ chịu. Bạn muốn đi không?",
+          "v2": "Mình muốn đi dạo đồi thông Đà Lạt. Đi cùng nhé?"
+        }
+      },
+      "adventure_invite_sa_pa": {
+        "s1": {
+          "v1": "Panda muốn chạm vào mây ở Sa Pa!",
+          "v2": "Đi Sa Pa nha!"
+        },
+        "s2": {
+          "v1": "Cậu muốn đi ngắm ruộng bậc thang ở Sa Pa với tớ không?",
+          "v2": "Tụi mình lên Sa Pa chạm vào mây nhé?"
+        },
+        "s3": {
+          "v1": "Leo núi ngắm ruộng bậc thang Sa Pa không bạn?",
+          "v2": "Sa Pa có mây ngay dưới chân đó. Đi không?"
+        },
+        "s4": {
+          "v1": "Ruộng bậc thang Sa Pa rất đẹp. Bạn muốn đi không?",
+          "v2": "Mình muốn ngắm mây trên núi Sa Pa. Đi cùng nhé?"
+        }
+      },
+      "adventure_invite_phong_nha": {
+        "s1": {
+          "v1": "Panda muốn vào hang Phong Nha!",
+          "v2": "Đi xem hang động nha!"
+        },
+        "s2": {
+          "v1": "Cậu muốn đi thuyền vào hang Phong Nha với tớ không?",
+          "v2": "Tụi mình đi khám phá hang động nhé?"
+        },
+        "s3": {
+          "v1": "Khám phá hang Phong Nha không bạn? Nhớ mang đèn pin!",
+          "v2": "Trong hang Phong Nha lấp lánh lắm. Đi không?"
+        },
+        "s4": {
+          "v1": "Hang Phong Nha rất kỳ vĩ. Bạn muốn đi không?",
+          "v2": "Mình muốn đi thuyền vào hang Phong Nha. Đi cùng nhé?"
+        }
+      },
+      "adventure_leave": {
+        "s1": {
+          "v1": "Panda đi nha! Mai Panda về!",
+          "v2": "Tạm biệt {{name}}! Mai gặp nha!"
+        },
+        "s2": {
+          "v1": "Đi thôi! Sáng mai tớ về nhé!",
+          "v2": "Tớ đi đây! Sáng mai gặp lại cậu nhé!"
+        },
+        "s3": {
+          "v1": "Lên đường thôi! Sáng mai mình về.",
+          "v2": "Đi đây! Sáng mai gặp bạn nhé."
+        },
+        "s4": {
+          "v1": "Mình lên đường đây. Sáng mai mình về.",
+          "v2": "Hẹn bạn sáng mai nhé."
+        }
+      },
+      "adventure_note": {
+        "s1": {
+          "v1": "Panda đi {{destination}}, mai về nha!",
+          "v2": "Panda đi chơi {{destination}}!"
+        },
+        "s2": {
+          "v1": "Tớ đi {{destination}}, sáng mai về nhé!",
+          "v2": "Tớ đi {{destination}} rồi, sáng mai gặp nhé!"
+        },
+        "s3": {
+          "v1": "Mình đi {{destination}}, sáng mai về nhé!",
+          "v2": "Đi {{destination}} một chút, sáng mai về."
+        },
+        "s4": {
+          "v1": "Mình đi {{destination}}, sáng mai về.",
+          "v2": "Đang ở {{destination}}, sáng mai về nhé."
+        }
+      },
+      "adventure_home_gift": {
+        "s1": {
+          "v1": "Panda về rồi! Panda có quà cho {{name}} nè!",
+          "v2": "{{name}} ơi, Panda có quà nè!"
+        },
+        "s2": {
+          "v1": "Tớ về rồi! Có quà cho {{name}} nè!",
+          "v2": "Tớ về rồi đây! Quà này cho {{name}} nè!"
+        },
+        "s3": {
+          "v1": "Mình về rồi! Có quà cho {{name}} nè.",
+          "v2": "Về tới nhà rồi! {{name}} mở quà đi."
+        },
+        "s4": {
+          "v1": "Mình đã về. Có một món quà nhỏ cho {{name}}.",
+          "v2": "Chuyến đi vui lắm. Quà này dành cho {{name}}."
+        }
       }
     }
   },
@@ -2077,7 +2239,9 @@
       "phong-nha-boussole": "la bàn",
       "phong-nha-lampe": "đèn pin",
       "phong-nha-fougere": "cây dương xỉ"
-    }
+    },
+    "gaugeWaiting": "Chuyến tiếp theo đang chờ!",
+    "gaugeWaitingLabel": "Chuyến tiếp theo đang chờ! {{value}} trên {{cost}} năng lượng"
   },
   "v2": {
     "tabs": {
@@ -2122,10 +2286,14 @@
       "ready": "Đầy năng lượng rồi!",
       "away": "Đang phiêu lưu · về sáng mai",
       "pathLabel": "{{name}} đang trên đường, đã đi {{percent}}%",
-      "back": "{{name}} về rồi! Mở túi xem nào",
+      "back": "{{name}} về rồi! Mở quà xem nào",
       "open": "Mở túi",
       "start": "⚡",
-      "finish": "?"
+      "finish": "?",
+      "choose": "Chọn nơi đến",
+      "awayAt": "{{name}} đang ở {{destination}} · về sáng mai",
+      "openGift": "Mở quà",
+      "reaction": "+{{energy}} ⚡"
     },
     "celebration": {
       "title": "Xong hết rồi!",
@@ -2138,7 +2306,8 @@
     },
     "panda": {
       "walking": "Panda {{name}} đang đi phiêu lưu",
-      "touch": "Chạm vào {{name}}"
+      "touch": "Chạm vào {{name}}",
+      "letsGo": "Đi phiêu lưu thôi!"
     },
     "placeholder": "Giao diện mới đang được chuẩn bị.",
     "admin": {
@@ -2224,6 +2393,22 @@
     "settings": {
       "children": "Các con",
       "addChild": "Thêm con"
+    },
+    "trip": {
+      "go": "Lên đường!",
+      "later": "Để sau",
+      "close": "Đóng",
+      "busy": "{{name}} đang đi xa rồi, chuyến sau nhé!",
+      "level": "Cấp hiện tại: {{level}}",
+      "finds": "Món quà ở đây",
+      "sheetLabel": "Bưu thiếp {{destination}}",
+      "skip": "Bỏ qua",
+      "store": "Cất vào sổ",
+      "signature": "— {{name}}",
+      "homeLabel": "Nhà của {{name}}",
+      "leaving": "{{name}} đang lên đường đến {{destination}}",
+      "coming": "{{name}} đang về nhà",
+      "gift": "Món quà từ {{destination}}"
     }
   }
 }

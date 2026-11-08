@@ -91,9 +91,12 @@ export function wake(s: PandaAnimState): PandaAnimState {
   return { ...s, current: 'idle', asleep: false, pending: null };
 }
 
-/** Coucher du jour : `play` (à jouer), `still` (déjà joué aujourd'hui : image endormie), `none` (journée pas finie). */
-export function sleepPlan(dayDone: boolean, playedOn: string | null, today: string): 'none' | 'play' | 'still' {
-  if (!dayDone) return 'none';
+/**
+ * Coucher du jour : `play` (à jouer), `still` (déjà joué aujourd'hui : image endormie), `none` (journée pas finie). D-107 : jauge d'aventure PLEINE
+ * = `none` même si la journée est finie : le panda reste éveillé (repos ou `happy`) et attend le départ (« Đi phiêu lưu thôi! »).
+ */
+export function sleepPlan(dayDone: boolean, playedOn: string | null, today: string, gaugeFull = false): 'none' | 'play' | 'still' {
+  if (!dayDone || gaugeFull) return 'none';
   return playedOn === today ? 'still' : 'play';
 }
 

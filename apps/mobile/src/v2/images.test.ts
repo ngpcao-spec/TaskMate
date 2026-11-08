@@ -1,7 +1,7 @@
 import { existsSync } from 'fs';
 import { join } from 'path';
 import { GOAL_ICONS } from '@/domain/goal-icons';
-import { goalIconImage, mapImage, mapSpot, pandaWalkImage, sceneImage, SCENE_SLUGS } from './images';
+import { goalIconImage, HOME_DOOR, mapImage, mapSpot, pandaWalkImage, sceneImage, SCENE_SLUGS, tripImage } from './images';
 
 const DESTINATIONS = ['ha-long', 'hoi-an', 'mekong', 'da-lat', 'sa-pa', 'phong-nha'];
 
@@ -29,6 +29,12 @@ describe('images V2 (D-106)', () => {
     expect(mapSpot('ha-long')).toEqual({ x: 0.651, y: 0.162 });
     expect(mapSpot('_doc')).toBeNull();
     expect(mapSpot('atlantide')).toBeNull();
+  });
+  it('voyage (D-107) : paquet fermé et ouvert, mot, maison ; point de départ `home` sur la carte, porte dans le décor', () => {
+    for (const n of ['gift-closed', 'gift-open', 'note', 'home-marker'] as const) expect(tripImage(n)).toBeDefined();
+    expect(mapSpot('home')).toEqual({ x: 0.22, y: 0.42 });
+    expect(HOME_DOOR.x).toBeGreaterThan(0.5);
+    expect(HOME_DOOR.y).toBeLessThan(0.5);
   });
   it('aucun require d’image V2 hors de ce module', () => {
     expect(existsSync(join(__dirname, '../../assets/v2/scenes/scene-home@720.webp'))).toBe(true);

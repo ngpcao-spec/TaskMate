@@ -114,6 +114,21 @@ describe('panda vidéo : coucher une fois par jour, `happy` une fois par tâche 
     expect(sleepPlan(true, '2026-11-02', '2026-11-03')).toBe('play'); // nouveau jour
     expect(sleepPlan(true, '2026-11-03', '2026-11-03')).toBe('still');
   });
+  it('D-107 : jauge d’aventure pleine, le panda ne s’endort pas même si la journée est finie (il reste éveillé, `happy` possible)', () => {
+    expect(sleepPlan(true, null, '2026-11-03', true)).toBe('none');
+    expect(sleepPlan(true, '2026-11-03', '2026-11-03', true)).toBe('none');
+    expect(sleepPlan(true, null, '2026-11-03', false)).toBe('play');
+    // déjà endormi quand la jauge se remplit (quiz validé le soir) : il se réveille
+    const asleep = applyDayPlan(initialPandaAnim, 'still', false, true);
+    expect(asleep.asleep).toBe(true);
+    const awake = applyDayPlan(asleep, sleepPlan(true, '2026-11-03', '2026-11-03', true), false, true);
+    expect(awake).toMatchObject({ current: 'idle', asleep: false });
+    // éveillé : la coche joue `happy`, et rien ne le couche ensuite
+    const happy = requestAnim(awake, 'happy', 0, ALL);
+    expect(happy.current).toBe('happy');
+    const after = applyDayPlan(animEnded(happy, 'happy', 10), sleepPlan(true, null, '2026-11-03', true), false, true);
+    expect(after).toMatchObject({ current: 'idle', asleep: false });
+  });
   it('coche : la première du jour pour cette tâche seulement ; la mémoire ne garde que le jour courant', () => {
     let seen: string[] = [];
     expect(firstCheckToday(seen, 't1', '2026-11-03')).toBe(true);

@@ -91,3 +91,18 @@ const WALK: Record<PandaStage, Pair> = {
   4: { full: require('../../assets/v2/walk/panda-walk-age-4-dong-hanh.webp'), small: require('../../assets/v2/walk/panda-walk-age-4-dong-hanh@384.webp') },
 };
 export const pandaWalkImage = (stage: PandaStage, size: ImageSize = 'small'): ImageSourcePropType => WALK[stage][size];
+
+/**
+ * Voyage du panda (D-107, branche `assets/v2-trip`, 512 px, fond transparent) : paquet fermé et ouvert, mot épinglé, maison du panda sur la carte.
+ */
+export type TripImage = 'gift-closed' | 'gift-open' | 'note' | 'home-marker';
+const TRIP: Record<TripImage, ImageSourcePropType> = {
+  'gift-closed': require('../../assets/v2/trip/gift-closed.webp'),
+  'gift-open': require('../../assets/v2/trip/gift-open.webp'),
+  'note': require('../../assets/v2/trip/note.webp'),
+  'home-marker': require('../../assets/v2/trip/home-marker.webp'),
+};
+export const tripImage = (name: TripImage): ImageSourcePropType => TRIP[name];
+
+/** Porte de la maison dans le décor `home` (fraction de l'image, mesurée sur `scene-home@720.webp`) : le mot du voyage y est épinglé. */
+export const HOME_DOOR: MapSpot = { x: 0.75, y: 0.39 };

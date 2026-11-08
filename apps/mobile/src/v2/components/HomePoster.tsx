@@ -16,7 +16,7 @@ export function HomePoster({ video, image, topClear, groundOffset, width, height
   const l = homeVideoLayout({ width, height, groundY: height - groundOffset, topClear }, video.geometry);
   return (
     <View testID="v2-home-video-poster" style={StyleSheet.absoluteFill} pointerEvents="none" importantForAccessibility="no-hide-descendants">
-      {l.boxLeft > 0 ? <Image source={video.sources.poster as number} resizeMode="cover" blurRadius={10} style={StyleSheet.absoluteFill} accessibilityIgnoresInvertColors /> : null}
+      {l.boxLeft > 0 ? <Image source={video.sources.poster as number} resizeMode="cover" blurRadius={10} style={styles.fill} accessibilityIgnoresInvertColors /> : null}
       <View style={[styles.box, { left: l.boxLeft, width: l.boxWidth }]}>
         <Image
           testID={image !== undefined ? 'v2-home-video-poster-still' : undefined}
@@ -31,6 +31,8 @@ export function HomePoster({ video, image, topClear, groundOffset, width, height
 }
 
 const styles = StyleSheet.create({
+  // taille explicite : sur le web, une image locale sans largeur ni hauteur garde sa taille d'origine
+  fill: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' },
   box: { position: 'absolute', top: 0, bottom: 0, overflow: 'hidden' },
   image: { position: 'absolute' },
 });

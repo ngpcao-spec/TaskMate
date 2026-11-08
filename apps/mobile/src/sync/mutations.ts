@@ -56,8 +56,12 @@ export type SaveProgressVars = { attemptId: string; questionId: string; choice: 
 export type SubmitEvaluationVars = { attemptId: string; answers: { question_id: string; choice: number | null }[] };
 export type ValidateAttemptVars = { attemptId: string; showCorrection?: boolean };
 /** Aventures (D-105) : l'id de l'aventure est fixé à la création → rejeu idempotent côté RPC. */
-export type StartAdventureVars = { childId: string; adventureId: string; destination: string };
-export type CollectAdventureVars = { childId: string; adventureId: string };
+/**
+ * D-107 : `quiet` = l'écran qui a lancé l'écriture affiche lui-même le refus doux (dans la feuille carte postale, ou sur le paquet) : pas de toast en
+ * double. Sans `quiet` (écriture rejouée après coup), le refus s'affiche en toast comme avant.
+ */
+export type StartAdventureVars = { childId: string; adventureId: string; destination: string; quiet?: boolean };
+export type CollectAdventureVars = { childId: string; adventureId: string; quiet?: boolean };
 type SnapshotCtx = { snapshot?: ReturnType<typeof snapshotTasks>; /** D-104 : état du panda avant la coche optimiste (rétabli si l'écriture échoue). */ companion?: CompanionState };
 
 /** Variables d'une coche : le `txId` est tiré ici, une seule fois — tout rejeu (retry, file hors ligne) reste idempotent. */
@@ -275,7 +279,8 @@ export function registerMutationDefaults(
 
   // D-105 : aventures. Le serveur reste seul juge (jauge, destination, jour du retour, trouvaille) ; un refus est abandonné avec un message DOUX
   // (jamais d'erreur technique), un double appui (`adventure_in_progress`) sans aucun message.
-  const adventureFailure = (error: unknown) => {
+  const adventureFailure = (error: unknown, vars?: { quiet?: boolean }) => {
+    if (vars?.quiet) return;
     const key = adventureErrorKey(serverErrorCode(error));
     if (key) toast(i18n.t(key), 'info');
   };

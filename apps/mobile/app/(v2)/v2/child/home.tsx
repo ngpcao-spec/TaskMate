@@ -7,11 +7,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PandaSetupCard } from '@/components/companion/PandaSetupCard';
 import { ChildSetupGate } from '@/components/onboarding/ChildSetupGate';
 import { awayProgress, RETURN_MORNING } from '@/domain/adventure';
+import { coverPoint, WALK_OUT_MS } from '@/domain/adventure-trip';
 import { celebrationAction, dayComplete, groupByDaySection, remainingCount } from '@/domain/day-sections';
 import { timeInTz, todayInTz } from '@/domain/family-time';
 import { goalIconFor, WEEKLY_REVIEW_ICON } from '@/domain/goal-icons';
 import { homeMediaMode, homeVideoLayout, pandaHitRect } from '@/domain/home-video';
 import { DEFAULT_PANDA_NAME, localHourOf, pandaMood, type PandaMood } from '@/domain/panda';
+import { pandaLineKey, pandaLineParams, storySituation } from '@/domain/panda-lines';
 import { taskPermissions } from '@/domain/permissions';
 import { instantInTz } from '@/domain/reminders';
 import { taskState } from '@/domain/task-state';
@@ -29,6 +31,14 @@ import { useWeeklyQuizzes } from '@/hooks/useWeeklyQuizzes';
 import { useHomeScene } from '@/store/homeScene';
 import { usePandaReaction } from '@/store/pandaReaction';
 import { usePandaAnimation } from '@/hooks/usePandaAnimation';
+import { useTrip } from '@/hooks/useTrip';
+import { useTripStore } from '@/store/trip';
+import { NOTE_SIZE, TripNote } from '@/v2/components/TripNote';
+import { PandaWalker } from '@/v2/components/PandaWalker';
+import { PostcardSheet } from '@/v2/components/PostcardSheet';
+import { ReturnScene, RevealCard } from '@/v2/components/TripReturn';
+import { SpeechBubble } from '@/v2/components/SpeechBubble';
+import { HOME_DOOR, SCENE_RATIO } from '@/v2/images';
 import { AdventureCard } from '@/v2/components/AdventureCard';
 import { CelebrationCard } from '@/v2/components/CelebrationCard';
 import { DayPill } from '@/v2/components/DayPill';
@@ -40,7 +50,7 @@ import { homeReactionsForStage, homeVideoForStage } from '@/v2/video';
 import { PandaSprite } from '@/v2/components/PandaSprite';
 import { SCENE_GROUND_OFFSET, SCENE_TOP_CLEAR, SceneHeader } from '@/v2/components/SceneHeader';
 import { V2_MAX_WIDTH } from '@/v2/components/V2Screen';
-import { v2Colors, v2Font, v2Radius, v2Spacing } from '@/v2/theme';
+import { v2Colors, v2Font, v2Radius, v2Spacing, v2Text } from '@/v2/theme';
 
 const SCENE_HEIGHT = 300;
 const PANDA_SIZE = 132;
@@ -82,9 +92,16 @@ export default function V2ChildHome() {
   const doneKey = tasks.map((x) => `${x.id}:${x.completed_at ?? ''}`).join('|');
   const reviewing = reviewKey === doneKey;
 
+  // D-107 : le grand départ et le retour (affichage seulement) ; le décor reste TOUJOURS la maison
+  const trip = useTrip(childId, adventure);
+  const departure = useTripStore((s) => (s.departure && s.departure.childId === childId ? s.departure : null));
+  const finishDeparture = useTripStore((s) => s.finish);
+  const leaving = departure !== null;
   const away = adventure?.state === 'away' ? adventure.active : null;
-  const back = adventure?.state === 'back';
-  const scene = away ? away.destination : 'home';
+  const scene = 'home';
+  // état vu par la vidéo d'accueil : pas de panda vidéo pendant le départ, le voyage, le retour et l'ouverture du paquet
+  const shownState = leaving ? 'away' : trip.view === 'opened' ? 'back' : adventure?.state;
+  const gaugeFull = adventure?.state === 'ready_to_go' && !leaving;
   // D-106 : vidéo d'accueil (maison, panda du stade AFFICHÉ) à la place du décor fixe et du panda, si toutes les conditions sont réunies (web seulement)
   const stageVideo = companion?.hasCompanion ? homeVideoForStage(companion.stage) : null;
   const stage = companion?.stage ?? 0;
@@ -92,7 +109,7 @@ export default function V2ChildHome() {
   const media = companion?.hasCompanion
     ? homeMediaMode({
         scene,
-        adventure: adventure?.state,
+        adventure: shownState,
         hasStageVideo: stageVideo !== null,
         variant: companion.variant,
         reduceMotion,
@@ -104,7 +121,7 @@ export default function V2ChildHome() {
     : 'off';
   const video = media === 'video';
   // gestionnaire unique des animations du panda (repos, content, curieux, endormi) ; fin de journée = règle existante (`dayComplete`)
-  const anim = usePandaAnimation({ childId, stage, today, dayDone: complete, ready: !tasksQuery.isPending, mode: media });
+  const anim = usePandaAnimation({ childId, stage, today, dayDone: complete, ready: !tasksQuery.isPending, mode: media, gaugeFull });
   const reactionVideo = video && anim.reactions !== null;
   // D-106 : avec la vidéo (ou ses images fixes), le fond sous l'en-tête ET la barre d'onglets prolongent la vidéo (couleur de son sable)
   const extendColor = media !== 'off' && stageVideo ? stageVideo.groundColor : null;
@@ -112,6 +129,11 @@ export default function V2ChildHome() {
     setSceneColor(focused ? extendColor : null);
   }, [focused, extendColor, setSceneColor]);
   useEffect(() => () => setSceneColor(null), [setSceneColor]);
+  // départ laissé en plan (l'enfant est allé ailleurs) : la séquence ne se rejoue pas plus tard
+  useEffect(() => {
+    if (departure && Date.now() - departure.at > WALK_OUT_MS + 3000) finishDeparture();
+  }, [departure, finishDeparture]);
+  const [noteOpen, setNoteOpen] = useState(false);
 
   if (!d || !d.child) {
     return (
@@ -142,13 +164,37 @@ export default function V2ChildHome() {
           width: screenWidth,
         })
       : null;
+  const pandaHome = !leaving && trip.view !== 'away';
   const reactionBubble =
-    reacting && reactionEnergy > 0 ? (
+    pandaHome && reacting && reactionEnergy > 0 ? (
       <View style={styles.reaction} pointerEvents="none">
         <Text style={styles.reactionText}>{t('panda.reaction', { energy: reactionEnergy })}</Text>
       </View>
     ) : null;
 
+
+  const seed = tasks.length + done;
+  const pandaTop = reactionVideo && stageVideo && screenWidth > 0
+    ? homeVideoLayout({ width: screenWidth, height: headerH, groundY: headerH - SCENE_GROUND_OFFSET, topClear }, stageVideo.geometry).pandaTop
+    : headerH - SCENE_GROUND_OFFSET - PANDA_SIZE;
+  const speech = leaving
+    ? t(pandaLineKey(companion?.stage ?? 2, 'adventure_leave', seed), pandaLineParams(child.name))
+    : trip.view === 'back' && trip.step === 'gift'
+      ? t(pandaLineKey(companion?.stage ?? 2, 'adventure_home_gift', seed), pandaLineParams(child.name))
+      : trip.view === 'ready' && !reacting && companion?.hasCompanion
+        ? t('v2.panda.letsGo')
+        : null;
+  const awayDest = away ? adventure?.destinations.find((x) => x.slug === away.destination) : undefined;
+  const awayName = away ? t(`adventure.destinations.${away.destination}`) : '';
+  const door = coverPoint({ width: screenWidth, height: headerH }, SCENE_RATIO, HOME_DOOR);
+  const reveal = trip.reveal;
+  const revealTimes = reveal ? (adventure?.found.find((f) => f.slug === reveal.discoverySlug)?.timesFound ?? 1) : 1;
+  const revealLine = reveal
+    ? t(
+        pandaLineKey(companion?.stage ?? 2, reveal.duplicate ? 'adventure_duplicate' : (storySituation(reveal.destination) ?? 'adventure_back'), revealTimes),
+        pandaLineParams(child.name, t(`adventure.destinations.${reveal.destination}`)),
+      )
+    : '';
 
   return (
     <View testID="v2-child-home" style={[styles.screen, extendColor ? { backgroundColor: extendColor } : null]}>
@@ -170,7 +216,8 @@ export default function V2ChildHome() {
           backdropVisible={media !== 'off' && (reactionVideo || media === 'still' || !reacting)}
           extendColor={extendColor}
           overlay={
-            video && stageVideo ? (
+            <>
+            {video && stageVideo ? (
               <>
                 <HomeVideo
                   video={stageVideo}
@@ -201,10 +248,53 @@ export default function V2ChildHome() {
                   />
                 ) : null}
               </>
-            ) : null
+            ) : null}
+            {speech ? (
+              <View style={[styles.speechRow, { top: Math.max(topClear, pandaTop - 64) }]} pointerEvents="none">
+                <SpeechBubble text={speech} testID="v2-panda-speech" />
+              </View>
+            ) : null}
+            {trip.view === 'away' && !leaving && away && screenWidth > 0 ? (
+              <TripNote
+                left={door.x}
+                top={Math.max(topClear + NOTE_SIZE / 2, door.y)}
+                text={t(pandaLineKey(companion?.stage ?? 2, 'adventure_note', 0), pandaLineParams(child.name, awayName))}
+                signature={t('v2.trip.signature', { name: pandaName })}
+                onPress={() => setNoteOpen(true)}
+              />
+            ) : null}
+            {leaving ? (
+              <Pressable testID="v2-trip-skip" accessibilityRole="button" accessibilityLabel={t('v2.trip.skip')} onPress={finishDeparture} style={styles.skip} />
+            ) : null}
+            </>
           }
         >
-          {companion?.hasCompanion ? (
+          {companion?.hasCompanion && leaving ? (
+            <PandaWalker
+              testID="v2-trip-walk-out"
+              stage={companion.stage}
+              size={PANDA_SIZE}
+              direction="out"
+              durationMs={WALK_OUT_MS}
+              reduceMotion={reduceMotion}
+              onDone={finishDeparture}
+              label={t('v2.trip.leaving', { name: pandaName, destination: t(`adventure.destinations.${departure.destination}`) })}
+            />
+          ) : companion?.hasCompanion && trip.view === 'away' ? null : companion?.hasCompanion && (trip.view === 'back' || trip.view === 'opened') ? (
+            <ReturnScene
+              stage={companion.stage}
+              variant={companion.variant}
+              pandaName={pandaName}
+              size={PANDA_SIZE}
+              step={trip.view === 'opened' ? 'open' : (trip.step ?? 'gift')}
+              reduceMotion={reduceMotion}
+              onEntered={trip.markEntered}
+              onOpen={trip.openGift}
+              opening={trip.opening}
+              discovery={reveal?.discoverySlug ?? null}
+              destinationName={t(`adventure.destinations.${reveal?.destination ?? adventure?.active?.destination ?? ''}`)}
+            />
+          ) : companion?.hasCompanion ? (
             <PandaSprite
               testID="v2-panda"
               stage={companion.stage}
@@ -212,8 +302,6 @@ export default function V2ChildHome() {
               name={pandaName}
               size={PANDA_SIZE}
               mood={mood}
-              expression={back && !reacting ? 'surpris' : undefined}
-              walking={!!away}
               hopKey={hopKey}
             />
           ) : null}
@@ -229,10 +317,21 @@ export default function V2ChildHome() {
               pandaName={pandaName}
               variant={companion.variant}
               progress={progress}
-              busy={adventurePending}
+              busy={adventurePending || trip.opening}
               onMap={goAdventure}
               onGo={goAdventure}
-              onOpenBag={adventure.active ? () => router.push({ pathname: '/adventure/reveal', params: { id: adventure.active!.id } }) : undefined}
+              onOpenBag={trip.view === 'back' ? trip.openGift : undefined}
+              reactionEnergy={!pandaHome && reacting ? reactionEnergy : 0}
+            />
+          ) : null}
+          {trip.opening ? <Text style={styles.waiting}>{t('adventure.pending')}</Text> : null}
+          {reveal ? (
+            <RevealCard
+              discoveryName={t(`adventure.discoveries.${reveal.discoverySlug}`)}
+              line={revealLine}
+              duplicate={reveal.duplicate}
+              times={revealTimes}
+              onStore={trip.store}
             />
           ) : null}
           <DayPill remaining={remainingCount(tasks)} total={tasks.length} />
@@ -294,6 +393,20 @@ export default function V2ChildHome() {
             : null}
         </View>
       </ScrollView>
+      {noteOpen && awayDest && adventure ? (
+        <PostcardSheet
+          visible
+          readOnly
+          destination={awayDest}
+          adventure={adventure}
+          stage={companion?.stage ?? 2}
+          pandaName={pandaName}
+          childName={child.name}
+          pending={false}
+          onGo={() => undefined}
+          onClose={() => setNoteOpen(false)}
+        />
+      ) : null}
     </View>
   );
 }
@@ -307,5 +420,8 @@ const styles = StyleSheet.create({
   hit: { position: 'absolute' },
   // bulle « +N ⚡ » au-dessus du panda vidéo (stades à réactions vidéo)
   bubbleRow: { position: 'absolute', left: 0, right: 0, height: 32, alignItems: 'center' },
+  speechRow: { position: 'absolute', left: v2Spacing.lg, right: v2Spacing.lg, alignItems: 'center' },
+  skip: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+  waiting: { ...v2Text.bodyBold, color: v2Colors.pending, textAlign: 'center' },
   content: { padding: v2Spacing.lg, gap: v2Spacing.md, marginTop: -v2Spacing.xl, width: '100%', maxWidth: V2_MAX_WIDTH, alignSelf: 'center' },
 });
