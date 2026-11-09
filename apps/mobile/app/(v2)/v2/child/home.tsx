@@ -11,7 +11,7 @@ import { coverPoint, WALK_OUT_MS } from '@/domain/adventure-trip';
 import { celebrationAction, dayComplete, groupByDaySection, remainingCount } from '@/domain/day-sections';
 import { timeInTz, todayInTz } from '@/domain/family-time';
 import { goalIconFor, WEEKLY_REVIEW_ICON } from '@/domain/goal-icons';
-import { homeMediaMode, homeVideoLayout, pandaHitRect } from '@/domain/home-video';
+import { homeMediaMode, homeVideoLayout, pandaHitRect, tripMediaMode, tripVideoLayout } from '@/domain/home-video';
 import { DEFAULT_PANDA_NAME, localHourOf, pandaMood, type PandaMood } from '@/domain/panda';
 import { pandaLineKey, pandaLineParams, storySituation } from '@/domain/panda-lines';
 import { taskPermissions } from '@/domain/permissions';
@@ -46,7 +46,8 @@ import { GoalRow } from '@/v2/components/GoalRow';
 import { GoalSection } from '@/v2/components/GoalSection';
 import { HomePoster } from '@/v2/components/HomePoster';
 import { HomeVideo } from '@/v2/components/HomeVideo';
-import { homeReactionsForStage, homeVideoForStage } from '@/v2/video';
+import { homeReactionsForStage, homeVideoForStage, tripVideoForStage } from '@/v2/video';
+import { TripVideo } from '@/v2/components/TripVideo';
 import { PandaSprite } from '@/v2/components/PandaSprite';
 import { SCENE_GROUND_OFFSET, SCENE_TOP_CLEAR, SceneHeader } from '@/v2/components/SceneHeader';
 import { V2_MAX_WIDTH } from '@/v2/components/V2Screen';
@@ -134,6 +135,20 @@ export default function V2ChildHome() {
     if (departure && Date.now() - departure.at > WALK_OUT_MS + 3000) finishDeparture();
   }, [departure, finishDeparture]);
   const [noteOpen, setNoteOpen] = useState(false);
+  // D-107 : en voyage, la vidéo de voyage du stade (s'il en a une) remplace la maison vide et le mot ; lecture refusée = maison vide + mot
+  const [tripFailed, setTripFailed] = useState(false);
+  const tripVideo = companion?.hasCompanion ? tripVideoForStage(companion.stage) : null;
+  const offline = Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.onLine === false;
+  const tripMode = tripMediaMode({
+    away: !leaving && trip.view === 'away' && away !== null,
+    hasTripVideo: tripVideo !== null,
+    variant: companion?.variant,
+    reduceMotion,
+    saveData: prefersSaveData(),
+    offline,
+    web: Platform.OS === 'web',
+    failed: tripFailed,
+  });
 
   if (!d || !d.child) {
     return (
@@ -165,6 +180,15 @@ export default function V2ChildHome() {
         })
       : null;
   const pandaHome = !leaving && trip.view !== 'away';
+  // toucher le panda qui marche (même zone que le panda à la maison, D-106) : rouvre la carte postale de la destination
+  const tripHit =
+    tripMode !== 'off' && tripVideo && screenWidth > 0
+      ? pandaHitRect(tripVideoLayout({ width: screenWidth, height: headerH, groundY: headerH - SCENE_GROUND_OFFSET, topClear }, tripVideo.geometry), {
+          topClear,
+          bottomLimit: headerH - SCENE_GROUND_OFFSET + v2Spacing.sm,
+          width: screenWidth,
+        })
+      : null;
   const reactionBubble =
     pandaHome && reacting && reactionEnergy > 0 ? (
       <View style={styles.reaction} pointerEvents="none">
@@ -254,7 +278,30 @@ export default function V2ChildHome() {
                 <SpeechBubble text={speech} testID="v2-panda-speech" />
               </View>
             ) : null}
-            {trip.view === 'away' && !leaving && away && screenWidth > 0 ? (
+            {tripMode !== 'off' && tripVideo ? (
+              <>
+                <TripVideo
+                  video={tripVideo}
+                  mode={tripMode}
+                  active={focused}
+                  onFailed={() => setTripFailed(true)}
+                  topClear={topClear}
+                  groundOffset={SCENE_GROUND_OFFSET}
+                  width={screenWidth}
+                  height={headerH}
+                />
+                {tripHit ? (
+                  <Pressable
+                    testID="v2-trip-video-touch"
+                    accessibilityRole="button"
+                    accessibilityLabel={t('v2.trip.walking', { name: pandaName, destination: awayName })}
+                    onPress={() => setNoteOpen(true)}
+                    style={[styles.hit, { left: tripHit.left, top: tripHit.top, width: tripHit.width, height: tripHit.height }]}
+                  />
+                ) : null}
+              </>
+            ) : null}
+            {tripMode === 'off' && trip.view === 'away' && !leaving && away && screenWidth > 0 ? (
               <TripNote
                 left={door.x}
                 top={Math.max(topClear + NOTE_SIZE / 2, door.y)}

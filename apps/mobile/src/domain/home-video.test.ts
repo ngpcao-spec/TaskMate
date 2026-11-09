@@ -1,4 +1,4 @@
-import { homeMediaMode, MIN_HIT, pandaHitRect, HOME_VIDEO, homeVideoLayout, homeVideoSize, homeVideoSources, showHomeVideo, videoShowsFrames } from './home-video';
+import { homeMediaMode, MIN_HIT, pandaHitRect, HOME_VIDEO, homeVideoLayout, homeVideoSize, homeVideoSources, showHomeVideo, tripMediaMode, tripVideoLayout, videoShowsFrames } from './home-video';
 
 const ok = { scene: 'home', adventure: 'filling' as const, hasStageVideo: true, variant: 'boy', reduceMotion: false, saveData: false, web: true };
 
@@ -179,5 +179,52 @@ describe('panda vidéo : zone tactile et mode d’affichage (D-106)', () => {
   it('jamais en voyage, au retour, en variante fille ni sur le natif', () => {
     for (const c of [{ adventure: 'away' as const }, { adventure: 'back' as const }, { variant: 'girl' }, { web: false }, { scene: 'ha-long' }])
       expect(homeMediaMode({ ...ok, reduceMotion: true, ...c })).toBe('off');
+  });
+});
+
+describe('vidéo de voyage (D-107)', () => {
+  const trip = { away: true, hasTripVideo: true, variant: 'boy', reduceMotion: false, saveData: false, offline: false, web: true, failed: false };
+  it('en voyage, stade avec vidéo, web : la vidéo ; « réduire les animations » : image fixe', () => {
+    expect(tripMediaMode(trip)).toBe('video');
+    expect(tripMediaMode({ ...trip, reduceMotion: true })).toBe('still');
+  });
+  it('sinon maison vide + mot : pas en voyage (départ en cours, retour), stade sans vidéo, natif, fille, économie de données, hors ligne, lecture refusée', () => {
+    for (const over of [{ away: false }, { hasTripVideo: false }, { web: false }, { variant: 'girl' }, { saveData: true }, { offline: true }, { failed: true }, { failed: true, reduceMotion: true }]) {
+      expect(tripMediaMode({ ...trip, ...over })).toBe('off');
+    }
+    expect(tripMediaMode({ ...trip, variant: null })).toBe('video'); // variante absente = garçon
+  });
+
+  const G = { width: 1280, height: 720, headY: 0.44, feetY: 0.82 };
+  it('téléphone (390 et 430 px) : toute la hauteur gardée, côtés coupés, centrée, sans zoom ; pieds sur la ligne de sol', () => {
+    for (const width of [390, 430]) {
+      for (const height of [300, 347]) {
+        const groundY = height - 24;
+        const l = tripVideoLayout({ width, height, groundY, topClear: height - 300 + 60 }, G);
+        expect(l.boxWidth).toBe(width);
+        expect(l.image.height).toBe(height); // toute la hauteur, échelle = hauteur / 720 (cover, aucun zoom de plus)
+        expect(l.image.width).toBe(Math.round((1280 * height) / 720));
+        expect(Math.abs(l.image.left - (width - l.image.width) / 2)).toBeLessThanOrEqual(1); // centrée, côtés coupés
+        expect(Math.abs(l.pandaBottom - groundY)).toBeLessThanOrEqual(1);
+        expect(l.drop).toBe(l.image.top);
+        expect(l.drop).toBeGreaterThan(0);
+        expect(l.pandaTop).toBeGreaterThan(height - 300 + 60); // sous les boutons du haut
+      }
+    }
+  });
+  it('tablette : cover en largeur, `object-position` vertical, pieds sur la ligne de sol, aucune descente', () => {
+    const l = tripVideoLayout({ width: 820, height: 300, groundY: 276, topClear: 60 }, G);
+    expect(l.drop).toBe(0);
+    expect(l.boxWidth).toBe(820);
+    expect(Math.abs(l.pandaBottom - 276)).toBeLessThanOrEqual(1);
+    expect(l.pandaTop).toBeGreaterThanOrEqual(60);
+    expect(l.image.height / l.image.width).toBeCloseTo(720 / 1280, 2); // aucune déformation
+  });
+  it('écran très large : boîte réduite et centrée, panda entier sous les boutons', () => {
+    const l = tripVideoLayout({ width: 1440, height: 300, groundY: 276, topClear: 60 }, G);
+    expect(l.boxWidth).toBeLessThan(1440);
+    expect(l.boxLeft).toBe(Math.round((1440 - l.boxWidth) / 2));
+    expect(l.pandaTop).toBeGreaterThanOrEqual(59);
+    expect(Math.abs(l.pandaBottom - 276)).toBeLessThanOrEqual(1);
   });
 });

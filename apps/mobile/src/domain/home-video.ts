@@ -124,3 +124,39 @@ export function pandaHitRect(
   const left = Math.max(0, Math.min(o.width - width, Math.round(centerX - width / 2)));
   return { left, top: Math.min(top, o.bottomLimit - height), width, height };
 }
+
+// ───────────── Vidéo de voyage (D-107) ─────────────
+
+/**
+ * Pendant le voyage (`away`), la vidéo de voyage du stade (panda qui marche avec son sac, décor qui défile) remplace la maison vide et le mot épinglé.
+ * `video` : en boucle ; `still` : son aperçu fixe (« réduire les animations ») ; `off` : maison vide + mot (comportement D-107), c.-à-d. pas de vidéo
+ * pour ce stade, natif, économie de données, hors ligne, ou lecture refusée / fichier illisible (`failed`).
+ */
+export type TripVideoConditions = {
+  /** le panda est en voyage ET la séquence de départ est finie */
+  away: boolean;
+  hasTripVideo: boolean;
+  variant: string | null | undefined;
+  reduceMotion: boolean;
+  saveData: boolean;
+  offline: boolean;
+  web: boolean;
+  /** la lecture a été refusée ou aucune source n'est lisible : maison vide + mot jusqu'à la sortie de l'écran */
+  failed: boolean;
+};
+export function tripMediaMode(c: TripVideoConditions): 'video' | 'still' | 'off' {
+  if (!c.web || !c.away || !c.hasTripVideo || (c.variant ?? 'boy') !== 'boy' || c.failed || c.saveData || c.offline) return 'off';
+  return c.reduceMotion ? 'still' : 'video';
+}
+
+/**
+ * Cadrage de la vidéo de voyage (PAYSAGE) : `cover` sans zoom ni déformation. Sur téléphone, toute la hauteur est gardée et les côtés sont coupés
+ * (centrée) ; les pieds y tomberaient au-dessus de la ligne de sol, la vidéo est donc DESCENDUE (`drop`) pour que les pieds tombent sur `groundY`,
+ * comme ceux des vidéos de la maison : son bas passe sous la carte Phiêu lưu, la bande libérée en haut (sous la barre d'état et les boutons) montre
+ * l'aperçu flouté. Écran large : même cadrage que `homeVideoLayout` (`object-position` vertical, boîte réduite si le panda ne tiendrait pas).
+ */
+export function tripVideoLayout(o: { width: number; height: number; groundY: number; topClear: number }, g: HomeVideoGeometry): HomeVideoLayout & { drop: number } {
+  const l = homeVideoLayout(o, g);
+  const drop = Math.max(0, Math.round(o.groundY - l.pandaBottom));
+  return { ...l, drop, pandaTop: l.pandaTop + drop, pandaBottom: l.pandaBottom + drop, image: { ...l.image, top: l.image.top + drop } };
+}

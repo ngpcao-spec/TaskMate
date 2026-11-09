@@ -1,5 +1,5 @@
 import { v2Colors } from './theme';
-import { availableReactions, HOME_REACTIONS, HOME_VIDEOS, homeReactionsForStage, homeVideoForStage } from './video';
+import { availableReactions, HOME_REACTIONS, HOME_VIDEOS, homeReactionsForStage, homeVideoForStage, TRIP_VIDEOS, tripVideoForStage } from './video';
 
 const lum = (hex: string) => {
   const f = (c: number) => ((c /= 255) <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
@@ -86,5 +86,20 @@ describe('table stade → vidéo d’accueil (D-106)', () => {
     const be = HOME_REACTIONS[1]!;
     // sans image de fin, pas de coucher (jamais d'écran noir après la vidéo)
     expect(availableReactions({ ...be, sleepEnd: undefined }).has('sleep')).toBe(false);
+  });
+});
+
+describe('table stade → vidéo de voyage (D-107)', () => {
+  it('stade 1 → trip-be ; stades 2, 3, 4 (et hors 1..4) : aucune → maison vide + mot', () => {
+    expect(tripVideoForStage(1)?.key).toBe('trip-be');
+    for (const stage of [2, 3, 4, 0, 5, Number.NaN]) expect(tripVideoForStage(stage)).toBeNull();
+  });
+  it('chaque entrée a ses 4 fichiers et une géométrie paysage 16:9 plausible', () => {
+    for (const e of Object.values(TRIP_VIDEOS)) {
+      for (const k of ['webm', 'mp4', 'mp4Small', 'poster'] as const) expect(e!.sources[k]).toBeTruthy();
+      expect(e!.geometry).toMatchObject({ width: 1280, height: 720 });
+      expect(e!.geometry.headY).toBeLessThan(e!.geometry.feetY);
+      expect(e!.geometry.feetY).toBeLessThan(1);
+    }
   });
 });

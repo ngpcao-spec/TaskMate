@@ -158,6 +158,87 @@ test.describe('interface V2 : enfant (D-106)', () => {
     expect((await adventuresOf(family, 'minh')).journal).toEqual([{ discovery_slug: slug, times_found: 1 }]);
     expect(dialogs).toEqual([]);
   });
+
+  test('vidéo de voyage, stade 1 (D-107) : départ → le panda bé marche dans la vidéo (plus de mot), cadré sur la ligne de sol à 390, 430 px et tablette ; toucher → carte postale ; retour inchangé', async ({ browser }) => {
+    test.setTimeout(180_000);
+    const family = await createFamily({ uiVersion: 'v2' });
+    // stade 1 : Khang rajeuni à 4 ans par le service (aucun enfant de la famille de test n'a moins de 6 ans)
+    const birth = new Date(Date.now() - 4 * 365.25 * 86_400_000).toISOString().slice(0, 10);
+    const { error } = await serviceClient().from('children').update({ birth_date: birth }).eq('id', family.khang.childId as string);
+    if (error) throw new Error(`children: ${error.message}`);
+    await seedCompanion(family, 'khang', 'Bambou');
+    await seedEnergy(family, 'khang', 60);
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    await signInContext(ctx, family.khang);
+    const page = await ctx.newPage();
+    page.on('pageerror', (e) => console.log(`[v2-voyage-be] pageerror ${e.message.slice(0, 300)}`));
+    const dialogs: string[] = [];
+    page.on('dialog', (d) => {
+      dialogs.push(`${d.type()}: ${d.message()}`);
+      void d.dismiss();
+    });
+    await page.goto('/');
+    await expect(page).toHaveURL(/\/v2\/child\/home/, { timeout: 20_000 });
+    await page.getByRole('button', { name: 'Chọn nơi đến' }).click();
+    await page.getByRole('button', { name: 'Vịnh Hạ Long' }).click();
+    await page.getByTestId('v2-postcard-ha-long').getByRole('button', { name: 'Lên đường!' }).click();
+    await expect(page).toHaveURL(/\/v2\/child\/home/, { timeout: 20_000 });
+
+    // après la sortie du panda : directement la vidéo de voyage, à la place de la maison vide et du mot
+    const video = page.getByTestId('v2-trip-video-element');
+    await expect(video).toBeAttached({ timeout: 20_000 });
+    expect(await video.evaluate((v: HTMLVideoElement) => [v.muted, v.loop, v.playsInline, [...v.querySelectorAll('source')].map((x) => x.getAttribute('src') ?? '')])).toEqual([
+      true,
+      true,
+      true,
+      [expect.stringContaining('trip-be'), expect.stringContaining('trip-be')],
+    ]);
+    const box = page.getByTestId('v2-trip-video-box');
+    await expect(box).toHaveAttribute('data-ready', 'true', { timeout: 20_000 });
+    await expect(page.getByTestId('v2-trip-note')).toHaveCount(0);
+    await expect(page.getByTestId('v2-home-video-element')).toHaveCount(0);
+    await expect(page.getByText('Bambou đang ở Vịnh Hạ Long · về sáng mai', { exact: true }).first()).toBeVisible();
+
+    for (const [width, height, tag] of [[390, 844, '390'], [430, 932, '430'], [820, 1180, 'tablet']] as const) {
+      await page.setViewportSize({ width, height });
+      await page.waitForTimeout(400);
+      const b = (await box.boundingBox())!;
+      const top = b.y + Number(await box.getAttribute('data-panda-top'));
+      const bottom = b.y + Number(await box.getAttribute('data-panda-bottom'));
+      const buttons = (await page.getByTestId('v2-top-bell').boundingBox())!;
+      const card = (await page.getByTestId('v2-adventure-away').boundingBox())!;
+      expect(top).toBeGreaterThanOrEqual(buttons.y + buttons.height);
+      // pieds sur la ligne de sol (comme les vidéos de la maison), jamais sous la carte Phiêu lưu
+      expect(bottom).toBeLessThanOrEqual(card.y + 2);
+      expect(bottom).toBeGreaterThanOrEqual(card.y - 2);
+      expect(Math.abs(b.x + b.width / 2 - width / 2)).toBeLessThanOrEqual(2);
+      await page.screenshot({ path: `test-results/v2-captures/v2-trip-walk-${tag}.png` });
+      const jpeg = await page.screenshot({ type: 'jpeg', quality: 60, clip: { x: 0, y: 0, width, height: 640 } });
+      console.log(`=====V2-CAPTURE-WALK-${tag}-BEGIN=====\n${jpeg.toString('base64')}\n=====V2-CAPTURE-WALK-${tag}-END=====`);
+    }
+    await page.setViewportSize({ width: 390, height: 844 });
+
+    // toucher le panda qui marche : la carte postale, en lecture seule
+    await page.getByRole('button', { name: 'Bambou đang trên đường đến Vịnh Hạ Long' }).click();
+    await expect(page.getByTestId('v2-postcard-ha-long')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Lên đường!' })).toHaveCount(0);
+    await page.getByTestId('v2-postcard-close').click();
+
+    // le lendemain : séquence de retour D-107 (entrée + paquet), plus de vidéo de voyage
+    await adventureNextDay(family, 'khang');
+    const ctx2 = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    await signInContext(ctx2, family.khang);
+    const back = await ctx2.newPage();
+    back.on('dialog', (d) => {
+      dialogs.push(`${d.type()}: ${d.message()}`);
+      void d.dismiss();
+    });
+    await back.goto('/');
+    await expect(back).toHaveURL(/\/v2\/child\/home/, { timeout: 20_000 });
+    await expect(back.getByRole('button', { name: 'Mở quà' }).and(back.getByTestId('v2-trip-gift-button'))).toBeVisible({ timeout: 20_000 });
+    await expect(back.getByTestId('v2-trip-video-element')).toHaveCount(0);
+    expect(dialogs).toEqual([]);
+  });
 });
 
 test.describe('interface V2 : parent (D-106)', () => {
