@@ -205,8 +205,9 @@ test.describe('interface V2 : enfant (D-106)', () => {
       const b = (await box.boundingBox())!;
       const top = b.y + Number(await box.getAttribute('data-panda-top'));
       const bottom = b.y + Number(await box.getAttribute('data-panda-bottom'));
-      const buttons = (await page.getByTestId('v2-top-bell').boundingBox())!;
-      const card = (await page.getByTestId('v2-adventure-away').boundingBox())!;
+      // l'onglet Phiêu lưu reste monté (caché) : on mesure les éléments VISIBLES de Hôm nay
+      const buttons = (await page.getByTestId('v2-top-bell').filter({ visible: true }).first().boundingBox())!;
+      const card = (await page.getByTestId('v2-adventure-away').filter({ visible: true }).first().boundingBox())!;
       expect(top).toBeGreaterThanOrEqual(buttons.y + buttons.height);
       // pieds sur la ligne de sol (comme les vidéos de la maison), jamais sous la carte Phiêu lưu
       expect(bottom).toBeLessThanOrEqual(card.y + 2);
