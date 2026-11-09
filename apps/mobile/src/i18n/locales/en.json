@@ -2408,7 +2408,8 @@
       "homeLabel": "{{name}}'s home",
       "leaving": "{{name}} is setting off for {{destination}}",
       "coming": "{{name}} is coming home",
-      "gift": "Gift from {{destination}}"
+      "gift": "Gift from {{destination}}",
+      "walking": "{{name}} is on the way to {{destination}}"
     }
   }
 }

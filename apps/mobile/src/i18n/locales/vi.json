@@ -2408,7 +2408,8 @@
       "homeLabel": "Nhà của {{name}}",
       "leaving": "{{name}} đang lên đường đến {{destination}}",
       "coming": "{{name}} đang về nhà",
-      "gift": "Món quà từ {{destination}}"
+      "gift": "Món quà từ {{destination}}",
+      "walking": "{{name}} đang trên đường đến {{destination}}"
     }
   }
 }

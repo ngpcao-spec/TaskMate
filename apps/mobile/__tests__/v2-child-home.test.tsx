@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import '@/i18n';
 import { Platform, StyleSheet } from 'react-native';
 import type { AdventureState } from '@/domain/adventure';
@@ -37,6 +37,15 @@ jest.mock('@/hooks/useReduceMotion', () => ({ useReduceMotion: () => mockReduce 
 jest.mock('@/hooks/useNow', () => ({ useNow: () => new Date('2026-11-02T03:00:00Z') }));
 jest.mock('@/hooks/useWeeklyQuizzes', () => ({ useWeeklyQuizzes: () => ({ groups: mockWeekly, isPending: false }) }));
 jest.mock('@/hooks/useNotifications', () => ({ useUnreadNotifications: () => 2 }));
+// lecteur de la vidéo de voyage (web) remplacé par un espion : ses props = ce que l'écran demande
+let mockTripVideo: { mode: string; video: { key: string }; onFailed: () => void } | null = null;
+jest.mock('@/v2/components/TripVideo', () => ({
+  TripVideo: (p: { mode: string; video: { key: string }; onFailed: () => void }) => {
+    mockTripVideo = p;
+    const { View } = jest.requireActual('react-native');
+    return <View testID="v2-trip-video" />;
+  },
+}));
 jest.mock('@/hooks/useTasks', () => ({
   useTasks: () => ({ data: mockTasks, isPending: false }),
   useToggleTask: () => ({ mutate: mockToggle }),
@@ -340,5 +349,77 @@ describe('V2 : le grand départ et le retour dans Hôm nay (D-107)', () => {
     await render(<V2ChildHome />);
     expect(screen.queryByTestId('v2-trip-reveal')).toBeNull();
     expect(screen.queryByTestId('v2-trip-gift')).toBeNull();
+  });
+});
+
+describe('V2 : vidéo de voyage du stade 1 dans Hôm nay (D-107)', () => {
+  const HL = { slug: 'ha-long', minLevel: 1, discoveries: ['ha-long-perle'] };
+  const awayAdv = () => adv({ state: 'away', gauge: 5, destinations: [HL], active: { id: 'a-walk', destination: 'ha-long', departedOn: '2026-11-01', returnsOn: '2026-11-02', departedAt: '2026-11-01T10:00:00Z' } });
+  const be: CompanionState = { ...panda, stage: 1 };
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.replaceProperty(Platform, 'OS', 'web');
+    usePandaReaction.setState({ childId: null, active: false, energy: 0 });
+    useTripStore.setState({ departure: null });
+    mockTripVideo = null;
+    mockCompanion = be;
+    mockReduce = false;
+    mockTasks = [task({})];
+    mockWeekly = [];
+    mockAdventure = awayAdv();
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it('en voyage, stade 1 : la vidéo de voyage remplace la maison vide (plus de mot) ; la carte garde « đang ở … · về sáng mai » ; toucher le panda rouvre la carte postale', async () => {
+    await render(<V2ChildHome />);
+    expect(screen.getByTestId('v2-trip-video')).toBeTruthy();
+    expect(mockTripVideo).toMatchObject({ mode: 'video', video: { key: 'trip-be' } });
+    expect(screen.queryByTestId('v2-trip-note')).toBeNull();
+    expect(screen.queryByTestId('v2-panda')).toBeNull();
+    expect(screen.getByText('Bambou đang ở Vịnh Hạ Long · về sáng mai')).toBeTruthy();
+    const hit = screen.getByRole('button', { name: 'Bambou đang trên đường đến Vịnh Hạ Long' });
+    const st = StyleSheet.flatten(hit.props.style);
+    expect(Math.min(st.width as number, st.height as number)).toBeGreaterThanOrEqual(44);
+    await fireEvent.press(hit);
+    expect(screen.getByTestId('v2-postcard-ha-long')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Lên đường!' })).toBeNull();
+  });
+
+  it('« réduire les animations » : image fixe du voyage, pas de vidéo', async () => {
+    mockReduce = true;
+    await render(<V2ChildHome />);
+    expect(mockTripVideo?.mode).toBe('still');
+    expect(screen.queryByTestId('v2-trip-note')).toBeNull();
+  });
+
+  it('lecture refusée : retour à la maison vide + mot (D-107)', async () => {
+    await render(<V2ChildHome />);
+    await act(async () => mockTripVideo!.onFailed());
+    expect(screen.queryByTestId('v2-trip-video')).toBeNull();
+    expect(screen.getByTestId('v2-trip-note')).toBeTruthy();
+  });
+
+  it('stade sans vidéo de voyage (2) : maison vide + mot, inchangé', async () => {
+    mockCompanion = panda;
+    await render(<V2ChildHome />);
+    expect(screen.queryByTestId('v2-trip-video')).toBeNull();
+    expect(screen.getByTestId('v2-trip-note')).toBeTruthy();
+    // natif : `tripMediaMode` (web seulement) et le lecteur natif vide, testés à part
+  });
+
+  it('pendant la séquence de départ : le panda sort de la maison ; une fois sorti, directement la vidéo de voyage', async () => {
+    useTripStore.getState().depart({ childId: 'c-minh', destination: 'ha-long', at: Date.now() });
+    await render(<V2ChildHome />);
+    expect(JSON.stringify(screen.toJSON())).toContain('"testID":"v2-trip-walk-out"'); // nœud animé (opacité), ignoré par getByTestId sur le web
+    expect(screen.queryByTestId('v2-trip-video')).toBeNull();
+    await fireEvent.press(screen.getByRole('button', { name: 'Bỏ qua' }));
+    expect(screen.getByTestId('v2-trip-video')).toBeTruthy();
+  });
+
+  it('retour (« back ») : séquence de retour D-107, aucune vidéo de voyage', async () => {
+    mockAdventure = adv({ state: 'back', gauge: 5, destinations: [HL], active: { id: 'a-walk', destination: 'ha-long', departedOn: '2026-11-01', returnsOn: '2026-11-02' } });
+    await render(<V2ChildHome />);
+    expect(screen.queryByTestId('v2-trip-video')).toBeNull();
+    expect(JSON.stringify(screen.toJSON())).toContain('"testID":"v2-trip-walk-in"'); // nœud animé (opacité), ignoré par getByTestId sur le web
   });
 });

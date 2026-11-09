@@ -267,3 +267,28 @@ export function availableReactions(r: HomeReactions | null): Set<'happy' | 'curi
   if (r.sleep && r.sleepEnd) out.add('sleep');
   return out;
 }
+
+/**
+ * Vidéos de VOYAGE (D-107) : pendant l'aventure (`away`), le panda du stade AFFICHÉ marche avec son sac, le décor défile derrière lui (vidéo PAYSAGE
+ * 16:9, sans son, boucle raccordée). TABLE stade → vidéo de voyage, même principe que `HOME_VIDEOS` : un stade absent garde la maison vide et le mot
+ * épinglé. Géométrie mesurée sur toutes les images : haut de la pousse `headY`, bas des pieds `feetY` (fraction de la hauteur) ; cadrage `tripVideoLayout`.
+ */
+export type TripVideoEntry = { key: string; sources: HomeVideoSources; geometry: HomeVideoGeometry };
+
+export const TRIP_VIDEOS: Readonly<Partial<Record<number, TripVideoEntry>>> = {
+  // stade 1 (bé), fournie par Teo le 2026-11-09 (branche `assets/v2-trip-walk`) : 1280×720, 9,5 s ; il marche vers la droite, de 44 % (pousse) à
+  // 82 % (pieds), au centre (le décor de bambous défile)
+  1: {
+    key: 'trip-be',
+    sources: {
+      webm: require('../../assets/v2/video/trip/trip-be.webm'),
+      mp4: require('../../assets/v2/video/trip/trip-be.mp4'),
+      mp4Small: require('../../assets/v2/video/trip/trip-be@480.mp4'),
+      poster: require('../../assets/v2/video/trip/trip-be-poster.webp'),
+    },
+    geometry: { width: 1280, height: 720, headY: 0.44, feetY: 0.82 },
+  },
+};
+
+/** Vidéo de voyage du stade AFFICHÉ ; `null` = maison vide + mot épinglé (D-107). */
+export const tripVideoForStage = (stage: number): TripVideoEntry | null => TRIP_VIDEOS[stage] ?? null;
