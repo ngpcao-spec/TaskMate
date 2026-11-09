@@ -211,7 +211,8 @@ test.describe('interface V2 : enfant (D-106)', () => {
       expect(top).toBeGreaterThanOrEqual(buttons.y + buttons.height);
       // pieds sur la ligne de sol (comme les vidéos de la maison), jamais sous la carte Phiêu lưu
       expect(bottom).toBeLessThanOrEqual(card.y + 2);
-      expect(bottom).toBeGreaterThanOrEqual(card.y - 2);
+      // ligne de sol des vidéos de la maison : 24 px au-dessus du bas de l'en-tête (SCENE_GROUND_OFFSET)
+      expect(Math.abs(bottom - (b.y + b.height - 24))).toBeLessThanOrEqual(2);
       expect(Math.abs(b.x + b.width / 2 - width / 2)).toBeLessThanOrEqual(2);
       await page.screenshot({ path: `test-results/v2-captures/v2-trip-walk-${tag}.png` });
       const jpeg = await page.screenshot({ type: 'jpeg', quality: 60, clip: { x: 0, y: 0, width, height: 640 } });
