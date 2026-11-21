@@ -45,7 +45,8 @@ jobs:
           echo "=====GENERATED-TYPES-END====="
   e2e:
     # Tests Playwright (Chromium) de l'app web exportée contre un Supabase local — remplace les flows Maestro.
-    runs-on: ubuntu-latest
+    # épinglé (D-107) : ubuntu-latest est passé à 26.04, où Playwright 1.56 n'installe pas Chromium
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v6
