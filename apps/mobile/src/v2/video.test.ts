@@ -90,9 +90,10 @@ describe('table stade → vidéo d’accueil (D-106)', () => {
 });
 
 describe('table stade → vidéo de voyage (D-107)', () => {
-  it('stade 1 → trip-be ; stades 2, 3, 4 (et hors 1..4) : aucune → maison vide + mot', () => {
+  it('stade 1 → trip-be, stade 2 → trip-nhi ; stades 3, 4 (et hors 1..4) : aucune → maison vide + mot', () => {
     expect(tripVideoForStage(1)?.key).toBe('trip-be');
-    for (const stage of [2, 3, 4, 0, 5, Number.NaN]) expect(tripVideoForStage(stage)).toBeNull();
+    expect(tripVideoForStage(2)?.key).toBe('trip-nhi');
+    for (const stage of [3, 4, 0, 5, Number.NaN]) expect(tripVideoForStage(stage)).toBeNull();
   });
   it('chaque entrée a ses 4 fichiers et une géométrie paysage 16:9 plausible', () => {
     for (const e of Object.values(TRIP_VIDEOS)) {

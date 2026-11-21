@@ -288,6 +288,19 @@ export const TRIP_VIDEOS: Readonly<Partial<Record<number, TripVideoEntry>>> = {
     },
     geometry: { width: 1280, height: 720, headY: 0.44, feetY: 0.82 },
   },
+  // stade 2 (nhí), fournie par Teo le 2026-11-21 : 1280×720, son retiré, coupée à 184 images (7,67 s) là où elle reboucle (image 184 ≈ image 0),
+  // réencodée aux débits de `trip-be` ; sweat bleu, casque, sac : il marche vers la droite, de 36 % (pousse) à 82,5 % (pieds), au centre
+  // (centre à 57 %) ; le décor défile, un bambou passe parfois devant lui
+  2: {
+    key: 'trip-nhi',
+    sources: {
+      webm: require('../../assets/v2/video/trip/trip-nhi.webm'),
+      mp4: require('../../assets/v2/video/trip/trip-nhi.mp4'),
+      mp4Small: require('../../assets/v2/video/trip/trip-nhi@480.mp4'),
+      poster: require('../../assets/v2/video/trip/trip-nhi-poster.webp'),
+    },
+    geometry: { width: 1280, height: 720, headY: 0.36, feetY: 0.825 },
+  },
 };
 
 /** Vidéo de voyage du stade AFFICHÉ ; `null` = maison vide + mot épinglé (D-107). */
