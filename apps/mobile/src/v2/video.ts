@@ -315,6 +315,20 @@ export const TRIP_VIDEOS: Readonly<Partial<Record<number, TripVideoEntry>>> = {
     },
     geometry: { width: 1280, height: 720, headY: 0.36, feetY: 0.825 },
   },
+  // stade 4 (đồng hành), fournie par Teo le 2026-11-23 : même traitement que `trip-nhi` (640×360, 8 s, avec son, sans point de bouclage) ;
+  // boucle des images 29 à 187 (la pose à l'image 187 reprend celle de l'image 28) avec un fondu de 0,5 s vers les images 17 à 28 ; agrandie en
+  // 1280×720 ; veste verte, lunettes, carnet, sacoche ; de 30 % (pousse) à 82,5 % (pieds), centre à 56 % : le plus grand des quatre (sur un
+  // écran large, la boîte vidéo est réduite par `tripVideoLayout` pour qu'il tienne sous les boutons)
+  4: {
+    key: 'trip-dong-hanh',
+    sources: {
+      webm: require('../../assets/v2/video/trip/trip-dong-hanh.webm'),
+      mp4: require('../../assets/v2/video/trip/trip-dong-hanh.mp4'),
+      mp4Small: require('../../assets/v2/video/trip/trip-dong-hanh@480.mp4'),
+      poster: require('../../assets/v2/video/trip/trip-dong-hanh-poster.webp'),
+    },
+    geometry: { width: 1280, height: 720, headY: 0.3, feetY: 0.825 },
+  },
 };
 
 /** Vidéo de voyage du stade AFFICHÉ ; `null` = maison vide + mot épinglé (D-107). */
