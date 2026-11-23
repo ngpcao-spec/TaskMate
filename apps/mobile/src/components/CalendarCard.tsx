@@ -7,7 +7,7 @@ import { timeLabel } from '@/domain/task-time';
 import { CATEGORY_COLORS } from '@/theme/categories';
 import { GlassTile } from '@/components/GlassTile';
 import { tint } from '@/theme/tint';
-import { colors, hasDecor, MIN_TARGET, radius, shadow, line } from '@/theme/tokens';
+import { colors, MIN_TARGET, radius, shadow, line } from '@/theme/tokens';
 import type { TaskRow } from '@/types/models';
 
 type Props = { task: TaskRow; overdue: boolean; onPress?: () => void };
@@ -28,9 +28,9 @@ export function CalendarCard({ task, overdue, onPress }: Props) {
       accessibilityLabel={`${task.title}, ${time}${done ? `, ${t('calendar.done')}` : ''}`}
       disabled={!onPress}
       onPress={onPress}
-      style={[styles.card, { backgroundColor: hasDecor ? tint(CATEGORY_COLORS[task.category], done ? 0.12 : 0.2) : categoryTint(task.category) }, done && !hasDecor && styles.done]}
+      style={[styles.card, { backgroundColor: categoryTint(task.category) }, done && styles.done]}
     >
-      <View style={[styles.inner, done && hasDecor && styles.done]}>
+      <View style={styles.inner}>
         <GlassTile size={46} tint={tint(CATEGORY_COLORS[task.category], 0.2)}>
           <CategoryIcon category={task.category} size={22} />
         </GlassTile>

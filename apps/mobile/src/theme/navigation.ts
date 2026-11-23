@@ -7,7 +7,7 @@ import { theme } from './index';
  */
 export const navigationTheme: typeof DefaultTheme = {
   ...DefaultTheme,
-  dark: theme.id === 'cosmos',
+  dark: false,
   colors: {
     ...DefaultTheme.colors,
     primary: theme.colors.primary,

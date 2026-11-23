@@ -4,8 +4,8 @@ import type { ReactElement } from 'react';
 import { createTestQueryClient } from '../test-utils/queryClient';
 import { Alert } from 'react-native';
 import i18n from '@/i18n';
-import DevicesScreen from '../app/(tabs)/more/devices';
-import SettingsScreen from '../app/(tabs)/more/settings';
+import DevicesScreen from '../app/more/devices';
+import SettingsScreen from '../app/more/settings';
 
 const mockReplace = jest.fn();
 const mockPush = jest.fn();

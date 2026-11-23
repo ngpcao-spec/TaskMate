@@ -1,10 +1,6 @@
-/** Un thème = un jeu COMPLET de jetons. Ajouter un thème : un fichier ici + une entrée dans `THEMES` ; `theme/themes.test` impose les mêmes clés et des contrastes lisibles. */
-export type ThemeId = 'glass' | 'kawaii' | 'cosmos' | 'teddy' | 'bunny';
-/** Thème réellement appliqué : un thème au choix, ou `v2` (imposé aux familles en V2, D-109, jamais proposé). */
-export type ActiveThemeId = ThemeId | 'v2';
-
-/** Famille de décors illustrés : aucun, chiens et damier (kawaii), astronautes et étoiles (cosmos). */
-export type DecorKind = 'none' | 'kawaii' | 'cosmos' | 'teddy' | 'bunny';
+/** Un thème = un jeu COMPLET de jetons. D-114 : un seul thème, la charte V2 (`themes/v2.ts`) ; `theme/themes.test` impose des contrastes lisibles. */
+export type ThemeId = 'v2';
+export type ActiveThemeId = ThemeId;
 
 export type ThemeColors = {
   /** Fond des boutons et accents (texte `onPrimary` dessus). */
@@ -84,8 +80,6 @@ export type Theme = {
   childSoft: Record<string, string>;
   /** Palette proposée à la création d'un enfant (déjà dans la palette du thème). */
   childPalette: readonly [string, string, string, string, string];
-  /** Décors illustrés du thème. */
-  decor: DecorKind;
   /** Couleur de la barre du navigateur / de la PWA. */
   browserColor: string;
 };

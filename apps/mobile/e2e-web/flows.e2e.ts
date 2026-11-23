@@ -1,7 +1,6 @@
 import { expect, test, webkit, type Page } from '@playwright/test';
-import { accessTokenOf, adventureNextDay, adventuresOf, companionEnergy, createFamily, createGoogleParent, directSignIn, internalEmailOf, resetAttempts, revokeChildMembers, serviceClient, seedCatalogQuiz, seedCompanion, seedEnergy, seedTask, taskChildId, serverState, signInContext, supabaseUrl, todayVn } from './support/seed';
+import { accessTokenOf, companionEnergy, createFamily, createGoogleParent, directSignIn, internalEmailOf, resetAttempts, revokeChildMembers, serviceClient, seedCatalogQuiz, seedCompanion, seedTask, taskChildId, serverState, signInContext, supabaseUrl, todayVn } from './support/seed';
 
-import vi from '../src/i18n/locales/vi.json';
 
 const title = (label: string) => `${label} ${Math.random().toString(36).slice(2, 7)}`;
 
@@ -69,6 +68,30 @@ async function open(page: Page, path = '/') {
   await page.goto(path);
 }
 
+/** D-114 : accueil V2 du parent (`/v2/parent/home`). */
+async function parentHome(page: Page) {
+  await open(page);
+  await expect(page).toHaveURL(/\/v2\/parent\/home/, { timeout: 20_000 });
+  await expect(page.getByTestId('v2-parent-home').filter({ visible: true })).toBeVisible({ timeout: 20_000 });
+}
+
+/** D-114 : accueil V2 de l'enfant (`/v2/child/home`). */
+async function childHome(page: Page) {
+  await open(page);
+  await expect(page).toHaveURL(/\/v2\/child\/home/, { timeout: 20_000 });
+}
+
+/** D-114 : nouvelle tâche (formulaire commun `/task/new`, ouvert par le bouton « Thêm việc » de Lịch en V2). */
+async function newTask(page: Page) {
+  await open(page, '/task/new');
+  await expect(page.getByLabel('Tên công việc')).toBeVisible({ timeout: 20_000 });
+}
+
+/** D-114 : confirmation dans la feuille V2 (jamais une fenêtre du navigateur). */
+async function confirmSheet(page: Page) {
+  await page.getByTestId('v2-confirm-ok').click();
+}
+
 test.describe('validation parentale (spec v4)', () => {
   test('le parent crée une tâche, l\'enfant coche, le parent valide, les points sont crédités une fois', async ({ browser }) => {
     test.setTimeout(120_000);
@@ -80,12 +103,13 @@ test.describe('validation parentale (spec v4)', () => {
     await signInContext(parentCtx, family.parent);
     const parent = await parentCtx.newPage();
     const parentSubscribed = trace(parent, 'parent');
-    await open(parent);
-    await expect(parent.getByText('Chào Minh!')).toBeVisible();
-    await parent.getByRole('button', { name: 'Thêm việc' }).click();
+    await parentHome(parent);
+    await newTask(parent);
     await parent.getByLabel('Tên công việc').fill(taskTitle);
     await parent.getByRole('button', { name: 'Lưu' }).click();
-    await expect(parent.getByRole('checkbox', { name: taskTitle })).toBeVisible();
+    await expect.poll(async () => (await serverState(family, 'minh', taskTitle)).exists, { timeout: 20_000 }).toBe(true);
+    await parentHome(parent);
+    await expect(parent.getByText(taskTitle).filter({ visible: true }).first()).toBeVisible({ timeout: 20_000 });
 
     // le canal Realtime du parent doit être abonné AVANT que l'enfant coche (sinon l'évènement est manqué, abonnement parfois lent en CI)
     await Promise.race([parentSubscribed, new Promise((resolve) => setTimeout(resolve, 20_000))]);
@@ -95,23 +119,21 @@ test.describe('validation parentale (spec v4)', () => {
     await signInContext(childCtx, family.minh);
     const child = await childCtx.newPage();
     trace(child, 'enfant');
-    await open(child);
+    await childHome(child);
     const box = child.getByRole('checkbox', { name: taskTitle });
-    await expect(box).toBeVisible();
+    await expect(box).toBeVisible({ timeout: 20_000 });
     await box.click();
     await expect(box).toBeChecked();
-    await expect(child.getByText('Chờ duyệt').first()).toBeVisible();
     await expect.poll(async () => (await serverState(family, 'minh', taskTitle)).completed).toBe(true);
     expect(await serverState(family, 'minh', taskTitle)).toMatchObject({ validated: false, balance: 0, transactions: 0 });
     await open(child, '/more/points');
     await expect(child.getByLabel('0 điểm', { exact: true })).toBeVisible();
     await expect(child.getByText('+10 điểm chờ duyệt')).toBeVisible();
 
-    // 3. parent : la bannière « 1 việc chờ duyệt » apparaît (Realtime, sans recharger) puis valide depuis la file « Cần duyệt »
-    await expectVisibleOrDump(parent, parent.getByRole('button', { name: '1 việc chờ duyệt' }), 'parent', 15_000);
-    await parent.getByRole('button', { name: '1 việc chờ duyệt' }).click({ timeout: 15_000 });
-    await expect(parent).toHaveURL(/\/approvals/);
-    await parent.getByRole('button', { name: `Duyệt ${taskTitle}` }).click();
+    // 3. parent : la tâche arrive dans « Cần duyệt » de son accueil (Realtime, sans recharger) et il la valide
+    const approval = parent.locator('[data-testid^="v2-approve-"]').filter({ hasText: taskTitle });
+    await expectVisibleOrDump(parent, approval, 'parent', 20_000);
+    await approval.getByRole('button', { name: 'Duyệt' }).click();
     await expect.poll(async () => (await serverState(family, 'minh', taskTitle)).validated).toBe(true);
     expect(await serverState(family, 'minh', taskTitle)).toMatchObject({ balance: 10, transactions: 1 }); // crédité une seule fois
 
@@ -129,14 +151,13 @@ test.describe('validation parentale (spec v4)', () => {
     await signInContext(ctx, family.minh);
     const page = await ctx.newPage();
     trace(page, 'enfant-hors-ligne');
-    await open(page);
+    await childHome(page);
     const box = page.getByRole('checkbox', { name: taskTitle });
-    await expect(box).toBeVisible();
+    await expect(box).toBeVisible({ timeout: 20_000 });
 
     await ctx.setOffline(true);
     await box.click();
     await expect(box).toBeChecked(); // effet local immédiat, jamais de point côté enfant
-    await expect(page.getByText('Chờ duyệt').first()).toBeVisible();
     expect((await serverState(family, 'minh', taskTitle)).completed).toBe(false); // rien n'est parti
 
     await ctx.setOffline(false);
@@ -153,8 +174,8 @@ test.describe('formulaire de tâche sur le web', () => {
     await signInContext(ctx, family.parent);
     const page = await ctx.newPage();
     trace(page, 'parent-heures');
-    await open(page);
-    await page.getByRole('button', { name: 'Thêm việc' }).click();
+    await parentHome(page);
+    await newTask(page);
     await page.getByLabel('Tên công việc').fill(taskTitle);
     await page.getByRole('button', { name: /^Thời gian/ }).click();
     await page.getByRole('radio', { name: 'Khoảng giờ' }).click();
@@ -190,8 +211,8 @@ test.describe('renouveler une tâche (D-054)', () => {
     return data ?? [];
   };
   const openRenew = async (page: Page, taskTitle: string) => {
-    await open(page);
-    await page.getByRole('button', { name: new RegExp(taskTitle) }).first().click();
+    await parentHome(page);
+    await page.getByRole('button', { name: `Xem: ${taskTitle}` }).filter({ visible: true }).first().click();
     await page.getByRole('button', { name: 'Nhân bản / Lặp lại' }).click();
     await expect(page.getByText('Lặp lại công việc')).toBeVisible();
   };
@@ -259,9 +280,9 @@ test.describe('renouveler une tâche (D-054)', () => {
     const ctx = await browser.newContext();
     await signInContext(ctx, family.minh);
     const page = await ctx.newPage();
-    await open(page);
-    await page.getByRole('button', { name: new RegExp(taskTitle) }).first().click();
-    await expect(page).toHaveURL(/\/task\//); // le détail en lecture seule est ouvert
+    await childHome(page);
+    await open(page, `/task/${id}`); // le détail, en lecture seule pour l'enfant
+    await expect(page.getByText(taskTitle).first()).toBeVisible({ timeout: 20_000 });
     await expect(page.getByRole('button', { name: 'Nhân bản / Lặp lại' })).toHaveCount(0);
     await open(page, `/task/renew?id=${id}`);
     await expect(page.getByText('Lặp lại công việc')).toHaveCount(0);
@@ -763,8 +784,7 @@ test.describe('droits de l\'enfant', () => {
     const ctx = await browser.newContext();
     await signInContext(ctx, family.minh);
     const page = await ctx.newPage();
-    await open(page);
-    await expect(page.getByText('Chào Minh!')).toBeVisible();
+    await childHome(page);
     await expect(page.getByRole('button', { name: 'Thêm việc' })).toHaveCount(0);
 
     // aucun sélecteur d'enfant, aucune trace du frère ni de sa tâche
@@ -935,7 +955,7 @@ test.describe('parents Google, famille partagée, enfants rattachés à la famil
     for (const family of families) {
       const page = await childSignIn(browser, family.parent.email, loginId, 'abc123');
       await dismissChildSetup(page);
-      await expect(page.getByText('Chào Minh!')).toBeVisible({ timeout: 20_000 });
+      await expect(page).toHaveURL(/\/v2\/child/, { timeout: 20_000 }); // D-114 : accueil V2 de l'enfant
     }
     // l'e-mail d'une AUTRE famille ne donne pas accès à ce compte-ci (mauvais mot de passe là-bas)
     const cross = await childSignIn(browser, families[0]!.parent.email, loginId, 'autre-mdp');
@@ -1038,7 +1058,7 @@ test.describe('comptes enfants : aucune connexion directe, child-login seul', ()
     // et l'interface fonctionne de bout en bout
     const page = await childSignIn(browser, family.parent.email, loginId, 'abc123');
     await dismissChildSetup(page);
-    await expect(page.getByText('Chào Minh!')).toBeVisible({ timeout: 20_000 });
+    await expect(page).toHaveURL(/\/v2\/child/, { timeout: 20_000 }); // D-114 : accueil V2 de l'enfant
   });
 
   test('un compte créé par create-child : adresse UUID, jamais de connexion directe, mot de passe changé via la base', async () => {
@@ -1088,12 +1108,8 @@ test.describe('ajouter un enfant après l\'onboarding', () => {
     await signInContext(parentCtx, family.parent);
     const parent = await parentCtx.newPage();
     trace(parent, 'parent');
-    await open(parent, '/more');
-
-    // cartes des enfants existants (sélectionnables) + carte « Thêm con »
-    await expect(parent.getByRole('radio', { name: /^Minh,/ })).toBeVisible();
-    await expect(parent.getByRole('radio', { name: /^Khang,/ })).toBeVisible();
-    await parent.getByRole('button', { name: 'Thêm con' }).click();
+    await parentHome(parent);
+    await open(parent, '/more/add-child'); // D-114 : « Thêm con » des réglages V2
 
     // identifiant déjà pris dans la famille : l'erreur s'affiche et aucun profil fantôme n'est conservé
     await parent.getByLabel('Tên của con').fill('Cam');
@@ -1111,22 +1127,26 @@ test.describe('ajouter un enfant après l\'onboarding', () => {
     await expect(parent.getByText(/sẽ không hiển thị lại/)).toBeVisible();
     await expect(parent.getByRole('button', { name: 'Sao chép tên đăng nhập và mật khẩu Cam' })).toBeVisible();
     await parent.getByRole('button', { name: 'Hoàn tất' }).click();
-    await expect(parent.getByRole('radio', { name: /^Cam,/ })).toBeVisible();
     await expect(parent.getByText('Mật khẩu: secret1')).toHaveCount(0);
+    await expect.poll(async () => (await serviceClient().from('children').select('id').eq('family_id', family.familyId).eq('name', 'Cam')).data?.length ?? 0, { timeout: 20_000 }).toBe(1);
 
     // l'enfant se connecte sur son téléphone
     const child = await childSignIn(browser, family.parent.email, loginId, 'secret1');
     await dismissChildSetup(child);
-    await expect(child.getByText('Chào Cam!')).toBeVisible({ timeout: 20_000 });
+    await expect(child).toHaveURL(/\/v2\/child/, { timeout: 20_000 }); // D-114 : accueil V2 de l'enfant
 
     // le parent crée une tâche pour Cam (« Cho ai? » : Cam seule cochée)
     const taskTitle = title('Tưới cây');
-    await parent.getByRole('radio', { name: /^Cam,/ }).click();
-    await parent.getByRole('tab', { name: /Hôm nay/ }).click(); // navigation interne : l'enfant affiché (Cam) est conservé
-    await parent.getByRole('button', { name: 'Thêm việc' }).click();
+    await newTask(parent);
     await parent.getByLabel('Tên công việc').fill(taskTitle);
     await parent.getByRole('button', { name: 'Thêm tùy chọn' }).click();
     await expect(parent.getByText('Cho ai?')).toBeVisible();
+    // « Cho ai? » : Cam seule
+    await parent.getByRole('checkbox', { name: 'Cam' }).click();
+    for (const other of ['Minh', 'Khang']) {
+      const box = parent.getByRole('checkbox', { name: other });
+      if (await box.isChecked()) await box.click();
+    }
     await expect(parent.getByRole('checkbox', { name: 'Cam' })).toBeChecked();
     await expect(parent.getByRole('checkbox', { name: 'Minh' })).not.toBeChecked();
     await parent.getByRole('button', { name: 'Lưu' }).click();
@@ -1151,8 +1171,8 @@ test.describe('ajouter un enfant après l\'onboarding', () => {
     await parent.getByLabel('Mật khẩu mới').fill('nouveau1');
     await parent.getByRole('button', { name: 'Đổi mật khẩu Minh' }).click();
     await expect(parent.getByText('Đã đổi mật khẩu')).toBeVisible({ timeout: 20_000 });
-    parent.once('dialog', (d) => void d.accept());
     await parent.getByRole('button', { name: 'Xóa tài khoản Minh' }).click();
+    await confirmSheet(parent);
     await expect(parent.getByRole('button', { name: 'Tạo tài khoản Minh' })).toBeVisible({ timeout: 20_000 });
   });
 
@@ -1161,10 +1181,7 @@ test.describe('ajouter un enfant après l\'onboarding', () => {
     const ctx = await browser.newContext();
     await signInContext(ctx, family.minh);
     const page = await ctx.newPage();
-    await open(page, '/more');
-    await expect(page.getByLabel(/^Minh,/).first()).toBeVisible();
-    await expect(page.getByRole('radio', { name: /^Minh,/ })).toHaveCount(0); // carte simple, pas de sélection (D-052)
-    await expect(page.getByRole('button', { name: 'Thêm con' })).toHaveCount(0);
+    await childHome(page);
     await open(page, '/more/add-child');
     await expect(page.getByLabel('Tên của con')).toHaveCount(0);
     await open(page, '/more/children');
@@ -1228,9 +1245,9 @@ test.describe('avatar « dessin animé » (D-071)', () => {
     expect(Object.keys(columns ?? {}).sort()).toEqual(['ai_allowed', 'candidate_b64', 'child_id', 'consent_at', 'consent_by', 'family_id', 'image_b64', 'updated_at', 'version']);
     expect((columns as { candidate_b64: string | null }).candidate_b64).toBeNull();
 
-    // l'avatar s'affiche dans le profil de l'enfant
-    await open(child, '/more');
-    await expect(child.getByTestId('avatar-image').first()).toBeVisible();
+    // l'avatar s'affiche dans « Tôi » (profil V2 de l'enfant)
+    await open(child, '/v2/child/me');
+    await expect(child.getByTestId('avatar-image').filter({ visible: true }).first()).toBeVisible({ timeout: 20_000 });
   });
 
   test('sans consentement du parent : l\'enfant ne peut ni créer d\'avatar ni contourner la base', async ({ browser }) => {
@@ -1284,8 +1301,7 @@ test.describe('accessibilité clavier', () => {
     const ctx = await browser.newContext();
     await signInContext(ctx, family.parent);
     const page = await ctx.newPage();
-    await open(page);
-    await expect(page.getByText('Chào Minh!')).toBeVisible();
+    await parentHome(page);
 
     let reachedBell = false;
     for (let i = 0; i < 25 && !reachedBell; i += 1) {
@@ -1451,8 +1467,7 @@ test.describe('assistant de première connexion (D-090)', () => {
     const ctx = await browser.newContext();
     await signInContext(ctx, family.parent);
     const page = await ctx.newPage();
-    await open(page);
-    await expect(page.getByText('Chào Minh!')).toBeVisible({ timeout: 20_000 });
+    await parentHome(page);
     await expect(page).not.toHaveURL(/onboarding/); // jamais d'assistant automatique pour une famille qui a des enfants
     await expect(page.getByRole('heading', { name: 'Hoàn tất cài đặt' })).toBeVisible({ timeout: 20_000 });
     await expect(page.getByRole('button', { name: /^Tiếp tục: / })).toBeVisible();
@@ -1477,12 +1492,12 @@ test.describe('assistant de première connexion (D-090)', () => {
     await expect(page.getByText('Bài ôn tập đã được duyệt · +5 điểm')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Bật thông báo' })).toBeVisible({ timeout: 20_000 });
     await page.getByRole('button', { name: 'Để sau' }).click();
-    await expect(page.getByText('Chào Minh!', { exact: true })).toBeVisible({ timeout: 20_000 });
+    await expect(page).toHaveURL(/\/v2\/child/, { timeout: 20_000 });
     // l'enfant ne voit jamais la carte du parent
     await expect(page.getByRole('heading', { name: 'Hoàn tất cài đặt' })).toHaveCount(0);
     // ne revient pas tout seul
     await page.reload();
-    await expect(page.getByText('Chào Minh!', { exact: true })).toBeVisible({ timeout: 20_000 });
+    await expect(page).toHaveURL(/\/v2\/child/, { timeout: 20_000 });
     await expect(page.getByText('Cài đặt nhanh, chỉ 2 bước')).toHaveCount(0);
     // reste accessible depuis ses Réglages
     await open(page, '/more/settings');
@@ -1512,15 +1527,15 @@ test.describe('aucun champ mot de passe monté hors des écrans de connexion (D-
   /** Champs sensibles présents dans le DOM mais CACHÉS (écran resté monté sous un autre) : ce que iOS propose de remplir en pleine utilisation. */
   const hiddenSecrets = (page: Page) =>
     page.$$eval('input[type=password], input[autocomplete*=password], input[autocomplete=username]', (els) => (els as HTMLInputElement[]).filter((e) => !(e.offsetWidth || e.offsetHeight || e.getClientRects().length)).length);
-  /** `moreKeepsForm` : l'onglet « Thêm » rouvre le dernier écran visité (ici le formulaire d'ajout, dont le mot de passe est légitime) → seuls les champs CACHÉS comptent. */
-  async function everyTab(page: Page, who: string, moreKeepsForm = false) {
-    for (const tab of ['Lịch', 'Thống kê', 'Thêm', 'Hôm nay']) {
-      await page.getByRole('tab', { name: new RegExp(`^${tab}`) }).click();
-      const count = await secretCount(page, `${who} · onglet ${tab}`);
-      if (moreKeepsForm && tab === 'Thêm') expect(await hiddenSecrets(page), `${who} : onglet ${tab} (aucun champ caché)`).toBe(0);
-      else expect(count, `${who} : onglet ${tab}`).toBe(0);
+  /** D-114 : chaque onglet de la V2 (parent ou enfant), dans l'ordre de la barre, en terminant par Hôm nay. */
+  async function everyTab(page: Page, who: string, tabs: readonly string[]) {
+    for (const tab of tabs) {
+      await page.getByRole('tab', { name: new RegExp(`^${tab}`) }).filter({ visible: true }).first().click();
+      expect(await secretCount(page, `${who} · onglet ${tab}`), `${who} : onglet ${tab}`).toBe(0);
     }
   }
+  const PARENT_TABS = ['Lịch', 'Ôn tập', 'Phần thưởng', 'Cài đặt', 'Hôm nay'] as const;
+  const CHILD_TABS = ['Phần thưởng', 'Phiêu lưu', 'Thống kê', 'Tôi', 'Hôm nay'] as const;
 
   test('parent connecté par e-mail + mot de passe : 0 champ mot de passe sur Hôm nay et les autres onglets, même après être passé par les formulaires d\'enfant', async ({ browser }) => {
     test.setTimeout(180_000);
@@ -1535,14 +1550,14 @@ test.describe('aucun champ mot de passe monté hors des écrans de connexion (D-
     await page.getByLabel('Email', { exact: true }).fill(family.parent.email);
     await page.getByLabel('Mật khẩu', { exact: true }).fill(family.parent.password);
     await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click();
-    await expect(page.getByRole('heading', { name: /^Chào / })).toBeVisible({ timeout: 30_000 });
+    await expect(page).toHaveURL(/\/v2\/parent\/home/, { timeout: 30_000 });
+    await expect(page.getByTestId('v2-parent-home').filter({ visible: true })).toBeVisible({ timeout: 30_000 });
     expect(await secretCount(page, 'parent · Hôm nay juste après la connexion'), 'parent : Hôm nay juste après la connexion').toBe(0);
-    await everyTab(page, 'parent');
+    await everyTab(page, 'parent', PARENT_TABS);
 
     // passer par les formulaires qui ont un mot de passe (comptes enfants, ajout d'un enfant), puis revenir sur Hôm nay SANS recharger la page
-    await page.getByRole('tab', { name: /^Thêm/ }).click();
-    await page.getByRole('button', { name: 'Cài đặt chung' }).click();
-    await page.getByRole('button', { name: 'Quản lý hồ sơ của các con' }).click();
+    await page.getByRole('tab', { name: /^Cài đặt/ }).filter({ visible: true }).first().click();
+    await page.getByTestId('v2-settings-children').filter({ visible: true }).click();
     await expect(page.getByText('Mật khẩu mới').first().or(page.getByLabel('Mật khẩu').first())).toBeVisible({ timeout: 20_000 });
     expect(await hiddenSecrets(page), 'gestion des enfants : aucun champ caché').toBe(0);
     await page.getByRole('button', { name: 'Thêm con' }).click();
@@ -1550,9 +1565,10 @@ test.describe('aucun champ mot de passe monté hors des écrans de connexion (D-
     // le formulaire d'ajout est EMPILÉ sur la gestion des enfants (qui reste montée dessous) : celle-ci ne garde aucun champ caché
     expect(await secretCount(page, 'parent · ajout d\'un enfant (par-dessus la gestion des enfants)')).toBe(1);
     expect(await hiddenSecrets(page), 'ajout d\'un enfant : aucun champ caché dessous').toBe(0);
-    await page.getByRole('tab', { name: /^Hôm nay/ }).click();
-    expect(await secretCount(page, 'parent · Hôm nay après les formulaires d\'enfant'), 'parent : Hôm nay après les formulaires d\'enfant').toBe(0);
-    await everyTab(page, 'parent (après formulaires)', true);
+    await page.goBack();
+    await page.goBack();
+    await expect(page).toHaveURL(/\/v2\/parent/, { timeout: 20_000 });
+    await everyTab(page, 'parent (après formulaires)', PARENT_TABS);
   });
 
   test('enfant connecté (child-login) : 0 champ mot de passe sur Hôm nay et les autres onglets', async ({ browser }) => {
@@ -1569,9 +1585,9 @@ test.describe('aucun champ mot de passe monté hors des écrans de connexion (D-
     expect(create.status).toBe(200);
     const page = await childSignIn(browser, family.parent.email, loginId, 'abc123');
     await dismissChildSetup(page);
-    await expect(page.getByText('Chào Minh!', { exact: true })).toBeVisible({ timeout: 20_000 });
+    await expect(page).toHaveURL(/\/v2\/child/, { timeout: 20_000 });
     expect(await secretCount(page, 'enfant · Hôm nay juste après la connexion'), 'enfant : Hôm nay juste après la connexion').toBe(0);
-    await everyTab(page, 'enfant');
+    await everyTab(page, 'enfant', CHILD_TABS);
   });
 });
 
@@ -1674,8 +1690,7 @@ test.describe('suivi des utilisateurs (D-102)', () => {
     await signInContext(ctx, family.parent);
     const page = await ctx.newPage();
     trace(page, 'admin-suivi');
-    await open(page); // l'ouverture de l'app signale l'activité (touch_activity)
-    await expectVisibleOrDump(page, page.getByText(/Chào Minh!/), 'admin-suivi', 30_000);
+    await parentHome(page); // l'ouverture de l'app signale l'activité (touch_activity)
     await expect
       .poll(async () => (await db.from('members').select('last_active_at').eq('id', family.parent.memberId).single()).data?.last_active_at ?? null, { timeout: 20_000 })
       .not.toBeNull();
@@ -1730,7 +1745,7 @@ test.describe('suivi des utilisateurs (D-102)', () => {
     await signInContext(parentCtx, family.parent);
     const parent = await parentCtx.newPage();
     await open(parent, '/admin/users');
-    await expectVisibleOrDump(parent, parent.getByText(/Chào Minh!/), 'non-admin', 30_000);
+    await expect(parent).toHaveURL(/\/v2\/parent/, { timeout: 30_000 }); // renvoyé à l'accueil
     await expect(parent.getByRole('button', { name: 'Làm mới' })).toHaveCount(0);
     // appel direct de la RPC avec le jeton du parent : refusé par la base
     const token = await accessTokenOf(family.parent);
@@ -1743,23 +1758,7 @@ test.describe('suivi des utilisateurs (D-102)', () => {
   });
 });
 
-test.describe('reprise après changement de thème (D-103)', () => {
-  test('changer de thème dans Cài đặt chung recharge l\'app et reste sur Cài đặt chung (jamais l\'écran principal)', async ({ browser }) => {
-    test.setTimeout(90_000);
-    const family = await createFamily();
-    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
-    await signInContext(ctx, family.parent);
-    const page = await ctx.newPage();
-    trace(page, 'theme-reprise');
-    await open(page, '/more/settings');
-    await expectVisibleOrDump(page, page.getByRole('heading', { name: 'Cài đặt chung' }), 'theme-reprise', 30_000);
-    await page.getByRole('radio', { name: 'Kawaii' }).click();
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'kawaii', { timeout: 20_000 });
-    await expectVisibleOrDump(page, page.getByRole('heading', { name: 'Cài đặt chung' }), 'theme-reprise-après', 30_000);
-    expect(new URL(page.url()).pathname).toBe('/more/settings');
-    await ctx.close();
-  });
-
+test.describe('reprise après rechargement (D-103)', () => {
   test('navigateur reparti de la page de départ (PWA iPhone) : la page mémorisée est rouverte, une seule fois', async ({ browser }) => {
     test.setTimeout(90_000);
     const family = await createFamily();
@@ -1767,8 +1766,7 @@ test.describe('reprise après changement de thème (D-103)', () => {
     await signInContext(ctx, family.parent);
     const page = await ctx.newPage();
     trace(page, 'reprise-depart');
-    await open(page);
-    await expectVisibleOrDump(page, page.getByText(/Chào Minh!/), 'reprise-depart', 30_000);
+    await parentHome(page);
     // ce que fait l'app juste avant de recharger, puis le navigateur repart de la page de départ
     await page.evaluate(() => globalThis.localStorage.setItem('taskmate-resume-path', JSON.stringify({ path: '/more/settings', at: Date.now() })));
     await page.goto('/'); // la PWA repart de start_url
@@ -1776,15 +1774,14 @@ test.describe('reprise après changement de thème (D-103)', () => {
     expect(new URL(page.url()).pathname).toBe('/more/settings');
     expect(await page.evaluate(() => globalThis.localStorage.getItem('taskmate-resume-path'))).toBeNull();
     // un second rechargement ne rouvre plus rien : l'accueil reste l'accueil
-    await open(page);
-    await expectVisibleOrDump(page, page.getByText(/Chào Minh!/), 'reprise-depart-fin', 30_000);
+    await parentHome(page);
     expect(new URL(page.url()).pathname).not.toBe('/more/settings');
     await ctx.close();
   });
 });
 
 test.describe('compagnon panda (D-104)', () => {
-  test('l\'enfant crée son panda, coche une tâche, voit la réaction ; l\'énergie est toujours à +5 après rechargement, aucun point en plus', async ({ browser }) => {
+  test('l\'enfant crée son panda (Hôm nay V2), coche une tâche : l\'énergie est à +10 côté serveur, toujours après rechargement, aucun point en plus', async ({ browser }) => {
     test.setTimeout(120_000);
     const family = await createFamily();
     const taskTitle = title('Đọc sách');
@@ -1794,7 +1791,7 @@ test.describe('compagnon panda (D-104)', () => {
     await signInContext(ctx, family.minh);
     const page = await ctx.newPage();
     trace(page, 'enfant-panda');
-    await open(page);
+    await childHome(page);
 
     // première fois : petite étape « Panda của em » (nom proposé « Bambou », six traits)
     await expect(page.getByText('Panda của em', { exact: true })).toBeVisible({ timeout: 20_000 });
@@ -1803,25 +1800,17 @@ test.describe('compagnon panda (D-104)', () => {
     await page.getByLabel('Tên của Panda').fill('Mochi');
     await page.getByRole('radio', { name: 'Dũng cảm' }).click();
     await page.getByRole('button', { name: 'Gặp Panda!' }).click();
-    await expect(page.getByText('Mochi', { exact: true })).toBeVisible();
-    await expect(page.getByLabel('Năng lượng 0 trên 100')).toBeVisible();
-    await expect(page.getByText('Panda của em', { exact: true })).toHaveCount(0); // l'étape ne revient pas
+    await expect(page.getByText('Panda của em', { exact: true })).toHaveCount(0, { timeout: 20_000 }); // l'étape ne revient pas
+    await expect.poll(async () => (await serviceClient().from('companions').select('name, trait').eq('child_id', family.minh.childId as string).maybeSingle()).data).toEqual({ name: 'Mochi', trait: 'brave' });
 
-    // coche : réaction immédiate (expression « très heureux », « +10 ⚡ » = les points de la tâche), puis l'énergie affichée passe à 10
+    // coche : +10 d'énergie (les points de la tâche) ; les points restent à 0 (la coche attend le parent)
     await page.getByRole('checkbox', { name: taskTitle }).click();
-    await expect(page.getByText('+10 ⚡')).toBeVisible();
-    await expect(page.getByLabel('Panda Mochi, rất vui')).toBeVisible();
-    await expect(page.getByLabel('Năng lượng 10 trên 100')).toBeVisible();
-    await expect(page.getByLabel('Panda Mochi, tự hào')).toBeVisible({ timeout: 10_000 }); // la seule tâche du jour est faite
-
-    // serveur : +10, une seule ligne ; les points restent à 0 (la coche attend le parent)
     await expect.poll(() => companionEnergy(family, 'minh')).toBe(10);
     expect(await serverState(family, 'minh', taskTitle)).toMatchObject({ validated: false, balance: 0, transactions: 0 });
 
-    // rechargement : l'énergie est toujours à 10 et l'étape de création n'est pas revenue
+    // rechargement : l'étape de création n'est pas revenue, l'énergie n'a pas bougé
     await page.reload();
-    await expect(page.getByLabel('Năng lượng 10 trên 100')).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByText('Mochi', { exact: true })).toBeVisible();
+    await expect(page).toHaveURL(/\/v2\/child\/home/, { timeout: 20_000 });
     await expect(page.getByText('Panda của em', { exact: true })).toHaveCount(0);
     expect(await companionEnergy(family, 'minh')).toBe(10);
   });
@@ -1862,56 +1851,5 @@ test.describe('compagnon panda (D-104)', () => {
     expect(write.status).toBeGreaterThanOrEqual(400);
     const offset = await fetch(`${supabaseUrl()}/rest/v1/rpc/companion_set_stage_offset`, { method: 'POST', headers, body: JSON.stringify({ p_child: family.minh.childId, p_offset: 1 }) });
     expect(offset.status).toBeGreaterThanOrEqual(400);
-  });
-});
-
-test.describe('aventures du panda (D-105)', () => {
-  test('60 d\'énergie (D-106) : l\'enfant part à Hạ Long ; le lendemain il récupère une trouvaille tirée par le serveur, retrouvée dans son carnet après rechargement', async ({ browser }) => {
-    test.setTimeout(150_000);
-    const family = await createFamily();
-    await seedCompanion(family, 'minh', 'Bambou');
-    await seedEnergy(family, 'minh', 60);
-
-    const ctx = await browser.newContext();
-    await signInContext(ctx, family.minh);
-    const page = await ctx.newPage();
-    trace(page, 'enfant-aventure');
-    page.on('dialog', (d) => void d.accept()); // confirmation du départ (window.confirm sur le web)
-    await open(page);
-
-    // jauge pleine → choix de la destination (verrouillées grisées) → départ
-    await expect(page.getByText('Phiêu lưu 60/60')).toBeVisible({ timeout: 20_000 });
-    await page.getByRole('button', { name: 'Đi phiêu lưu!' }).click();
-    await expect(page).toHaveURL(/\/adventure\/choose/);
-    await expect(page.getByRole('button', { name: 'Phong Nha, mở ở cấp 6' })).toBeDisabled();
-    await page.getByRole('button', { name: 'Vịnh Hạ Long' }).click();
-    await expect(page.getByLabel('Bambou đang ở Vịnh Hạ Long, mai về nhé!')).toBeVisible({ timeout: 20_000 }); // la carte postale
-    await expect(page.getByText('Chuyến sau 0/60')).toBeVisible(); // la jauge se remplit pour la prochaine aventure
-    await expect.poll(async () => (await adventuresOf(family, 'minh')).adventures.length).toBe(1);
-    const [departed] = (await adventuresOf(family, 'minh')).adventures;
-    expect(departed).toMatchObject({ destination_slug: 'ha-long', energy_mark: 60, discovery_slug: null });
-    expect(await companionEnergy(family, 'minh')).toBe(60); // partir ne retire aucune énergie
-
-    // le lendemain (horloge simulée côté serveur : l'aventure a un jour de plus)
-    await adventureNextDay(family, 'minh');
-    await page.reload();
-    await page.getByRole('button', { name: 'Bambou về rồi!' }).click({ timeout: 20_000 });
-    await expect(page).toHaveURL(/\/adventure\/reveal/);
-    await expect(page.getByText(/^Bambou mang về: /)).toBeVisible({ timeout: 20_000 });
-    await expect.poll(async () => (await adventuresOf(family, 'minh')).journal.length).toBe(1);
-    const { adventures, journal } = await adventuresOf(family, 'minh');
-    const slug = journal[0]!.discovery_slug;
-    expect(slug.startsWith('ha-long-')).toBe(true);
-    expect(adventures[0]).toMatchObject({ discovery_slug: slug });
-    const name = (vi.adventure.discoveries as Record<string, string>)[slug]!;
-    await expect(page.getByText(`Bambou mang về: ${name}`)).toBeVisible();
-
-    // carnet, après rechargement de la page
-    await page.getByRole('button', { name: 'Xem sổ phiêu lưu' }).click();
-    await expect(page).toHaveURL(/\/adventure\/journal/);
-    await page.reload();
-    await expect(page.getByText('1/30', { exact: true })).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByLabel(`${name}, tìm được 1 lần`)).toBeVisible();
-    expect((await adventuresOf(family, 'minh')).journal).toEqual([{ discovery_slug: slug, times_found: 1 }]); // aucun nouveau tirage
   });
 });

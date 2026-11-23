@@ -361,33 +361,24 @@ test.describe('charte V2 sur les écrans réutilisés (D-109)', () => {
     }
   });
 
-  test('appareil venu d’une famille V1 : une famille V2 recharge la page une fois et prend la charte V2 ; une famille V1 garde son thème', async ({ browser }) => {
+  test('appareil où la V1 était utilisée (thème kawaii, version v1 en mémoire) : charte V2 dès le chargement, sans rechargement (D-114)', async ({ browser }) => {
     test.setTimeout(120_000);
-    const family = await createFamily({ uiVersion: 'v2' });
+    const family = await createFamily();
     const ctx = await browser.newContext();
-    // version « v1 » laissée par un compte précédent (une seule fois : l'app écrit ensuite la vraie version)
     await ctx.addInitScript(() => {
-      if (!window.sessionStorage.getItem('e2e-seeded')) {
-        window.sessionStorage.setItem('e2e-seeded', '1');
-        window.localStorage.setItem('taskmate-ui-version', 'v1');
-      }
+      window.localStorage.setItem('taskmate-ui-version', 'v1');
+      window.localStorage.setItem('taskmate-theme', 'kawaii');
     });
     await signInContext(ctx, family.minh);
     const page = await ctx.newPage();
+    let loads = 0;
+    page.on('load', () => (loads += 1));
     await page.goto('/');
-    // la page se recharge pendant l'attente : une lecture interrompue par la navigation est simplement refaite
-    await expect.poll(async () => (await themeOf(page).catch(() => [null]))[0], { timeout: 30_000 }).toBe('v2');
-    await page.waitForLoadState('load');
     await expect(page).toHaveURL(/\/v2\/child\/home/, { timeout: 20_000 });
-    expect((await themeOf(page))[1]).toBe(V2_BG);
-
-    const v1 = await createFamily();
-    const ctx1 = await browser.newContext();
-    await signInContext(ctx1, v1.parent);
-    const p1 = await ctx1.newPage();
-    await p1.goto('/');
-    await expect(p1.getByText('Chào Minh!')).toBeVisible({ timeout: 20_000 });
-    expect((await themeOf(p1))[0]).toBe('glass');
+    const [theme, bg] = await themeOf(page);
+    expect(theme).toBe('v2');
+    expect(bg).toBe(V2_BG);
+    expect(loads).toBe(1);
   });
 });
 

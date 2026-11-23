@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import '@/i18n';
-import DiagnosticsScreen from '../app/(tabs)/more/diagnostics';
+import DiagnosticsScreen from '../app/more/diagnostics';
 import { evaluateHealth, summarize, EXPECTED_FUNCTIONS, EXPECTED_TABLES, type Probes } from '@/domain/health';
 
 jest.mock('react-native-safe-area-context', () => ({ SafeAreaView: ({ children }: { children: React.ReactNode }) => children }));

@@ -8,9 +8,7 @@ import { AppErrorScreen } from '@/components/AppErrorScreen';
 import { ToastHost } from '@/components/ToastHost';
 import { V2ConfirmHost } from '@/v2/components/V2ConfirmHost';
 import { useAuthListener } from '@/hooks/useMe';
-import { useUiVersion, useUiVersionSwitch } from '@/hooks/useUiVersion';
 import { StatusBarScrim } from '@/components/StatusBarScrim';
-import { colors } from '@/theme/tokens';
 import { v2Colors } from '@/v2/theme';
 import { applyStoredLanguage } from '@/i18n/language';
 import { createQueryClient, CACHE_MAX_AGE } from '@/sync/client';
@@ -26,8 +24,6 @@ const queryClient = createQueryClient();
 
 function Root() {
   useAuthListener();
-  useUiVersionSwitch(); // V1 / V2 par famille (D-106) : purge du cache et retour à l'accueil quand la version change
-  const uiVersion = useUiVersion();
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
@@ -67,10 +63,10 @@ function Root() {
           </Stack>
         </ThemeProvider>
         <ToastHost />
-        {/* D-107 : famille V2 = confirmations dans une feuille V2, jamais de fenêtre système */}
-        <V2ConfirmHost enabled={uiVersion === 'v2'} />
+        {/* D-107, D-114 : confirmations dans une feuille V2, jamais de fenêtre système */}
+        <V2ConfirmHost enabled />
         {/* D-106 : barre d'état translucide (PWA iPhone) — voile pour l'heure et la batterie, au-dessus de tous les écrans */}
-        <StatusBarScrim color={uiVersion === 'v2' ? v2Colors.statusScrim : colors.statusScrim} />
+        <StatusBarScrim color={v2Colors.statusScrim} />
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

@@ -10,7 +10,6 @@ import { Chip } from '@/components/Chip';
 import { PandaSettingsCard } from '@/components/companion/PandaSettingsCard';
 import { ParentInviteCard } from '@/components/ParentInviteCard';
 import { ParentsCard } from '@/components/ParentsCard';
-import { ThemeCard } from '@/components/ThemeCard';
 import { Button, Card, Field, Screen, ScreenHeader } from '@/components/ui';
 import { config } from '@/config';
 import { isValidTimeZone } from '@/domain/timezone';
@@ -71,8 +70,6 @@ export default function SettingsScreen() {
           ))}
         </View>
       </Card>
-
-      <ThemeCard />
 
       {/* D-104 : l'enfant règle SON panda (nom, trait, plus jeune / plus grand) */}
       {!isParent && me.member.child_id ? <PandaSettingsCard childId={me.member.child_id} /> : null}

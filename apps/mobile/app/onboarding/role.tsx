@@ -6,7 +6,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GlassTile } from '@/components/GlassTile';
 import { SplashBackground } from '@/components/SplashBackground';
-import { colors, hasDecor, MIN_TARGET, radius, shadowSmall, line } from '@/theme/tokens';
+import { colors, MIN_TARGET, radius, shadowSmall, line } from '@/theme/tokens';
 
 /** Splash (maquette 1 : illustration, logo, slogan, « Bắt đầu ») puis choix du rôle (SPEC §2.1, §3.1). */
 export default function RoleScreen() {
@@ -56,7 +56,7 @@ export default function RoleScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: hasDecor ? colors.background : colors.navyDeep },
+  root: { flex: 1, backgroundColor: colors.navyDeep },
   safe: { flex: 1, padding: 24, justifyContent: 'space-between' },
   hero: { alignItems: 'center', gap: 12, marginTop: 56 },
   name: { color: colors.text, fontSize: 38, fontWeight: '800', letterSpacing: -0.5 },

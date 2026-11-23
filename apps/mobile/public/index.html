@@ -37,18 +37,7 @@
           height: calc(100% + env(safe-area-inset-top));
         }
       }
-      /* Thèmes illustrés (kawaii, cosmos, teddy, bunny) : police arrondie du système (SF Rounded sur iPhone) */
-      html[data-theme='kawaii'] body,
-      html[data-theme='cosmos'] body,
-      html[data-theme='teddy'] body,
-      html[data-theme='bunny'] body,
-      html[data-theme='bunny'] body *,
-      html[data-theme='teddy'] body *,
-      html[data-theme='cosmos'] body *,
-      html[data-theme='kawaii'] body * {
-        font-family: ui-rounded, 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', 'Arial Rounded MT Bold', 'Nunito', system-ui, sans-serif !important;
-      }
-      /* D-109 : thème « v2 » (famille en V2) — police Nunito de la V2 (famille NunitoV2 déclarée par theme/v2Fonts.web.ts) pour tout le texte */
+      /* D-109, D-114 : thème unique « v2 » — police Nunito de la V2 (famille NunitoV2 déclarée par theme/v2Fonts.web.ts) pour tout le texte */
       html[data-theme='v2'] body,
       html[data-theme='v2'] body * {
         font-family: 'NunitoV2', 'Nunito', ui-rounded, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif !important;

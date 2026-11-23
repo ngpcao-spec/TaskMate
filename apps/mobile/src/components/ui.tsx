@@ -16,11 +16,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import i18n from '@/i18n';
 import { Backdrop } from '@/components/Backdrop';
-import { SectionMark } from '@/components/decor/Decor';
 import { Gradient } from '@/components/Gradient';
 import { RoundButton } from '@/components/RoundButton';
 import { safeEdgesFor, useHasBottomBar } from '@/components/TabInset';
-import { colors, glass, decor, MIN_TARGET, radius, shadow, shadowInset, shadowSmall, spacing, typography, line } from '@/theme/tokens';
+import { colors, glass, MIN_TARGET, radius, shadow, shadowInset, shadowSmall, spacing, typography, line } from '@/theme/tokens';
 
 /** Largeur max. du contenu (conteneur centré sur grand écran). `wide` : écrans à colonnes (file « Cần duyệt »). */
 const CONTENT_MAX_WIDTH = 760;
@@ -152,17 +151,10 @@ export function Card({ children, fill = false }: { children: ReactNode; /** Occu
 
 /** Titre de section (« Top Genres », « Recently Played » de la maquette). */
 export function SectionTitle({ children }: { children: ReactNode }) {
-  const title = (
+  return (
     <Text accessibilityRole="header" style={styles.sectionTitle}>
       {children}
     </Text>
-  );
-  if (decor === 'none') return title;
-  return (
-    <View style={styles.sectionRow}>
-      <SectionMark size={24} />
-      {title}
-    </View>
   );
 }
 
@@ -215,7 +207,6 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   inputError: { borderColor: colors.danger },
-  sectionRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.text },
   navy: { borderRadius: radius.card, padding: spacing.md, gap: spacing.sm, overflow: 'hidden', borderWidth: line.width, borderColor: colors.navyBorder, ...shadow },
   card: { ...glass, borderRadius: radius.card, padding: spacing.md, gap: spacing.sm },

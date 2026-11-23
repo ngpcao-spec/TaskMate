@@ -795,3 +795,12 @@ En voyage, la vidéo finit sous le chemin sur une herbe vert citron (≈ #C8DC2D
 - Étape 1 (cette PR) : migration `…000038_v2_for_all` — `families.ui_version` vaut `v2` par défaut et toutes les familles existantes passent en `v2` (aucune donnée supprimée, réversible par l'administrateur). Côté client, une version absente ou inconnue = `v2` (`parseUiVersion`, `resolveEntryRoute`) : une nouvelle famille arrive directement dans la V2.
 - Étape 2 (PR suivante) : suppression du code propre à la V1 (accueils des onglets V1, sélecteur des 5 thèmes, interrupteur V1/V2 de l'administrateur) et passage des tests de bout en bout V1 sur la V2. Les écrans V1 que la V2 réutilise (réglages, points, révisions, quiz, tâches…) restent : ils SONT la V2 (thème `v2`, D-109).
 - Déroge à la règle « La V1 reste l'interface par défaut et n'est jamais supprimée » (D-106), à la demande de Teo.
+
+## D-115 — Suppression de la V1 (Teo, 2026-11-23 : « Supprime »)
+
+Suite de D-114 (toutes les familles en V2). Supprimé du code :
+- les écrans propres à la V1 : onglets `app/(tabs)` (Hôm nay, Lịch, Thống kê, Thêm) et leur barre ; les sous-écrans communs passent de `app/(tabs)/more/*` à `app/more/*` (mêmes URL `/more/…`), avec une garde + le bandeau de synchronisation (`app/more/_layout.tsx`) ;
+- les cinq thèmes au choix (verre givré, kawaii, cosmos, teddy, bunny), leurs décors (`components/decor`), le choix du thème (`ThemeCard`, réglages et étape 1 de l'assistant) : la charte V2 est le thème unique (`theme/index.ts`) ;
+- l'interrupteur V1/V2 : `useUiVersion`, `useUiVersionSwitch`, `domain/ui-version`, l'interrupteur de la fiche famille admin et l'indicateur « familles en V2 » ; `resolveEntryRoute` envoie toujours vers `/v2`, la feuille de confirmation est toujours active ;
+- les composants devenus orphelins (graphiques, `TaskRow`, `WeekStrip`, `NavBar`, `Fab`, `WeeklyBanner`, `NotificationPrompt` — jamais affiché en V2 —, etc.) et leurs tests.
+Base inchangée (aucune migration) : `families.ui_version` reste (valeur `v2`) et `admin_set_ui_version` existe encore sans être appelée — aucune suppression de données en production. Tests de bout en bout : les parcours métier de `flows.e2e.ts` passent désormais par la V2 ; le parcours V1 des aventures est couvert par « le grand départ » de `v2.e2e.ts`, le test de changement de thème est supprimé.

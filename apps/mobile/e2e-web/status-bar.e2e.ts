@@ -3,7 +3,7 @@ import { createFamily, seedCompanion, serviceClient, signInContext, todayVn, typ
 
 /**
  * Barre d'état translucide de la PWA iPhone (D-106) : la page passe sous l'heure et la batterie. Émulation par Chromium (marge haute forcée par CDP,
- * `env(safe-area-inset-top)`) : rien d'autre que le décor et la vidéo V2 ne doit se trouver sous la barre d'état, dans la V1 comme dans la V2.
+ * `env(safe-area-inset-top)`) : rien d'autre que le décor et la vidéo V2 ne doit se trouver sous la barre d'état, dans tous les écrans (D-114 : la V1 n'existe plus).
  */
 test.skip(({ browserName }) => browserName !== 'chromium', 'marge haute émulée par le protocole Chromium');
 
@@ -53,7 +53,7 @@ async function check(page: Page, name: string, phone: (typeof PHONES)[number]) {
 }
 
 for (const phone of PHONES) {
-  test(`${phone.width}×${phone.height}, marge haute ${phone.top} : V2 enfant (vidéo, voyage), V2 parent, V1 Hôm nay et Cài đặt`, async ({ browser }) => {
+  test(`${phone.width}×${phone.height}, marge haute ${phone.top} : V2 enfant (vidéo, voyage), V2 parent, Cài đặt chung`, async ({ browser }) => {
     test.setTimeout(180_000);
     const v2 = await createFamily({ uiVersion: 'v2' });
     await seedCompanion(v2, 'khang', 'Bambou'); // 13 ans : panda teen, vidéo d'accueil
@@ -94,13 +94,9 @@ for (const phone of PHONES) {
     await expect(parent.getByText('Cần duyệt', { exact: true }).first()).toBeVisible({ timeout: 20_000 });
     await check(parent, 'v2-parent', phone);
 
-    // V1 (interface par défaut) : Hôm nay et Cài đặt
-    const v1 = await createFamily();
-    const home = await openAs(browser, v1.parent, phone);
-    await expect(home.getByText('Chào Minh!')).toBeVisible({ timeout: 20_000 });
-    await check(home, 'v1-hom-nay', phone);
-    const settings = await openAs(browser, v1.parent, phone, '/more/settings');
+    // sous-écran commun (Cài đặt chung, `/more/settings`), ouvert depuis la V2
+    const settings = await openAs(browser, v2.parent, phone, '/more/settings');
     await expect(settings.getByRole('heading').first()).toBeVisible({ timeout: 20_000 });
-    await check(settings, 'v1-cai-dat', phone);
+    await check(settings, 'cai-dat', phone);
   });
 }

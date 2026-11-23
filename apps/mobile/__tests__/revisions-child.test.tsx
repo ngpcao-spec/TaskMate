@@ -4,7 +4,7 @@ import { ChildRevisions } from '@/components/quiz/ChildRevisions';
 import { ChildSetHome } from '@/components/quiz/ChildSetHome';
 import { EvaluationRun } from '@/components/quiz/EvaluationRun';
 import { ResultView } from '@/components/quiz/ResultView';
-import RevisionsScreen from '../app/(tabs)/more/revisions';
+import RevisionsScreen from '../app/more/revisions';
 import EvaluateScreen from '../app/quiz/evaluate/[id]';
 import ResultScreen from '../app/quiz/result/[id]';
 import QuizScreen from '../app/quiz/[id]';

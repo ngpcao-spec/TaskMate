@@ -1,8 +1,7 @@
 import { QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import i18n from '@/i18n';
-import ChildrenAdminScreen from '../app/(tabs)/more/children';
-import ProfileScreen from '../app/(tabs)/more/index';
+import ChildrenAdminScreen from '../app/more/children';
 import { createTestQueryClient } from '../test-utils/queryClient';
 
 const mockPush = jest.fn();
@@ -43,51 +42,6 @@ jest.mock('@/api/childAccounts', () => ({
 const client = createTestQueryClient();
 afterAll(() => client.clear());
 const wrap = (ui: React.ReactElement) => render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
-
-describe('Hồ sơ : cartes enfants + « Ajouter un enfant »', () => {
-  beforeEach(async () => {
-    jest.clearAllMocks();
-    mockRole = 'parent';
-    mockAdmin = false;
-    await i18n.changeLanguage('fr');
-  });
-
-  it('entrée « Administration » : seulement pour l\'administrateur de la plateforme (D-080)', async () => {
-    await wrap(<ProfileScreen />);
-    expect(screen.queryByRole('button', { name: 'Administration' })).toBeNull();
-  });
-  it('administrateur (parent) : l\'entrée ouvre le catalogue', async () => {
-    mockAdmin = true;
-    await wrap(<ProfileScreen />);
-    await fireEvent.press(screen.getByRole('button', { name: 'Administration' }));
-    expect(mockPush).toHaveBeenCalledWith('/admin');
-  });
-  it('un enfant ne voit jamais l\'entrée, même si le statut remonté est vrai', async () => {
-    mockRole = 'child';
-    mockAdmin = true;
-    await wrap(<ProfileScreen />);
-    expect(screen.queryByRole('button', { name: 'Administration' })).toBeNull();
-  });
-
-  it('parent : une carte sélectionnable par enfant (3 enfants) et la carte « Ajouter un enfant »', async () => {
-    await wrap(<ProfileScreen />);
-    for (const n of ['Minh', 'Khang', 'Cam']) expect(screen.getByRole('radio', { name: new RegExp(`^${n},`) })).toBeTruthy();
-    await fireEvent.press(screen.getByRole('radio', { name: /^Cam,/ }));
-    expect(mockSelect).toHaveBeenCalledWith('c3');
-    await fireEvent.press(screen.getByRole('button', { name: 'Ajouter un enfant' }));
-    expect(mockPush).toHaveBeenCalledWith('/more/add-child');
-  });
-
-  it('enfant (D-052) : voit uniquement SA carte, non sélectionnable, et jamais « Ajouter un enfant »', async () => {
-    mockRole = 'child';
-    await wrap(<ProfileScreen />);
-    expect(screen.getByLabelText(/^Minh,/)).toBeTruthy();
-    expect(screen.queryByRole('radio')).toBeNull(); // aucune sélection possible
-    expect(screen.queryByText('Khang')).toBeNull();
-    expect(screen.queryByText('Cam')).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Ajouter un enfant' })).toBeNull();
-  });
-});
 
 describe('Gérer les profils enfants', () => {
   beforeEach(async () => {

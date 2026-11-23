@@ -1,8 +1,5 @@
-import { keepPreviousData, useIsFetching, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchAdminFamilies, fetchAdminFamily, fetchAdminHealth, fetchAdminOverview, fetchAdminSeries, fetchAdminUsage, setFamilyUiVersion } from '@/api/adminStats';
-import type { UiVersion } from '@/domain/ui-version';
-import { useToastStore } from '@/store/toast';
-import i18n from '@/i18n';
+import { keepPreviousData, useIsFetching, useQuery, useQueryClient } from '@tanstack/react-query';
+import { fetchAdminFamilies, fetchAdminFamily, fetchAdminHealth, fetchAdminOverview, fetchAdminSeries, fetchAdminUsage } from '@/api/adminStats';
 import { adminStatsKeys } from '@/api/keys';
 import type { FamilySort } from '@/domain/admin-stats';
 
@@ -23,18 +20,4 @@ export function useRefreshAdminStats(): { refresh: () => void; busy: boolean } {
   const queryClient = useQueryClient();
   const busy = useIsFetching({ queryKey: adminStatsKeys.all }) > 0;
   return { refresh: () => void queryClient.invalidateQueries({ queryKey: adminStatsKeys.all }), busy };
-}
-
-/**
- * D-106 : la SEULE écriture de l'espace « Suivi des utilisateurs » (exception à la lecture seule de D-102) — l'interface V1 / V2 d'une famille.
- * Action d'administration en ligne (pas de file hors ligne) : relit la fiche et les indicateurs ensuite.
- */
-export function useSetFamilyUiVersion(familyId: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (version: UiVersion) => setFamilyUiVersion(familyId, version),
-    onSuccess: () => useToastStore.getState().show(i18n.t('v2.admin.saved'), 'info'),
-    onError: () => useToastStore.getState().show(i18n.t('v2.admin.error'), 'error'),
-    onSettled: () => void queryClient.invalidateQueries({ queryKey: adminStatsKeys.all }),
-  });
 }
