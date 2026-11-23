@@ -135,7 +135,7 @@ describe('thème « v2 » (D-109) : la charte V2 pour les écrans V1 réutilisé
     expect(activeThemeId('kawaii', 'v2')).toBe('v2');
     expect(activeThemeId(null, 'v2')).toBe('v2');
     expect(activeThemeId('kawaii', 'v1')).toBe('kawaii');
-    expect(activeThemeId('kawaii', null)).toBe('kawaii');
+    expect(activeThemeId('kawaii', null)).toBe('v2'); // D-114 : appareil neuf = charte V2
     expect(activeThemeId('n’importe quoi', 'v1')).toBe(DEFAULT_THEME);
   });
 });

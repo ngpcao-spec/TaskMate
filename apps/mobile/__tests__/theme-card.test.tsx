@@ -3,6 +3,9 @@ import '@/i18n';
 import { ThemeCard } from '@/components/ThemeCard';
 import { kvStorage } from '@/sync/storage';
 import { THEME_KEY } from '@/theme/themeStore';
+// thèmes de la V1 (D-064…D-073) : appareil réglé en V1 (D-114 : un appareil neuf démarre en charte V2)
+jest.mock('@/theme/themeStore', () => ({ ...jest.requireActual('@/theme/themeStore'), readStoredUiVersion: () => 'v1' }));
+
 
 describe('ThemeCard (D-069)', () => {
   beforeEach(() => kvStorage.removeItem(THEME_KEY));

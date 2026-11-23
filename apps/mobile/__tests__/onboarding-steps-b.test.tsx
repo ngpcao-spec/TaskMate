@@ -171,7 +171,7 @@ describe('Étape 4 — installer et notifier', () => {
   it('parent invité : dernière étape = « Hoàn tất » vers Hôm nay', async () => {
     await renderWithClient(<NotificationsStep facts={facts({ isOwner: false, parents: 2 })} />);
     await fireEvent.press(screen.getByRole('button', { name: 'Hoàn tất' }));
-    expect(mockReplace).toHaveBeenCalledWith('/(tabs)/today');
+    expect(mockReplace).toHaveBeenCalledWith('/');
   });
 });
 
@@ -259,7 +259,7 @@ describe('Étape 6 — deuxième parent', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Chia sẻ mã mời' }));
     expect(mockShare).toHaveBeenCalledWith('Mời tham gia TaskMate', expect.stringContaining('ABCD-EFGH'));
     await fireEvent.press(screen.getByRole('button', { name: 'Hoàn tất' }));
-    expect(mockReplace).toHaveBeenCalledWith('/(tabs)/today');
+    expect(mockReplace).toHaveBeenCalledWith('/');
   });
 
   it('étape passable', async () => {

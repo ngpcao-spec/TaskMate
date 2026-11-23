@@ -8,7 +8,7 @@ export function useStepNav(step: StepKey, facts: OnboardingFacts) {
   const setStep = useOnboardingStep();
   const next = neighbour(step, facts.isOwner, 1);
   const prev = neighbour(step, facts.isOwner, -1);
-  const goNext = () => router.replace(next ? stepPath(next) : '/(tabs)/today');
+  const goNext = () => router.replace(next ? stepPath(next) : '/');
   const goBack = prev ? () => router.replace(stepPath(prev)) : undefined;
   const skip = canSkipStep(step, facts.children.length)
     ? async () => {

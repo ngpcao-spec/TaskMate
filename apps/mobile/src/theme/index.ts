@@ -26,7 +26,8 @@ export const V2_THEME = v2;
 
 /** Thème appliqué : `v2` pour une famille en V2 (version vue au dernier lancement), sinon le thème choisi sur l'appareil. */
 export function activeThemeId(storedTheme: unknown, storedUiVersion: unknown): ActiveThemeId {
-  return storedUiVersion === 'v2' ? 'v2' : parseThemeId(storedTheme);
+  // D-114 : la V2 est l'interface de tous ; un appareil neuf (rien d'enregistré) démarre directement en charte V2 (aucun rechargement en plein parcours)
+  return storedUiVersion === 'v1' ? parseThemeId(storedTheme) : 'v2';
 }
 
 /** Thème actif : choisi au chargement de l'app (les styles en dépendent) ; changer de thème recharge l'app. */
