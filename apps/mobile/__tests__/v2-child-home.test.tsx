@@ -9,7 +9,7 @@ import { usePandaReaction } from '@/store/pandaReaction';
 import { useTripStore } from '@/store/trip';
 import type { ChildRow, TaskRow } from '@/types/models';
 import * as videoModule from '@/v2/video';
-import { homeVideoForStage } from '@/v2/video';
+import { homeVideoForStage, tripVideoForStage } from '@/v2/video';
 import { v2Colors } from '@/v2/theme';
 import V2ChildHome from '../app/(v2)/v2/child/home';
 
@@ -404,6 +404,18 @@ describe('V2 : vidéo de voyage du stade 1 dans Hôm nay (D-107)', () => {
     await render(<V2ChildHome />);
     expect(mockTripVideo).toMatchObject({ mode: 'video', video: { key: 'trip-teen' } });
     expect(screen.queryByTestId('v2-trip-note')).toBeNull();
+  });
+
+  it('en voyage avec vidéo : écran et barre d’onglets prennent le sable du chemin (D-113) ; maison vide + mot : vert du thème', async () => {
+    mockCompanion = { ...panda, stage: 3 };
+    const view = await render(<V2ChildHome />);
+    const color = tripVideoForStage(3)!.groundColor;
+    expect(StyleSheet.flatten(screen.getByTestId('v2-child-home').props.style).backgroundColor).toBe(color);
+    expect(useHomeScene.getState().color).toBe(color);
+    await act(async () => mockTripVideo!.onFailed());
+    expect(StyleSheet.flatten(screen.getByTestId('v2-child-home').props.style).backgroundColor).toBe(v2Colors.background);
+    expect(useHomeScene.getState().color).toBeNull();
+    await view.unmount();
   });
 
   it('stade 2 : SA vidéo de voyage (trip-nhi)', async () => {

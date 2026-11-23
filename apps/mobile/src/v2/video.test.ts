@@ -97,6 +97,12 @@ describe('table stade → vidéo de voyage (D-107)', () => {
     expect(tripVideoForStage(4)?.key).toBe('trip-dong-hanh');
     for (const stage of [0, 5, Number.NaN]) expect(tripVideoForStage(stage)).toBeNull();
   });
+  it('voyage : sable du chemin clair, onglets et texte lisibles dessus (D-113)', () => {
+    for (const e of Object.values(TRIP_VIDEOS)) {
+      expect(e!.groundColor).toMatch(/^#[0-9A-F]{6}$/);
+      for (const fg of [v2Colors.tabActiveOnScene, v2Colors.tabInactiveOnScene, v2Colors.text]) expect([e!.key, fg, contrast(fg, e!.groundColor) >= 4.5]).toEqual([e!.key, fg, true]);
+    }
+  });
   it('chaque entrée a ses 4 fichiers et une géométrie paysage 16:9 plausible', () => {
     for (const e of Object.values(TRIP_VIDEOS)) {
       for (const k of ['webm', 'mp4', 'mp4Small', 'poster'] as const) expect(e!.sources[k]).toBeTruthy();

@@ -124,12 +124,6 @@ export default function V2ChildHome() {
   // gestionnaire unique des animations du panda (repos, content, curieux, endormi) ; fin de journée = règle existante (`dayComplete`)
   const anim = usePandaAnimation({ childId, stage, today, dayDone: complete, ready: !tasksQuery.isPending, mode: media, gaugeFull });
   const reactionVideo = video && anim.reactions !== null;
-  // D-106 : avec la vidéo (ou ses images fixes), le fond sous l'en-tête ET la barre d'onglets prolongent la vidéo (couleur de son sable)
-  const extendColor = media !== 'off' && stageVideo ? stageVideo.groundColor : null;
-  useEffect(() => {
-    setSceneColor(focused ? extendColor : null);
-  }, [focused, extendColor, setSceneColor]);
-  useEffect(() => () => setSceneColor(null), [setSceneColor]);
   // départ laissé en plan (l'enfant est allé ailleurs) : la séquence ne se rejoue pas plus tard
   useEffect(() => {
     if (departure && Date.now() - departure.at > WALK_OUT_MS + 3000) finishDeparture();
@@ -149,6 +143,13 @@ export default function V2ChildHome() {
     web: Platform.OS === 'web',
     failed: tripFailed,
   });
+  // D-106 : avec la vidéo (ou ses images fixes), le fond sous l'en-tête ET la barre d'onglets prolongent la vidéo (couleur de son sable) ;
+  // D-113 : la vidéo de voyage aussi (sable du chemin), sinon son herbe vert citron finissait sur le vert de l'écran
+  const extendColor = media !== 'off' && stageVideo ? stageVideo.groundColor : tripMode !== 'off' && tripVideo ? tripVideo.groundColor : null;
+  useEffect(() => {
+    setSceneColor(focused ? extendColor : null);
+  }, [focused, extendColor, setSceneColor]);
+  useEffect(() => () => setSceneColor(null), [setSceneColor]);
 
   if (!d || !d.child) {
     return (

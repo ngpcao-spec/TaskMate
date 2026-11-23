@@ -273,7 +273,12 @@ export function availableReactions(r: HomeReactions | null): Set<'happy' | 'curi
  * 16:9, sans son, boucle raccordée). TABLE stade → vidéo de voyage, même principe que `HOME_VIDEOS` : un stade absent garde la maison vide et le mot
  * épinglé. Géométrie mesurée sur toutes les images : haut de la pousse `headY`, bas des pieds `feetY` (fraction de la hauteur) ; cadrage `tripVideoLayout`.
  */
-export type TripVideoEntry = { key: string; sources: HomeVideoSources; geometry: HomeVideoGeometry };
+/**
+ * `groundColor` (D-113) : sable du CHEMIN juste sous les pieds (médiane de la bande à 84 % de la hauteur, sur l'aperçu). Sous le chemin, la vidéo
+ * finit sur une herbe vert citron qui jurait avec le fond vert de l'écran : le bas de l'en-tête est fondu vers ce sable, qui prolonge la vidéo
+ * sous l'en-tête et sous la barre d'onglets, comme à la maison.
+ */
+export type TripVideoEntry = { key: string; sources: HomeVideoSources; geometry: HomeVideoGeometry; groundColor: string };
 
 export const TRIP_VIDEOS: Readonly<Partial<Record<number, TripVideoEntry>>> = {
   // stade 1 (bé), fournie par Teo le 2026-11-09 (branche `assets/v2-trip-walk`) : 1280×720, 9,5 s ; il marche vers la droite, de 44 % (pousse) à
@@ -287,6 +292,7 @@ export const TRIP_VIDEOS: Readonly<Partial<Record<number, TripVideoEntry>>> = {
       poster: require('../../assets/v2/video/trip/trip-be-poster.webp'),
     },
     geometry: { width: 1280, height: 720, headY: 0.44, feetY: 0.82 },
+    groundColor: '#F6CE86',
   },
   // stade 2 (nhí), fournie par Teo le 2026-11-23 : reçue en 640×360, 8 s, avec son, SANS point de bouclage (le décor ne revient jamais) ;
   // son retiré ; boucle des images 60 à 190 (la pose du panda à l'image 190 reprend celle de l'image 59) avec un fondu de 0,5 s vers les images
@@ -301,6 +307,7 @@ export const TRIP_VIDEOS: Readonly<Partial<Record<number, TripVideoEntry>>> = {
       poster: require('../../assets/v2/video/trip/trip-nhi-poster.webp'),
     },
     geometry: { width: 1280, height: 720, headY: 0.36, feetY: 0.825 },
+    groundColor: '#F8CB86',
   },
   // stade 3 (teen), fournie par Teo le 2026-11-21 (d'abord branchée par erreur au stade 2, corrigé le 2026-11-23) : 1280×720, son retiré, coupée à 184 images (7,67 s) là où elle reboucle (image 184 ≈ image 0),
   // réencodée aux débits de `trip-be` ; sweat bleu, casque, sac : il marche vers la droite, de 36 % (pousse) à 82,5 % (pieds), au centre
@@ -314,6 +321,7 @@ export const TRIP_VIDEOS: Readonly<Partial<Record<number, TripVideoEntry>>> = {
       poster: require('../../assets/v2/video/trip/trip-teen-poster.webp'),
     },
     geometry: { width: 1280, height: 720, headY: 0.36, feetY: 0.825 },
+    groundColor: '#F9CC80',
   },
   // stade 4 (đồng hành), fournie par Teo le 2026-11-23 : même traitement que `trip-nhi` (640×360, 8 s, avec son, sans point de bouclage) ;
   // boucle des images 29 à 187 (la pose à l'image 187 reprend celle de l'image 28) avec un fondu de 0,5 s vers les images 17 à 28 ; agrandie en
@@ -328,6 +336,7 @@ export const TRIP_VIDEOS: Readonly<Partial<Record<number, TripVideoEntry>>> = {
       poster: require('../../assets/v2/video/trip/trip-dong-hanh-poster.webp'),
     },
     geometry: { width: 1280, height: 720, headY: 0.3, feetY: 0.825 },
+    groundColor: '#F9CC8A',
   },
 };
 
