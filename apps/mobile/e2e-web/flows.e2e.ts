@@ -861,6 +861,7 @@ test.describe('parents Google, famille partagée, enfants rattachés à la famil
 
     // ── l'enfant se connecte avec l'e-mail du SECOND parent (e-mail de n'importe quel parent de la famille)
     const child = await childSignIn(browser, parentB.email, loginId, 'abc123');
+    await dismissChildSetup(child); // mini-parcours du premier login (D-090)
     await expect(child).toHaveURL(/\/v2\/child/, { timeout: 20_000 }); // D-114 : connecté, accueil V2 de l'enfant
     // l'enfant ne voit aucun écran parent
     await open(child, '/more/add-child');
@@ -885,6 +886,7 @@ test.describe('parents Google, famille partagée, enfants rattachés à la famil
     const oldPw = await childSignIn(browser, parentA.email, loginId, 'abc123');
     await expect(oldPw.getByText(WRONG_LOGIN)).toBeVisible({ timeout: 20_000 });
     const newPw = await childSignIn(browser, parentA.email, loginId, 'nouveau1');
+    await dismissChildSetup(newPw); // mini-parcours du premier login (D-090)
     await expect(newPw).toHaveURL(/\/v2\/child/, { timeout: 20_000 }); // D-114 : connecté, accueil V2 de l'enfant
 
     // ── le parent B quitte la famille ; le parent A, devenu seul parent, ne peut plus « quitter »
