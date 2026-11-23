@@ -6,8 +6,6 @@ import { LanguageStep } from '@/components/onboarding/LanguageStep';
 import { SubjectsStep } from '@/components/onboarding/SubjectsStep';
 import { useSessionStore } from '@/store/session';
 import { clearClients, facts, kid, renderWithClient } from '../test-utils/onboardingHarness';
-// thèmes de la V1 (D-064…D-073) : appareil réglé en V1 (D-114 : un appareil neuf démarre en charte V2)
-jest.mock('@/theme/themeStore', () => ({ ...jest.requireActual('@/theme/themeStore'), readStoredUiVersion: () => 'v1' }));
 
 
 const mockReplace = jest.fn();
@@ -56,16 +54,6 @@ describe('Étape 1 — langue et famille', () => {
     expect(screen.getAllByText('Bước 1/6').length).toBeGreaterThan(0);
     expect(screen.getByRole('progressbar', { name: 'Bước 1/6' }).props.accessibilityValue).toMatchObject({ min: 0, max: 6, now: 1 });
     expect(screen.queryByRole('button', { name: 'Quay lại' })).toBeNull();
-  });
-
-  it('le choix de l\'apparence est proposé (5 thèmes, par appareil) ; le choisir l\'enregistre pour cet appareil', async () => {
-    await renderWithClient(<LanguageStep facts={facts()} />);
-    expect(screen.getByText('Giao diện')).toBeTruthy();
-    for (const label of ['Kính mờ', 'Kawaii', 'Vũ trụ', 'Gấu nâu', 'Thỏ bông']) expect(screen.getByRole('radio', { name: label })).toBeTruthy();
-    expect(screen.getByText(/lưu riêng cho từng thiết bị/)).toBeTruthy();
-    await fireEvent.press(screen.getByRole('radio', { name: 'Vũ trụ' }));
-    expect(mockStore.get('taskmate-theme')).toBe('cosmos');
-    expect(screen.getByText(/Hãy đóng hẳn ứng dụng rồi mở lại/)).toBeTruthy(); // natif : redémarrage manuel ; sur le web l'app se recharge seule
   });
 
   it('valeurs préremplies (nom, fuseau de l’appareil) ; « Tiếp tục » enregistre les changements PUIS confirme, puis étape suivante', async () => {

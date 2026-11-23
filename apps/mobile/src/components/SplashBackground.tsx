@@ -1,10 +1,4 @@
-import { StyleSheet, View } from 'react-native';
-import { Backdrop } from '@/components/Backdrop';
-import { Bow, DogFace } from '@/components/decor/art';
-import { Astronaut, MoonCookie, Planet, Rocket, StarShape } from '@/components/decor/art-cosmos';
-import { BunnyFace, Cloud, CuteStar, Strawberry } from '@/components/decor/art-bunny';
-import { Duckling, Flower, Paw, TeddyFace } from '@/components/decor/art-teddy';
-import { decor } from '@/theme/tokens';
+import { StyleSheet } from 'react-native';
 import Svg, { Circle, Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 
 /**
@@ -12,95 +6,6 @@ import Svg, { Circle, Defs, LinearGradient, Path, Rect, Stop } from 'react-nativ
  * Placeholder SVG généré — à remplacer par l'illustration finale (HUMAN_TODO « assets »).
  */
 export function SplashBackground() {
-  if (decor === 'cosmos') {
-    return (
-      <View style={StyleSheet.absoluteFill}>
-        <Backdrop />
-        <View style={[styles.float, { top: 90, left: 36 }]}>
-          <MoonCookie size={70} />
-        </View>
-        <View style={[styles.float, { top: 330, right: 24 }]}>
-          <Planet size={88} />
-        </View>
-        <View style={[styles.float, { top: 60, right: 120 }]}>
-          <StarShape size={26} />
-        </View>
-        <View style={[styles.float, { top: 250, left: 70 }]}>
-          <StarShape size={20} />
-        </View>
-        <View style={styles.dogs}>
-          <Astronaut size={150} />
-          <View style={styles.bow}>
-            <Rocket size={64} />
-          </View>
-          <Astronaut size={116} happy />
-        </View>
-      </View>
-    );
-  }
-  if (decor === 'bunny') {
-    return (
-      <View style={StyleSheet.absoluteFill}>
-        <Backdrop />
-        <View style={[styles.float, { top: 90, left: 30 }]}>
-          <Strawberry size={44} />
-        </View>
-        <View style={[styles.float, { top: 130, right: 40 }]}>
-          <CuteStar size={52} />
-        </View>
-        <View style={[styles.float, { top: 300, left: 54 }]}>
-          <Cloud size={72} />
-        </View>
-        <View style={[styles.float, { top: 330, right: 34 }]}>
-          <Strawberry size={34} />
-        </View>
-        <View style={styles.dogs}>
-          <BunnyFace size={150} />
-          <View style={styles.bow}>
-            <CuteStar size={52} />
-          </View>
-          <BunnyFace size={116} happy />
-        </View>
-      </View>
-    );
-  }
-  if (decor === 'teddy') {
-    return (
-      <View style={StyleSheet.absoluteFill}>
-        <Backdrop />
-        <View style={[styles.float, { top: 96, left: 30 }]}>
-          <Flower size={56} />
-        </View>
-        <View style={[styles.float, { top: 150, right: 36 }]}>
-          <Paw size={48} />
-        </View>
-        <View style={[styles.float, { top: 300, left: 60 }]}>
-          <Flower size={38} petal="#F0AAB0" />
-        </View>
-        <View style={styles.dogs}>
-          <TeddyFace size={150} />
-          <View style={styles.bow}>
-            <Duckling size={64} />
-          </View>
-          <TeddyFace size={116} happy />
-        </View>
-      </View>
-    );
-  }
-  if (decor === 'kawaii') {
-    return (
-      <View style={StyleSheet.absoluteFill}>
-        <Backdrop />
-        <View style={styles.dogs}>
-          <DogFace size={150} />
-          <View style={styles.bow}>
-            <Bow size={74} />
-          </View>
-          <DogFace size={116} happy />
-        </View>
-      </View>
-    );
-  }
   return (
     <Svg style={StyleSheet.absoluteFill} viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
       <Defs>
@@ -134,8 +39,3 @@ export function SplashBackground() {
   );
 }
 
-const styles = StyleSheet.create({
-  dogs: { position: 'absolute', left: 0, right: 0, bottom: 150, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', gap: 4 },
-  bow: { position: 'absolute', top: -34 },
-  float: { position: 'absolute' },
-});

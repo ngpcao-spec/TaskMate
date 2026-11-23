@@ -27,6 +27,16 @@ beforeEach(() => {
 afterEach(() => jest.clearAllMocks());
 
 describe('retour à la page d\'avant le rechargement (D-103)', () => {
+  it('attend l\'écran d\'arrivée : rien pendant les aiguillages `/` et `/v2`, puis la page mémorisée (D-115)', async () => {
+    savePage('/more/settings');
+    reloadPendingForTest();
+    mockPath = '/v2';
+    const view = await render(<Probe />);
+    expect(mockReplace).not.toHaveBeenCalled();
+    mockPath = '/v2/parent/home';
+    await view.rerender(<Probe />);
+    expect(mockReplace).toHaveBeenCalledWith('/more/settings');
+  });
   it('page chargée à l\'adresse de départ : rouvre la page mémorisée, une seule fois', async () => {
     savePage('/more/settings');
     reloadPendingForTest();

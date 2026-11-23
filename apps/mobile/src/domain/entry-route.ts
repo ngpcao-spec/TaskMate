@@ -1,5 +1,3 @@
-import { HOME_ROUTE, type UiVersion } from './ui-version';
-
 export type EntryMember = { role: 'parent' | 'child' };
 
 export type EntryState = {
@@ -12,8 +10,6 @@ export type EntryState = {
   childrenCount: number;
   /** Compte enfant (app_metadata.account_type = 'child') dont le profil a été retiré : jamais de création de famille. */
   isChildAccount?: boolean;
-  /** Interface de la famille (D-106) : V1 par défaut. */
-  uiVersion?: UiVersion;
 };
 
 export type EntryRoute =
@@ -22,7 +18,6 @@ export type EntryRoute =
   | '/onboarding/family'
   | '/onboarding/child-login'
   | '/onboarding/setup'
-  | '/(tabs)/today'
   | '/v2';
 
 /** Où envoyer l'utilisateur au lancement, selon session et rôle (SPEC §2.1). */
@@ -34,7 +29,7 @@ export function resolveEntryRoute(s: EntryState): EntryRoute {
   if (!s.member) return s.isChildAccount ? '/onboarding/child-login' : '/onboarding/family';
   // famille NEUVE (aucun enfant) : l'assistant de première connexion (D-090) ; une famille existante n'y est jamais envoyée automatiquement
   if (s.member.role === 'parent' && s.childrenCount === 0) return '/onboarding/setup';
-  return HOME_ROUTE[s.uiVersion ?? 'v2'];
+  return '/v2'; // D-114 : la V2 est l'unique interface
 }
 
 /** Durée de fraîcheur de `me` (identique au défaut du client de requêtes). */

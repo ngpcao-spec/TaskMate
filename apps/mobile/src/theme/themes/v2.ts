@@ -2,8 +2,8 @@ import type { Theme } from './types';
 
 /**
  * Thème « V2 » (D-109) : la charte de l'interface V2 (`src/v2/theme.ts`, style Finch : fond vert doux, cartes crème, vert, Nunito) appliquée aux
- * écrans V1 que la V2 réutilise (réglages, points, révisions, avatar, notifications, formulaire de tâche, quiz…). Jamais proposé dans le choix des
- * thèmes : il est imposé à une famille en V2 (`activeThemeId`), le choix de l'appareil revient en V1. Mêmes valeurs que `v2Colors`.
+ * écrans V1 que la V2 réutilise (réglages, points, révisions, avatar, notifications, formulaire de tâche, quiz…). Thème unique de l'app (D-114). Mêmes
+ * valeurs que `v2Colors`.
  */
 export const v2: Theme = {
   id: 'v2',
@@ -77,6 +77,5 @@ export const v2: Theme = {
     '#A83A44': '#A83A44',
   },
   childPalette: ['#2F6F9A', '#2E7D6F', '#6E5FB0', '#9A6A1E', '#A83A44'],
-  decor: 'none',
   browserColor: '#DCEFD6',
 };

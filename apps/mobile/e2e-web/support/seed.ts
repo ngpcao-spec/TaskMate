@@ -25,7 +25,7 @@ const uid = () => Math.random().toString(36).slice(2, 10);
 const birth = (years: number) => new Date(Date.now() - years * 365.25 * 86_400_000).toISOString().slice(0, 10);
 
 /** Crée une famille isolée (parent + Minh + Khang) avec les droits du service local, sans passer par l'UI d'onboarding. */
-export async function createFamily(options: { uiVersion?: 'v1' | 'v2' } = {}): Promise<FamilyFixture> {
+export async function createFamily(options: { uiVersion?: 'v2' } = {}): Promise<FamilyFixture> {
   const db = admin();
   const tag = uid();
   const password = `Pw-${tag}-1!`;
@@ -39,7 +39,7 @@ export async function createFamily(options: { uiVersion?: 'v1' | 'v2' } = {}): P
   const [parentUser, minhUser, khangUser] = await Promise.all([user(`ba-${tag}@e2e.test`, true), user(`minh-${tag}@e2e.test`), user(`khang-${tag}@e2e.test`)]);
 
   // D-106 : une famille de test peut naître en interface V2 (le service local écrit la colonne, comme le ferait l'administrateur)
-  const { data: family, error: fe } = await db.from('families').insert({ name: `Gia đình ${tag}`, ui_version: options.uiVersion ?? 'v1' }).select('id').single();
+  const { data: family, error: fe } = await db.from('families').insert({ name: `Gia đình ${tag}`, ui_version: options.uiVersion ?? 'v2' }).select('id').single();
   if (fe || !family) throw new Error(`families: ${fe?.message}`);
   const familyId = family.id;
 
@@ -126,7 +126,7 @@ export async function serverState(family: FamilyFixture, child: 'minh' | 'khang'
   const { data: txs } = await db.from('point_transactions').select('delta').eq('child_id', family[child].childId as string);
   const balance = (txs ?? []).reduce((sum, t) => sum + t.delta, 0);
   const count = txs?.length ?? 0;
-  return { completed: !!task?.completed_at, validated: !!task?.validated_at, balance, transactions: count };
+  return { exists: !!task, completed: !!task?.completed_at, validated: !!task?.validated_at, balance, transactions: count };
 }
 
 async function sessionOf(person: Person): Promise<Session> {
@@ -141,16 +141,6 @@ export async function signInContext(context: BrowserContext, person: Person): Pr
   await context.addInitScript(([key, value]) => window.localStorage.setItem(key as string, value as string), [sessionStorageKey(), JSON.stringify(session)]);
   // D-090 : le mini-parcours enfant s'ouvre UNE fois au premier login d'un enfant sans appareil actif (marque locale à l'appareil) ; les tests qui n'en parlent pas l'ont « déjà vu »
   if (person.childId) await context.addInitScript((key) => window.localStorage.setItem(key as string, '1'), `taskmate-child-setup-seen-${person.memberId}`);
-  // D-109 : le thème `v2` est choisi au chargement d'après la version d'interface vue au lancement précédent ; sans elle, le premier chargement
-  // d'un appareil recharge la page une fois (comportement réel, testé à part). Les tests partent d'un appareil « déjà venu » : version posée
-  // seulement si absente (une bascule V1 ↔ V2 en cours de test reste vue par l'app).
-  // D-114 : un compte sans famille (parent Google qui va créer ou rejoindre une famille) = appareil neuf, rien de posé
-  const { data: member } = person.memberId ? await admin().from('members').select('families(ui_version)').eq('id', person.memberId).maybeSingle() : { data: null };
-  const ui = (member as { families?: { ui_version?: string } } | null)?.families?.ui_version;
-  if (!ui) return;
-  await context.addInitScript((v) => {
-    if (window.localStorage.getItem('taskmate-ui-version') === null) window.localStorage.setItem('taskmate-ui-version', v as string);
-  }, ui);
 }
 
 /** Client service local (clé de service du Supabase LOCAL de test) : lecture/écriture directe pour préparer ou vérifier l'état serveur. */

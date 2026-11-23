@@ -1,5 +1,5 @@
 /**
- * Jetons de style = valeurs du THÈME ACTIF (`theme/index.ts` : « verre givré » par défaut, « kawaii » au choix de l'utilisateur, D-064 / D-069).
+ * Jetons de style = valeurs du thème (`theme/index.ts` : la charte V2, thème unique depuis D-114).
  * Les noms sont stables : les écrans n'importent que d'ici, jamais un thème précis. Jamais de couleur en dur.
  */
 import { theme } from './index';
@@ -35,10 +35,6 @@ export const glass = {
 } as const;
 
 export const chartTones = theme.chartTones;
-export const themeId = theme.id;
-/** Famille de décors du thème (`none`, `kawaii`, `cosmos`) et indicateur « il y a des décors ». */
-export const decor = theme.decor;
-export const hasDecor = theme.decor !== 'none';
 
 /** Minimum touch target (pt). */
 export const MIN_TARGET = 44;

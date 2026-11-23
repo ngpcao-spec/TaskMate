@@ -2,7 +2,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import type { ReactElement } from 'react';
 import i18n from '@/i18n';
-import AddChildScreen from '../app/(tabs)/more/add-child';
+import AddChildScreen from '../app/more/add-child';
 import { createTestQueryClient } from '../test-utils/queryClient';
 
 const mockReplace = jest.fn();

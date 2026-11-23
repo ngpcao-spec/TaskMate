@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import '@/i18n';
-import NotificationSettingsScreen from '../app/(tabs)/more/notification-settings';
+import NotificationSettingsScreen from '../app/more/notification-settings';
 import { DEFAULT_PREFS as mockPrefs } from '@/domain/notification-prefs';
 
 jest.mock('react-native-safe-area-context', () => ({ SafeAreaView: ({ children }: { children: React.ReactNode }) => children }));

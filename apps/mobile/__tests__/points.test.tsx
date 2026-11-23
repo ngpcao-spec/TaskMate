@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { Alert } from 'react-native';
 import '@/i18n';
-import PointsScreen from '../app/(tabs)/more/points';
+import PointsScreen from '../app/more/points';
 import type { ChildRow, RewardRequestRow, RewardRow } from '@/types/models';
 
 const mockPush = jest.fn();

@@ -17,7 +17,6 @@ import { DEFAULT_POINTS, taskFormSchema, toRecurrenceFields, toTaskFields, type 
 import { formatWeekdayLabel, weekDays, type CalendarLanguage } from '@/domain/calendar';
 import { taskPermissions } from '@/domain/permissions';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
-import { parseUiVersion } from '@/domain/ui-version';
 import { GoalIconPicker } from '@/v2/components/GoalIconPicker';
 import { useCreateRecurrences, useDeleteRecurrence, useUpdateRecurrence } from '@/hooks/useRecurrences';
 import { useCreateTasks, useDeleteTask, useUpdateTask } from '@/hooks/useTasks';
@@ -45,7 +44,6 @@ export function TaskForm({ task }: Props) {
   const [showMore, setShowMore] = useState(false);
 
   const isParent = d?.viewer.role === 'parent';
-  const uiVersion = parseUiVersion(d?.me.family.ui_version);
   const tz = d?.me.family.timezone ?? 'Asia/Ho_Chi_Minh';
 
   const defaults = useMemo<TaskFormValues>(() => {
@@ -185,7 +183,7 @@ export function TaskForm({ task }: Props) {
       />
 
       {/* D-106 : choix de l'icône d'objectif, dans l'interface V2 seulement (la V1 garde l'icône telle quelle) */}
-      {uiVersion === 'v2' && isParent ? (
+      {isParent ? (
         <Controller control={control} name="icon" render={({ field }) => <GoalIconPicker value={field.value ?? null} category={values.category} onChange={field.onChange} />} />
       ) : null}
 

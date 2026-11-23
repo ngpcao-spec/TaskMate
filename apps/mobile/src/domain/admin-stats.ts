@@ -1,4 +1,3 @@
-import { parseUiVersion, type UiVersion } from './ui-version';
 // Suivi des utilisateurs (D-102) : lecture seule, réservé à l'administrateur de la plateforme. Ce module valide et met en forme les réponses des RPC
 // `admin_*` (agrégats calculés en SQL). Aucun contenu (tâches, récompenses, réponses), aucun prénom ni identifiant d'enfant ne transite par ici :
 // pour les enfants, seulement un nombre, un pays et une classe.
@@ -13,7 +12,6 @@ export type Overview = {
   active: { today: ActiveSplit; d7: ActiveSplit; d30: ActiveSplit };
   familiesWithNotifications: number;
   /** familles par interface (D-106) : nombres seulement */
-  uiVersions: { v1: number; v2: number };
 };
 export type WeekPoint = { weekStart: string; families: number };
 export type DayPoint = { day: string; parents: number; children: number };
@@ -50,7 +48,7 @@ export type FamilyRow = {
   notifications: boolean;
 };
 export type FamilyPage = { total: number; page: number; pageSize: number; rows: FamilyRow[] };
-export type FamilyDetail = FamilyRow & { activeDevices: number; usage30d: UsageCounters; uiVersion: UiVersion };
+export type FamilyDetail = FamilyRow & { activeDevices: number; usage30d: UsageCounters };
 export type CronJob = { jobname: string; schedule: string; active: boolean; lastRunAt: string | null; lastStatus: string | null };
 export type Health = { dbSizeBytes: number; activeDevices: number; cron: CronJob[] | null };
 
@@ -80,15 +78,7 @@ export function parseOverview(raw: unknown): Overview {
     newFamilies30d: int(r.new_families_30d),
     active: { today: split(a.today), d7: split(a.d7), d30: split(a.d30) },
     familiesWithNotifications: int(r.families_with_notifications),
-    uiVersions: parseUiVersions(r.ui_versions, int(r.families)),
   };
-}
-
-/** Familles par interface ; réponse d'avant D-106 (champ absent) : toutes en V1. */
-function parseUiVersions(v: unknown, families: number): { v1: number; v2: number } {
-  if (v === undefined || v === null) return { v1: families, v2: 0 };
-  const r = record(v);
-  return { v1: int(r.v1), v2: int(r.v2) };
 }
 
 export function parseSeries(raw: unknown): Series {
@@ -168,7 +158,7 @@ export function parseFamilyPage(raw: unknown): FamilyPage {
 
 export function parseFamilyDetail(raw: unknown): FamilyDetail {
   const r = record(raw);
-  return { ...parseFamilyRow(r), activeDevices: int(r.active_devices), usage30d: parseUsageCounters(r.usage_30d), uiVersion: parseUiVersion(r.ui_version) };
+  return { ...parseFamilyRow(r), activeDevices: int(r.active_devices), usage30d: parseUsageCounters(r.usage_30d) };
 }
 
 export function parseHealth(raw: unknown): Health {

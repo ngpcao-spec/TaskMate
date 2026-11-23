@@ -136,8 +136,4 @@ describe('TaskForm', () => {
     expect((mockCreate.mock.calls[0]?.[0] as { tasks: { icon?: string | null }[] }).tasks[0]).toMatchObject({ icon: 'piano' });
   });
 
-  it('D-106 : V1 sans grille d’icônes', async () => {
-    await render(<TaskForm />);
-    expect(screen.queryByRole('radio', { name: 'Tập đàn' })).toBeNull();
-  });
 });

@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react-native';
 import '@/i18n';
-import PointsHistoryScreen from '../app/(tabs)/more/points-history';
+import PointsHistoryScreen from '../app/more/points-history';
 import NotificationsScreen from '../app/notifications';
 
 const TITLE = 'Ngữ văn 7 · Ôn tập chung (bản thử)';

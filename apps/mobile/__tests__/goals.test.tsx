@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import '@/i18n';
-import GoalsScreen from '../app/(tabs)/more/goals';
+import GoalsScreen from '../app/more/goals';
 import type { ChildRow, GoalRow } from '@/types/models';
 
 const mockPush = jest.fn();
