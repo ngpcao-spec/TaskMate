@@ -781,3 +781,7 @@ Le voile noir sous l'heure et la batterie (D-106, `STATUS_SCRIM`) passait de 0,6
 - Envoi : la feuille se ferme, toast « Đã gửi cho bố mẹ », et `useRequestReward` ajoute la demande à « Yêu cầu đổi thưởng » et réserve ses points TOUT DE SUITE (même id que la ligne du serveur, `requestId` fixé par l'appelant), annulés si le serveur refuse.
 - « Hủy yêu cầu » demande désormais confirmation (feuille). Pronoms selon l'âge de l'enfant (`childVoice` : ≤ 10 ans révolus « tớ / cậu », sinon « mình / bạn » ; contexte i18next `_young` / `_older`, `useChildVoice`) : annulation d'une demande, départ en aventure.
 - Limite : une famille en V1 garde la boîte du navigateur / `Alert` (D-107 : la V1 n'est pas rhabillée) ; toutes les confirmations de la V2 (enfant et parent : validations, réglages, avatar, appareils…) passent par la feuille.
+
+## D-112 — Phần thưởng V2 : le grand nombre est le solde disponible (Teo, 2026-11-23 : « le total n'est pas soustrait après la demande »)
+
+L'écran enfant V2 affichait le solde TOTAL (`balance`) : après une demande, le chiffre ne bougeait pas jusqu'à la validation du parent. Il affiche désormais le solde DISPONIBLE (`available` = solde − demandes en attente, serveur ; baisse aussitôt grâce à la réservation optimiste de D-111), libellé « Điểm có thể dùng », et une ligne « N điểm đang chờ bố mẹ duyệt đổi thưởng » quand des points sont réservés. Le débit réel reste fait par le serveur à la validation (`approve_reward_request`) ; une demande annulée ou refusée rend les points. Aucun changement de règle ni de base.

@@ -76,6 +76,20 @@ describe('Phần thưởng (V2) : échange par ConfirmSheet (D-111)', () => {
     expect(screen.queryByTestId('reward-confirm')).toBeNull();
   });
 
+  it('le grand nombre est le solde DISPONIBLE : une demande en attente en est retirée, la réserve est dite à part (D-112)', async () => {
+    await renderScreen();
+    expect(screen.getByTestId('v2-rewards-available').props.accessibilityLabel).toBe('120 điểm');
+    expect(screen.getByText('Điểm có thể dùng')).toBeTruthy();
+    expect(screen.getByText('40 điểm đang chờ bố mẹ duyệt đổi thưởng')).toBeTruthy();
+  });
+
+  it('rien en attente : pas de ligne de réserve', async () => {
+    mockBalance = { balance: 160, reserved: 0, available: 160, pendingTaskPoints: 0 };
+    await renderScreen();
+    expect(screen.getByTestId('v2-rewards-available').props.accessibilityLabel).toBe('160 điểm');
+    expect(screen.queryByText(/đang chờ bố mẹ duyệt đổi thưởng/)).toBeNull();
+  });
+
   it('« Để sau » ferme sans rien envoyer', async () => {
     await renderScreen();
     await fireEvent.press(screen.getByTestId('v2-reward-w1'));

@@ -54,10 +54,12 @@ export default function V2ChildRewards() {
           <Star color={v2Colors.onPrimary} fill={v2Colors.onPrimary} size={28} />
         </View>
         <View style={styles.flex}>
-          <Text style={styles.big} accessibilityLabel={`${balance?.balance ?? 0} ${t('points.unit')}`}>
-            {balance?.balance ?? 0} <Text style={v2Text.bodyBold}>{t('points.unit')}</Text>
+          {/* solde DISPONIBLE (D-112) : une demande en attente réserve ses points tout de suite (débités à la validation du parent) */}
+          <Text style={styles.big} accessibilityLabel={`${balance?.available ?? 0} ${t('points.unit')}`} testID="v2-rewards-available">
+            {balance?.available ?? 0} <Text style={v2Text.bodyBold}>{t('points.unit')}</Text>
           </Text>
-          <Text style={v2Text.caption}>{t('points.totalLabel')}</Text>
+          <Text style={v2Text.caption}>{t('v2.rewards.availableLabel')}</Text>
+          {(balance?.reserved ?? 0) > 0 ? <Text style={styles.pending}>{t('v2.rewards.reservedLine', { points: balance?.reserved })}</Text> : null}
           {(balance?.pendingTaskPoints ?? 0) > 0 ? <Text style={styles.pending}>{t('points.pendingTasks', { points: balance?.pendingTaskPoints })}</Text> : null}
         </View>
       </View>

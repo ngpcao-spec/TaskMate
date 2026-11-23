@@ -2339,7 +2339,9 @@
         "body_older": "Cancel your request for “{{title}}”? Your {{cost}} points come back to you.",
         "ok": "Cancel request",
         "keep": "Keep it"
-      }
+      },
+      "availableLabel": "Points you can use",
+      "reservedLine": "{{points}} points held until your parents decide"
     },
     "map": {
       "label": "Vietnam adventure map",

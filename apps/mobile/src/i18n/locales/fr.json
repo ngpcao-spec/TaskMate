@@ -2339,7 +2339,9 @@
         "body_older": "Annuler la demande « {{title}} » ? Tes {{cost}} points te reviennent.",
         "ok": "Annuler la demande",
         "keep": "Garder"
-      }
+      },
+      "availableLabel": "Points utilisables",
+      "reservedLine": "{{points}} points réservés en attente de tes parents"
     },
     "map": {
       "label": "Carte des aventures du Vietnam",

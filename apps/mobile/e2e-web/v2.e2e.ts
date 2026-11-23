@@ -72,6 +72,9 @@ test.describe('interface V2 : enfant (D-106)', () => {
     await expect(page.getByTestId('reward-confirm')).toHaveCount(0);
     await expect(page.getByText('Đã gửi cho bố mẹ', { exact: true })).toBeVisible();
     await expect(page.getByText('Yêu cầu đổi thưởng', { exact: true })).toBeVisible();
+    // le solde affiché baisse tout de suite (disponible = 150 − 100 réservés, D-112)
+    await expect(page.getByTestId('v2-rewards-available')).toHaveAttribute('aria-label', '50 điểm');
+    await expect(page.getByText('100 điểm đang chờ bố mẹ duyệt đổi thưởng', { exact: true })).toBeVisible();
     const pending = page.locator('[data-testid^="v2-request-"]').filter({ hasText: 'Chơi game 1 tiếng' }).first();
     await expect(pending).toContainText('Đang chờ duyệt');
 
@@ -86,6 +89,7 @@ test.describe('interface V2 : enfant (D-106)', () => {
     await expect(page.getByText('Bạn muốn hủy yêu cầu đổi “Chơi game 1 tiếng”? 100 điểm sẽ trở lại với bạn.', { exact: true })).toBeVisible();
     await page.getByTestId('v2-confirm-ok').click();
     await expect(pending).toContainText('Đã hủy', { timeout: 15_000 });
+    await expect(page.getByTestId('v2-rewards-available')).toHaveAttribute('aria-label', '150 điểm');
     expect(dialogs).toEqual([]);
   });
 
