@@ -768,7 +768,7 @@
     "confirmTitle": "Redeem a reward",
     "confirmBody": "Send a parent the request for “{{title}}” ({{cost}} points)?",
     "confirmYes": "Send request",
-    "requestSent": "Request sent, waiting for a parent",
+    "requestSent": "Sent to your parents",
     "requestsTitle": "Redemption requests",
     "cancelRequest": "Cancel request",
     "status": {
@@ -2176,6 +2176,8 @@
       "lockedLabel": "{{destination}}, opens at level {{level}}",
       "confirmTitle": "Go to {{destination}}?",
       "confirmBody": "{{name}} will be back tomorrow.",
+      "confirmBody_young": "{{name}} will be back tomorrow.",
+      "confirmBody_older": "{{name}} will be back tomorrow.",
       "confirmOk": "Let's go!",
       "notReady": "The panda needs a full adventure gauge first."
     },
@@ -2319,7 +2321,25 @@
       "kpiCaption": "out of {{total}} families"
     },
     "rewards": {
-      "empty": "No rewards yet."
+      "empty": "No rewards yet.",
+      "exchange": {
+        "title": "Swap for this reward?",
+        "balance": "You have {{have}} → {{after}} left",
+        "balanceA11y": "You have {{have}} points, {{after}} points left",
+        "note": "Your parents will review this request",
+        "send": "Send to my parents",
+        "later": "Later",
+        "missing": "Not enough points — {{count}} more needed",
+        "close": "Close"
+      },
+      "cancel": {
+        "title": "Cancel this request?",
+        "body": "Cancel your request for “{{title}}”? Your {{cost}} points come back to you.",
+        "body_young": "Cancel your request for “{{title}}”? Your {{cost}} points come back to you.",
+        "body_older": "Cancel your request for “{{title}}”? Your {{cost}} points come back to you.",
+        "ok": "Cancel request",
+        "keep": "Keep it"
+      }
     },
     "map": {
       "label": "Vietnam adventure map",

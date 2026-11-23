@@ -1,13 +1,17 @@
 import { Star } from 'lucide-react-native';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { newId } from '@/api/ids';
 import { confirmDialog } from '@/components/confirm';
 import { RewardIcon } from '@/components/RewardIcon';
 import { canAfford, recentRequests } from '@/domain/rewards';
+import { useChildVoice } from '@/hooks/useChildVoice';
 import { useDisplayedChild } from '@/hooks/useDisplayedChild';
 import { useCancelRequest, useProjectedBalance, useRequestReward, useRequests, useRewards } from '@/hooks/usePoints';
 import { useOnline } from '@/hooks/useSyncStatus';
 import { V2Button } from '@/v2/components/V2Button';
+import { RewardConfirmSheet, type RewardChoice } from '@/v2/components/RewardConfirmSheet';
 import { V2Screen } from '@/v2/components/V2Screen';
 import { v2Card, v2Colors, v2Spacing, v2Text, V2_TOUCH } from '@/v2/theme';
 
@@ -22,17 +26,25 @@ export default function V2ChildRewards() {
   const requests = useRequests(childId);
   const request = useRequestReward();
   const cancel = useCancelRequest();
+  const voice = useChildVoice();
+  const [choice, setChoice] = useState<RewardChoice | null>(null);
   if (!d || !d.child) return null;
+  const child = d.child;
   const now = new Date();
   const mine = recentRequests((requests.data ?? []).filter((r) => r.child_id === childId), now);
   const visible = (rewards.data ?? []).filter((r) => r.child_id === null || r.child_id === childId);
-  const ask = (id: string, title: string, cost: number) =>
+  const send = (r: RewardChoice) => {
+    setChoice(null);
+    request.mutate({ rewardId: r.id, childId: child.id, title: r.title, cost: r.cost, requestId: newId() });
+  };
+  const askCancel = (id: string, title: string, cost: number) =>
     confirmDialog({
-      title: t('points.confirmTitle'),
-      message: t('points.confirmBody', { title, cost }),
-      confirmLabel: t('points.confirmYes'),
-      cancelLabel: t('common.cancel'),
-      onConfirm: () => request.mutate(id),
+      title: t('v2.rewards.cancel.title'),
+      message: t('v2.rewards.cancel.body', { title, cost, context: voice }),
+      confirmLabel: t('v2.rewards.cancel.ok'),
+      cancelLabel: t('v2.rewards.cancel.keep'),
+      destructive: true,
+      onConfirm: () => cancel.mutate(id),
     });
 
   return (
@@ -58,7 +70,8 @@ export default function V2ChildRewards() {
         {visible.length === 0 ? <Text style={v2Text.body}>{t('v2.rewards.empty')}</Text> : null}
         {visible.map((r) => {
           const affordable = balance ? canAfford(balance.available, r.cost) : false;
-          const can = affordable && online;
+          // ouverte même sans assez de points : la feuille dit combien il en manque (réseau exigé pour demander)
+          const can = online && balance !== null;
           return (
             <Pressable
               key={r.id}
@@ -66,7 +79,8 @@ export default function V2ChildRewards() {
               accessibilityLabel={`${r.title}, ${r.cost} ${t('points.unit')}${!affordable ? `, ${t('points.notEnough')}` : ''}`}
               accessibilityState={{ disabled: !can }}
               disabled={!can}
-              onPress={() => ask(r.id, r.title, r.cost)}
+              onPress={() => setChoice({ id: r.id, title: r.title, icon: r.icon, cost: r.cost })}
+              testID={`v2-reward-${r.id}`}
               style={[styles.reward, !affordable ? styles.dim : null]}
             >
               <View style={styles.icon}>
@@ -87,17 +101,20 @@ export default function V2ChildRewards() {
             {t('points.requestsTitle')}
           </Text>
           {mine.map((r) => (
-            <View key={r.id} style={[v2Card, styles.request]}>
+            <View key={r.id} style={[v2Card, styles.request]} testID={`v2-request-${r.id}`}>
               <Text style={v2Text.bodyBold}>{r.reward_title}</Text>
               <Text style={v2Text.caption}>
                 {t(`points.status.${r.status}`)} · {r.cost} {t('points.unit')}
                 {r.status === 'rejected' && r.decision_note ? ` · ${r.decision_note}` : ''}
               </Text>
-              {r.status === 'pending' ? <V2Button variant="secondary" label={t('points.cancelRequest')} onPress={() => cancel.mutate(r.id)} disabled={!online} /> : null}
+              {r.status === 'pending' ? (
+                <V2Button variant="secondary" label={t('points.cancelRequest')} onPress={() => askCancel(r.id, r.reward_title, r.cost)} disabled={!online} testID={`v2-cancel-request-${r.id}`} />
+              ) : null}
             </View>
           ))}
         </>
       ) : null}
+      <RewardConfirmSheet reward={choice} available={balance?.available ?? 0} onSend={send} onClose={() => setChoice(null)} />
     </V2Screen>
   );
 }

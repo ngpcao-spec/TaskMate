@@ -768,7 +768,7 @@
     "confirmTitle": "Đổi phần thưởng",
     "confirmBody": "Gửi yêu cầu đổi “{{title}}” ({{cost}} điểm) cho phụ huynh?",
     "confirmYes": "Gửi yêu cầu",
-    "requestSent": "Đã gửi yêu cầu, chờ phụ huynh duyệt",
+    "requestSent": "Đã gửi cho bố mẹ",
     "requestsTitle": "Yêu cầu đổi thưởng",
     "cancelRequest": "Hủy yêu cầu",
     "status": {
@@ -2176,6 +2176,8 @@
       "lockedLabel": "{{destination}}, mở ở cấp {{level}}",
       "confirmTitle": "Đi {{destination}}?",
       "confirmBody": "{{name}} sẽ về vào ngày mai.",
+      "confirmBody_young": "{{name}} sẽ về vào ngày mai. Tớ sẽ gửi bưu thiếp cho cậu nhé!",
+      "confirmBody_older": "{{name}} sẽ về vào ngày mai. Mình sẽ gửi bưu thiếp cho bạn nhé!",
       "confirmOk": "Đi thôi!",
       "notReady": "Panda cần đầy năng lượng phiêu lưu trước nhé."
     },
@@ -2319,7 +2321,25 @@
       "kpiCaption": "trên {{total}} gia đình"
     },
     "rewards": {
-      "empty": "Chưa có phần thưởng nào."
+      "empty": "Chưa có phần thưởng nào.",
+      "exchange": {
+        "title": "Đổi phần thưởng này?",
+        "balance": "Hiện có {{have}} → Còn lại {{after}}",
+        "balanceA11y": "Hiện có {{have}} điểm, còn lại {{after}} điểm",
+        "note": "Bố mẹ sẽ duyệt yêu cầu này",
+        "send": "Gửi cho bố mẹ",
+        "later": "Để sau",
+        "missing": "Chưa đủ điểm — còn thiếu {{count}} điểm",
+        "close": "Đóng"
+      },
+      "cancel": {
+        "title": "Hủy yêu cầu này?",
+        "body": "Bạn muốn hủy yêu cầu đổi “{{title}}”? {{cost}} điểm sẽ trở lại với bạn.",
+        "body_young": "Cậu muốn hủy yêu cầu đổi “{{title}}”? {{cost}} điểm sẽ trở lại với cậu nhé.",
+        "body_older": "Bạn muốn hủy yêu cầu đổi “{{title}}”? {{cost}} điểm sẽ trở lại với bạn.",
+        "ok": "Hủy yêu cầu",
+        "keep": "Giữ lại"
+      }
     },
     "map": {
       "label": "Bản đồ phiêu lưu Việt Nam",

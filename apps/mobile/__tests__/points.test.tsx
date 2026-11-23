@@ -89,7 +89,7 @@ describe('PointsScreen', () => {
     await render(<PointsScreen />);
     await fireEvent.press(screen.getByRole('button', { name: 'Chơi game 1 tiếng, 100 điểm' }));
     expect(alert).toHaveBeenCalled();
-    expect(mockRequest).toHaveBeenCalledWith('w1');
+    expect(mockRequest).toHaveBeenCalledWith(expect.objectContaining({ rewardId: 'w1', childId: 'c-minh', title: 'Chơi game 1 tiếng', cost: 100 }));
   });
 
   it('hors ligne : échange désactivé avec message', async () => {

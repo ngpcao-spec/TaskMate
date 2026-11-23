@@ -4,6 +4,7 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { confirmDialog } from '@/components/confirm';
 import { isUnlocked, type AdventureState } from '@/domain/adventure';
 import { startVars, useStartAdventure } from '@/hooks/useAdventure';
+import { useChildVoice } from '@/hooks/useChildVoice';
 import { useToastStore } from '@/store/toast';
 import { colors, glass, MIN_TARGET, radius, spacing } from '@/theme/tokens';
 import { destinationImage, POSTCARD_RATIO } from './adventureImages';
@@ -21,6 +22,7 @@ export function DestinationPicker({ childId, pandaName, adventure }: Props) {
   const router = useRouter();
   const start = useStartAdventure();
   const toast = useToastStore((s) => s.show);
+  const voice = useChildVoice();
 
   const choose = (slug: string) => {
     const destination = t(`adventure.destinations.${slug}`);
@@ -30,7 +32,7 @@ export function DestinationPicker({ childId, pandaName, adventure }: Props) {
     }
     confirmDialog({
       title: t('adventure.choose.confirmTitle', { destination }),
-      message: t('adventure.choose.confirmBody', { name: pandaName }),
+      message: t('adventure.choose.confirmBody', { name: pandaName, context: voice }),
       confirmLabel: t('adventure.choose.confirmOk'),
       cancelLabel: t('common.cancel'),
       onConfirm: () => {

@@ -238,3 +238,11 @@ export async function adventuresOf(family: FamilyFixture, child: 'minh' | 'khang
   const { data: journal } = await db.from('child_discoveries').select('discovery_slug, times_found').eq('child_id', family[child].childId as string);
   return { adventures: adventures ?? [], journal: journal ?? [] };
 }
+
+/** Points d'un enfant posés par le service local (ajustement manuel du parent, journal immuable : une ligne de plus). */
+export async function seedPoints(family: FamilyFixture, child: 'minh' | 'khang', delta: number): Promise<void> {
+  const { error } = await admin()
+    .from('point_transactions')
+    .insert({ id: crypto.randomUUID(), family_id: family.familyId, child_id: family[child].childId as string, delta, reason: 'manual_adjust', note: 'e2e', created_by: family.parent.memberId });
+  if (error) throw new Error(`point_transactions: ${error.message}`);
+}

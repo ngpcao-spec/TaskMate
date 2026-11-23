@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { newId } from '@/api/ids';
 import { confirmDialog } from '@/components/confirm';
 import { Star } from 'lucide-react-native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -58,7 +59,7 @@ export default function PointsScreen() {
       message: t('points.confirmBody', { title, cost }),
       confirmLabel: t('points.confirmYes'),
       cancelLabel: t('common.cancel'),
-      onConfirm: () => request.mutate(rewardId),
+      onConfirm: () => d.child && request.mutate({ rewardId, childId: d.child.id, title, cost, requestId: newId() }),
     });
 
   const renderRequestStatus = (r: RewardRequestRow) => t(`points.status.${r.status}`);

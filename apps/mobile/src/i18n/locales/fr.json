@@ -768,7 +768,7 @@
     "confirmTitle": "Échanger une récompense",
     "confirmBody": "Envoyer à un parent la demande « {{title}} » ({{cost}} points) ?",
     "confirmYes": "Envoyer la demande",
-    "requestSent": "Demande envoyée, en attente d'un parent",
+    "requestSent": "Envoyé à tes parents",
     "requestsTitle": "Demandes d'échange",
     "cancelRequest": "Annuler la demande",
     "status": {
@@ -2176,6 +2176,8 @@
       "lockedLabel": "{{destination}}, s'ouvre au niveau {{level}}",
       "confirmTitle": "Partir à {{destination}} ?",
       "confirmBody": "{{name}} rentrera demain.",
+      "confirmBody_young": "{{name}} rentrera demain.",
+      "confirmBody_older": "{{name}} rentrera demain.",
       "confirmOk": "C'est parti !",
       "notReady": "Le panda doit d'abord remplir sa jauge d'aventure."
     },
@@ -2319,7 +2321,25 @@
       "kpiCaption": "sur {{total}} familles"
     },
     "rewards": {
-      "empty": "Pas encore de récompense."
+      "empty": "Pas encore de récompense.",
+      "exchange": {
+        "title": "Échanger cette récompense ?",
+        "balance": "Tu as {{have}} → Il restera {{after}}",
+        "balanceA11y": "Tu as {{have}} points, il restera {{after}} points",
+        "note": "Tes parents vont valider cette demande",
+        "send": "Envoyer à mes parents",
+        "later": "Plus tard",
+        "missing": "Pas assez de points — il manque {{count}} points",
+        "close": "Fermer"
+      },
+      "cancel": {
+        "title": "Annuler cette demande ?",
+        "body": "Annuler la demande « {{title}} » ? Tes {{cost}} points te reviennent.",
+        "body_young": "Annuler la demande « {{title}} » ? Tes {{cost}} points te reviennent.",
+        "body_older": "Annuler la demande « {{title}} » ? Tes {{cost}} points te reviennent.",
+        "ok": "Annuler la demande",
+        "keep": "Garder"
+      }
     },
     "map": {
       "label": "Carte des aventures du Vietnam",
