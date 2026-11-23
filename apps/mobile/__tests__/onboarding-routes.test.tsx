@@ -56,7 +56,7 @@ describe('Entrée de l’assistant (reprise)', () => {
     mockDevice.mockResolvedValue(true);
     mockFetch.mockResolvedValue(raw({ language_confirmed: true, children: [kid], tasks: 1, rewards: 1, parents: 2 }));
     await renderWithClient(<SetupIndex />);
-    await waitFor(() => expect(mockRedirect).toHaveBeenCalledWith('/(tabs)/today'));
+    await waitFor(() => expect(mockRedirect).toHaveBeenCalledWith('/'));
   });
   it('lecture impossible : on atterrit sur la première étape qui affiche l’erreur', async () => {
     mockFetch.mockResolvedValue(null);

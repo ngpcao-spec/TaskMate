@@ -11,8 +11,8 @@ describe('intentFor', () => {
   it('un simple tap ouvre l’écran concerné', () => {
     expect(intentFor('default', { type: 'reward_requested', requestId: 'r1' })).toEqual({ kind: 'navigate', href: '/more/points' });
     expect(intentFor('default', { type: 'goal_achieved' })).toEqual({ kind: 'navigate', href: '/more/goals' });
-    expect(intentFor('default', { type: 'task_assigned' })).toEqual({ kind: 'navigate', href: '/(tabs)/today' });
-    expect(intentFor('default', { type: 'reminder_start' })).toEqual({ kind: 'navigate', href: '/(tabs)/today' });
+    expect(intentFor('default', { type: 'task_assigned' })).toEqual({ kind: 'navigate', href: '/' });
+    expect(intentFor('default', { type: 'reminder_start' })).toEqual({ kind: 'navigate', href: '/' });
   });
   it('tâche cochée : Duyệt / Từ chối agissent sur la tâche, un tap ouvre la file', () => {
     expect(intentFor('approve', { type: 'task_completed', taskId: 't1' })).toEqual({ kind: 'validate_task', taskId: 't1' });
@@ -26,8 +26,8 @@ describe('intentFor', () => {
     expect(intentFor('default', { type: 'quiz_submitted', childId: 'c1', quizId: 'q1' })).toEqual({ kind: 'navigate', href: '/quiz/detail?child=c1&quiz=q1' });
     expect(intentFor('default', { type: 'quiz_validated' })).toEqual({ kind: 'navigate', href: '/weekly' });
     expect(intentFor('approve', { type: 'quiz_submitted' })).toEqual({ kind: 'navigate', href: '/weekly' }); // pas de bouton Duyệt sur un quiz
-    expect(intentFor('default', { type: 'task_validated' })).toEqual({ kind: 'navigate', href: '/(tabs)/today' });
-    expect(intentFor('default', { type: 'task_rejected' })).toEqual({ kind: 'navigate', href: '/(tabs)/today' });
+    expect(intentFor('default', { type: 'task_validated' })).toEqual({ kind: 'navigate', href: '/' });
+    expect(intentFor('default', { type: 'task_rejected' })).toEqual({ kind: 'navigate', href: '/' });
   });
   it('type inconnu : rien', () => {
     expect(intentFor('default', {})).toEqual({ kind: 'none' });

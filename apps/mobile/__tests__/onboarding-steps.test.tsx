@@ -6,6 +6,9 @@ import { LanguageStep } from '@/components/onboarding/LanguageStep';
 import { SubjectsStep } from '@/components/onboarding/SubjectsStep';
 import { useSessionStore } from '@/store/session';
 import { clearClients, facts, kid, renderWithClient } from '../test-utils/onboardingHarness';
+// thèmes de la V1 (D-064…D-073) : appareil réglé en V1 (D-114 : un appareil neuf démarre en charte V2)
+jest.mock('@/theme/themeStore', () => ({ ...jest.requireActual('@/theme/themeStore'), readStoredUiVersion: () => 'v1' }));
+
 
 const mockReplace = jest.fn();
 jest.mock('expo-router', () => ({ useRouter: () => ({ replace: mockReplace, push: jest.fn(), back: jest.fn(), canGoBack: () => true }), Redirect: () => null }));

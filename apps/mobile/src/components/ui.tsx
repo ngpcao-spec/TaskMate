@@ -54,7 +54,7 @@ type HeaderProps = { title: string; right?: ReactNode; onBack?: () => void; hide
 /** En-tête des maquettes : flèche retour + titre (22 semibold), élément optionnel à droite. */
 export function ScreenHeader({ title, right, onBack, hideBack = false, multiline = false }: HeaderProps) {
   const router = useRouter();
-  const back = onBack ?? (() => (router.canGoBack() ? router.back() : router.replace('/(tabs)/today')));
+  const back = onBack ?? (() => (router.canGoBack() ? router.back() : router.replace('/')));
   return (
     <View style={styles.header}>
       {hideBack ? null : (

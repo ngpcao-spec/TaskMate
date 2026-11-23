@@ -144,8 +144,10 @@ export async function signInContext(context: BrowserContext, person: Person): Pr
   // D-109 : le thème `v2` est choisi au chargement d'après la version d'interface vue au lancement précédent ; sans elle, le premier chargement
   // d'un appareil recharge la page une fois (comportement réel, testé à part). Les tests partent d'un appareil « déjà venu » : version posée
   // seulement si absente (une bascule V1 ↔ V2 en cours de test reste vue par l'app).
-  const { data: member } = await admin().from('members').select('families(ui_version)').eq('id', person.memberId).single();
-  const ui = (member as { families?: { ui_version?: string } } | null)?.families?.ui_version ?? 'v1';
+  // D-114 : un compte sans famille (parent Google qui va créer ou rejoindre une famille) = appareil neuf, rien de posé
+  const { data: member } = person.memberId ? await admin().from('members').select('families(ui_version)').eq('id', person.memberId).maybeSingle() : { data: null };
+  const ui = (member as { families?: { ui_version?: string } } | null)?.families?.ui_version;
+  if (!ui) return;
   await context.addInitScript((v) => {
     if (window.localStorage.getItem('taskmate-ui-version') === null) window.localStorage.setItem('taskmate-ui-version', v as string);
   }, ui);

@@ -20,5 +20,5 @@ export default function SetupIndex() {
   // lecture impossible : l'écran de la première étape affiche l'erreur et « Thử lại »
   if (!ob.facts) return <Redirect href={stepPath('language')} />;
   const step = resumeStep(ob.facts);
-  return <Redirect href={step ? stepPath(step) : '/(tabs)/today'} />;
+  return <Redirect href={step ? stepPath(step) : '/'} />;
 }

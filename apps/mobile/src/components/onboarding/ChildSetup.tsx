@@ -13,7 +13,7 @@ export function ChildSetup() {
   const router = useRouter();
   const d = useDisplayedChild();
   if (!d || d.viewer.role !== 'child') return null;
-  const close = () => (router.canGoBack() ? router.back() : router.replace('/(tabs)/today'));
+  const close = () => (router.canGoBack() ? router.back() : router.replace('/'));
   return (
     <Screen>
       <ScreenHeader title={t('onboarding.child.title', { name: d.child?.name ?? '' })} onBack={close} multiline />

@@ -7,6 +7,9 @@ import { StatTile } from '@/components/StatTile';
 import { childColor, CHILD_PALETTE } from '@/theme/childColor';
 import { CATEGORY_COLORS } from '@/theme/categories';
 import { colors, MIN_TARGET } from '@/theme/tokens';
+// thèmes de la V1 (D-064…D-073) : appareil réglé en V1 (D-114 : un appareil neuf démarre en charte V2)
+jest.mock('@/theme/themeStore', () => ({ ...jest.requireActual('@/theme/themeStore'), readStoredUiVersion: () => 'v1' }));
+
 
 describe('thème verre givré (D-064)', () => {
   it('childColor : l’ancienne palette vive est traduite, une couleur inconnue ou absente est respectée', () => {

@@ -6,7 +6,7 @@ export type NotificationIntent =
   | { kind: 'reject'; requestId: string }
   | { kind: 'validate_task'; taskId: string }
   | { kind: 'reject_task'; taskId: string }
-  | { kind: 'navigate'; href: '/more/points' | '/(tabs)/today' | '/more/goals' | '/notifications' | '/approvals' | '/weekly' | `/quiz/detail?${string}` }
+  | { kind: 'navigate'; href: '/more/points' | '/' | '/more/goals' | '/notifications' | '/approvals' | '/weekly' | `/quiz/detail?${string}` }
   | { kind: 'none' };
 
 export const ACTION_APPROVE = 'approve';
@@ -48,7 +48,7 @@ export function intentFor(actionIdentifier: string, data: NotificationData): Not
     case 'reminder_start':
     case 'reminder_deadline':
     case 'evening_recap':
-      return { kind: 'navigate', href: '/(tabs)/today' };
+      return { kind: 'navigate', href: '/' };
     default:
       return { kind: 'none' };
   }

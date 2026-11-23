@@ -9,7 +9,7 @@ import { kvStorage } from '@/sync/storage';
 import { themeId } from '@/theme/tokens';
 import { reloadCurrent, UI_VERSION_KEY } from '@/theme/themeStore';
 
-/** Interface de la famille du compte connecté (D-106) ; V1 tant qu'elle n'est pas lue. */
+/** Interface de la famille du compte connecté (D-106) ; V2 tant qu'elle n'est pas lue (D-114). */
 export const useUiVersion = (): UiVersion => parseUiVersion(useMe().data?.family.ui_version);
 
 /**

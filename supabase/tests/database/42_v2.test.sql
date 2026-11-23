@@ -27,7 +27,8 @@ grant execute on all functions in schema tests to authenticated, anon, service_r
 
 insert into auth.users (id, email, is_anonymous) values
   (tests.u(11), 'admin@test', false), (tests.u(12), 'p2@test', false), (tests.u(13), null, false), (tests.u(21), 'pb@test', false), (tests.u(23), null, false);
-insert into public.families (id, name, timezone) values (tests.u(1), 'A', 'Asia/Ho_Chi_Minh'), (tests.u(2), 'B', 'Asia/Ho_Chi_Minh');
+-- familles du test posées en v1 (D-114 : le défaut est désormais v2) pour éprouver l'interrupteur
+insert into public.families (id, name, timezone, ui_version) values (tests.u(1), 'A', 'Asia/Ho_Chi_Minh', 'v1'), (tests.u(2), 'B', 'Asia/Ho_Chi_Minh', 'v1');
 insert into public.children (id, family_id, name, birth_date) values (tests.u(201), tests.u(1), 'Minh', '2015-01-01'), (tests.u(203), tests.u(2), 'Lan', '2014-01-01');
 insert into public.members (id, family_id, user_id, role, child_id, display_name) values
   (tests.u(111), tests.u(1), tests.u(11), 'parent', null, 'Ba'), (tests.u(112), tests.u(1), tests.u(12), 'parent', null, 'Mẹ'),
@@ -38,7 +39,7 @@ select * from no_plan();
 
 -- ═══ structure et droits ═══
 select has_column('public', 'families', 'ui_version', 'families.ui_version existe');
-select is(tests.val('select ui_version from public.families where id = tests.u(1)'), 'v1', 'défaut : v1');
+select is(tests.val($$select column_default from information_schema.columns where table_schema = 'public' and table_name = 'families' and column_name = 'ui_version'$$), '''v2''::text', 'défaut : v2 (D-114)');
 select throws_ok($$insert into public.families (name, ui_version) values ('X', 'v3')$$, '23514', null, 'valeur hors liste refusée (check)');
 select ok(not has_column_privilege('authenticated', 'public.families', 'ui_version', 'update'), 'authenticated : aucun droit UPDATE sur ui_version');
 select ok(not has_column_privilege('authenticated', 'public.families', 'ui_version', 'insert'), 'authenticated : aucun droit INSERT sur ui_version');

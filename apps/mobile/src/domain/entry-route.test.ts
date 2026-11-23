@@ -22,10 +22,10 @@ describe('resolveEntryRoute', () => {
     expect(resolveEntryRoute({ ...base, member: { role: 'parent' } })).toBe('/onboarding/setup');
   });
   it('ouvre l’accueil pour un parent avec enfants', () => {
-    expect(resolveEntryRoute({ ...base, member: { role: 'parent' }, childrenCount: 2 })).toBe('/(tabs)/today');
+    expect(resolveEntryRoute({ ...base, member: { role: 'parent' }, childrenCount: 2 })).toBe('/v2');
   });
   it('ouvre l’accueil pour un enfant, même sans compter les enfants', () => {
-    expect(resolveEntryRoute({ ...base, member: { role: 'child' } })).toBe('/(tabs)/today');
+    expect(resolveEntryRoute({ ...base, member: { role: 'child' } })).toBe('/v2');
   });
   it('famille passée en V2 (D-106) : accueil V2 ; V1 par défaut', () => {
     expect(resolveEntryRoute({ ...base, member: { role: 'child' }, uiVersion: 'v2' })).toBe('/v2');

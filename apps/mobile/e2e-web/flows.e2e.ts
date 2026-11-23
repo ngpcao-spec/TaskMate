@@ -814,7 +814,7 @@ test.describe('parents Google, famille partagée, enfants rattachés à la famil
     await expect(pageA.getByRole('button', { name: 'Tiếp tục' })).toBeEnabled({ timeout: 20_000 });
     await pageA.getByRole('button', { name: 'Tiếp tục' }).click();
     for (let i = 0; i < 4; i += 1) await pageA.getByRole('button', { name: 'Bỏ qua bước này' }).click(); // matières, notifications, tâches, 2e parent
-    await expect(pageA.getByText('Chào Bin!')).toBeVisible({ timeout: 20_000 });
+    await expect(pageA.getByTestId('v2-parent-home').first()).toBeVisible({ timeout: 20_000 }); // D-114 : accueil V2 du parent
 
     // ── parent A invite un parent : code affiché une seule fois (haché en base)
     await open(pageA, '/more/settings');
@@ -846,7 +846,7 @@ test.describe('parents Google, famille partagée, enfants rattachés à la famil
     await expect(pageB.getByRole('progressbar', { name: 'Bước 1/2' })).toBeVisible({ timeout: 20_000 });
     await pageB.getByRole('button', { name: 'Tiếp tục' }).click();
     await pageB.getByRole('button', { name: 'Bỏ qua bước này' }).click();
-    await expect(pageB.getByText('Chào Bin!')).toBeVisible({ timeout: 20_000 });
+    await expect(pageB.getByTestId('v2-parent-home').first()).toBeVisible({ timeout: 20_000 }); // D-114 : accueil V2 du parent
 
     // ── le code est à usage unique : un troisième parent est refusé
     const ctxC = await browser.newContext();
@@ -861,8 +861,8 @@ test.describe('parents Google, famille partagée, enfants rattachés à la famil
 
     // ── l'enfant se connecte avec l'e-mail du SECOND parent (e-mail de n'importe quel parent de la famille)
     const child = await childSignIn(browser, parentB.email, loginId, 'abc123');
-    await dismissChildSetup(child);
-    await expect(child.getByText('Chào Bin!')).toBeVisible({ timeout: 20_000 });
+    await dismissChildSetup(child); // mini-parcours du premier login (D-090)
+    await expect(child).toHaveURL(/\/v2\/child/, { timeout: 20_000 }); // D-114 : connecté, accueil V2 de l'enfant
     // l'enfant ne voit aucun écran parent
     await open(child, '/more/add-child');
     await expect(child.getByLabel('Tên của con')).toHaveCount(0);
@@ -878,22 +878,21 @@ test.describe('parents Google, famille partagée, enfants rattachés à la famil
     }
 
     // ── les deux parents voient les mêmes enfants et peuvent tous deux gérer l'accès
-    await pageB.getByRole('tab', { name: /Thêm/ }).click();
-    await expect(pageB.getByRole('radio', { name: /^Bin,/ })).toBeVisible({ timeout: 20_000 });
     await open(pageB, '/more/children');
+    await expect(pageB.getByRole('button', { name: 'Đổi mật khẩu Bin' })).toBeVisible({ timeout: 20_000 });
     await pageB.getByLabel('Mật khẩu mới').fill('nouveau1');
     await pageB.getByRole('button', { name: 'Đổi mật khẩu Bin' }).click();
     await expect(pageB.getByText('Đã đổi mật khẩu')).toBeVisible({ timeout: 20_000 });
     const oldPw = await childSignIn(browser, parentA.email, loginId, 'abc123');
     await expect(oldPw.getByText(WRONG_LOGIN)).toBeVisible({ timeout: 20_000 });
     const newPw = await childSignIn(browser, parentA.email, loginId, 'nouveau1');
-    await dismissChildSetup(newPw);
-    await expect(newPw.getByText('Chào Bin!')).toBeVisible({ timeout: 20_000 });
+    await dismissChildSetup(newPw); // mini-parcours du premier login (D-090)
+    await expect(newPw).toHaveURL(/\/v2\/child/, { timeout: 20_000 }); // D-114 : connecté, accueil V2 de l'enfant
 
     // ── le parent B quitte la famille ; le parent A, devenu seul parent, ne peut plus « quitter »
     await open(pageB, '/more/settings');
-    pageB.once('dialog', (d) => void d.accept());
     await pageB.getByRole('button', { name: 'Rời gia đình' }).click();
+    await pageB.getByTestId('v2-confirm-ok').click(); // D-114 : confirmation dans la feuille V2, jamais une fenêtre du navigateur
     await expect(pageB.getByRole('button', { name: 'Tạo gia đình' })).toBeVisible({ timeout: 20_000 });
     await open(pageA, '/more/settings');
     await expect(pageA.getByText(/Bạn là phụ huynh duy nhất/)).toBeVisible({ timeout: 20_000 });
@@ -1421,7 +1420,7 @@ test.describe('assistant de première connexion (D-090)', () => {
     }
 
     // Hôm nay : la carte reste (les étapes passées restent « à faire »), progression d'après les vraies données
-    await expect(page.getByText('Chào Bin!')).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByTestId('v2-parent-home').first()).toBeVisible({ timeout: 20_000 }); // D-114 : accueil V2 du parent
     await expect(page.getByRole('heading', { name: 'Hoàn tất cài đặt' })).toBeVisible({ timeout: 20_000 });
     await expect(page.getByText('3/6', { exact: true })).toBeVisible(); // langue, enfant, matières (classe sans contenu : rien à activer)
     await expect(page.getByLabel('Thông báo, đã bỏ qua')).toBeVisible();
@@ -1435,7 +1434,7 @@ test.describe('assistant de première connexion (D-090)', () => {
     await expect(page.getByRole('heading', { name: 'Hoàn tất cài đặt' })).toHaveCount(0, { timeout: 20_000 });
     await expect.poll(async () => (await db.from('onboarding_progress').select('card_hidden').eq('member_id', member?.id as string).maybeSingle()).data?.card_hidden).toBe(true);
     await open(page);
-    await expect(page.getByText('Chào Bin!')).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByTestId('v2-parent-home').first()).toBeVisible({ timeout: 20_000 }); // D-114 : accueil V2 du parent
     await expect(page.getByRole('heading', { name: 'Hoàn tất cài đặt' })).toHaveCount(0);
 
     // Réglages → « Chạy lại trình hướng dẫn » : repart de l'étape 1, la carte revient
@@ -1585,9 +1584,6 @@ async function fullParentJourney(browser: import('@playwright/test').Browser, op
   await seedCatalogQuiz(tag); // du contenu RÉEL pour la classe de l'enfant (matières disponibles, bandeau Ôn tập), comme en production
   const parent = await createGoogleParent('full');
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 3, ...options });
-  await ctx.addInitScript(() => {
-    if (!globalThis.localStorage.getItem('taskmate-theme')) globalThis.localStorage.setItem('taskmate-theme', 'cosmos'); // thème de départ ; un choix fait dans l'assistant n'est jamais écrasé
-  });
   await signInContext(ctx, parent);
   const page = await ctx.newPage();
   trace(page, 'parcours-complet');
@@ -1597,16 +1593,9 @@ async function fullParentJourney(browser: import('@playwright/test').Browser, op
   await page.getByRole('button', { name: 'Tạo gia đình' }).click();
 
   await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 1/6' }), 'parcours-complet');
-  // apparence : proposée dès l'étape 1, par appareil ; sur le web le choix recharge l'app et l'assistant reprend à la même étape
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'cosmos');
-  // le rechargement suit le clic IMMÉDIATEMENT (cache persisté pas encore réécrit : D-098)
-  await page.getByRole('radio', { name: 'Kawaii' }).click();
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'kawaii', { timeout: 20_000 });
-  await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 1/6' }), 'parcours-complet-thème');
-  expect(await page.evaluate(() => globalThis.localStorage.getItem('taskmate-theme'))).toBe('kawaii');
-  await page.getByRole('radio', { name: 'Vũ trụ' }).click();
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'cosmos', { timeout: 20_000 });
-  await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 1/6' }), 'parcours-complet-thème');
+  // D-114 : une famille neuve est en V2, charte V2 imposée : aucun choix de thème dans l'assistant
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'v2', { timeout: 20_000 });
+  await expect(page.getByRole('radio', { name: 'Kawaii' })).toHaveCount(0);
   await page.getByRole('button', { name: 'Tiếp tục' }).click();
   await expectVisibleOrDump(page, page.getByRole('progressbar', { name: 'Bước 2/6' }), 'parcours-complet');
   await page.getByLabel('Tên của con').fill('Bin');
@@ -1648,15 +1637,13 @@ async function fullParentJourney(browser: import('@playwright/test').Browser, op
   await page.getByRole('button', { name: 'Hoàn tất' }).click();
 
   // fin du parcours : Hôm nay avec les tâches modèles (séries quotidiennes), jamais un écran vide
-  await expectVisibleOrDump(page, page.getByText('Chào Bin!'), 'parcours-complet', 30_000);
-  await expectVisibleOrDump(page, page.getByText('Đánh răng'), 'parcours-complet', 30_000);
-  // les devoirs d'Ôn tập de la semaine (matière activée, QCM publié et ouvert) : le bandeau est sur Hôm nay
-  await expectVisibleOrDump(page, page.getByText(/Ôn tập tuần/), 'parcours-complet-bandeau', 30_000);
+  await expect(page).toHaveURL(/\/v2\/parent/, { timeout: 30_000 }); // D-114 : accueil V2 du parent
+  await expectVisibleOrDump(page, page.getByText('Đánh răng').first(), 'parcours-complet', 30_000);
   await page.reload();
-  await expectVisibleOrDump(page, page.getByText('Chào Bin!'), 'parcours-complet-rechargé', 30_000);
+  await expectVisibleOrDump(page, page.getByTestId('v2-parent-home').first(), 'parcours-complet-rechargé', 30_000);
 }
 
-test.describe('parcours complet d\'un nouveau parent, sur téléphone, thème cosmos', () => {
+test.describe('parcours complet d\'un nouveau parent, sur téléphone, interface V2', () => {
   test('Chromium : de la création de la famille à Hôm nay avec ses tâches modèles', async ({ browser }) => {
     test.setTimeout(240_000);
     await fullParentJourney(browser, {});

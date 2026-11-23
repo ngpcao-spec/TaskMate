@@ -80,7 +80,7 @@ export function AdventureReveal({ childId, adventureId, childName, pandaName, st
         )}
       </View>
       <Button label={t('adventure.reveal.openJournal')} variant="secondary" onPress={() => router.replace('/adventure/journal')} />
-      <Button label={t('adventure.reveal.done')} onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)/today'))} />
+      <Button label={t('adventure.reveal.done')} onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} />
     </Card>
   );
 }
