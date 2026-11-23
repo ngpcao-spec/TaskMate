@@ -123,7 +123,8 @@ test.describe('validation parentale (spec v4)', () => {
     const box = child.getByRole('checkbox', { name: taskTitle });
     await expect(box).toBeVisible({ timeout: 20_000 });
     await box.click();
-    await expect(box).toBeChecked();
+    // seule tâche du jour cochée : la carte de fin de journée remplace la liste (V2)
+    await expect(child.getByText('Xong hết rồi!', { exact: true })).toBeVisible({ timeout: 20_000 });
     await expect.poll(async () => (await serverState(family, 'minh', taskTitle)).completed).toBe(true);
     expect(await serverState(family, 'minh', taskTitle)).toMatchObject({ validated: false, balance: 0, transactions: 0 });
     await open(child, '/more/points');
@@ -157,7 +158,7 @@ test.describe('validation parentale (spec v4)', () => {
 
     await ctx.setOffline(true);
     await box.click();
-    await expect(box).toBeChecked(); // effet local immédiat, jamais de point côté enfant
+    await expect(page.getByText('Xong hết rồi!', { exact: true })).toBeVisible({ timeout: 20_000 }); // effet local immédiat, jamais de point côté enfant
     expect((await serverState(family, 'minh', taskTitle)).completed).toBe(false); // rien n'est parti
 
     await ctx.setOffline(false);
@@ -1128,7 +1129,8 @@ test.describe('ajouter un enfant après l\'onboarding', () => {
     await expect(parent.getByRole('button', { name: 'Sao chép tên đăng nhập và mật khẩu Cam' })).toBeVisible();
     await parent.getByRole('button', { name: 'Hoàn tất' }).click();
     await expect(parent.getByText('Mật khẩu: secret1')).toHaveCount(0);
-    await expect.poll(async () => (await serviceClient().from('children').select('id').eq('family_id', family.familyId).eq('name', 'Cam')).data?.length ?? 0, { timeout: 20_000 }).toBe(1);
+    // aucun profil fantôme : un seul « Cam » actif
+    await expect.poll(async () => (await serviceClient().from('children').select('id').eq('family_id', family.familyId).eq('name', 'Cam').is('deleted_at', null)).data?.length ?? 0, { timeout: 20_000 }).toBe(1);
 
     // l'enfant se connecte sur son téléphone
     const child = await childSignIn(browser, family.parent.email, loginId, 'secret1');
