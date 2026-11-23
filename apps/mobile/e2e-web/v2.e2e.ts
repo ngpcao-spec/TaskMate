@@ -79,7 +79,7 @@ test.describe('interface V2 : enfant (D-106)', () => {
     await reward.click();
     await expect(page.getByText('Chưa đủ điểm — còn thiếu 50 điểm', { exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Gửi cho bố mẹ' })).toHaveCount(0);
-    await page.getByRole('button', { name: 'Đóng' }).click();
+    await page.getByTestId('reward-confirm-close').click();
 
     // annuler la demande passe par la même feuille (Minh a 17 ans : « bạn »)
     await pending.getByRole('button', { name: 'Hủy yêu cầu' }).click();
