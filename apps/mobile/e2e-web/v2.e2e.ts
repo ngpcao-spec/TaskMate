@@ -56,8 +56,10 @@ test.describe('interface V2 : enfant (D-106)', () => {
     await page.getByTestId('v2-top-calendar').click();
     await expect(page).toHaveURL(/\/v2\/calendar/);
     await expect(page.getByTestId('v2-week-strip')).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByText(a, { exact: true })).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByLabel('10 năng lượng').first()).toBeVisible();
+    // Hôm nay reste monté dessous (pile de navigation) : on lit la ligne du calendrier
+    const row = page.locator('[data-testid^="v2-cal-"]').filter({ hasText: a }).last();
+    await expect(row).toBeVisible({ timeout: 20_000 });
+    await expect(row.getByLabel('10 năng lượng')).toBeVisible();
     // fond de la V2 (jamais le fond « verre givré » de la V1)
     expect(await page.evaluate(() => getComputedStyle(document.querySelector('[data-testid="v2-week-strip"]')!).backgroundColor)).toBe('rgb(255, 248, 236)');
     for (const width of [390, 430]) {
