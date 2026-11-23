@@ -159,9 +159,11 @@ test.describe('interface V2 : enfant (D-106)', () => {
     expect(dialogs).toEqual([]);
   });
 
-  // stade 1 : Khang rajeuni à 4 ans par le service (aucun enfant de la famille de test n'a moins de 6 ans) ; stade 3 : Khang (13 ans)
+  // stade 1 : Khang rajeuni à 4 ans par le service (aucun enfant de la famille de test n'a moins de 6 ans) ; stade 2 : Khang (13 ans)
+  // avec le décalage −1 choisi par l'enfant (le stade AFFICHÉ choisit la vidéo) ; stade 3 : Khang (13 ans)
   for (const c of [
     { stage: 1, name: 'bé', key: 'trip-be', tag: '', offset: 0 as const, ageYears: 4 as number | undefined },
+    { stage: 2, name: 'nhí', key: 'trip-nhi', tag: 'NHI-', offset: -1 as const, ageYears: undefined },
     { stage: 3, name: 'teen', key: 'trip-teen', tag: 'TEEN-', offset: 0 as const, ageYears: undefined },
   ]) {
     test(`vidéo de voyage, stade ${c.stage} (D-107) : départ → le panda ${c.name} marche dans la vidéo (plus de mot), cadré sur la ligne de sol à 390, 430 px et tablette ; toucher → carte postale ; retour inchangé`, async ({ browser }) => {

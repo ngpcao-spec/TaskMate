@@ -406,8 +406,15 @@ describe('V2 : vidéo de voyage du stade 1 dans Hôm nay (D-107)', () => {
     expect(screen.queryByTestId('v2-trip-note')).toBeNull();
   });
 
-  it('stade sans vidéo de voyage (2) : maison vide + mot, inchangé', async () => {
+  it('stade 2 : SA vidéo de voyage (trip-nhi)', async () => {
     mockCompanion = panda;
+    await render(<V2ChildHome />);
+    expect(mockTripVideo).toMatchObject({ mode: 'video', video: { key: 'trip-nhi' } });
+    expect(screen.queryByTestId('v2-trip-note')).toBeNull();
+  });
+
+  it('stade sans vidéo de voyage (4) : maison vide + mot, inchangé', async () => {
+    mockCompanion = { ...panda, stage: 4 };
     await render(<V2ChildHome />);
     expect(screen.queryByTestId('v2-trip-video')).toBeNull();
     expect(screen.getByTestId('v2-trip-note')).toBeTruthy();
