@@ -34,7 +34,7 @@ export function resolveEntryRoute(s: EntryState): EntryRoute {
   if (!s.member) return s.isChildAccount ? '/onboarding/child-login' : '/onboarding/family';
   // famille NEUVE (aucun enfant) : l'assistant de première connexion (D-090) ; une famille existante n'y est jamais envoyée automatiquement
   if (s.member.role === 'parent' && s.childrenCount === 0) return '/onboarding/setup';
-  return HOME_ROUTE[s.uiVersion ?? 'v1'];
+  return HOME_ROUTE[s.uiVersion ?? 'v2'];
 }
 
 /** Durée de fraîcheur de `me` (identique au défaut du client de requêtes). */

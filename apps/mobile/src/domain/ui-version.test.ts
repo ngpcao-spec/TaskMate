@@ -1,12 +1,12 @@
 import { HOME_ROUTE, isV1TabRoot, parseUiVersion, themeMatchesUi, uiVersionChanged } from './ui-version';
 
 describe('version d’interface (D-106)', () => {
-  it('v1 par défaut, v2 seulement si annoncée', () => {
+  it('v2 par défaut (D-114), v1 seulement si annoncée', () => {
     expect(parseUiVersion('v2')).toBe('v2');
     expect(parseUiVersion('v1')).toBe('v1');
-    expect(parseUiVersion(undefined)).toBe('v1');
-    expect(parseUiVersion('V2')).toBe('v1');
-    expect(parseUiVersion(null)).toBe('v1');
+    expect(parseUiVersion(undefined)).toBe('v2');
+    expect(parseUiVersion('V1')).toBe('v2');
+    expect(parseUiVersion(null)).toBe('v2');
   });
   it('accueil de chaque interface', () => {
     expect(HOME_ROUTE.v1).toBe('/(tabs)/today');
@@ -17,7 +17,7 @@ describe('version d’interface (D-106)', () => {
     expect(uiVersionChanged('v1', 'v1')).toBe(false);
     expect(uiVersionChanged('v1', 'v2')).toBe(true);
     expect(uiVersionChanged('v2', 'v1')).toBe(true);
-    expect(uiVersionChanged('bizarre', 'v1')).toBe(false);
+    expect(uiVersionChanged('bizarre', 'v2')).toBe(false);
   });
 });
 
