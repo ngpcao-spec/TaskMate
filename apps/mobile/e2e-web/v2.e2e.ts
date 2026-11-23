@@ -328,7 +328,9 @@ test.describe('charte V2 sur les écrans réutilisés (D-109)', () => {
     await signInContext(ctx, family.minh);
     const page = await ctx.newPage();
     await page.goto('/');
-    await expect.poll(async () => (await themeOf(page))[0], { timeout: 30_000 }).toBe('v2');
+    // la page se recharge pendant l'attente : une lecture interrompue par la navigation est simplement refaite
+    await expect.poll(async () => (await themeOf(page).catch(() => [null]))[0], { timeout: 30_000 }).toBe('v2');
+    await page.waitForLoadState('load');
     await expect(page).toHaveURL(/\/v2\/child\/home/, { timeout: 20_000 });
     expect((await themeOf(page))[1]).toBe(V2_BG);
 
