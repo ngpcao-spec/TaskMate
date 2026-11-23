@@ -17,3 +17,6 @@ export function uiVersionChanged(stored: string | null, current: UiVersion): boo
 /** Racines des onglets V1 : une famille V2 n'y reste jamais (renvoyée vers `/v2`) ; les sous-écrans (`/more/…`) restent ouverts à la V2 (D-106). */
 export const V1_TAB_ROOTS = ['/', '/today', '/calendar', '/stats', '/more'] as const;
 export const isV1TabRoot = (pathname: string): boolean => (V1_TAB_ROOTS as readonly string[]).includes(pathname.replace(/\/+$/, '') || '/');
+
+/** Le thème appliqué au chargement correspond-il à l'interface de la famille ? Une famille en V2 a le thème `v2`, une famille en V1 jamais (D-109). */
+export const themeMatchesUi = (activeThemeId: string, version: UiVersion): boolean => (activeThemeId === 'v2') === (version === 'v2');

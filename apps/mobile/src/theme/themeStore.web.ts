@@ -33,3 +33,24 @@ export const reloadApp = (): 'reloaded' | 'manual' => {
     return 'manual';
   }
 };
+
+/** Version d'interface de la famille vue au dernier lancement (D-106 : `useUiVersionSwitch` l'écrit) : en V2, le thème `v2` est imposé (D-109). */
+export const UI_VERSION_KEY = 'taskmate-ui-version';
+export const readStoredUiVersion = (): string | null => {
+  try {
+    return globalThis.localStorage?.getItem(UI_VERSION_KEY) ?? null;
+  } catch {
+    return null;
+  }
+};
+
+/** Recharge la page (le thème est calculé au chargement des modules), à `path` s'il est donné ; `false` si impossible. */
+export const reloadCurrent = (path?: string): boolean => {
+  try {
+    if (path) globalThis.location.replace(path);
+    else globalThis.location.reload();
+    return true;
+  } catch {
+    return false;
+  }
+};

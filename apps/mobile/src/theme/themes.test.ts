@@ -1,4 +1,5 @@
-import { DEFAULT_THEME, isThemeId, parseThemeId, THEME_IDS, THEMES, type ThemeId } from './index';
+import { activeThemeId, DEFAULT_THEME, isThemeId, parseThemeId, THEME_IDS, THEMES, V2_THEME, type ThemeId } from './index';
+import { v2Colors } from '@/v2/theme';
 import type { ThemeColors } from './themes/types';
 
 type Rgba = [number, number, number, number];
@@ -107,5 +108,34 @@ describe('choix du thème', () => {
       expect(isThemeId(id)).toBe(true);
       expect(parseThemeId(id)).toBe(id);
     }
+  });
+});
+
+describe('thème « v2 » (D-109) : la charte V2 pour les écrans V1 réutilisés', () => {
+  const c = V2_THEME.colors;
+  it('jamais proposé au choix ; mêmes jetons et même forme que les autres', () => {
+    expect(THEME_IDS).not.toContain('v2' as ThemeId);
+    expect(isThemeId('v2')).toBe(false);
+    expect(Object.keys(c).sort()).toEqual(Object.keys(THEMES.glass.colors).sort());
+    for (const [k, v] of Object.entries(c)) expect([k, /^#[0-9A-Fa-f]{6}$/.test(v)]).toEqual([k, true]); // tout opaque
+    expect(V2_THEME.decor).toBe('none');
+  });
+  it('mêmes couleurs que l’interface V2 (fond, carte, texte, vert)', () => {
+    expect([c.background, c.card, c.text, c.textSecondary, c.primary, c.danger]).toEqual([v2Colors.background, v2Colors.card, v2Colors.text, v2Colors.textSecondary, v2Colors.primary, v2Colors.danger]);
+  });
+  it('le texte reste lisible partout (contraste ≥ 4,5:1), y compris sur les couleurs d’enfant (≥ 3:1)', () => {
+    const failing = READABLE.map(([fg, bg]) => ({ fg, bg, r: ratio(seen(c, fg), seen(c, bg)) })).filter((x) => x.r < 4.5);
+    expect(failing).toEqual([]);
+    const on = seen(c, 'onPrimary');
+    for (const color of [...V2_THEME.childPalette, ...Object.values(V2_THEME.childSoft)]) expect([color, ratio(on, parse(color).slice(0, 3) as [number, number, number]) >= 3]).toEqual([color, true]);
+    for (const legacy of ['#1E88F5', '#2EC4A6', '#8B5CF6', '#F5A623', '#E5484D']) expect(V2_THEME.childSoft[legacy]).toBeTruthy();
+    expect(new Set(Object.values(V2_THEME.categoryColors)).size).toBe(5);
+  });
+  it('famille en V2 = thème v2 imposé ; sinon le thème choisi sur l’appareil', () => {
+    expect(activeThemeId('kawaii', 'v2')).toBe('v2');
+    expect(activeThemeId(null, 'v2')).toBe('v2');
+    expect(activeThemeId('kawaii', 'v1')).toBe('kawaii');
+    expect(activeThemeId('kawaii', null)).toBe('kawaii');
+    expect(activeThemeId('n’importe quoi', 'v1')).toBe(DEFAULT_THEME);
   });
 });

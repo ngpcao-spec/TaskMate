@@ -6,11 +6,13 @@ import { Card } from '@/components/ui';
 import { switchTheme, theme, THEME_IDS, type ThemeId } from '@/theme';
 import { colors, typography } from '@/theme/tokens';
 
-/** Choix de l'apparence (par appareil). Web : l'app se recharge et applique le thème ; natif : il faut fermer puis rouvrir l'app. */
+/** Choix de l'apparence (par appareil ; masqué pour une famille en V2, D-109). Web : l'app se recharge et applique le thème ; natif : il faut fermer puis rouvrir l'app. */
 export function ThemeCard() {
   const { t } = useTranslation();
   const [restart, setRestart] = useState(false);
   const pick = (id: ThemeId) => setRestart(switchTheme(id) === 'manual');
+  // D-109 : une famille en V2 a la charte V2 partout (thème `v2` imposé) ; le choix de l'appareil revient si la famille repasse en V1
+  if (theme.id === 'v2') return null;
   return (
     <Card>
       <Text accessibilityRole="header" style={styles.section}>
