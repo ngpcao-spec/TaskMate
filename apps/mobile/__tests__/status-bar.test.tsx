@@ -14,10 +14,10 @@ describe('barre d’état translucide (D-106)', () => {
   beforeEach(() => jest.replaceProperty(Platform, 'OS', 'web'));
   afterEach(() => jest.restoreAllMocks());
 
-  it('voile : hauteur = marge haute + 16, sans capter les touches, décoratif', async () => {
+  it('voile : hauteur = marge haute + 24 (D-110), sans capter les touches, décoratif', async () => {
     await render(withInsets(47, <StatusBarScrim color="#000000" />));
     const scrim = screen.getByTestId('status-bar-scrim', H);
-    expect(StyleSheet.flatten(scrim.props.style)).toMatchObject({ position: 'absolute', top: 0, height: 63 });
+    expect(StyleSheet.flatten(scrim.props.style)).toMatchObject({ position: 'absolute', top: 0, height: 71 });
     expect(scrim.props.pointerEvents).toBe('none');
     expect(scrim.props['aria-hidden']).toBe(true);
   });

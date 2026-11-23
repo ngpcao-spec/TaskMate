@@ -15,16 +15,19 @@ const SKY: Record<string, [string, string]> = {
 };
 
 describe('voile de la barre d’état (D-106)', () => {
-  it('dégradé : 0,6 en haut, 0,3 au bas de la marge, 0 après 16 pt ; rien sans marge haute', () => {
+  it('dégradé (D-110) : 0,35 en haut, 0,12 au bas de la marge, 0 après 24 pt ; rien sans marge haute', () => {
     expect(scrimOpacityAt(0, 47)).toBeCloseTo(STATUS_SCRIM.top);
     expect(scrimOpacityAt(47, 47)).toBeCloseTo(STATUS_SCRIM.insetBottom);
-    expect(scrimOpacityAt(23.5, 47)).toBeCloseTo(0.45);
-    expect(scrimOpacityAt(55, 47)).toBeCloseTo(0.15);
-    expect(scrimOpacityAt(63, 47)).toBe(0);
+    expect(scrimOpacityAt(23.5, 47)).toBeCloseTo(0.235);
+    expect(scrimOpacityAt(59, 47)).toBeCloseTo(0.06);
+    expect(scrimOpacityAt(71, 47)).toBe(0);
     expect(scrimOpacityAt(10, 0)).toBe(0);
   });
-  it.each(Object.entries(SKY))('décor %s : heure et batterie lisibles (≥ 3:1) à mi-hauteur de la barre', (_scene, colors) => {
-    for (const c of colors) expect(whiteOnScrimContrast(c, scrimOpacityAt(23.5, 47))).toBeGreaterThanOrEqual(3);
+  it('décor home (Hôm nay) : heure et batterie lisibles (≥ 3:1) à mi-hauteur de la barre', () => {
+    for (const c of SKY.home!) expect(whiteOnScrimContrast(c, scrimOpacityAt(23.5, 47))).toBeGreaterThanOrEqual(3);
+  });
+  it.each(Object.entries(SKY))('décor %s : jamais sous 2,2:1 à mi-hauteur (voile plus léger, choix de Teo)', (_scene, colors) => {
+    for (const c of colors) expect(whiteOnScrimContrast(c, scrimOpacityAt(23.5, 47))).toBeGreaterThanOrEqual(2.2);
   });
   it('0,25 → 0 (proposition de départ) ne suffisait pas', () => {
     const worst = Math.min(...Object.values(SKY).flat().map((c) => whiteOnScrimContrast(c, 0.125)));
