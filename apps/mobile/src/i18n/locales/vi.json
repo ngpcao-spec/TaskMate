@@ -2339,7 +2339,9 @@
         "body_older": "Bạn muốn hủy yêu cầu đổi “{{title}}”? {{cost}} điểm sẽ trở lại với bạn.",
         "ok": "Hủy yêu cầu",
         "keep": "Giữ lại"
-      }
+      },
+      "availableLabel": "Điểm có thể dùng",
+      "reservedLine": "{{points}} điểm đang chờ bố mẹ duyệt đổi thưởng"
     },
     "map": {
       "label": "Bản đồ phiêu lưu Việt Nam",
