@@ -1,3 +1,4 @@
+import { Check } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { GoalIcon } from '@/domain/goal-icons';
@@ -21,11 +22,15 @@ type Props = {
   onOpen?: () => void;
   /** texte sous le titre (heure, échéance…) */
   subtitle?: string | null;
+  /** heure dépassée (calendrier) : sous-titre en rouge */
+  late?: boolean;
+  /** ligne sans bouton ✓ (calendrier) : petite coche verte quand l'objectif est fait */
+  doneMark?: boolean;
   testID?: string;
 };
 
 /** Ligne d'objectif V2 : icône, titre, « 10 ⚡ », gros bouton ✓. */
-export function GoalRow({ icon, title, energy, checked, pending = false, onToggle, toggleDisabled = false, onOpen, subtitle, testID }: Props) {
+export function GoalRow({ icon, title, energy, checked, pending = false, onToggle, toggleDisabled = false, onOpen, subtitle, late = false, doneMark = false, testID }: Props) {
   const { t } = useTranslation();
   const body = (
     <>
@@ -34,7 +39,7 @@ export function GoalRow({ icon, title, energy, checked, pending = false, onToggl
         <Text style={[styles.title, checked ? styles.titleDone : null]} numberOfLines={2}>
           {title}
         </Text>
-        {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+        {subtitle ? <Text style={[styles.subtitle, late ? styles.late : null]}>{subtitle}</Text> : null}
         {pending ? (
           <View style={styles.pendingPill}>
             <Text style={styles.pendingText}>{t('v2.goal.pending')}</Text>
@@ -45,6 +50,11 @@ export function GoalRow({ icon, title, energy, checked, pending = false, onToggl
         <Text style={styles.energy} accessibilityLabel={t('v2.goal.energyLabel', { points: energy })}>
           {t('v2.goal.energy', { points: energy })}
         </Text>
+      ) : null}
+      {doneMark && checked ? (
+        <View style={styles.doneMark} accessibilityLabel={t('calendar.done')} accessible>
+          <Check size={16} color={v2Colors.onPrimary} strokeWidth={3} />
+        </View>
       ) : null}
     </>
   );
@@ -70,6 +80,8 @@ const styles = StyleSheet.create({
   title: v2Text.bodyBold,
   titleDone: { color: v2Colors.textSecondary },
   subtitle: v2Text.caption,
+  late: { color: v2Colors.danger },
+  doneMark: { width: 26, height: 26, borderRadius: 13, backgroundColor: v2Colors.primary, alignItems: 'center', justifyContent: 'center' },
   pendingPill: { alignSelf: 'flex-start', backgroundColor: v2Colors.pendingSoft, borderRadius: v2Radius.pill, paddingHorizontal: 8, paddingVertical: 2, marginTop: 2 },
   pendingText: { ...v2Text.caption, color: v2Colors.pending },
   energy: { ...v2Text.bodyBold, color: v2Colors.energyText },
