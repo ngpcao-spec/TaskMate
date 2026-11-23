@@ -399,6 +399,13 @@ describe('V2 : vidéo de voyage du stade 1 dans Hôm nay (D-107)', () => {
     expect(screen.getByTestId('v2-trip-note')).toBeTruthy();
   });
 
+  it('stade 3 : SA vidéo de voyage (trip-teen)', async () => {
+    mockCompanion = { ...panda, stage: 3 };
+    await render(<V2ChildHome />);
+    expect(mockTripVideo).toMatchObject({ mode: 'video', video: { key: 'trip-teen' } });
+    expect(screen.queryByTestId('v2-trip-note')).toBeNull();
+  });
+
   it('stade 2 : SA vidéo de voyage (trip-nhi)', async () => {
     mockCompanion = panda;
     await render(<V2ChildHome />);
@@ -406,8 +413,15 @@ describe('V2 : vidéo de voyage du stade 1 dans Hôm nay (D-107)', () => {
     expect(screen.queryByTestId('v2-trip-note')).toBeNull();
   });
 
-  it('stade sans vidéo de voyage (3) : maison vide + mot, inchangé', async () => {
-    mockCompanion = { ...panda, stage: 3 };
+  it('stade 4 : SA vidéo de voyage (trip-dong-hanh)', async () => {
+    mockCompanion = { ...panda, stage: 4 };
+    await render(<V2ChildHome />);
+    expect(mockTripVideo).toMatchObject({ mode: 'video', video: { key: 'trip-dong-hanh' } });
+  });
+
+  it('stade sans vidéo de voyage (table vide pour ce stade) : maison vide + mot', async () => {
+    jest.spyOn(videoModule, 'tripVideoForStage').mockReturnValue(null);
+    mockCompanion = { ...panda, stage: 4 };
     await render(<V2ChildHome />);
     expect(screen.queryByTestId('v2-trip-video')).toBeNull();
     expect(screen.getByTestId('v2-trip-note')).toBeTruthy();

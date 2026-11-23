@@ -288,9 +288,10 @@ export const TRIP_VIDEOS: Readonly<Partial<Record<number, TripVideoEntry>>> = {
     },
     geometry: { width: 1280, height: 720, headY: 0.44, feetY: 0.82 },
   },
-  // stade 2 (nhí), fournie par Teo le 2026-11-21 : 1280×720, son retiré, coupée à 184 images (7,67 s) là où elle reboucle (image 184 ≈ image 0),
-  // réencodée aux débits de `trip-be` ; sweat bleu, casque, sac : il marche vers la droite, de 36 % (pousse) à 82,5 % (pieds), au centre
-  // (centre à 57 %) ; le décor défile, un bambou passe parfois devant lui
+  // stade 2 (nhí), fournie par Teo le 2026-11-23 : reçue en 640×360, 8 s, avec son, SANS point de bouclage (le décor ne revient jamais) ;
+  // son retiré ; boucle des images 60 à 190 (la pose du panda à l'image 190 reprend celle de l'image 59) avec un fondu de 0,5 s vers les images
+  // 48 à 59 (le décor se fond, le panda reste net) ; agrandie en 1280×720 (lanczos : plus douce que les autres) ; écharpe bleue, sacoche ;
+  // il marche vers la droite, de 36 % (pousse) à 82,5 % (pieds), au centre (centre à 56 %)
   2: {
     key: 'trip-nhi',
     sources: {
@@ -300,6 +301,33 @@ export const TRIP_VIDEOS: Readonly<Partial<Record<number, TripVideoEntry>>> = {
       poster: require('../../assets/v2/video/trip/trip-nhi-poster.webp'),
     },
     geometry: { width: 1280, height: 720, headY: 0.36, feetY: 0.825 },
+  },
+  // stade 3 (teen), fournie par Teo le 2026-11-21 (d'abord branchée par erreur au stade 2, corrigé le 2026-11-23) : 1280×720, son retiré, coupée à 184 images (7,67 s) là où elle reboucle (image 184 ≈ image 0),
+  // réencodée aux débits de `trip-be` ; sweat bleu, casque, sac : il marche vers la droite, de 36 % (pousse) à 82,5 % (pieds), au centre
+  // (centre à 57 %) ; le décor défile, un bambou passe parfois devant lui
+  3: {
+    key: 'trip-teen',
+    sources: {
+      webm: require('../../assets/v2/video/trip/trip-teen.webm'),
+      mp4: require('../../assets/v2/video/trip/trip-teen.mp4'),
+      mp4Small: require('../../assets/v2/video/trip/trip-teen@480.mp4'),
+      poster: require('../../assets/v2/video/trip/trip-teen-poster.webp'),
+    },
+    geometry: { width: 1280, height: 720, headY: 0.36, feetY: 0.825 },
+  },
+  // stade 4 (đồng hành), fournie par Teo le 2026-11-23 : même traitement que `trip-nhi` (640×360, 8 s, avec son, sans point de bouclage) ;
+  // boucle des images 29 à 187 (la pose à l'image 187 reprend celle de l'image 28) avec un fondu de 0,5 s vers les images 17 à 28 ; agrandie en
+  // 1280×720 ; veste verte, lunettes, carnet, sacoche ; de 30 % (pousse) à 82,5 % (pieds), centre à 56 % : le plus grand des quatre (sur un
+  // écran large, la boîte vidéo est réduite par `tripVideoLayout` pour qu'il tienne sous les boutons)
+  4: {
+    key: 'trip-dong-hanh',
+    sources: {
+      webm: require('../../assets/v2/video/trip/trip-dong-hanh.webm'),
+      mp4: require('../../assets/v2/video/trip/trip-dong-hanh.mp4'),
+      mp4Small: require('../../assets/v2/video/trip/trip-dong-hanh@480.mp4'),
+      poster: require('../../assets/v2/video/trip/trip-dong-hanh-poster.webp'),
+    },
+    geometry: { width: 1280, height: 720, headY: 0.3, feetY: 0.825 },
   },
 };
 
