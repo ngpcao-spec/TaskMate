@@ -1,5 +1,5 @@
 import { expect, test, webkit, type Page } from '@playwright/test';
-import { adventureNextDay, adventuresOf, createFamily, seedCompanion, seedEnergy, seedTask, serverState, serviceClient, signInContext } from './support/seed';
+import { adventureNextDay, adventuresOf, createFamily, seedCompanion, seedEnergy, seedPoints, seedTask, serverState, serviceClient, signInContext } from './support/seed';
 import vi from '../src/i18n/locales/vi.json';
 
 /**
@@ -44,6 +44,49 @@ test.describe('interface V2 : enfant (D-106)', () => {
     await page.getByRole('link', { name: 'Xem lại' }).click();
     await expect(page.getByRole('checkbox', { name: a })).toBeChecked();
     await expect(page.getByText('chờ bố mẹ duyệt', { exact: true }).first()).toBeVisible();
+  });
+
+  test('Phần thưởng (V2) : échange par la feuille ConfirmSheet (jamais de fenêtre système), demande ajoutée sans recharger, annulation confirmée (D-111)', async ({ browser }) => {
+    test.setTimeout(120_000);
+    const family = await createFamily({ uiVersion: 'v2' });
+    await seedCompanion(family, 'minh', 'Bambou');
+    await seedPoints(family, 'minh', 150);
+    const page = await openChild(browser, family);
+    const dialogs: string[] = [];
+    page.on('dialog', (d) => dialogs.push(`${d.type()}: ${d.message()}`));
+    await page.goto('/v2/child/rewards');
+    const reward = page.getByRole('button', { name: /^Chơi game 1 tiếng, 100 điểm/ });
+    await expect(reward).toBeVisible({ timeout: 20_000 });
+
+    await reward.click();
+    const sheet = page.getByTestId('reward-confirm');
+    await expect(sheet.getByText('Đổi phần thưởng này?', { exact: true })).toBeVisible();
+    await expect(sheet.getByText('Hiện có 150 → Còn lại 50', { exact: true })).toBeVisible();
+    await expect(sheet.getByText('Bố mẹ sẽ duyệt yêu cầu này', { exact: true })).toBeVisible();
+    // « Để sau » referme sans rien envoyer
+    await sheet.getByRole('button', { name: 'Để sau' }).click();
+    await expect(sheet).toHaveCount(0);
+
+    await reward.click();
+    await page.getByRole('button', { name: 'Gửi cho bố mẹ' }).click();
+    await expect(page.getByTestId('reward-confirm')).toHaveCount(0);
+    await expect(page.getByText('Đã gửi cho bố mẹ', { exact: true })).toBeVisible();
+    await expect(page.getByText('Yêu cầu đổi thưởng', { exact: true })).toBeVisible();
+    const pending = page.locator('[data-testid^="v2-request-"]').filter({ hasText: 'Chơi game 1 tiếng' }).first();
+    await expect(pending).toContainText('Đang chờ duyệt');
+
+    // plus que 50 disponibles : la feuille dit combien il manque, un seul bouton « Đóng »
+    await reward.click();
+    await expect(page.getByText('Chưa đủ điểm — còn thiếu 50 điểm', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Gửi cho bố mẹ' })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Đóng' }).click();
+
+    // annuler la demande passe par la même feuille (Minh a 17 ans : « bạn »)
+    await pending.getByRole('button', { name: 'Hủy yêu cầu' }).click();
+    await expect(page.getByText('Bạn muốn hủy yêu cầu đổi “Chơi game 1 tiếng”? 100 điểm sẽ trở lại với bạn.', { exact: true })).toBeVisible();
+    await page.getByTestId('v2-confirm-ok').click();
+    await expect(pending).toContainText('Đã hủy', { timeout: 15_000 });
+    expect(dialogs).toEqual([]);
   });
 
   test('Lịch (V2) : ouvert depuis Hôm nay, même style que l’accueil (fond vert doux, cartes crème, icônes d’objectifs, énergie) ; retour à Hôm nay', async ({ browser }) => {

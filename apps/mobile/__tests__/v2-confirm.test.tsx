@@ -5,6 +5,7 @@ import { confirmDialog } from '@/components/confirm';
 import { confirmDialog as confirmDialogWeb } from '@/components/confirm.web';
 import { useConfirmStore } from '@/store/confirm';
 import { V2ConfirmHost } from '@/v2/components/V2ConfirmHost';
+import { shouldDismissSheet } from '@/v2/components/V2Sheet';
 
 jest.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }) }));
 
@@ -53,5 +54,26 @@ describe('confirmations sans fenêtre système (D-107)', () => {
     (globalThis as unknown as { window: { confirm: () => boolean } }).window.confirm = native;
     confirmDialogWeb(opts());
     expect(native).toHaveBeenCalledWith('Đổi quà?\n\nDùng 30 điểm');
+  });
+});
+
+describe('ConfirmSheet : fermeture (D-111)', () => {
+  afterEach(() => act(() => useConfirmStore.setState({ enabled: false, request: null })));
+
+  it('toucher le voile ferme sans confirmer', async () => {
+    await render(<V2ConfirmHost enabled />);
+    const onConfirm = jest.fn();
+    await act(async () => confirmDialog(opts(onConfirm)));
+    await fireEvent.press(screen.getByTestId('v2-confirm-scrim', { includeHiddenElements: true }));
+    expect(onConfirm).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('v2-confirm')).toBeNull();
+  });
+
+  it('glissement vers le bas : au-delà de 90 pt ou geste rapide', () => {
+    expect(shouldDismissSheet(120, 0.1)).toBe(true);
+    expect(shouldDismissSheet(40, 1.2)).toBe(true);
+    expect(shouldDismissSheet(40, 0.3)).toBe(false);
+    expect(shouldDismissSheet(10, 2)).toBe(false);
+    expect(shouldDismissSheet(-200, 0)).toBe(false);
   });
 });

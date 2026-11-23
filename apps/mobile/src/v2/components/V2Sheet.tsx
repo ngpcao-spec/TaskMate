@@ -1,10 +1,9 @@
-import type { ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Animated, Modal, PanResponder, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
-import { SHEET_SCRIM_OPACITY, v2Colors, v2Radius, v2Shadow, v2Spacing, v2Text } from '../theme';
-import { V2Button } from './V2Button';
+import { SHEET_SCRIM_OPACITY, v2Colors, v2Radius, v2Shadow, v2Spacing } from '../theme';
 import { V2_MAX_WIDTH } from './V2Screen';
 
 type Props = {
@@ -19,53 +18,62 @@ type Props = {
 
 /**
  * Feuille du bas de la V2 (D-107) : remplace toute fenêtre système (`window.confirm`, `Alert.alert`). Crème arrondie, posée en bas de l'écran
- * (largeur limitée sur tablette), au-dessus d'un voile ; glisse depuis le bas (sans animation si « réduire les animations »).
+ * (largeur limitée sur tablette), au-dessus d'un voile ; glisse depuis le bas (sans animation si « réduire les animations »). Se ferme par un toucher
+ * du voile, le retour Android / Échap, ou en la faisant glisser vers le bas (au-delà de `SHEET_DISMISS_DRAG` ou d'un geste rapide).
  */
 export function V2Sheet({ visible, onClose, label, children, testID }: Props) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const reduce = useReduceMotion();
+  const [drag] = useState(() => new Animated.Value(0));
+  useEffect(() => {
+    if (visible) drag.setValue(0);
+  }, [visible, drag]);
+  const pan = useMemo(
+    () =>
+      PanResponder.create({
+        // geste vertical vers le bas seulement : les touchers et le défilement horizontal restent aux enfants
+        onMoveShouldSetPanResponder: (_e, g) => g.dy > 8 && Math.abs(g.dy) > Math.abs(g.dx) * 1.5,
+        onPanResponderMove: (_e, g) => drag.setValue(Math.max(0, g.dy)),
+        onPanResponderRelease: (_e, g) => {
+          if (shouldDismissSheet(g.dy, g.vy)) {
+            onClose();
+            return;
+          }
+          Animated.spring(drag, { toValue: 0, useNativeDriver: false, bounciness: 4 }).start();
+        },
+        onPanResponderTerminate: () => drag.setValue(0),
+      }),
+    [drag, onClose],
+  );
   return (
     <Modal visible={visible} transparent animationType={reduce ? 'none' : 'slide'} onRequestClose={onClose} statusBarTranslucent>
       <View style={styles.root}>
         <Pressable style={styles.scrim} onPress={onClose} accessibilityRole="button" accessibilityLabel={t('v2.trip.close')} testID={testID ? `${testID}-scrim` : undefined} />
-        <View style={[styles.sheet, { paddingBottom: v2Spacing.lg + insets.bottom }]} accessibilityViewIsModal accessibilityLabel={label} role="dialog" aria-modal testID={testID}>
-          <View style={styles.handle} importantForAccessibility="no" />
+        <Animated.View
+          {...pan.panHandlers}
+          style={[styles.sheet, { paddingBottom: v2Spacing.lg + insets.bottom, transform: [{ translateY: drag }] }]}
+          accessibilityViewIsModal
+          accessibilityLabel={label}
+          role="dialog"
+          aria-modal
+          testID={testID}
+        >
+          <View style={styles.handleZone} testID={testID ? `${testID}-handle` : undefined} importantForAccessibility="no">
+            <View style={styles.handle} />
+          </View>
           <ScrollView contentContainerStyle={styles.body} bounces={false}>
             {children}
           </ScrollView>
-        </View>
+        </Animated.View>
       </View>
     </Modal>
   );
 }
 
-type ConfirmProps = {
-  visible: boolean;
-  title: string;
-  message?: string;
-  confirmLabel: string;
-  cancelLabel: string;
-  destructive?: boolean;
-  onConfirm: () => void;
-  onCancel: () => void;
-};
-
-/** Confirmation V2 : titre, message, action et « Hủy » traduits (jamais la boîte du navigateur). */
-export function V2ConfirmSheet({ visible, title, message, confirmLabel, cancelLabel, destructive = false, onConfirm, onCancel }: ConfirmProps) {
-  return (
-    <V2Sheet visible={visible} onClose={onCancel} label={title} testID="v2-confirm">
-      <Text style={styles.title} accessibilityRole="header">
-        {title}
-      </Text>
-      {message ? <Text style={styles.message}>{message}</Text> : null}
-      <View style={styles.actions}>
-        <V2Button label={confirmLabel} variant={destructive ? 'danger' : 'primary'} onPress={onConfirm} testID="v2-confirm-ok" />
-        <V2Button label={cancelLabel} variant="secondary" onPress={onCancel} testID="v2-confirm-cancel" />
-      </View>
-    </V2Sheet>
-  );
-}
+/** Distance (pt) au-delà de laquelle une feuille glissée vers le bas se ferme ; ou geste rapide (vitesse > 0,8). */
+export const SHEET_DISMISS_DRAG = 90;
+export const shouldDismissSheet = (dy: number, vy: number): boolean => dy > SHEET_DISMISS_DRAG || (dy > 20 && vy > 0.8);
 
 const styles = StyleSheet.create({
   root: { flex: 1, justifyContent: 'flex-end' },
@@ -81,9 +89,7 @@ const styles = StyleSheet.create({
     paddingTop: v2Spacing.sm,
     ...v2Shadow,
   },
-  handle: { alignSelf: 'center', width: 44, height: 5, borderRadius: 3, backgroundColor: v2Colors.line, marginBottom: v2Spacing.sm },
+  handleZone: { alignSelf: 'stretch', alignItems: 'center', paddingBottom: v2Spacing.sm },
+  handle: { width: 44, height: 5, borderRadius: 3, backgroundColor: v2Colors.line },
   body: { paddingHorizontal: v2Spacing.lg, gap: v2Spacing.md },
-  title: { ...v2Text.title, textAlign: 'center' },
-  message: { ...v2Text.body, color: v2Colors.textSecondary, textAlign: 'center' },
-  actions: { gap: v2Spacing.sm, marginTop: v2Spacing.sm },
 });

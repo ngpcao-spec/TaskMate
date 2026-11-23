@@ -14,11 +14,13 @@ import {
   type RewardInput,
 } from '@/api/points';
 import { serverErrorCode } from '@/api/tasks';
+import { optimisticRequest } from '@/domain/reward-exchange';
 import { projectBalance, type BalanceSnapshot } from '@/domain/rewards';
 import { parentPointsDelta } from '@/domain/task-state';
 import i18n from '@/i18n';
 import { mutationKeys, type ToggleVars, type ValidateVars } from '@/sync/mutations';
 import { useToastStore } from '@/store/toast';
+import type { RewardRequestRow } from '@/types/models';
 
 export const pointKeys = {
   balance: (childId: string) => ['balance', childId] as const,
@@ -74,7 +76,44 @@ function useInvalidatingMutation<V>(fn: (v: V) => Promise<void>, successMessage?
   });
 }
 
-export const useRequestReward = () => useInvalidatingMutation((rewardId: string) => requestReward(rewardId), i18n.t('points.requestSent'));
+export type RequestRewardVars = { rewardId: string; childId: string; title: string; cost: number; requestId: string };
+
+/**
+ * Demande d'échange : la demande apparaît TOUT DE SUITE dans « Yêu cầu đổi thưởng » et ses points sont réservés dans le solde affiché (même id que
+ * la ligne du serveur, `requestId` fixé par l'appelant) ; rien n'est gardé si le serveur refuse. Jamais mise en file (réseau exigé, SPEC §3.7).
+ */
+export function useRequestReward() {
+  const queryClient = useQueryClient();
+  const show = useToastStore((s) => s.show);
+  type Snapshot = { requests: [readonly unknown[], RewardRequestRow[] | undefined][]; balance: BalanceSnapshot | undefined };
+  return useMutation<void, unknown, RequestRewardVars, Snapshot>({
+    mutationFn: (v) => requestReward(v.rewardId, v.requestId),
+    networkMode: 'always',
+    onMutate: async (v) => {
+      await queryClient.cancelQueries({ queryKey: ['requests'] });
+      await queryClient.cancelQueries({ queryKey: pointKeys.balance(v.childId) });
+      const requests = queryClient.getQueriesData<RewardRequestRow[]>({ queryKey: ['requests'] });
+      const balance = queryClient.getQueryData<BalanceSnapshot>(pointKeys.balance(v.childId));
+      const row = optimisticRequest({ id: v.requestId, childId: v.childId, rewardId: v.rewardId, title: v.title, cost: v.cost, now: new Date() }) as unknown as RewardRequestRow;
+      for (const [key, data] of requests) {
+        if (key[1] !== 'all' && key[1] !== v.childId) continue;
+        queryClient.setQueryData<RewardRequestRow[]>(key, [row, ...(data ?? []).filter((r) => r.id !== row.id)]);
+      }
+      if (balance) queryClient.setQueryData<BalanceSnapshot>(pointKeys.balance(v.childId), { ...balance, reserved: balance.reserved + v.cost, available: balance.available - v.cost });
+      return { requests, balance };
+    },
+    onSuccess: () => show(i18n.t('points.requestSent')),
+    onError: (error, v, snap) => {
+      for (const [key, data] of snap?.requests ?? []) queryClient.setQueryData(key, data);
+      if (snap?.balance) queryClient.setQueryData(pointKeys.balance(v.childId), snap.balance);
+      const code = serverErrorCode(error);
+      show(code === 'insufficient_balance' ? i18n.t('points.errors.insufficient') : i18n.t('common.error'), 'error');
+    },
+    onSettled: () => {
+      for (const key of ['balance', 'requests', 'transactions']) void queryClient.invalidateQueries({ queryKey: [key] });
+    },
+  });
+}
 export const useCancelRequest = () => useInvalidatingMutation((id: string) => cancelRewardRequest(id));
 export const useApproveRequest = () => useInvalidatingMutation((id: string) => approveRewardRequest(id));
 export const useRejectRequest = () => useInvalidatingMutation(({ id, note }: { id: string; note?: string }) => rejectRewardRequest(id, note));
