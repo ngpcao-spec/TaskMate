@@ -118,6 +118,11 @@ export function TripVideo({ video, mode, active, onFailed, topClear, groundOffse
           </video>
         ) : null}
       </div>
+      {/* D-113 : sous les pieds, le chemin se fond dans son sable (l'herbe vert citron du bas de la vidéo ne touche jamais le fond de l'écran) */}
+      <div
+        data-testid="v2-trip-video-ground"
+        style={{ position: 'absolute', left: 0, right: 0, bottom: 0, top: l.pandaBottom, backgroundImage: `linear-gradient(to bottom, transparent, ${video.groundColor} 50%)` }}
+      />
     </View>
   );
 }

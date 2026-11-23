@@ -7,6 +7,7 @@ const TRIP = {
   key: 'trip-be',
   sources: { webm: 'trip-be.webm', mp4: 'trip-be.mp4', mp4Small: 'trip-be@480', poster: 'trip-be-poster' },
   geometry: { width: 1280, height: 720, headY: 0.44, feetY: 0.82 },
+  groundColor: '#F6CE86',
 };
 
 type Node = { type: string; props: Record<string, unknown>; queryAll: (p: (n: Node) => boolean) => Node[] };
@@ -68,6 +69,15 @@ describe('vidéo de voyage (D-107)', () => {
     expect(st.width).toBe(Math.round((1280 * 347) / 720));
     expect(st.top).toBeGreaterThan(0);
     expect(Number(boxOf(container).props['data-panda-bottom'])).toBeCloseTo(347 - 24, -1);
+  });
+
+  it('sous les pieds : fondu vers le sable du chemin (D-113), jamais au-dessus des pieds', async () => {
+    const { container } = await show();
+    const ground = all(container, 'div').find((d) => d.props['data-testid'] === 'v2-trip-video-ground')!;
+    const st = ground.props.style as { top: number; bottom: number; backgroundImage: string };
+    expect(st.top).toBe(Number(boxOf(container).props['data-panda-bottom']));
+    expect(st.bottom).toBe(0);
+    expect(st.backgroundImage).toContain('#F6CE86');
   });
 
   it('« réduire les animations » : aperçu fixe seulement, aucune vidéo', async () => {
