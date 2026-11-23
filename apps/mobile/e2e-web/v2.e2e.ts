@@ -46,6 +46,31 @@ test.describe('interface V2 : enfant (D-106)', () => {
     await expect(page.getByText('chờ bố mẹ duyệt', { exact: true }).first()).toBeVisible();
   });
 
+  test('Lịch (V2) : ouvert depuis Hôm nay, même style que l’accueil (fond vert doux, cartes crème, icônes d’objectifs, énergie) ; retour à Hôm nay', async ({ browser }) => {
+    test.setTimeout(120_000);
+    const family = await createFamily({ uiVersion: 'v2' });
+    await seedCompanion(family, 'minh', 'Bambou');
+    const a = title('Đọc sách');
+    await seedTask(family, 'minh', a, 10);
+    const page = await openChild(browser, family);
+    await page.getByTestId('v2-top-calendar').click();
+    await expect(page).toHaveURL(/\/v2\/calendar/);
+    await expect(page.getByTestId('v2-week-strip')).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText(a, { exact: true })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByLabel('10 năng lượng').first()).toBeVisible();
+    // fond de la V2 (jamais le fond « verre givré » de la V1)
+    expect(await page.evaluate(() => getComputedStyle(document.querySelector('[data-testid="v2-week-strip"]')!).backgroundColor)).toBe('rgb(255, 248, 236)');
+    for (const width of [390, 430]) {
+      await page.setViewportSize({ width, height: 844 });
+      await page.waitForTimeout(300);
+      await page.screenshot({ path: `test-results/v2-captures/v2-calendar-${width}.png` });
+      const jpeg = await page.screenshot({ type: 'jpeg', quality: 60 });
+      console.log(`=====V2-CAPTURE-CAL-${width}-BEGIN=====\n${jpeg.toString('base64')}\n=====V2-CAPTURE-CAL-${width}-END=====`);
+    }
+    await page.getByTestId('v2-back').click();
+    await expect(page).toHaveURL(/\/v2\/child\/home/);
+  });
+
   /** Captures 390 et 430 px (fichier + JPEG base64 dans le journal CI, l'artefact n'étant pas toujours téléchargeable). */
   async function capture(page: Page, tag: string) {
     for (const width of [390, 430]) {
