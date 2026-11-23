@@ -13,7 +13,7 @@ test.describe('PWA', () => {
     await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveCount(1);
     await expect(page.locator('meta[name="apple-mobile-web-app-capable"]')).toHaveCount(1);
     // D-106 : couleur de fond du thème (barre d'état translucide), page étendue sous la barre d'état
-    await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content', '#9CB0C0');
+    await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content', '#DCEFD6');
     await expect(page.locator('meta[name="apple-mobile-web-app-status-bar-style"]')).toHaveAttribute('content', 'black-translucent');
   });
 
