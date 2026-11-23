@@ -63,6 +63,8 @@ test.describe('interface V2 : enfant (D-106)', () => {
     await seedCompanion(family, 'minh', 'Bambou');
     await seedEnergy(family, 'minh', 60);
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    // vidéos de voyage rendues illisibles : repli « lecture impossible » = maison vide + mot épinglé (les 4 stades ont leur vidéo de voyage)
+    await ctx.route(/\/video\/trip\//, (r) => r.abort());
     await signInContext(ctx, family.minh);
     const page = await ctx.newPage();
     page.on('pageerror', (e) => console.log(`[v2-voyage] pageerror ${e.message.slice(0, 300)}`));
@@ -524,7 +526,7 @@ test.describe('interface V2 : vidéo d\'accueil (D-106)', () => {
     }
   });
 
-  test('pendant une aventure (D-107) : maison vide, sans vidéo ni panda ; « réduire les animations » : jamais de vidéo, départ direct', async ({ browser }) => {
+  test('pendant une aventure (D-107) : vidéo de voyage du stade à la place de la vidéo d’accueil (ni panda dessiné ni mot) ; « réduire les animations » : jamais de vidéo, départ direct', async ({ browser }) => {
     test.setTimeout(150_000);
     const family = await createFamily({ uiVersion: 'v2' });
     await seedCompanion(family, 'khang', 'Bambou');
@@ -540,7 +542,8 @@ test.describe('interface V2 : vidéo d\'accueil (D-106)', () => {
     await page.getByRole('button', { name: 'Vịnh Hạ Long' }).click();
     await page.getByTestId('v2-postcard-go').click();
     await expect(page).toHaveURL(/\/v2\/child\/home/, { timeout: 20_000 });
-    await expect(page.getByTestId('v2-trip-note')).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByTestId('v2-trip-video-element')).toHaveAttribute('data-clip', 'trip-teen', { timeout: 20_000 });
+    await expect(page.getByTestId('v2-trip-note')).toHaveCount(0);
     await expect(page.getByTestId('v2-scene-home').first()).toBeAttached();
     await expect(page.getByTestId('v2-home-video-element')).toHaveCount(0);
     await expect(page.getByTestId('v2-panda')).toHaveCount(0);
