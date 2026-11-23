@@ -282,6 +282,68 @@ test.describe('interface V2 : enfant (D-106)', () => {
   }
 });
 
+test.describe('charte V2 sur les écrans réutilisés (D-109)', () => {
+  const V2_BG = 'rgb(220, 239, 214)';
+  const themeOf = (page: Page) => page.evaluate(() => [document.documentElement.dataset.theme, getComputedStyle(document.body).backgroundColor, getComputedStyle(document.body).fontFamily]);
+
+  test('famille V2 : les écrans V1 réutilisés (réglages, points, notifications) prennent la charte V2 ; aucun choix de thème ; captures', async ({ browser }) => {
+    test.setTimeout(150_000);
+    const family = await createFamily({ uiVersion: 'v2' });
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    await signInContext(ctx, family.parent);
+    const page = await ctx.newPage();
+    page.on('pageerror', (e) => console.log(`[v2-charte] pageerror ${e.message.slice(0, 300)}`));
+    await page.goto('/');
+    await expect(page).toHaveURL(/\/v2\/parent\/home/, { timeout: 20_000 });
+    const [id, bg, font] = await themeOf(page);
+    expect([id, bg]).toEqual(['v2', V2_BG]);
+    expect(font).toContain('NunitoV2');
+    for (const [path, tag, ready] of [
+      ['/v2/settings', 'SETTINGS', null],
+      ['/v2/parent/rewards', 'POINTS', null],
+      ['/notifications', 'NOTIF', null],
+    ] as const) {
+      await page.goto(path);
+      await page.waitForLoadState('networkidle');
+      if (ready) await expect(page.getByText(ready, { exact: true }).first()).toBeVisible({ timeout: 20_000 });
+      expect((await themeOf(page)).slice(0, 2)).toEqual(['v2', V2_BG]);
+      if (path === '/v2/settings') await expect(page.getByText('Giao diện', { exact: true })).toHaveCount(0); // thème imposé : pas de choix
+      await page.waitForTimeout(400);
+      const jpeg = await page.screenshot({ type: 'jpeg', quality: 60 });
+      console.log(`=====V2-CAPTURE-${tag}-390-BEGIN=====\n${jpeg.toString('base64')}\n=====V2-CAPTURE-${tag}-390-END=====`);
+    }
+  });
+
+  test('appareil venu d’une famille V1 : une famille V2 recharge la page une fois et prend la charte V2 ; une famille V1 garde son thème', async ({ browser }) => {
+    test.setTimeout(120_000);
+    const family = await createFamily({ uiVersion: 'v2' });
+    const ctx = await browser.newContext();
+    // version « v1 » laissée par un compte précédent (une seule fois : l'app écrit ensuite la vraie version)
+    await ctx.addInitScript(() => {
+      if (!window.sessionStorage.getItem('e2e-seeded')) {
+        window.sessionStorage.setItem('e2e-seeded', '1');
+        window.localStorage.setItem('taskmate-ui-version', 'v1');
+      }
+    });
+    await signInContext(ctx, family.minh);
+    const page = await ctx.newPage();
+    await page.goto('/');
+    // la page se recharge pendant l'attente : une lecture interrompue par la navigation est simplement refaite
+    await expect.poll(async () => (await themeOf(page).catch(() => [null]))[0], { timeout: 30_000 }).toBe('v2');
+    await page.waitForLoadState('load');
+    await expect(page).toHaveURL(/\/v2\/child\/home/, { timeout: 20_000 });
+    expect((await themeOf(page))[1]).toBe(V2_BG);
+
+    const v1 = await createFamily();
+    const ctx1 = await browser.newContext();
+    await signInContext(ctx1, v1.parent);
+    const p1 = await ctx1.newPage();
+    await p1.goto('/');
+    await expect(p1.getByText('Chào Minh!')).toBeVisible({ timeout: 20_000 });
+    expect((await themeOf(p1))[0]).toBe('glass');
+  });
+});
+
 test.describe('interface V2 : parent (D-106)', () => {
   test('le parent valide depuis Hôm nay une tâche cochée par l\'enfant ; les points sont crédités une fois', async ({ browser }) => {
     test.setTimeout(120_000);

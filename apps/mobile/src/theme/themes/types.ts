@@ -1,5 +1,7 @@
 /** Un thème = un jeu COMPLET de jetons. Ajouter un thème : un fichier ici + une entrée dans `THEMES` ; `theme/themes.test` impose les mêmes clés et des contrastes lisibles. */
 export type ThemeId = 'glass' | 'kawaii' | 'cosmos' | 'teddy' | 'bunny';
+/** Thème réellement appliqué : un thème au choix, ou `v2` (imposé aux familles en V2, D-109, jamais proposé). */
+export type ActiveThemeId = ThemeId | 'v2';
 
 /** Famille de décors illustrés : aucun, chiens et damier (kawaii), astronautes et étoiles (cosmos). */
 export type DecorKind = 'none' | 'kawaii' | 'cosmos' | 'teddy' | 'bunny';
@@ -65,7 +67,7 @@ export type ThemeColors = {
 };
 
 export type Theme = {
-  id: ThemeId;
+  id: ActiveThemeId;
   colors: ThemeColors;
   radius: { card: number; tile: number; control: number; pill: number };
   /** Épaisseur des filets des surfaces (1 = reflet de verre ; 2,5 = contour dessiné à la main). */
