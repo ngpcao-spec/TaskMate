@@ -4,7 +4,7 @@ import { v2Colors, v2Spacing, v2Text } from '../theme';
 import { V2Button } from './V2Button';
 import { V2Sheet } from './V2Sheet';
 
-export type ConfirmSheetAction = { label: string; onPress: () => void; variant?: 'primary' | 'secondary' | 'danger'; testID?: string };
+export type ConfirmSheetAction = { label: string; onPress: () => void; variant?: 'primary' | 'secondary' | 'danger'; testID?: string; loading?: boolean; disabled?: boolean };
 
 type Props = {
   visible: boolean;
@@ -41,7 +41,7 @@ export function ConfirmSheet({ visible, onClose, title, message, icon, children,
       {children}
       <View style={styles.actions}>
         {actions.map((a) => (
-          <V2Button key={a.label} label={a.label} variant={a.variant ?? 'primary'} onPress={a.onPress} testID={a.testID} />
+          <V2Button key={a.label} label={a.label} variant={a.variant ?? 'primary'} onPress={a.onPress} testID={a.testID} loading={a.loading} disabled={a.disabled} />
         ))}
       </View>
     </V2Sheet>

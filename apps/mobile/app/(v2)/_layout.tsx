@@ -7,6 +7,7 @@ import { colors } from '@/theme/tokens';
 import { View } from 'react-native';
 import { useEntryRoute } from '@/hooks/useMe';
 import { useShellEffects } from '@/hooks/useShellEffects';
+import { V2NotificationPrompt } from '@/v2/components/V2NotificationPrompt';
 import { v2Colors, V2_FONT_FILES } from '@/v2/theme';
 
 /**
@@ -27,6 +28,8 @@ export default function V2Layout() {
   return (
     <View style={{ flex: 1, backgroundColor: v2Colors.background }}>
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: v2Colors.background } }} />
+      {/* D-116 : invitation à activer les notifications à l'ouverture (web/PWA), tant qu'elles ne sont pas activées */}
+      <V2NotificationPrompt />
     </View>
   );
 }
